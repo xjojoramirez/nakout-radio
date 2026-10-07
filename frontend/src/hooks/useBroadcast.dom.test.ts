@@ -216,6 +216,7 @@ describe("useBroadcast (radio socket)", () => {
     unmount();
     expect(first.close).toHaveBeenCalled();
     act(() => {
+      first.onclose?.();
       vi.advanceTimersByTime(60000);
     });
     expect(FakeWebSocket.instances).toHaveLength(1);
@@ -229,7 +230,7 @@ describe("useBroadcast (radio socket)", () => {
       FakeWebSocket.instances[0].onclose?.();
     });
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(1200);
     });
     expect(FakeWebSocket.instances).toHaveLength(2);
     act(() => {
@@ -239,7 +240,7 @@ describe("useBroadcast (radio socket)", () => {
       FakeWebSocket.instances[1].onclose?.();
     });
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(1200);
     });
     expect(FakeWebSocket.instances).toHaveLength(3);
   });
