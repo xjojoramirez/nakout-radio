@@ -434,6 +434,7 @@ def playback_next(body: GenreRefIn, session: Session = Depends(get_session)) -> 
         skip(session, body.genre_id, "next")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    notify_radio(build_now(session, utcnow()).model_dump())
     return {"status": "ok"}
 
 
@@ -445,12 +446,14 @@ def playback_prev(body: GenreRefIn, session: Session = Depends(get_session)) -> 
         skip(session, body.genre_id, "prev")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    notify_radio(build_now(session, utcnow()).model_dump())
     return {"status": "ok"}
 
 
 @router.post("/playback/auto", dependencies=[Depends(require_admin)])
 def playback_auto(session: Session = Depends(get_session)) -> dict:
     set_auto(session)
+    notify_radio(build_now(session, utcnow()).model_dump())
     return {"status": "ok"}
 
 
@@ -461,4 +464,5 @@ def set_genre_order(
     if session.get(Genre, genre_id) is None:
         raise HTTPException(status_code=404, detail="genre not found")
     set_order(session, genre_id, body.video_ids)
+    notify_radio(build_now(session, utcnow()).model_dump())
     return {"status": "ok"}
