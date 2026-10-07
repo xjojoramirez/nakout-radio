@@ -1118,6 +1118,7 @@ body.admin-fixed {
   #panel-playlists .added-playlists {
     flex: 0 0 auto;
     height: auto;
+    min-height: 0;
     max-height: none;
     overflow: visible;
   }
@@ -1187,6 +1188,15 @@ body.admin-fixed {
     font-size: 1.5rem;
   }
 
+  .admin-header {
+    flex-wrap: wrap;
+  }
+
+  .admin-header .back-link,
+  .admin-header-actions .btn {
+    white-space: nowrap;
+  }
+
   .admin-tabs {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1203,7 +1213,7 @@ body.admin-fixed {
     grid-template-columns: 1fr;
   }
 
-  .field input,
+  .field input:not([type="checkbox"]),
   .admin input:not([type="checkbox"]),
   .admin select {
     font-size: 16px;
@@ -1231,6 +1241,13 @@ body.admin-fixed {
 
   .added-playlists .pl-main {
     min-width: 0;
+  }
+
+  .added-playlists .pl-id {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .pl-actions,
@@ -1313,6 +1330,10 @@ body.admin-fixed {
   .queue-list .queue-row .drag-handle,
   .queue-list .queue-row .queue-duration {
     display: none;
+  }
+
+  .volume input[type="range"] {
+    min-width: 64px;
   }
 }
 
