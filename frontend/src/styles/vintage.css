@@ -1244,7 +1244,7 @@ body.admin-fixed {
     flex: 1;
   }
 
-  .queue-row {
+  .queue-list .queue-row {
     gap: 8px;
   }
 
