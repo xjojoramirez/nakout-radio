@@ -133,7 +133,9 @@ def _resolve(session: Session, at_utc: datetime) -> tuple[int | None, bool]:
     default = session.exec(
         select(Genre).where(Genre.is_default.is_(True))
     ).first()
-    slots = session.exec(select(ScheduleSlot)).all()
+    slots = session.exec(
+        select(ScheduleSlot).order_by(ScheduleSlot.id)
+    ).all()
     rows = [(s.genre_id, s.days_of_week, s.start_time) for s in slots]
     matched = any(days for _, days, _ in rows)
     genre_id = resolve_genre_id(rows, local, default.id if default else None)
