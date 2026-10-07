@@ -99,11 +99,6 @@ describe("useBroadcast (radio socket)", () => {
     vi.stubGlobal("WebSocket", FakeWebSocket);
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
-  });
-
   it("opens a radio socket on mount", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(nowResponse()));
     renderHook(() => useBroadcast());
@@ -162,5 +157,90 @@ describe("useBroadcast (radio socket)", () => {
       vi.advanceTimersByTime(5000);
     });
     expect(FakeWebSocket.instances.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("does not let a stale poll overwrite a pushed frame", async () => {
+    let resolveFetch: (r: Response) => void = () => {};
+    const pending = new Promise<Response>((res) => {
+      resolveFetch = res;
+    });
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(pending));
+    const { result } = renderHook(() => useBroadcast());
+    await waitFor(() => expect(FakeWebSocket.instances).toHaveLength(1));
+    act(() => {
+      FakeWebSocket.instances[0].onmessage?.({
+        data: JSON.stringify({
+          genre: null,
+          track: {
+            youtube_video_id: "b",
+            title: "B",
+            artist: "A",
+            thumbnail_url: "",
+            duration_seconds: 200,
+            position: 1,
+          },
+          offset_seconds: 0,
+          server_time: "2026-01-01T00:00:00+00:00",
+          source: "manual",
+        }),
+      });
+    });
+    await waitFor(() =>
+      expect(result.current.state?.track?.youtube_video_id).toBe("b"),
+    );
+    await act(async () => {
+      resolveFetch(
+        nowResponse({
+          source: "default",
+          track: {
+            youtube_video_id: "a",
+            title: "A",
+            artist: "A",
+            thumbnail_url: "",
+            duration_seconds: 200,
+            position: 0,
+          },
+        }),
+      );
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(result.current.state?.track?.youtube_video_id).toBe("b");
+  });
+
+  it("closes the socket and stops reconnecting on unmount", () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(nowResponse()));
+    const { unmount } = renderHook(() => useBroadcast());
+    const first = FakeWebSocket.instances[0];
+    unmount();
+    expect(first.close).toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(60000);
+    });
+    expect(FakeWebSocket.instances).toHaveLength(1);
+  });
+
+  it("resets backoff after a successful open", () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(nowResponse()));
+    renderHook(() => useBroadcast());
+    act(() => {
+      FakeWebSocket.instances[0].onclose?.();
+    });
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(FakeWebSocket.instances).toHaveLength(2);
+    act(() => {
+      FakeWebSocket.instances[1].onopen?.();
+    });
+    act(() => {
+      FakeWebSocket.instances[1].onclose?.();
+    });
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(FakeWebSocket.instances).toHaveLength(3);
   });
 });
