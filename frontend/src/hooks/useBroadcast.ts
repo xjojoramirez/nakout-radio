@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../api/client";
 import type { BroadcastNow, Genre, Track } from "../types";
 
@@ -14,7 +14,7 @@ export interface BroadcastState {
   offset: number;
   /** `Date.now()` when the state was received. */
   fetchedAt: number;
-  /** Approximate round-trip time in milliseconds. */
+  /** Approximate round-trip time in milliseconds (0 for pushed frames). */
   rttMs: number;
 }
 
@@ -42,6 +42,7 @@ export function useBroadcast(): {
   const [state, setState] = useState<BroadcastState | null>(null);
   const [failed, setFailed] = useState(false);
   const [tick, setTick] = useState(0);
+  const lastSocketAtRef = useRef(0);
 
   const refresh = useCallback(() => setTick((t) => t + 1), []);
 
@@ -54,6 +55,7 @@ export function useBroadcast(): {
       try {
         const data = await api.now();
         if (cancelled) return;
+        if (lastSocketAtRef.current > started) return;
         setFailed(false);
         setState(toState(data, Date.now() - started));
       } catch {
@@ -101,6 +103,7 @@ export function useBroadcast(): {
         if (closed) return;
         try {
           const data = JSON.parse(event.data) as BroadcastNow;
+          lastSocketAtRef.current = Date.now();
           setFailed(false);
           setState(toState(data, 0));
         } catch {
