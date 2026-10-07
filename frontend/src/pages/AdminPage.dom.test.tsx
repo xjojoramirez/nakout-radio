@@ -379,6 +379,26 @@ describe("AdminPage", () => {
     expect(mocked.listSlots).toHaveBeenCalledTimes(2);
   });
 
+  it("surfaces a duplicate-start error from the API", async () => {
+    mocked.login.mockResolvedValue({ status: "ok" });
+    mocked.listGenres.mockResolvedValue([
+      { id: 1, name: "Chill", slug: "chill", is_default: false, track_count: 0 },
+    ]);
+    mocked.createSlot.mockRejectedValue(
+      new ApiError(409, "a slot already starts at 06:00 on Mon"),
+    );
+    render(<AdminPage />);
+    await login();
+    fireEvent.click(screen.getByRole("tab", { name: "Schedule" }));
+    fireEvent.change(screen.getByLabelText("Slot genre"), {
+      target: { value: "1" },
+    });
+    fireEvent.click(screen.getByText("Add slot"));
+    expect(
+      await screen.findByText(/already starts at 06:00/),
+    ).toBeInTheDocument();
+  });
+
   it("lists schedule slots with genre, days, and time", async () => {
     mocked.login.mockResolvedValue({ status: "ok" });
     mocked.listGenres.mockResolvedValue([
@@ -396,9 +416,12 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: "Schedule" }));
-    expect(await screen.findByText("Chill")).toBeInTheDocument();
-    expect(screen.getByText("Mon, Wed")).toBeInTheDocument();
-    expect(screen.getByText("from 06:00")).toBeInTheDocument();
+    const row = (await screen.findByText("Mon, Wed")).closest("li");
+    expect(row).not.toBeNull();
+    expect(within(row as HTMLElement).getByText("Chill")).toBeInTheDocument();
+    expect(
+      within(row as HTMLElement).getByText("from 06:00"),
+    ).toBeInTheDocument();
   });
 
   it("edits a schedule slot", async () => {
