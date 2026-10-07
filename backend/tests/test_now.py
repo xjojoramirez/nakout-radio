@@ -78,15 +78,13 @@ def test_now_uses_matching_slot(tmp_path):
     engine = _engine(tmp_path)
     with Session(engine) as s:
         night = _seed_genre(s, "night", video="nv")
-        for start, end in (("00:00", "12:00"), ("12:00", "00:00")):
-            s.add(
-                ScheduleSlot(
-                    genre_id=night.id,
-                    days_of_week=[0, 1, 2, 3, 4, 5, 6],
-                    start_time=start,
-                    end_time=end,
-                )
+        s.add(
+            ScheduleSlot(
+                genre_id=night.id,
+                days_of_week=[0, 1, 2, 3, 4, 5, 6],
+                start_time="00:00",
             )
+        )
         s.commit()
     body = _client(engine).get("/api/now").json()
     assert body["source"] == "schedule"
@@ -101,19 +99,39 @@ def test_now_falls_back_to_default_when_slot_genre_empty(tmp_path):
         s.add(empty)
         s.commit()
         s.refresh(empty)
-        for start, end in (("00:00", "12:00"), ("12:00", "00:00")):
-            s.add(
-                ScheduleSlot(
-                    genre_id=empty.id,
-                    days_of_week=[0, 1, 2, 3, 4, 5, 6],
-                    start_time=start,
-                    end_time=end,
-                )
+        s.add(
+            ScheduleSlot(
+                genre_id=empty.id,
+                days_of_week=[0, 1, 2, 3, 4, 5, 6],
+                start_time="00:00",
             )
+        )
         s.commit()
     body = _client(engine).get("/api/now").json()
     assert body["genre"]["slug"] == "morning"
     assert body["source"] == "default"
+
+
+def test_now_switches_between_scheduled_genres(tmp_path):
+    engine = _engine(tmp_path)
+    every_day = [0, 1, 2, 3, 4, 5, 6]
+    with Session(engine) as s:
+        alpha = _seed_genre(s, "alpha", video="av")
+        beta = _seed_genre(s, "beta", video="bv")
+        s.add(
+            ScheduleSlot(
+                genre_id=alpha.id, days_of_week=every_day, start_time="06:00"
+            )
+        )
+        s.add(
+            ScheduleSlot(genre_id=beta.id, days_of_week=every_day, start_time="12:00")
+        )
+        s.commit()
+    with Session(engine) as s:
+        morning = get_current(s, datetime(2026, 1, 4, 22, 30))  # Mon 06:30 Manila
+        assert morning.genre.slug == "alpha"
+        afternoon = get_current(s, datetime(2026, 1, 5, 5, 0))  # Mon 13:00 Manila
+        assert afternoon.genre.slug == "beta"
 
 
 def test_get_current_advances_and_persists(tmp_path):
