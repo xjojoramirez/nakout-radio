@@ -3,6 +3,15 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-07 — Reorder admin schedule panel
+
+- The admin Schedule panel now shows the "Add schedule slot" form above the
+  list of existing schedule slots, matching the order requested.
+- Files touched: `frontend/src/components/admin/SchedulePanel.tsx`.
+- Docker: frontend-only change, rebuild `frontend`:
+  `docker compose up -d --build frontend`.
+- Verification: `npm run typecheck` and `npm run test` (105 tests) pass.
+
 ## 2026-10-07 — Start-only schedule slots
 
 - Schedule slots are now a genre plus a start time (and days of the week); the
