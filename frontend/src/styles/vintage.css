@@ -1266,6 +1266,56 @@ body.admin-fixed {
   }
 }
 
+/* ---------- Small phones (≤380px) ---------- */
+
+@media (max-width: 380px) {
+  .radio-cabinet {
+    padding: 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .now-playing {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .now-playing .art {
+    width: 72px;
+    height: 72px;
+  }
+
+  .now-playing .title {
+    font-size: 0.95rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .admin {
+    padding: 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .channel-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .channel-card .ch-title {
+    font-size: 0.8rem;
+  }
+
+  .admin-header-actions {
+    gap: 4px;
+  }
+
+  /* Queue rows: hide handle + duration for room (HTML5 drag is touch-inert) */
+  .queue-list .queue-row .drag-handle,
+  .queue-list .queue-row .queue-duration {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .vu-meter.playing .vu-bar {
     animation: none;
