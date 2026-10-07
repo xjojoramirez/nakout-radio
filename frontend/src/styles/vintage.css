@@ -1142,6 +1142,40 @@ body.admin-fixed {
   .time-pair {
     grid-template-columns: 1fr;
   }
+
+  /* Home page */
+  .radio-cabinet {
+    border-width: 4px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .radio-header {
+    flex-wrap: wrap;
+  }
+
+  .radio-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .genre-row {
+    justify-content: center;
+  }
+
+  .controls button {
+    min-height: 44px;
+    min-width: 88px;
+  }
+
+  .volume {
+    flex: 1;
+  }
+
+  .volume input[type="range"] {
+    flex: 1;
+    width: auto;
+    min-width: 100px;
+    max-width: 160px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
