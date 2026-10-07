@@ -55,7 +55,7 @@ export function useBroadcast(): {
       try {
         const data = await api.now();
         if (cancelled) return;
-        if (lastSocketAtRef.current > started) return;
+        if (lastSocketAtRef.current >= started) return;
         setFailed(false);
         setState(toState(data, Date.now() - started));
       } catch {
