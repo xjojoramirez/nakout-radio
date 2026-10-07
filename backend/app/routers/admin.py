@@ -2,6 +2,7 @@ import json
 import logging
 import re
 from collections.abc import Callable
+from datetime import datetime
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
@@ -323,7 +324,9 @@ def _assert_unique_start(
     for other in session.exec(select(ScheduleSlot)).all():
         if exclude_id is not None and other.id == exclude_id:
             continue
-        if other.start_time != start_time:
+        if datetime.strptime(other.start_time, "%H:%M").time() != datetime.strptime(
+            start_time, "%H:%M"
+        ).time():
             continue
         shared = sorted(set(other.days_of_week) & set(days))
         if shared:
@@ -386,7 +389,7 @@ def update_slot(
     slot = session.get(ScheduleSlot, slot_id)
     if slot is None:
         raise HTTPException(status_code=404, detail="slot not found")
-    updates = body.model_dump(exclude_unset=True)
+    updates = body.model_dump(exclude_unset=True, exclude_none=True)
     if updates.get("genre_id") is not None:
         if session.get(Genre, updates["genre_id"]) is None:
             raise HTTPException(status_code=404, detail="genre not found")
