@@ -130,8 +130,10 @@ def test_now_switches_between_scheduled_genres(tmp_path):
     with Session(engine) as s:
         morning = get_current(s, datetime(2026, 1, 4, 22, 30))  # Mon 06:30 Manila
         assert morning.genre.slug == "alpha"
+        assert morning.source == "schedule"
         afternoon = get_current(s, datetime(2026, 1, 5, 5, 0))  # Mon 13:00 Manila
         assert afternoon.genre.slug == "beta"
+        assert afternoon.source == "schedule"
 
 
 def test_get_current_advances_and_persists(tmp_path):
