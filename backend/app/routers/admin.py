@@ -31,6 +31,8 @@ from app.schemas import (
     PlaylistIn,
     PlaylistOut,
     SlotIn,
+    SlotOut,
+    SlotUpdate,
     GenreRefIn,
     TrackOut,
 )
@@ -47,6 +49,8 @@ from app.youtube import (
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 logger = logging.getLogger(__name__)
+
+DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 _SECRET_QUERY_RE = re.compile(r"([?&])key=[^&\s]+")
 
@@ -310,15 +314,105 @@ def sync_all(session: Session = Depends(get_session)) -> dict:
     return {"results": results}
 
 
-@router.post("/slots", status_code=201, dependencies=[Depends(require_admin)])
-def create_slot(body: SlotIn, session: Session = Depends(get_session)) -> ScheduleSlot:
-    if session.get(Genre, body.genre_id) is None:
+def _assert_unique_start(
+    session: Session,
+    days: list[int],
+    start_time: str,
+    exclude_id: int | None = None,
+) -> None:
+    for other in session.exec(select(ScheduleSlot)).all():
+        if exclude_id is not None and other.id == exclude_id:
+            continue
+        if other.start_time != start_time:
+            continue
+        shared = sorted(set(other.days_of_week) & set(days))
+        if shared:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    f"a slot already starts at {start_time} "
+                    f"on {DAY_LABELS[shared[0]]}"
+                ),
+            )
+
+
+def _slot_out(slot: ScheduleSlot, genre_names: dict[int, str]) -> SlotOut:
+    return SlotOut(
+        id=slot.id,
+        genre_id=slot.genre_id,
+        genre_name=genre_names.get(slot.genre_id, ""),
+        days_of_week=slot.days_of_week,
+        start_time=slot.start_time,
+    )
+
+
+@router.get(
+    "/slots",
+    response_model=list[SlotOut],
+    dependencies=[Depends(require_admin)],
+)
+def list_slots(session: Session = Depends(get_session)) -> list[SlotOut]:
+    slots = session.exec(select(ScheduleSlot).order_by(ScheduleSlot.id)).all()
+    genre_names = {s.id: s.name for s in session.exec(select(Genre)).all()}
+    return [_slot_out(s, genre_names) for s in slots]
+
+
+@router.post(
+    "/slots",
+    status_code=201,
+    response_model=SlotOut,
+    dependencies=[Depends(require_admin)],
+)
+def create_slot(body: SlotIn, session: Session = Depends(get_session)) -> SlotOut:
+    genre = session.get(Genre, body.genre_id)
+    if genre is None:
         raise HTTPException(status_code=404, detail="genre not found")
+    _assert_unique_start(session, body.days_of_week, body.start_time)
     slot = ScheduleSlot(**body.model_dump())
     session.add(slot)
     session.commit()
     session.refresh(slot)
-    return slot
+    return _slot_out(slot, {genre.id: genre.name})
+
+
+@router.put(
+    "/slots/{slot_id}",
+    response_model=SlotOut,
+    dependencies=[Depends(require_admin)],
+)
+def update_slot(
+    slot_id: int, body: SlotUpdate, session: Session = Depends(get_session)
+) -> SlotOut:
+    slot = session.get(ScheduleSlot, slot_id)
+    if slot is None:
+        raise HTTPException(status_code=404, detail="slot not found")
+    updates = body.model_dump(exclude_unset=True)
+    if updates.get("genre_id") is not None:
+        if session.get(Genre, updates["genre_id"]) is None:
+            raise HTTPException(status_code=404, detail="genre not found")
+    final_days = updates.get("days_of_week", slot.days_of_week)
+    final_start = updates.get("start_time", slot.start_time)
+    if final_start is not None:
+        _assert_unique_start(
+            session, final_days or [], final_start, exclude_id=slot_id
+        )
+    for field, value in updates.items():
+        setattr(slot, field, value)
+    session.add(slot)
+    session.commit()
+    session.refresh(slot)
+    genre_names = {s.id: s.name for s in session.exec(select(Genre)).all()}
+    return _slot_out(slot, genre_names)
+
+
+@router.delete("/slots/{slot_id}", dependencies=[Depends(require_admin)])
+def delete_slot(slot_id: int, session: Session = Depends(get_session)) -> dict:
+    slot = session.get(ScheduleSlot, slot_id)
+    if slot is None:
+        raise HTTPException(status_code=404, detail="slot not found")
+    session.delete(slot)
+    session.commit()
+    return {"status": "deleted"}
 
 
 @router.get(
