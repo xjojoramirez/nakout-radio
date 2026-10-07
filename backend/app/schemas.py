@@ -63,6 +63,8 @@ class SlotIn(BaseModel):
     @field_validator("days_of_week")
     @classmethod
     def _valid_days(cls, v: list[int]) -> list[int]:
+        if not v:
+            raise ValueError("days_of_week must not be empty")
         if any(d not in range(7) for d in v):
             raise ValueError("days_of_week entries must be 0-6")
         return v
@@ -71,10 +73,9 @@ class SlotIn(BaseModel):
     @classmethod
     def _valid_time(cls, v: str) -> str:
         try:
-            datetime.strptime(v, "%H:%M")
+            return datetime.strptime(v, "%H:%M").strftime("%H:%M")
         except ValueError as exc:
             raise ValueError("time must be HH:MM") from exc
-        return v
 
 
 class SlotOut(BaseModel):
@@ -93,7 +94,11 @@ class SlotUpdate(BaseModel):
     @field_validator("days_of_week")
     @classmethod
     def _valid_days(cls, v: list[int] | None) -> list[int] | None:
-        if v is not None and any(d not in range(7) for d in v):
+        if v is None:
+            return v
+        if not v:
+            raise ValueError("days_of_week must not be empty")
+        if any(d not in range(7) for d in v):
             raise ValueError("days_of_week entries must be 0-6")
         return v
 
@@ -103,10 +108,9 @@ class SlotUpdate(BaseModel):
         if v is None:
             return v
         try:
-            datetime.strptime(v, "%H:%M")
+            return datetime.strptime(v, "%H:%M").strftime("%H:%M")
         except ValueError as exc:
             raise ValueError("time must be HH:MM") from exc
-        return v
 
 
 class PlaylistIn(BaseModel):

@@ -341,6 +341,69 @@ def test_update_slot_duplicate_start_returns_409(tmp_path):
     assert resp.status_code == 409
 
 
+def test_create_slot_unpadded_time_still_collides(tmp_path):
+    client, _ = _client(tmp_path)
+    _login(client)
+    sid = client.post(
+        "/api/admin/genres", json={"name": "Chill", "slug": "chill"}
+    ).json()["id"]
+    assert _create_slot(client, sid, start_time="06:00").status_code == 201
+    assert _create_slot(client, sid, start_time="6:00").status_code == 409
+
+
+def test_create_slot_empty_days_returns_422(tmp_path):
+    client, _ = _client(tmp_path)
+    _login(client)
+    sid = client.post(
+        "/api/admin/genres", json={"name": "Chill", "slug": "chill"}
+    ).json()["id"]
+    assert _create_slot(client, sid, days_of_week=[]).status_code == 422
+
+
+def test_update_slot_null_fields_are_ignored(tmp_path):
+    client, _ = _client(tmp_path)
+    _login(client)
+    sid = client.post(
+        "/api/admin/genres", json={"name": "Chill", "slug": "chill"}
+    ).json()["id"]
+    slot_id = _create_slot(client, sid).json()["id"]
+    resp = client.put(
+        f"/api/admin/slots/{slot_id}",
+        json={"days_of_week": None, "start_time": None},
+    )
+    assert resp.status_code == 200
+    body = client.get("/api/admin/slots").json()[0]
+    assert body["days_of_week"] == [0]
+    assert body["start_time"] == "06:00"
+
+
+def test_update_slot_days_overlap_returns_409(tmp_path):
+    client, _ = _client(tmp_path)
+    _login(client)
+    sid = client.post(
+        "/api/admin/genres", json={"name": "Chill", "slug": "chill"}
+    ).json()["id"]
+    _create_slot(client, sid, days_of_week=[0], start_time="06:00")
+    second = _create_slot(client, sid, days_of_week=[1], start_time="06:00").json()["id"]
+    resp = client.put(f"/api/admin/slots/{second}", json={"days_of_week": [0, 1]})
+    assert resp.status_code == 409
+
+
+def test_update_slot_genre_only_does_not_self_conflict(tmp_path):
+    client, _ = _client(tmp_path)
+    _login(client)
+    first_genre = client.post(
+        "/api/admin/genres", json={"name": "Chill", "slug": "chill"}
+    ).json()["id"]
+    second_genre = client.post(
+        "/api/admin/genres", json={"name": "Rock", "slug": "rock"}
+    ).json()["id"]
+    slot_id = _create_slot(client, first_genre).json()["id"]
+    resp = client.put(f"/api/admin/slots/{slot_id}", json={"genre_id": second_genre})
+    assert resp.status_code == 200
+    assert resp.json()["genre_id"] == second_genre
+
+
 def test_delete_slot(tmp_path):
     client, engine = _client(tmp_path)
     _login(client)
