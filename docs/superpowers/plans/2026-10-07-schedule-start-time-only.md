@@ -547,6 +547,7 @@ git commit -m "feat: reject duplicate schedule starts and drop end_time from API
 **Files:**
 - Test: `backend/tests/test_now.py:77-116`
 - Test: `backend/tests/test_genres.py:90-133`
+- Test: `backend/tests/test_now.py` (add end-to-end rotation integration test)
 
 - [ ] **Step 1: Update `test_now.py`**
 
@@ -594,7 +595,34 @@ def test_now_falls_back_to_default_when_slot_genre_empty(tmp_path):
     assert body["source"] == "default"
 ```
 
-- [ ] **Step 2: Update `test_genres.py`**
+- [ ] **Step 2: Add an end-to-end rotation integration test to `test_now.py`**
+
+Append this test (it exercises `get_current` -> `_desired` -> `_resolve` -> `resolve_genre_id` through a real session, proving the schedule actually switches genres at a start boundary). Times are naive UTC; `Asia/Manila` is UTC+8, so `2026-01-04 22:30 UTC` is Monday `06:30` local and `2026-01-05 05:00 UTC` is Monday `13:00` local.
+
+```python
+def test_now_switches_between_scheduled_genres(tmp_path):
+    engine = _engine(tmp_path)
+    every_day = [0, 1, 2, 3, 4, 5, 6]
+    with Session(engine) as s:
+        alpha = _seed_genre(s, "alpha", video="av")
+        beta = _seed_genre(s, "beta", video="bv")
+        s.add(
+            ScheduleSlot(
+                genre_id=alpha.id, days_of_week=every_day, start_time="06:00"
+            )
+        )
+        s.add(
+            ScheduleSlot(genre_id=beta.id, days_of_week=every_day, start_time="12:00")
+        )
+        s.commit()
+    with Session(engine) as s:
+        morning = get_current(s, datetime(2026, 1, 4, 22, 30))  # Mon 06:30 Manila
+        assert morning.genre.slug == "alpha"
+        afternoon = get_current(s, datetime(2026, 1, 5, 5, 0))  # Mon 13:00 Manila
+        assert afternoon.genre.slug == "beta"
+```
+
+- [ ] **Step 3: Update `test_genres.py`**
 
 Replace the two `ScheduleSlot(...)` adds in `test_schedule_now_uses_matching_slot` (lines 110-127) with a single slot:
 
@@ -610,12 +638,12 @@ Replace the two `ScheduleSlot(...)` adds in `test_schedule_now_uses_matching_slo
         s.commit()
 ```
 
-- [ ] **Step 3: Run the full backend suite**
+- [ ] **Step 4: Run the full backend suite**
 
 Run: `python -m pytest -v`
 Expected: PASS (no failures, no `end_time` references).
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add backend/tests/test_now.py backend/tests/test_genres.py
