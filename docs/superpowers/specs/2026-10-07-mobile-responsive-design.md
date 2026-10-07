@@ -165,7 +165,7 @@ overkill for occasional use.)
 
 - `.channel-grid`: `repeat(auto-fill, minmax(190px, 1fr))` →
   `repeat(2, 1fr)` at ≤600px. At ≤380px:
-  `repeat(auto-fill, minmax(150px, 1fr))` (1 col at 320px, 2 cols from ~380px up);
+  `repeat(auto-fill, minmax(150px, 1fr))` (1 col at 320px, 2 cols from ~340px up);
   `.channel-card .ch-title` font-size 0.85rem → 0.8rem.
 - `.channel-setup` stays max-width 480px centered.
 - Search input (`.panel-head input`) already full width at ≤920px; unchanged.
