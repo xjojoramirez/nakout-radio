@@ -1,0 +1,464 @@
+import json
+import logging
+import re
+from collections.abc import Callable
+
+import httpx
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from pydantic import BaseModel, Field
+from sqlalchemy import func
+from sqlmodel import Session, col, delete, select, update
+
+from app.auth import (
+    COOKIE_NAME,
+    create_session_token,
+    verify_password,
+    verify_session_token,
+)
+from app.broadcast import play_now, set_auto, set_order, skip, utcnow
+from app.config import get_settings
+from app.db import get_session
+from app.models import Playlist, ScheduleSlot, Setting, Genre, TrackCache
+from app.routers.genres import ordered_tracks_for_genre
+from app.routers.now import build_now
+from app.routers.ws import notify_radio
+from app.schemas import (
+    ChannelIn,
+    ChannelOut,
+    ChannelPlaylistOut,
+    OrderIn,
+    PlayIn,
+    PlaylistIn,
+    PlaylistOut,
+    SlotIn,
+    GenreRefIn,
+    TrackOut,
+)
+from app.sync import sync_playlist
+from app.youtube import (
+    TrackData,
+    fetch_channel_playlists,
+    fetch_playlist_items,
+    fetch_video_durations,
+    parse_playlist_id,
+    resolve_channel_id,
+)
+
+router = APIRouter(prefix="/api/admin", tags=["admin"])
+
+logger = logging.getLogger(__name__)
+
+_SECRET_QUERY_RE = re.compile(r"([?&])key=[^&\s]+")
+
+
+def _redact_secrets(value: object) -> str:
+    return _SECRET_QUERY_RE.sub(r"\1key=REDACTED", str(value))
+
+
+class LoginIn(BaseModel):
+    password: str
+
+
+class GenreIn(BaseModel):
+    name: str = Field(min_length=1)
+    slug: str = Field(min_length=1)
+    is_default: bool = False
+    sort_order: int = 0
+
+
+class GenreUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1)
+    slug: str | None = Field(default=None, min_length=1)
+    is_default: bool | None = None
+    sort_order: int | None = None
+
+
+def require_admin(request: Request) -> None:
+    settings = get_settings()
+    token = request.cookies.get(COOKIE_NAME, "")
+    if not verify_session_token(token, settings.secret_key):
+        raise HTTPException(status_code=401, detail="not authenticated")
+
+
+def _save_channel(session: Session, channel_id: str, title: str) -> None:
+    session.merge(Setting(key="youtube_channel_id", value=channel_id))
+    session.merge(Setting(key="youtube_channel_title", value=title))
+    session.commit()
+
+
+def _get_saved_channel(session: Session) -> tuple[str | None, str | None]:
+    channel_id = session.get(Setting, "youtube_channel_id")
+    title = session.get(Setting, "youtube_channel_title")
+    return (
+        (channel_id.value or None) if channel_id else None,
+        (title.value or None) if title else None,
+    )
+
+
+def _build_fetch() -> Callable[[str], list[TrackData]]:
+    settings = get_settings()
+
+    def fetch(playlist_id: str) -> list[TrackData]:
+        with httpx.Client(timeout=10) as client:
+            tracks = fetch_playlist_items(playlist_id, settings.yt_api_key, client)
+            durations = fetch_video_durations(
+                [t.youtube_video_id for t in tracks], settings.yt_api_key, client
+            )
+            for track in tracks:
+                track.duration_seconds = durations.get(track.youtube_video_id, 0)
+            return tracks
+
+    return fetch
+
+
+@router.post("/login")
+def login(body: LoginIn, response: Response) -> dict[str, str]:
+    settings = get_settings()
+    if not verify_password(body.password, settings.admin_password):
+        raise HTTPException(status_code=401, detail="invalid password")
+    token = create_session_token(settings.secret_key)
+    response.set_cookie(
+        COOKIE_NAME,
+        token,
+        httponly=True,
+        samesite="lax",
+        secure=settings.cookie_secure,
+        max_age=86400,
+    )
+    return {"status": "ok"}
+
+
+@router.post("/logout")
+def logout(response: Response) -> dict[str, str]:
+    settings = get_settings()
+    response.delete_cookie(
+        COOKIE_NAME,
+        httponly=True,
+        samesite="lax",
+        secure=settings.cookie_secure,
+    )
+    return {"status": "ok"}
+
+
+@router.get("/session", dependencies=[Depends(require_admin)])
+def session_status() -> dict[str, str]:
+    return {"status": "ok"}
+
+
+@router.post("/genres", status_code=201, dependencies=[Depends(require_admin)])
+def create_genre(body: GenreIn, session: Session = Depends(get_session)) -> Genre:
+    existing = session.exec(select(Genre).where(Genre.slug == body.slug)).first()
+    if existing is not None:
+        raise HTTPException(status_code=409, detail="genre slug already exists")
+    genre = Genre(**body.model_dump())
+    session.add(genre)
+    session.commit()
+    session.refresh(genre)
+    return genre
+
+
+@router.put("/genres/{genre_id}", dependencies=[Depends(require_admin)])
+def update_genre(
+    genre_id: int, body: GenreUpdate, session: Session = Depends(get_session)
+) -> Genre:
+    genre = session.get(Genre, genre_id)
+    if genre is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    updates = body.model_dump(exclude_unset=True)
+    if "slug" in updates:
+        clash = session.exec(
+            select(Genre).where(Genre.slug == updates["slug"], Genre.id != genre_id)
+        ).first()
+        if clash is not None:
+            raise HTTPException(status_code=409, detail="genre slug already exists")
+    if updates.get("is_default"):
+        session.exec(
+            update(Genre)
+            .where(col(Genre.id) != genre_id)
+            .values(is_default=False)
+        )
+    for field, value in updates.items():
+        setattr(genre, field, value)
+    session.add(genre)
+    session.commit()
+    session.refresh(genre)
+    return genre
+
+
+@router.delete("/genres/{genre_id}", dependencies=[Depends(require_admin)])
+def delete_genre(genre_id: int, session: Session = Depends(get_session)) -> dict:
+    genre = session.get(Genre, genre_id)
+    if genre is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    playlist_ids = session.exec(
+        select(Playlist.id).where(Playlist.genre_id == genre_id)
+    ).all()
+    if playlist_ids:
+        session.exec(delete(TrackCache).where(TrackCache.playlist_id.in_(playlist_ids)))
+    session.exec(delete(Playlist).where(Playlist.genre_id == genre_id))
+    session.exec(delete(ScheduleSlot).where(ScheduleSlot.genre_id == genre_id))
+    order_key = session.get(Setting, f"genre_order:{genre_id}")
+    if order_key is not None:
+        session.delete(order_key)
+    session.delete(genre)
+    session.commit()
+    return {"status": "deleted"}
+
+
+@router.post("/playlists", status_code=201, dependencies=[Depends(require_admin)])
+def create_playlist(
+    body: PlaylistIn, session: Session = Depends(get_session)
+) -> dict:
+    if session.get(Genre, body.genre_id) is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    try:
+        yt_id = parse_playlist_id(body.youtube_playlist_url)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    playlist = Playlist(
+        genre_id=body.genre_id, youtube_playlist_id=yt_id, label=body.label
+    )
+    session.add(playlist)
+    session.commit()
+    session.refresh(playlist)
+    synced = 0
+    sync_error: str | None = None
+    try:
+        synced = sync_playlist(session, playlist, _build_fetch())
+    except httpx.HTTPError as exc:
+        sync_error = _redact_secrets(exc)
+    return {
+        "id": playlist.id,
+        "youtube_playlist_id": yt_id,
+        "synced": synced,
+        "sync_error": sync_error,
+    }
+
+
+@router.get(
+    "/playlists",
+    response_model=list[PlaylistOut],
+    dependencies=[Depends(require_admin)],
+)
+def list_added_playlists(
+    session: Session = Depends(get_session),
+) -> list[PlaylistOut]:
+    playlists = session.exec(
+        select(Playlist).order_by(Playlist.genre_id, Playlist.id)
+    ).all()
+    genre_names = {s.id: s.name for s in session.exec(select(Genre)).all()}
+    counts = dict(
+        session.exec(
+            select(TrackCache.playlist_id, func.count(TrackCache.id)).group_by(
+                TrackCache.playlist_id
+            )
+        ).all()
+    )
+    return [
+        PlaylistOut(
+            id=p.id,
+            genre_id=p.genre_id,
+            genre_name=genre_names.get(p.genre_id, ""),
+            youtube_playlist_id=p.youtube_playlist_id,
+            label=p.label,
+            track_count=counts.get(p.id, 0),
+        )
+        for p in playlists
+    ]
+
+
+@router.delete(
+    "/playlists/{playlist_id}", dependencies=[Depends(require_admin)]
+)
+def delete_playlist(
+    playlist_id: int, session: Session = Depends(get_session)
+) -> dict:
+    playlist = session.get(Playlist, playlist_id)
+    if playlist is None:
+        raise HTTPException(status_code=404, detail="playlist not found")
+    session.exec(delete(TrackCache).where(TrackCache.playlist_id == playlist_id))
+    session.delete(playlist)
+    session.commit()
+    return {"status": "deleted"}
+
+
+@router.post("/playlists/{playlist_id}/refresh", dependencies=[Depends(require_admin)])
+def refresh_playlist(
+    playlist_id: int, session: Session = Depends(get_session)
+) -> dict:
+    playlist = session.get(Playlist, playlist_id)
+    if playlist is None:
+        raise HTTPException(status_code=404, detail="playlist not found")
+    try:
+        synced = sync_playlist(session, playlist, _build_fetch())
+    except httpx.HTTPError as exc:
+        logger.warning("YouTube refresh failed: %s", _redact_secrets(exc))
+        raise HTTPException(status_code=502, detail="YouTube fetch failed") from exc
+    return {"id": playlist.id, "synced": synced}
+
+
+@router.post("/sync", dependencies=[Depends(require_admin)])
+def sync_all(session: Session = Depends(get_session)) -> dict:
+    playlists = session.exec(select(Playlist)).all()
+    results = []
+    for pl in playlists:
+        try:
+            synced = sync_playlist(session, pl, _build_fetch())
+            results.append({"id": pl.id, "synced": synced, "error": None})
+        except httpx.HTTPError as exc:
+            results.append({"id": pl.id, "synced": 0, "error": _redact_secrets(exc)})
+    return {"results": results}
+
+
+@router.post("/slots", status_code=201, dependencies=[Depends(require_admin)])
+def create_slot(body: SlotIn, session: Session = Depends(get_session)) -> ScheduleSlot:
+    if session.get(Genre, body.genre_id) is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    slot = ScheduleSlot(**body.model_dump())
+    session.add(slot)
+    session.commit()
+    session.refresh(slot)
+    return slot
+
+
+@router.get(
+    "/youtube/channel",
+    response_model=ChannelOut,
+    dependencies=[Depends(require_admin)],
+)
+def get_youtube_channel(session: Session = Depends(get_session)) -> ChannelOut:
+    channel_id, title = _get_saved_channel(session)
+    return ChannelOut(channel_id=channel_id, title=title)
+
+
+@router.put(
+    "/youtube/channel",
+    response_model=ChannelOut,
+    dependencies=[Depends(require_admin)],
+)
+def set_youtube_channel(
+    body: ChannelIn, session: Session = Depends(get_session)
+) -> ChannelOut:
+    if not body.channel.strip():
+        raise HTTPException(status_code=400, detail="channel is required")
+    settings = get_settings()
+    try:
+        with httpx.Client(timeout=10) as client:
+            channel_id, title = resolve_channel_id(
+                body.channel, settings.yt_api_key, client
+            )
+    except json.JSONDecodeError as exc:
+        logger.warning("YouTube channel lookup returned invalid JSON")
+        raise HTTPException(
+            status_code=502, detail="YouTube lookup failed"
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except httpx.HTTPError as exc:
+        logger.warning("YouTube channel lookup failed: %s", _redact_secrets(exc))
+        raise HTTPException(
+            status_code=502, detail="YouTube lookup failed"
+        ) from exc
+    _save_channel(session, channel_id, title)
+    return ChannelOut(channel_id=channel_id, title=title)
+
+
+@router.get(
+    "/youtube/playlists",
+    response_model=list[ChannelPlaylistOut],
+    dependencies=[Depends(require_admin)],
+)
+def list_youtube_playlists(
+    session: Session = Depends(get_session),
+) -> list[ChannelPlaylistOut]:
+    channel_id, _ = _get_saved_channel(session)
+    if not channel_id:
+        return []
+    settings = get_settings()
+    try:
+        with httpx.Client(timeout=10) as client:
+            playlists = fetch_channel_playlists(
+                channel_id, settings.yt_api_key, client
+            )
+    except (httpx.HTTPError, json.JSONDecodeError) as exc:
+        logger.warning("YouTube playlist fetch failed: %s", _redact_secrets(exc))
+        raise HTTPException(
+            status_code=502, detail="YouTube fetch failed"
+        ) from exc
+    existing = set(session.exec(select(Playlist.youtube_playlist_id)).all())
+    return [
+        ChannelPlaylistOut(
+            youtube_playlist_id=p.youtube_playlist_id,
+            title=p.title,
+            item_count=p.item_count,
+            thumbnail_url=p.thumbnail_url,
+            already_added=p.youtube_playlist_id in existing,
+        )
+        for p in playlists
+    ]
+
+
+@router.get(
+    "/genres/{genre_id}/tracks",
+    response_model=list[TrackOut],
+    dependencies=[Depends(require_admin)],
+)
+def genre_tracks(
+    genre_id: int, session: Session = Depends(get_session)
+) -> list[TrackOut]:
+    if session.get(Genre, genre_id) is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    return [
+        TrackOut.model_validate(t)
+        for t in ordered_tracks_for_genre(session, genre_id)
+    ]
+
+
+@router.post("/playback/play", dependencies=[Depends(require_admin)])
+def playback_play(body: PlayIn, session: Session = Depends(get_session)) -> dict:
+    if session.get(Genre, body.genre_id) is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    try:
+        play_now(session, body.genre_id, body.youtube_video_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    notify_radio(build_now(session, utcnow()).model_dump())
+    return {"status": "ok"}
+
+
+@router.post("/playback/next", dependencies=[Depends(require_admin)])
+def playback_next(body: GenreRefIn, session: Session = Depends(get_session)) -> dict:
+    if session.get(Genre, body.genre_id) is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    try:
+        skip(session, body.genre_id, "next")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"status": "ok"}
+
+
+@router.post("/playback/prev", dependencies=[Depends(require_admin)])
+def playback_prev(body: GenreRefIn, session: Session = Depends(get_session)) -> dict:
+    if session.get(Genre, body.genre_id) is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    try:
+        skip(session, body.genre_id, "prev")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"status": "ok"}
+
+
+@router.post("/playback/auto", dependencies=[Depends(require_admin)])
+def playback_auto(session: Session = Depends(get_session)) -> dict:
+    set_auto(session)
+    return {"status": "ok"}
+
+
+@router.put("/genres/{genre_id}/order", dependencies=[Depends(require_admin)])
+def set_genre_order(
+    genre_id: int, body: OrderIn, session: Session = Depends(get_session)
+) -> dict:
+    if session.get(Genre, genre_id) is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    set_order(session, genre_id, body.video_ids)
+    return {"status": "ok"}

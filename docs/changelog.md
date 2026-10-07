@@ -3,6 +3,24 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-07 — Push manual playback to `/api/ws/radio` listeners
+
+- Added a dedicated `/api/ws/radio` WebSocket that tracks connected listeners,
+  plus a `notify_radio(payload)` helper that best-effort pushes a payload to
+  them from a sync endpoint via `asyncio.run_coroutine_threadsafe` (no-op when
+  no client has connected). `POST /api/admin/playback/play` now pushes the new
+  `build_now(...).model_dump()` snapshot so already-connected listeners switch
+  instantly and start at 0:00.
+- Files touched:
+  - `backend/app/routers/ws.py`
+  - `backend/app/routers/admin.py` (wire `play` only; next/prev/auto/order are
+    a later task)
+  - `backend/tests/test_ws.py` (tests)
+  - `docs/changelog.md` (docs)
+- **Container restart required: `docker compose up -d --build backend frontend`**
+- Verification: `python -m pytest tests/test_ws.py tests/test_now.py -q`
+  15/15 pass; full suite `python -m pytest -q` 171/171 pass.
+
 ## 2026-10-07 — Extract `build_now` helper from `/api/now`
 
 - Pure refactor: the inline `NowOut` construction previously inside the
