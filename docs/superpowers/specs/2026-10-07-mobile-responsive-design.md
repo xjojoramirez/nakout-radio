@@ -51,9 +51,8 @@ notched phones; several rules below depend on it.
 The existing `@media (max-width: 920px)` block stays. The existing cramped
 `@media (max-width: 560px)` block is replaced by a reorganized mobile tier:
 
-1. `@media (max-width: 920px)` (mostly existing): tablet/landscape tier —
-   playlists sidebar stacks, search input full width (existing), plus banner
-   spacing tweaks.
+1. `@media (max-width: 920px)` (existing, unchanged): tablet/landscape tier —
+   playlists sidebar stacks, search input goes full width.
 2. `@media (max-width: 600px)`: the main mobile tier — page scroll unlock, tap
    targets, stacking, safe-area padding.
 3. `@media (max-width: 380px)`: small-phone tier (iPhone-SE-class) — only
@@ -167,7 +166,7 @@ overkill for occasional use.)
 - `.channel-grid`: `repeat(auto-fill, minmax(190px, 1fr))` →
   `repeat(2, 1fr)` at ≤600px. At ≤380px:
   `repeat(auto-fill, minmax(150px, 1fr))` (2 cols at 375px, 1 col at 320px);
-  card title font-size slightly reduced.
+  `.channel-card .ch-title` font-size 0.85rem → 0.8rem.
 - `.channel-setup` stays max-width 480px centered.
 - Search input (`.panel-head input`) already full width at ≤920px; unchanged.
 
