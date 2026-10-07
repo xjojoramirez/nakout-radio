@@ -791,6 +791,71 @@ body.admin-fixed {
   gap: 10px;
 }
 
+/* ---------- Confirmation modal ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(20, 10, 4, 0.55);
+  backdrop-filter: blur(2px);
+  animation: modal-fade-in 0.15s ease;
+}
+
+.modal-card {
+  width: min(420px, 100%);
+  background: var(--cream-soft);
+  border: 2px solid var(--wood-edge);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 20px 22px;
+  animation: modal-pop-in 0.15s ease;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
+}
+
+.modal-message {
+  margin: 8px 0 18px;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-danger-solid {
+  background: var(--danger);
+  color: var(--cream);
+}
+
+.btn-danger-solid:hover:not(:disabled) {
+  background: #9c2d23;
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
 @media (max-width: 920px) {
   .playlists-layout {
     grid-template-columns: 1fr;
@@ -1094,8 +1159,59 @@ body.admin-fixed {
 
 .time-pair {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
+}
+
+/* Schedule slot editor: inline vertical card */
+
+.genre-admin-list li.slot-editing {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  border-color: var(--amber-strong);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.genre-admin-list li.slot-editing .days {
+  margin: 0;
+}
+
+.genre-admin-list li.slot-editing .field {
+  flex: none;
+  min-width: 0;
+}
+
+.slot-edit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.edit-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--amber-soft);
+  color: var(--amber-strong);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.slot-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.genre-admin-list li.slot-editing .slot-form-actions {
+  margin-top: 0;
 }
 
 /* ---------- Mobile: phones (≤600px) ---------- */
@@ -1255,13 +1371,15 @@ body.admin-fixed {
   }
 
   .pl-actions,
-  .row-actions {
+  .row-actions,
+  .slot-form-actions {
     width: 100%;
     margin-left: 0;
   }
 
   .pl-actions .btn,
-  .row-actions .btn {
+  .row-actions .btn,
+  .slot-form-actions .btn {
     flex: 1;
   }
 
@@ -1350,6 +1468,11 @@ body.admin-fixed {
     animation: none;
   }
 
+  .modal-overlay,
+  .modal-card {
+    animation: none;
+  }
+
   .btn,
   .controls button,
   .genre-list button,
@@ -1429,6 +1552,15 @@ body.admin-fixed {
   border-radius: 999px;
   background: var(--ink);
   color: var(--cream);
+}
+
+.on-air-dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #ff9b82, var(--danger) 68%);
+  box-shadow: 0 0 10px rgba(179, 55, 44, 0.75);
 }
 
 .art.small {
