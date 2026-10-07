@@ -1,7 +1,12 @@
 import jwt
 from datetime import datetime, timedelta, timezone
 
-from app.auth import create_session_token, verify_password, verify_session_token
+from app.auth import (
+    create_session_token,
+    decode_session_token,
+    verify_password,
+    verify_session_token,
+)
 
 
 def test_verify_password():
@@ -12,6 +17,20 @@ def test_verify_password():
 def test_session_token_roundtrip():
     token = create_session_token("secret-key")
     assert verify_session_token(token, "secret-key") is True
+
+
+def test_session_token_has_unique_jti():
+    first = decode_session_token(create_session_token("secret-key"), "secret-key")
+    second = decode_session_token(create_session_token("secret-key"), "secret-key")
+    assert first is not None and second is not None
+    assert first["sub"] == "admin"
+    assert first["jti"] and second["jti"]
+    assert first["jti"] != second["jti"]
+
+
+def test_decode_rejects_wrong_key():
+    token = create_session_token("secret-key")
+    assert decode_session_token(token, "other-key") is None
 
 
 def test_session_token_rejects_tampering():

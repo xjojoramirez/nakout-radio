@@ -1,4 +1,6 @@
+import pytest
 from fastapi.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
 
 from app.main import create_app
 
@@ -9,6 +11,33 @@ def test_listener_count_increments_and_decrements():
         assert ws.receive_json() == {"count": 1}
     with client.websocket_connect("/api/ws/listeners") as ws:
         assert ws.receive_json() == {"count": 1}
+
+
+def test_listener_connection_cap(monkeypatch):
+    from app.routers import ws
+
+    monkeypatch.setattr(ws, "MAX_LISTENERS", 1)
+    ws._connections.clear()
+    client = TestClient(create_app())
+    with client.websocket_connect("/api/ws/listeners") as first:
+        assert first.receive_json() == {"count": 1}
+        with pytest.raises(WebSocketDisconnect):
+            with client.websocket_connect("/api/ws/listeners"):
+                pass
+    ws._connections.clear()
+
+
+def test_radio_connection_cap(monkeypatch):
+    from app.routers import ws
+
+    monkeypatch.setattr(ws, "MAX_RADIO_CLIENTS", 1)
+    ws._radio_clients.clear()
+    client = TestClient(create_app())
+    with client.websocket_connect("/api/ws/radio"):
+        with pytest.raises(WebSocketDisconnect):
+            with client.websocket_connect("/api/ws/radio"):
+                pass
+    ws._radio_clients.clear()
 
 
 def test_two_listeners_receive_count_then_decrement():

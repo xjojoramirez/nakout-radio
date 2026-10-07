@@ -3,6 +3,82 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-07 — Security hardening: revocable sessions, real client IP, WS caps, CSP
+
+- Follow-up to the earlier high-severity fixes, covering the medium findings.
+- **Revocable sessions:** session JWTs now carry `iat` and a unique `jti`
+  (`app/auth.py`). `POST /api/admin/logout` records the token's `jti` in a new
+  `revoked_session` table, and `require_admin` rejects any token whose `jti` is
+  revoked — so a leaked token can no longer be replayed after logout even
+  though it has not expired. Expired revocation rows are pruned on each logout.
+  Added model `RevokedSession` and Alembic migration `e5f6a7b8c9d0`.
+- **Real client IP for rate limiting:** uvicorn is started with
+  `--proxy-headers --forwarded-allow-ips="10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"`
+  (`backend/entrypoint.sh`). Trusting the Docker private ranges (not `"*"`)
+  makes uvicorn pick the *last untrusted* `X-Forwarded-For` entry, so a
+  spoofed client header cannot evade the login lockout and cannot lock the real
+  admin out.
+- **WebSocket caps:** `/api/ws/listeners` and `/api/ws/radio` now close new
+  connections with code 1013 once `MAX_LISTENERS` (200) or `MAX_RADIO_CLIENTS`
+  (500) is reached, preventing unbounded-connection memory DoS.
+- **Security headers:** `Caddyfile` now adds `Content-Security-Policy` (scoped
+  to self plus the YouTube IFrame API, Google Fonts and thumbnail hosts),
+  `Permissions-Policy`, and extends HSTS with `includeSubDomains`; the `Server`
+  header is stripped. `X-Forwarded-For` is left to Caddy's default, which was
+  verified to pass only the real client IP.
+- Files touched:
+  - `backend/app/auth.py`, `backend/app/models.py`,
+    `backend/app/routers/admin.py`, `backend/app/routers/ws.py`,
+    `backend/entrypoint.sh`
+  - `backend/alembic/versions/e5f6a7b8c9d0_add_revoked_session.py` (new)
+  - `backend/tests/test_auth.py`, `test_admin.py`, `test_ws.py` (tests)
+  - `Caddyfile`
+  - `docs/changelog.md` (docs)
+- **Container restart required:**
+  `docker compose up -d --build backend` and
+  `docker compose up -d --force-recreate caddy` (Caddyfile is bind-mounted, so
+  it needs a recreate to reload). Frontend untouched.
+- Verification:
+  - `python -m pytest` 201 passed (5 new: unique `jti`, wrong-key decode,
+    server-side logout revocation, listener/radio connection caps).
+  - `alembic upgrade head` applied cleanly to a fresh SQLite DB (creates
+    `revokedsession` + index).
+  - `caddy validate` → "Valid configuration".
+  - Live smoke test via Caddy: `login` 200, `session` 200, `logout` 200;
+    response carries CSP/Permissions-Policy/HSTS headers; a spoofed
+    `X-Forwarded-For: 9.9.9.9` is ignored (backend logs the real client IP).
+
+## 2026-10-07 — Security hardening: loopback ports, login lockout, rotated secrets
+
+- Fixed three high-severity security findings:
+  1. The `backend` (`8011:8000`) and `frontend` (`8012:80`) host port mappings
+     were bound to all interfaces, exposing the API over plain HTTP and
+     bypassing Caddy's TLS and security headers. Both are now bound to
+     loopback (`127.0.0.1:8011:8000`, `127.0.0.1:8012:80`); only Caddy
+     (`8010:443`) remains publicly reachable.
+  2. `POST /api/admin/login` had no brute-force protection. Added an in-memory
+     per-client lockout (`app/ratelimit.py`): 5 failed attempts within 15
+     minutes locks that client out (HTTP 429) until the window expires; a
+     successful login clears the counter. The check runs before password
+     verification, so a locked-out client cannot retry with the correct
+     password.
+  3. The `SECRET_KEY` (JWT/HMAC signing) and `ADMIN_PASSWORD` in
+     `backend/.env` were weak, human-readable passphrases. Both were replaced
+     with 32-byte and 18-byte cryptographically random values. The
+     `YT_API_KEY` still needs to be rotated manually in the Google Cloud
+     Console.
+- Files touched:
+  - `docker-compose.yml`
+  - `backend/app/ratelimit.py` (new), `backend/app/routers/admin.py`
+  - `backend/tests/conftest.py`, `backend/tests/test_admin.py` (tests)
+  - `backend/.env` (untracked; secrets rotated)
+  - `docs/changelog.md` (docs)
+- **Container restart required:**
+  `docker compose up -d --build backend frontend` (backend rebuild for the
+  lockout code, frontend recreate for the new port binding).
+- Verification: `python -m pytest` 196 passed (up from 194; two new login
+  lockout tests). Frontend untouched.
+
 ## 2026-10-07 — Reorder admin schedule panel
 
 - The admin Schedule panel now shows the "Add schedule slot" form above the

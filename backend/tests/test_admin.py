@@ -38,6 +38,56 @@ def test_login_rejects_bad_password(tmp_path):
     assert resp.status_code == 401
 
 
+def test_login_locks_out_after_repeated_failures(tmp_path):
+    client, _ = _client(tmp_path)
+    for _ in range(5):
+        assert (
+            client.post("/api/admin/login", json={"password": "nope"}).status_code
+            == 401
+        )
+    assert (
+        client.post("/api/admin/login", json={"password": "nope"}).status_code == 429
+    )
+    assert (
+        client.post("/api/admin/login", json={"password": "test-pass"}).status_code
+        == 429
+    )
+
+
+def test_login_success_resets_failure_counter(tmp_path):
+    client, _ = _client(tmp_path)
+    for _ in range(4):
+        assert (
+            client.post("/api/admin/login", json={"password": "nope"}).status_code
+            == 401
+        )
+    assert (
+        client.post("/api/admin/login", json={"password": "test-pass"}).status_code
+        == 200
+    )
+    for _ in range(4):
+        assert (
+            client.post("/api/admin/login", json={"password": "nope"}).status_code
+            == 401
+        )
+    assert (
+        client.post("/api/admin/login", json={"password": "test-pass"}).status_code
+        == 200
+    )
+
+
+def test_logout_revokes_session_server_side(tmp_path):
+    client, _ = _client(tmp_path)
+    resp = client.post("/api/admin/login", json={"password": "test-pass"})
+    token = resp.cookies["nakout_session"]
+    assert client.get("/api/admin/session").status_code == 200
+    client.post("/api/admin/logout")
+    reused = client.get(
+        "/api/admin/session", headers={"Cookie": f"nakout_session={token}"}
+    )
+    assert reused.status_code == 401
+
+
 def test_create_genre_requires_auth(tmp_path):
     client, _ = _client(tmp_path)
     resp = client.post("/api/admin/genres", json={"name": "Chill", "slug": "chill"})
