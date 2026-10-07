@@ -1,0 +1,19 @@
+{$DOMAIN} {
+	encode gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		X-Frame-Options DENY
+		Strict-Transport-Security "max-age=31536000"
+	}
+
+	@backend path /api/* /api
+	handle @backend {
+		reverse_proxy backend:8000
+	}
+
+	handle {
+		reverse_proxy frontend:80
+	}
+}

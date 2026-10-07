@@ -123,6 +123,47 @@ export function SchedulePanel({ genres, onNotice, onError }: Props) {
 
   return (
     <section className="admin-panel" aria-label="Schedule">
+      <h2>Add schedule slot</h2>
+      <GenreSelect
+        label="Slot genre"
+        genres={genres}
+        value={genre}
+        onChange={setGenre}
+      />
+      <div className="days">
+        {DAY_LABELS.map((label, i) => (
+          <button
+            type="button"
+            key={label}
+            className={days.includes(i) ? "active" : ""}
+            aria-pressed={days.includes(i)}
+            onClick={() => toggleDay(i)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="time-pair">
+        <label className="field">
+          Start
+          <input
+            type="time"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+          />
+        </label>
+      </div>
+      <div className="slot-form-actions">
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={addSlot}
+          disabled={!genre || days.length === 0}
+        >
+          Add slot
+        </button>
+      </div>
+
       <h2>Schedule slots</h2>
 
       {slotsError && (
@@ -222,47 +263,6 @@ export function SchedulePanel({ genres, onNotice, onError }: Props) {
           ),
         )}
       </ul>
-
-      <h2>Add schedule slot</h2>
-      <GenreSelect
-        label="Slot genre"
-        genres={genres}
-        value={genre}
-        onChange={setGenre}
-      />
-      <div className="days">
-        {DAY_LABELS.map((label, i) => (
-          <button
-            type="button"
-            key={label}
-            className={days.includes(i) ? "active" : ""}
-            aria-pressed={days.includes(i)}
-            onClick={() => toggleDay(i)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <div className="time-pair">
-        <label className="field">
-          Start
-          <input
-            type="time"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-          />
-        </label>
-      </div>
-      <div className="slot-form-actions">
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={addSlot}
-          disabled={!genre || days.length === 0}
-        >
-          Add slot
-        </button>
-      </div>
 
       {pendingDelete && (
         <ConfirmDialog
