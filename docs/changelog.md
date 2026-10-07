@@ -3,37 +3,32 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
-## 2026-10-07 — Push manual playback to `/api/ws/radio` listeners
+## 2026-10-07 — Instant manual playback on the radio page
 
-- Added a dedicated `/api/ws/radio` WebSocket that tracks connected listeners,
-  plus a `notify_radio(payload)` helper that best-effort pushes a payload to
-  them from a sync endpoint via `asyncio.run_coroutine_threadsafe` (no-op when
-  no client has connected). `POST /api/admin/playback/play` now pushes the new
-  `build_now(...).model_dump()` snapshot so already-connected listeners switch
-  instantly and start at 0:00.
+- Starting a track from the admin Now Playing panel (Play / Next / Prev / Auto /
+  queue reorder) now reaches already-connected listeners over a new
+  `/api/ws/radio` WebSocket, so the radio switches immediately instead of
+  waiting up to 5s for the next poll. A manually started track begins at 0:00
+  for connected listeners. The 5s poll remains as a fallback, and a pushed
+  frame can no longer be overwritten by a stale in-flight poll. New visitors
+  still join at the live offset.
+- Backend: extracted `build_now(session, ts)` from `/api/now` (`now.py`), added
+  the `/api/ws/radio` endpoint plus a best-effort `notify_radio(payload)` push
+  helper (`ws.py`), and wired every playback mutation (`play`, `next`, `prev`,
+  `auto`, `PUT /genres/{id}/order`) to push the new snapshot (`admin.py`).
+- Frontend: `useBroadcast` subscribes to `/api/ws/radio` (reconnect/backoff) and
+  applies pushed frames instantly while keeping the 5s poll.
 - Files touched:
-  - `backend/app/routers/ws.py`
-  - `backend/app/routers/admin.py` (wire `play` only; next/prev/auto/order are
-    a later task)
-  - `backend/tests/test_ws.py` (tests)
-  - `docs/changelog.md` (docs)
+  - `backend/app/routers/now.py`, `backend/app/routers/ws.py`,
+    `backend/app/routers/admin.py`
+  - `backend/tests/test_now.py`, `backend/tests/test_ws.py` (tests)
+  - `frontend/src/hooks/useBroadcast.ts`, `frontend/src/test/setup.ts`
+  - `frontend/src/hooks/useBroadcast.dom.test.ts` (tests)
+  - `docs/changelog.md`,
+    `docs/superpowers/specs/2026-10-07-instant-manual-play-design.md` (docs)
 - **Container restart required: `docker compose up -d --build backend frontend`**
-- Verification: `python -m pytest tests/test_ws.py tests/test_now.py -q`
-  15/15 pass; full suite `python -m pytest -q` 171/171 pass.
-
-## 2026-10-07 — Extract `build_now` helper from `/api/now`
-
-- Pure refactor: the inline `NowOut` construction previously inside the
-  `now()` route handler was extracted into a reusable
-  `build_now(session, ts) -> NowOut` function so a later task can reuse the
-  exact same payload for a WebSocket push. No behavior change; output is
-  identical.
-- Files touched:
-  - `backend/app/routers/now.py`
-  - `backend/tests/test_now.py` (test)
-  - `docs/changelog.md` (docs)
-- **Container restart required: `docker compose up -d --build backend`**
-- Verification: `python -m pytest tests/test_now.py -q` 11/11 pass.
+- Verification: `python -m pytest -q` 172/172 pass; `npm run typecheck` pass;
+  `npm test` 101/101 pass.
 
 ## 2026-10-07 — Strip YouTube " - Topic" suffix from artist names
 
