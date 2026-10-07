@@ -77,6 +77,10 @@ def test_station_to_genre_migration_preserves_data(tmp_path):
     assert cur.execute("SELECT name FROM genre WHERE id = 1").fetchone()[0] == "Morning"
     assert cur.execute("SELECT genre_id FROM playlist WHERE id = 1").fetchone()[0] == 1
     assert cur.execute("SELECT genre_id FROM scheduleslot WHERE id = 1").fetchone()[0] == 1
+    assert (
+        cur.execute("SELECT start_time FROM scheduleslot WHERE id = 1").fetchone()[0]
+        == "00:00"
+    )
 
     keys = {r[0] for r in cur.execute("SELECT key FROM setting")}
     assert "genre_order:1" in keys
@@ -100,4 +104,21 @@ def test_station_to_genre_migration_preserves_data(tmp_path):
 
     columns = {r[1] for r in cur.execute("PRAGMA table_info(scheduleslot)")}
     assert "end_time" not in columns
+    con.close()
+
+
+def test_drop_end_time_migration_downgrade_backfills(tmp_path):
+    db_path = tmp_path / "mig_downgrade.db"
+    db_url = f"sqlite:///{db_path}"
+    _alembic(db_url, "upgrade", "b2f4c1a9d3e7")
+    _seed_legacy(db_path)
+    _alembic(db_url, "upgrade", "head")
+    _alembic(db_url, "downgrade", "c1a2b3c4d5e6")
+
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    columns = {r[1] for r in cur.execute("PRAGMA table_info(scheduleslot)")}
+    assert "end_time" in columns
+    end = cur.execute("SELECT end_time FROM scheduleslot WHERE id = 1").fetchone()[0]
+    assert end == "00:00"
     con.close()
