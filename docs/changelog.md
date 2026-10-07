@@ -3,6 +3,92 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-07 — Start-only schedule slots
+
+- Schedule slots are now a genre plus a start time (and days of the week); the
+  per-slot end time is gone. At any moment the active genre is the one whose
+  most recent scheduled start has passed, so a genre plays until the next
+  scheduled start, wrapping across midnight and across the week. The default
+  genre is used only when the schedule is empty or a scheduled genre has no
+  cached tracks.
+- Backend: rewrote `app/scheduler.py` to the stateless "most recent start wins"
+  resolver (removing the old `matches()` overnight logic), wired
+  `app/broadcast.py` to it, and dropped `end_time` from `ScheduleSlot` (model,
+  Alembic migration `d4e5f6a7b8c9`, and the admin `SlotIn`/`SlotOut`/
+  `SlotUpdate` schemas). Creating or editing a slot whose start collides with
+  another slot on a shared day now returns HTTP 409; `start_time` is normalized
+  to `HH:MM`, `days_of_week` must be non-empty, and update ignores explicit
+  nulls.
+- Frontend: removed the End field from the admin Schedule form, updated the
+  `ScheduleSlot` type and API client, and the slot list now reads `from 16:07`.
+- Files touched:
+  - `backend/app/scheduler.py`, `backend/app/broadcast.py`,
+    `backend/app/models.py`, `backend/app/schemas.py`,
+    `backend/app/routers/admin.py`
+  - `backend/alembic/versions/d4e5f6a7b8c9_drop_schedule_end_time.py`
+  - `backend/tests/test_scheduler.py`, `test_admin.py`, `test_models.py`,
+    `test_now.py`, `test_genres.py`, `test_migration_station_to_genre.py`,
+    `conftest.py` (tests)
+  - `frontend/src/types.ts`, `frontend/src/api/client.ts`,
+    `frontend/src/components/admin/SchedulePanel.tsx`,
+    `frontend/src/styles/vintage.css`
+  - `frontend/src/pages/AdminPage.dom.test.tsx` (tests)
+  - `docs/superpowers/specs/2026-10-07-schedule-start-time-only-design.md`,
+    `docs/superpowers/plans/2026-10-07-schedule-start-time-only.md` (docs)
+  - `docs/changelog.md` (docs)
+- **Container restart required:
+  `docker compose up -d --build backend frontend`**
+- Verification: `python -m pytest` 194 passed; `npm test` 105 passed;
+  `npm run typecheck` pass.
+
+## 2026-10-07 — Schedule slot editor UI overhaul
+
+- The inline "edit slot" form used to render inside a list row styled as a
+  single horizontal flex line, cramming the genre select, day pills, time
+  inputs, and Save/Cancel buttons into one squished row; the Add form's button
+  stretched awkwardly as a grid column, and times used plain text inputs.
+- The editor is now a distinct stacked card (`li.slot-editing`): "Editing"
+  badge with the slot's genre name on top, then genre select, day pills, a
+  side-by-side Start/End pair, and a right-aligned Save/Cancel actions row,
+  with an amber border highlight while editing. The Add form mirrors the same
+  layout and shares the actions row. Start/End use `type="time"` inputs,
+  matching the backend's `HH:MM` format and giving native time pickers on
+  mobile. Day summaries now collapse to "Every day" / "Weekdays" /
+  "Weekends". Mobile: actions become full-width buttons (extended the ≤600px
+  media query to the new class).
+- Files touched:
+  - `frontend/src/components/admin/SchedulePanel.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `docs/superpowers/specs/2026-10-07-schedule-slot-editor-ui-design.md` (docs)
+  - `docs/changelog.md` (docs)
+- **Container restart required: `docker compose up -d --build frontend`**
+- Verification: `npm test` 104/104 pass; `npm run typecheck` pass (no lint
+  script configured).
+
+## 2026-10-07 — Schedule slot list + full CRUD in admin
+
+- The admin Schedule tab previously only offered an "Add slot" form with no way
+  to see, edit, or delete existing slots. It now lists all schedule slots
+  (genre, days, time range) and supports inline editing and confirmed deletion.
+- Backend: added `GET /api/admin/slots` (ordered by id, denormalized
+  `genre_name`), `PUT /api/admin/slots/{id}` (partial update, validates genre
+  and times), and `DELETE /api/admin/slots/{id}`; `POST /api/admin/slots` now
+  returns a `SlotOut`. New `SlotOut`/`SlotUpdate` schemas. No migration needed
+  (the `scheduleslot` table already exists).
+- Frontend: added `ScheduleSlot` type, `listSlots`/`updateSlot`/`deleteSlot`
+  client methods, and rewrote `SchedulePanel.tsx` to load and render the list
+  with Edit/Delete (`ConfirmDialog`), reusing the genre/playlist CRUD patterns.
+- Files touched:
+  - `backend/app/schemas.py`, `backend/app/routers/admin.py`
+  - `backend/tests/test_admin.py` (tests)
+  - `frontend/src/types.ts`, `frontend/src/api/client.ts`,
+    `frontend/src/components/admin/SchedulePanel.tsx`
+  - `frontend/src/pages/AdminPage.dom.test.tsx` (tests)
+  - `docs/changelog.md` (docs)
+- **Container restart required: `docker compose up -d --build backend frontend`**
+- Verification: `python -m pytest -q` 185/185 pass; `npm run typecheck` pass;
+  `npm test` 104/104 pass.
+
 ## 2026-10-07 — Instant manual playback on the radio page
 
 - Starting a track from the admin Now Playing panel (Play / Next / Prev / Auto /
