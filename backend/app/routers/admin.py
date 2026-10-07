@@ -2,7 +2,7 @@ import json
 import logging
 import re
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timezone
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
@@ -10,11 +10,14 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func
 from sqlmodel import Session, col, delete, select, update
 
+from app import ratelimit
 from app.auth import (
     COOKIE_NAME,
     create_session_token,
+    decode_session_token,
+    is_session_revoked,
+    revoke_session,
     verify_password,
-    verify_session_token,
 )
 from app.broadcast import play_now, set_auto, set_order, skip, utcnow
 from app.config import get_settings
@@ -78,10 +81,14 @@ class GenreUpdate(BaseModel):
     sort_order: int | None = None
 
 
-def require_admin(request: Request) -> None:
+def require_admin(
+    request: Request, session: Session = Depends(get_session)
+) -> None:
     settings = get_settings()
     token = request.cookies.get(COOKIE_NAME, "")
-    if not verify_session_token(token, settings.secret_key):
+    payload = decode_session_token(token, settings.secret_key)
+    jti = payload.get("jti") if payload else None
+    if not jti or is_session_revoked(session, jti):
         raise HTTPException(status_code=401, detail="not authenticated")
 
 
@@ -117,10 +124,18 @@ def _build_fetch() -> Callable[[str], list[TrackData]]:
 
 
 @router.post("/login")
-def login(body: LoginIn, response: Response) -> dict[str, str]:
+def login(body: LoginIn, request: Request, response: Response) -> dict[str, str]:
     settings = get_settings()
+    client_key = request.client.host if request.client else "unknown"
+    if ratelimit.is_locked(client_key):
+        raise HTTPException(
+            status_code=429,
+            detail="too many failed login attempts, try again later",
+        )
     if not verify_password(body.password, settings.admin_password):
+        ratelimit.record_failure(client_key)
         raise HTTPException(status_code=401, detail="invalid password")
+    ratelimit.reset(client_key)
     token = create_session_token(settings.secret_key)
     response.set_cookie(
         COOKIE_NAME,
@@ -134,8 +149,21 @@ def login(body: LoginIn, response: Response) -> dict[str, str]:
 
 
 @router.post("/logout")
-def logout(response: Response) -> dict[str, str]:
+def logout(
+    request: Request,
+    response: Response,
+    session: Session = Depends(get_session),
+) -> dict[str, str]:
     settings = get_settings()
+    payload = decode_session_token(
+        request.cookies.get(COOKIE_NAME, ""), settings.secret_key
+    )
+    if payload is not None and payload.get("jti"):
+        revoke_session(
+            session,
+            payload["jti"],
+            datetime.fromtimestamp(payload["exp"], tz=timezone.utc),
+        )
     response.delete_cookie(
         COOKIE_NAME,
         httponly=True,

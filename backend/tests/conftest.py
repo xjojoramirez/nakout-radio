@@ -18,3 +18,12 @@ def client():
     from app.main import create_app
 
     return TestClient(create_app())
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limit():
+    from app import ratelimit
+
+    ratelimit.clear()
+    yield
+    ratelimit.clear()

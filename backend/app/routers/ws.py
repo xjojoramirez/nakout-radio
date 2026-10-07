@@ -4,6 +4,9 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 router = APIRouter(prefix="/api/ws", tags=["ws"])
 
+MAX_LISTENERS = 200
+MAX_RADIO_CLIENTS = 500
+
 _connections: set[WebSocket] = set()
 _radio_clients: set[WebSocket] = set()
 _radio_loop: asyncio.AbstractEventLoop | None = None
@@ -20,6 +23,9 @@ async def _broadcast() -> None:
 
 @router.websocket("/listeners")
 async def listeners(websocket: WebSocket) -> None:
+    if len(_connections) >= MAX_LISTENERS:
+        await websocket.close(code=1013)
+        return
     await websocket.accept()
     _connections.add(websocket)
     await _broadcast()
@@ -58,6 +64,9 @@ def notify_radio(payload: dict) -> None:
 @router.websocket("/radio")
 async def radio(websocket: WebSocket) -> None:
     global _radio_loop
+    if len(_radio_clients) >= MAX_RADIO_CLIENTS:
+        await websocket.close(code=1013)
+        return
     await websocket.accept()
     _radio_loop = asyncio.get_running_loop()
     _radio_clients.add(websocket)
