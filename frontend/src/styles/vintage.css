@@ -804,6 +804,17 @@ body.admin-fixed {
     width: 100%;
     flex: 1;
   }
+
+  .playlists-main {
+    min-width: 0;
+  }
+
+  .added-playlists .pl-id {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 /* Tabs */
@@ -1241,13 +1252,6 @@ body.admin-fixed {
 
   .added-playlists .pl-main {
     min-width: 0;
-  }
-
-  .added-playlists .pl-id {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .pl-actions,
