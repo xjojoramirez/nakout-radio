@@ -1222,6 +1222,48 @@ body.admin-fixed {
   .days button {
     min-height: 44px;
   }
+
+  /* List rows, queue, playlist browser */
+  .added-playlists li,
+  .genre-admin-list li {
+    flex-wrap: wrap;
+  }
+
+  .added-playlists .pl-main {
+    min-width: 0;
+  }
+
+  .pl-actions,
+  .row-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .pl-actions .btn,
+  .row-actions .btn {
+    flex: 1;
+  }
+
+  .queue-row {
+    gap: 8px;
+  }
+
+  .drag-handle {
+    min-width: 32px;
+    text-align: center;
+  }
+
+  .queue-title,
+  .queue-artist {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .channel-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
