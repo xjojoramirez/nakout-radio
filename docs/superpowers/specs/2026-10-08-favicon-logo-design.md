@@ -37,7 +37,7 @@ One hand-authored SVG vintage tabletop radio, produced at two detail levels:
 | `frontend/public/favicon-16.png` | 16px raster fallback |
 | `frontend/public/favicon-32.png` | 32px raster fallback |
 | `frontend/public/favicon-48.png` | 48px raster fallback |
-| `frontend/public/apple-touch-icon.png` | 180px, mark on a wood-brown rounded square |
+| `frontend/public/apple-touch-icon.png` | 180px, mark on a full-bleed wood-brown square (iOS applies its own corner mask) |
 | `frontend/public/logo.svg` | detailed big logo |
 | `frontend/public/logo-512.png` | 512px raster of the big logo |
 | `frontend/scripts/render-icons.mjs` | one-time rasterizer script |
