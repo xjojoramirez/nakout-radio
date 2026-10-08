@@ -3,6 +3,24 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-08 — Icon-only mute/unmute button
+
+- Replaced the text mute control (`UNMUTE`/`MUTE`) with a compact 44x44px
+  circular icon button so it no longer overlaps the volume slider on mobile.
+  The inline SVG icon reflects state (slashed speaker while muted, waves
+  while audible); `aria-label`/`title` reflect the action ("Unmute"/"Mute").
+  New `.mute-btn` styles in `vintage.css`; `min-width: 44px` overrides the
+  mobile `min-width: 88px` on `.controls button`.
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (docs)
+- **Container restart required (frontend source changed):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` all passed; `npm run typecheck` clean.
+
 ## 2026-10-08 — Basic SEO: meta/Open Graph, robots.txt, sitemap.xml, JSON-LD
 
 - Added discoverability metadata to the frontend. `index.html` now carries a

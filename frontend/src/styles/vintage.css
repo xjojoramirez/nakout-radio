@@ -484,6 +484,27 @@ h3 {
   background: var(--amber-strong);
 }
 
+.controls button.mute-btn {
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--amber);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.controls button.mute-btn:hover {
+  background: var(--amber-strong);
+}
+
+.controls button.mute-btn svg {
+  pointer-events: none;
+}
+
 .genre-error {
   color: #ffd9a0;
   margin: 0 0 12px;
