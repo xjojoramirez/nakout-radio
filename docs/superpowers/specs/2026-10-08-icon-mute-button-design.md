@@ -21,9 +21,11 @@ screen sizes and removes the mobile overlap.
 
 Replace the text button with an icon button:
 
-- Two inline SVG icons, rendered conditionally:
-  - **Speaker with sound waves** — shown when muted (action available: unmute).
-  - **Speaker with diagonal slash** — shown when unmuted (action available: mute).
+- Two inline SVG icons, rendered conditionally. The icon reflects the
+  current state (standard convention used by YouTube/Spotify):
+  - **Speaker with sound waves** — shown when unmuted (audio is playing).
+  - **Speaker with diagonal slash** — shown when muted (universal muted
+    indicator).
 - Same `onClick={player.toggleMute}` handler.
 - Styled with a new `.mute-btn` class.
 
