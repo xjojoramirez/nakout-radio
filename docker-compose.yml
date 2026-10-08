@@ -4,11 +4,19 @@ x-logging: &default-logging
     max-size: "10m"
     max-file: "3"
 
+x-hardening: &hardening
+  security_opt:
+    - no-new-privileges:true
+  pids_limit: 256
+
 services:
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
     logging: *default-logging
+    <<: *hardening
+    mem_limit: 256m
+    cpus: 0.5
     ports:
       - "80:80"
       - "443:443"
@@ -28,6 +36,9 @@ services:
     build: ./backend
     restart: unless-stopped
     logging: *default-logging
+    <<: *hardening
+    mem_limit: 512m
+    cpus: 1.0
     ports:
       - "127.0.0.1:8011:8000"
     env_file: ./backend/.env
@@ -52,6 +63,9 @@ services:
     build: ./frontend
     restart: unless-stopped
     logging: *default-logging
+    <<: *hardening
+    mem_limit: 256m
+    cpus: 0.5
     ports:
       - "127.0.0.1:8012:80"
     healthcheck:

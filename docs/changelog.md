@@ -3,6 +3,30 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-08 — Harden containers and cap request size
+
+- Added a shared `x-hardening` anchor applied to every service:
+  `security_opt: [no-new-privileges:true]` and `pids_limit: 256`. This prevents
+  privilege escalation via setuid binaries and bounds the process count per
+  container.
+- Added per-service resource limits so a runaway process or connection flood
+  cannot exhaust the host: `caddy` 256m / 0.5 CPU, `backend` 512m / 1.0 CPU,
+  `frontend` 256m / 0.5 CPU.
+- Added a `request_body { max_size 10MB }` directive to the `Caddyfile` to bound
+  request bodies at the edge.
+- Files touched:
+  - `docker-compose.yml`
+  - `Caddyfile`
+  - `docs/changelog.md` (docs)
+- **Container restart required (compose + proxy config changed):**
+  `docker compose up -d --build` (recreates all services with the new options).
+- Verification:
+  - `docker compose config` parses without error.
+  - After `up -d`, `docker compose ps` shows all services healthy and
+    `docker inspect` reports the new `HostConfig` limits
+    (`Memory`, `NanoCpus`, `PidsLimit`, `SecurityOpt`).
+  - `curl -sS https://<domain>/api/health` still returns `{"status":"ok"}`.
+
 ## 2026-10-08 — Publish Caddy on standard ports 80/443 for a public domain
 
 - Changed the `caddy` service port mapping from `8010:443` to `80:80` and
