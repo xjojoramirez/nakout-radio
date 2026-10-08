@@ -3,6 +3,92 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-08 — Admin Stop control takes the station off air
+
+- Added a **Stop** button to the admin Now Playing transport. Pressing it takes
+  the station off air for everyone: `/api/now` reports `source: "none"` and the
+  public homepage shows the offline screen, until an admin resumes.
+- Backend: new `broadcast.stop()` stores an empty *manual* `BroadcastState`
+  (`genre_id=None, track_ids=[], manual=True`). Because `advance()` routes
+  manual states to `_advance_manual()`, which returns immediately with no
+  tracks, the schedule/default is not re-resolved while stopped — so it stays
+  off air across requests and restarts. `POST /api/admin/playback/stop`
+  (admin-only) calls it and pushes the new state to radio WebSocket clients.
+  Play / Next / Prev build a manual state with tracks and Auto re-inits from the
+  schedule, so all existing resume paths still work.
+- Frontend: `api.playbackStop()`; Stop button enabled only while a track is on
+  air; Auto is now enabled when the source is `manual` **or** `none`, so it
+  resumes the schedule after a stop (still disabled while `schedule`/`default`).
+- No DB migration (state is stored in the existing `broadcast_state` Setting).
+- Files touched:
+  - `backend/app/broadcast.py`, `backend/app/routers/admin.py`
+  - `backend/tests/test_live_control.py`, `backend/tests/test_admin.py` (tests)
+  - `frontend/src/api/client.ts`
+  - `frontend/src/components/admin/NowPlayingPanel.tsx`
+  - `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx` (tests)
+  - `docs/changelog.md` (docs)
+- **Container restart required (both changed):**
+  `docker compose up -d --build backend frontend`, then hard-refresh the browser.
+- Verification:
+  - `python -m pytest` 205 passed (new: stop goes off air and stays, stop then
+    auto resumes, stop then play resumes, stop endpoint off-air/auto, stop
+    requires auth).
+  - `npm test` 109 passed (new: Stop calls the API and notifies; Stop disabled
+    when off air; Auto enabled after a stop).
+  - `npm run typecheck` clean; `npm run build` succeeds.
+
+## 2026-10-08 — Homepage offline screen when nobody is broadcasting
+
+- When the backend reports `source: "none"` (nobody playing / no scheduled
+  track), the homepage now shows a dedicated "Radio offline" screen with an
+  unlit power LED and a dimmed cabinet, instead of the empty now-playing panel
+  plus MUTE/volume controls.
+- `RadioPage.tsx` derives `offline = state != null && (state.source === "none"
+  || !state.track)`; while offline it renders the new `OfflineNotice` and hides
+  the now-playing block, VU meter, genre row, and controls. The header and the
+  hidden player stay mounted, so playback resumes automatically when a track
+  becomes available. Initial load (`state == null`) is unchanged.
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/components/OfflineNotice.tsx` (new)
+  - `frontend/src/styles/vintage.css`
+  - `frontend/src/pages/RadioPage.dom.test.tsx` (test)
+  - `docs/changelog.md` (docs)
+- **Container restart required:** `docker compose up -d --build frontend`, then
+  hard-refresh the browser (Ctrl+Shift+R).
+- Verification:
+  - `npm test` 106 passed (off-air RadioPage test now asserts the offline
+    screen renders and MUTE/volume controls are absent).
+  - `npm run typecheck` clean.
+  - `npm run build` succeeds.
+
+## 2026-10-08 — Fix blank homepage: guard YT player calls until ready
+
+- Fixed `TypeError: player.getCurrentTime/getPlayerState is not a function`
+  thrown while the YouTube player was still initializing. The IFrame API does
+  not attach `getCurrentTime`/`getPlayerState` in the constructor — they appear
+  only once the player is ready. The drift-sync effect and the 1s progress
+  interval called them unconditionally; the throw inside a React passive effect
+  unmounted the tree, leaving the homepage blank (and spamming the interval).
+- Added an `isPlayerReady` runtime guard and applied it before every player
+  method call (`useYouTubePlayer.ts`): the broadcast-sync effect, the volume
+  effect, and the interval now no-op until the API methods exist. The interval
+  also only reads progress when a track is present.
+- Hardened cleanup: `playerRef.current` is cleared before `player.destroy()`,
+  which is wrapped in try/catch, so a throwing destroy can no longer leave a
+  dangling ref or escape a React effect.
+- Files touched:
+  - `frontend/src/hooks/useYouTubePlayer.ts`
+  - `frontend/src/hooks/useYouTubePlayer.dom.test.ts` (new regression test)
+  - `docs/changelog.md` (docs)
+- **Container restart required:** `docker compose up -d --build frontend`, then
+  hard-refresh the browser (Ctrl+Shift+R).
+- Verification:
+  - `npm test` 106 passed (1 new: "does not call player methods before the
+    player is ready", which reproduces `getPlayerState is not a function`
+    before the fix).
+  - `npm run typecheck` clean.
+
 ## 2026-10-07 — Security hardening: revocable sessions, real client IP, WS caps, CSP
 
 - Follow-up to the earlier high-severity fixes, covering the medium findings.

@@ -325,6 +325,18 @@ def set_auto(session: Session, now: datetime | None = None) -> None:
         _save(session, state)
 
 
+def stop(session: Session, now: datetime | None = None) -> None:
+    """Take the station off air until an explicit play/skip/auto resumes it.
+
+    Stored as an empty *manual* state: ``advance`` routes manual states to
+    ``_advance_manual``, which returns immediately when there are no tracks, so
+    the schedule/default is not re-resolved while stopped.
+    """
+    now = now or utcnow()
+    with _lock:
+        _save(session, BroadcastState(None, [], [], 0, now, True))
+
+
 def set_order(
     session: Session,
     genre_id: int,

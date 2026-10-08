@@ -19,7 +19,7 @@ from app.auth import (
     revoke_session,
     verify_password,
 )
-from app.broadcast import play_now, set_auto, set_order, skip, utcnow
+from app.broadcast import play_now, set_auto, set_order, skip, stop, utcnow
 from app.config import get_settings
 from app.db import get_session
 from app.models import Playlist, ScheduleSlot, Setting, Genre, TrackCache
@@ -578,6 +578,13 @@ def playback_prev(body: GenreRefIn, session: Session = Depends(get_session)) -> 
 @router.post("/playback/auto", dependencies=[Depends(require_admin)])
 def playback_auto(session: Session = Depends(get_session)) -> dict:
     set_auto(session)
+    notify_radio(build_now(session, utcnow()).model_dump())
+    return {"status": "ok"}
+
+
+@router.post("/playback/stop", dependencies=[Depends(require_admin)])
+def playback_stop(session: Session = Depends(get_session)) -> dict:
+    stop(session)
     notify_radio(build_now(session, utcnow()).model_dump())
     return {"status": "ok"}
 

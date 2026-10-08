@@ -263,6 +263,40 @@ h3 {
   font-size: 0.85rem;
 }
 
+.radio-cabinet.offline {
+  filter: saturate(0.5) brightness(0.82);
+}
+
+.offline-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 18px 0;
+  padding: 48px 16px;
+  border-radius: var(--radius);
+  background: rgba(18, 11, 6, 0.55);
+  border: 1px solid rgba(244, 233, 212, 0.12);
+}
+
+.offline-text {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+.power-led {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #2a1a10;
+  border: 1px solid rgba(244, 233, 212, 0.15);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.85);
+}
+
 .now-playing .art {
   width: 96px;
   height: 96px;
