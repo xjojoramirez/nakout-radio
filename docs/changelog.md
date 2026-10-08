@@ -3,6 +3,23 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-08 — Publish Caddy on standard ports 80/443 for a public domain
+
+- Changed the `caddy` service port mapping from `8010:443` to `80:80` and
+  `443:443` so automatic HTTPS (Let's Encrypt HTTP-01 / TLS-ALPN challenges)
+  works for a real domain. Previously only container `443` was exposed on host
+  `8010`, which no public ACME challenge could reach.
+- Files touched:
+  - `docker-compose.yml`
+  - `docs/changelog.md` (docs)
+- **Container restart required (caddy + proxy ports changed):**
+  `docker compose up -d --build caddy` (recreates the container with the new
+  port bindings; DNS must point at the host and ports 80/443 must be open).
+- Verification:
+  - No code/tests changed; config-only. Confirm with `docker compose ps` that
+    `caddy` publishes `0.0.0.0:80->80/tcp` and `0.0.0.0:443->443/tcp`, then load
+    `https://<domain>` and check the certificate is publicly trusted.
+
 ## 2026-10-08 — Admin Stop control takes the station off air
 
 - Added a **Stop** button to the admin Now Playing transport. Pressing it takes
