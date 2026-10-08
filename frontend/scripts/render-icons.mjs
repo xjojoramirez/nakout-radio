@@ -15,7 +15,7 @@ function render(svg, width, outPath) {
 // Composites the favicon mark on a full-bleed wood background for iOS.
 // iOS applies its own corner mask, so the background must be full-bleed
 // (pre-rounded corners would leave black artifacts after masking).
-export function wrapAppleTouch(faviconSvg) {
+function wrapAppleTouch(faviconSvg) {
   const inner = faviconSvg
     .replace(/^[\s\S]*?<svg[^>]*>/, "")
     .replace(/<\/svg>\s*$/, "");
