@@ -3,6 +3,38 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-08 — Basic SEO: meta/Open Graph, robots.txt, sitemap.xml, JSON-LD
+
+- Added discoverability metadata to the frontend. `index.html` now carries a
+  descriptive `<title>`, `<meta name="description">`, `<meta name="robots">`,
+  and Open Graph / Twitter card tags (title, description, type, site name).
+- Added `frontend/vite.config.ts` `seo` plugin: at build time it injects
+  `<link rel="canonical">`, `<meta property="og:url">`, and a `RadioStation`
+  JSON-LD block into `dist/index.html`, and emits `robots.txt` (allows `/`,
+  disallows `/admin`, points at the sitemap) and `sitemap.xml` (single homepage
+  URL). All URLs derive from `VITE_SITE_URL`, defaulting to `http://localhost`.
+- Wired the site URL through the build: `frontend/Dockerfile` takes
+  `ARG VITE_SITE_URL` (default `http://localhost`) and `docker-compose.yml`
+  passes `VITE_SITE_URL: https://${DOMAIN}` for the `frontend` build, so
+  production canonical/sitemap URLs use the real domain.
+- Files touched:
+  - `frontend/index.html`
+  - `frontend/vite.config.ts`
+  - `frontend/Dockerfile`
+  - `docker-compose.yml`
+  - `docs/changelog.md` (docs)
+- **Container restart required (frontend source + build args changed):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification:
+  - `npm run typecheck` clean; `npm test` 109 passed.
+  - `VITE_SITE_URL=https://radio.example.com npm run build` emits
+    `dist/robots.txt` and `dist/sitemap.xml` and injects
+    `<link rel="canonical" href="https://radio.example.com/">`,
+    `og:url`, and the `RadioStation` JSON-LD.
+  - Build without the env var falls back to `http://localhost` (no literal
+    placeholder left in the output).
+
 ## 2026-10-08 — Harden containers and cap request size
 
 - Added a shared `x-hardening` anchor applied to every service:
