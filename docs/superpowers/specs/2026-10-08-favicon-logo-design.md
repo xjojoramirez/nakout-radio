@@ -48,13 +48,13 @@ One hand-authored SVG vintage tabletop radio, produced at two detail levels:
 - `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />`
 - `<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />`
 - `<link rel="apple-touch-icon" href="/apple-touch-icon.png" />`
-- `<meta property="og:image" content="/logo-512.png" />`
-- `<meta name="twitter:image" content="/logo-512.png" />`
+- `<meta property="og:image" content="<siteUrl>/logo-512.png" />`
+- `<meta name="twitter:image" content="<siteUrl>/logo-512.png" />`
 
-`og:image`/`twitter:image` use relative paths on purpose: the domain is only
-known at deploy time (root `.env` `DOMAIN`), and injecting it into the static
-bundle is out of scope. Some scrapers prefer absolute URLs; revisit if OG
-previews ever matter.
+`og:image`/`twitter:image` are injected at build time by the existing `seo`
+plugin in `frontend/vite.config.ts` (same mechanism as `canonical`/`og:url`),
+using `VITE_SITE_URL` (default `http://localhost`) so scrapers get absolute
+URLs. The JSON-LD `RadioStation` block gains a matching `logo` property.
 
 ## Tooling
 
