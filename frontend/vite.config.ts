@@ -7,6 +7,7 @@ const DESCRIPTION =
 
 function seo(siteUrl: string): Plugin {
   const canonical = `${siteUrl}/`;
+  const ogImage = `${siteUrl}/logo-512.png`;
 
   const robots = [
     "User-agent: *",
@@ -34,6 +35,7 @@ function seo(siteUrl: string): Plugin {
     "@type": "RadioStation",
     name: "Nakout Radio",
     url: canonical,
+    logo: ogImage,
     description: DESCRIPTION,
     broadcastDisplayName: "Nakout Radio",
   });
@@ -50,6 +52,16 @@ function seo(siteUrl: string): Plugin {
         {
           tag: "meta",
           attrs: { property: "og:url", content: canonical },
+          injectTo: "head",
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image", content: ogImage },
+          injectTo: "head",
+        },
+        {
+          tag: "meta",
+          attrs: { name: "twitter:image", content: ogImage },
           injectTo: "head",
         },
         {
