@@ -3,6 +3,33 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-08 — Favicon and logo set
+
+- Added a hand-authored vintage-radio logo in the site palette, at two detail
+  levels: a simplified `favicon.svg` (plus 16/32/48px PNG fallbacks and a
+  180px apple-touch icon) and a detailed `logo.svg`/`logo-512.png` for
+  standalone reuse. PNGs are generated from the SVG sources by
+  `npm run render:icons` (`frontend/scripts/render-icons.mjs`,
+  `@resvg/resvg-js` devDependency).
+- `index.html` now links the SVG + PNG favicons and apple-touch icon; the
+  `seo` build plugin injects absolute `og:image`/`twitter:image` tags and a
+  JSON-LD `logo` property pointing at `<VITE_SITE_URL>/logo-512.png`.
+- Files touched:
+  - `frontend/public/favicon.svg`, `frontend/public/logo.svg` (new)
+  - `frontend/public/favicon-16.png`, `-32.png`, `-48.png`,
+    `apple-touch-icon.png`, `logo-512.png` (new, generated)
+  - `frontend/scripts/render-icons.mjs` (new)
+  - `frontend/package.json`, `frontend/package-lock.json`
+  - `frontend/index.html`
+  - `frontend/vite.config.ts`
+  - `docs/changelog.md` (docs)
+- **Container restart required (frontend changed):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run typecheck` and `npm run build` clean; rendered PNG
+  dimensions confirmed (16/32/48, 180, 512); icon links and og:image tags
+  present in `dist/index.html`.
+
 ## 2026-10-08 — Icon-only mute/unmute button
 
 - Replaced the text mute control (`UNMUTE`/`MUTE`) with a compact 44x44px
