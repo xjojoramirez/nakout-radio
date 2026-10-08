@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- feet -->
+  <rect x="112" y="448" width="56" height="40" rx="12" fill="#241408"/>
+  <rect x="344" y="448" width="56" height="40" rx="12" fill="#241408"/>
+  <!-- cabinet -->
+  <path d="M 64 448 L 64 208 C 64 80 144 40 256 40 C 368 40 448 80 448 208 L 448 448 C 448 462 438 472 424 472 L 88 472 C 74 472 64 462 64 448 Z"
+        fill="#5b3a24" stroke="#2a1a10" stroke-width="10" stroke-linejoin="round"/>
+  <!-- bottom trim band -->
+  <rect x="74" y="368" width="364" height="72" rx="14" fill="#3b2417" opacity="0.45"/>
+  <!-- top wood highlight -->
+  <path d="M 96 224 C 96 108 168 68 256 68" fill="none" stroke="#6b4630" stroke-width="16" stroke-linecap="round"/>
+  <!-- speaker grille -->
+  <rect x="104" y="176" width="180" height="168" rx="18" fill="#f4e9d4" stroke="#2a1a10" stroke-width="8"/>
+  <g stroke="#85705a" stroke-width="10" stroke-linecap="round">
+    <line x1="136" y1="209" x2="252" y2="209"/>
+    <line x1="136" y1="235" x2="252" y2="235"/>
+    <line x1="136" y1="260" x2="252" y2="260"/>
+    <line x1="136" y1="285" x2="252" y2="285"/>
+    <line x1="136" y1="311" x2="252" y2="311"/>
+  </g>
+  <!-- dial window -->
+  <rect x="312" y="176" width="120" height="88" rx="14" fill="#f0a13c" stroke="#2a1a10" stroke-width="8"/>
+  <g stroke="#f4e9d4" stroke-width="6" stroke-linecap="round">
+    <line x1="336" y1="208" x2="336" y2="230"/>
+    <line x1="354" y1="208" x2="354" y2="230"/>
+    <line x1="390" y1="208" x2="390" y2="230"/>
+    <line x1="408" y1="208" x2="408" y2="230"/>
+  </g>
+  <line x1="372" y1="190" x2="372" y2="250" stroke="#d97f1d" stroke-width="8" stroke-linecap="round"/>
+  <!-- knobs -->
+  <circle cx="352" cy="330" r="24" fill="#3b2417" stroke="#2a1a10" stroke-width="8"/>
+  <circle cx="352" cy="330" r="8" fill="#f4e9d4"/>
+  <circle cx="412" cy="330" r="24" fill="#3b2417" stroke="#2a1a10" stroke-width="8"/>
+  <circle cx="412" cy="330" r="8" fill="#f4e9d4"/>
+</svg>
