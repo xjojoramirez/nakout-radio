@@ -255,4 +255,65 @@ describe("useYouTubePlayer", () => {
     });
     expect(onEnded.mock.calls.length).toBeGreaterThan(1);
   });
+
+  it("does not call player methods before the player is ready", async () => {
+    vi.useFakeTimers();
+    class LazyPlayer {
+      opts: any;
+      loadVideoById = vi.fn();
+      playVideo = vi.fn();
+      mute = vi.fn();
+      unMute = vi.fn();
+      setVolume = vi.fn();
+      seekTo = vi.fn();
+      destroy = vi.fn();
+      // The real YouTube API only exposes these once the player is ready.
+      getCurrentTime?: () => number;
+      getPlayerState?: () => number;
+      constructor(_el: string, opts: any) {
+        this.opts = opts;
+        players.push(this);
+      }
+      bind() {
+        this.getCurrentTime = vi.fn(() => 0);
+        this.getPlayerState = vi.fn(() => 1);
+      }
+    }
+    (window as unknown as { YT: unknown }).YT = {
+      PlayerState: { PLAYING: 1, ENDED: 8 },
+      Player: LazyPlayer,
+    };
+
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      { initialProps: { b: broadcast() } },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    const player = players[0] as LazyPlayer;
+
+    expect(() => {
+      rerender({ b: broadcast({ offset: 20, fetchedAt: Date.now() }) });
+    }).not.toThrow();
+    expect(() => {
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+    }).not.toThrow();
+    expect(player.seekTo).not.toHaveBeenCalled();
+
+    act(() => {
+      player.bind();
+      player.opts.events.onReady();
+    });
+    rerender({ b: broadcast({ offset: 30, fetchedAt: Date.now() }) });
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(player.seekTo).toHaveBeenCalled();
+  });
 });
