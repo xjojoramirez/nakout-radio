@@ -22,6 +22,7 @@ restart is required (see `AGENTS.md` for the restart commands).
   - `frontend/package.json`, `frontend/package-lock.json`
   - `frontend/index.html`
   - `frontend/vite.config.ts`
+  - `docs/superpowers/specs/2026-10-08-favicon-logo-design.md` (docs)
   - `docs/changelog.md` (docs)
 - **Container restart required (frontend changed):**
   `docker compose up -d --build frontend`, then hard-refresh the browser
