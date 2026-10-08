@@ -99,7 +99,7 @@ describe("RadioPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows off air when nothing is broadcasting", async () => {
+  it("shows the offline screen and hides controls when nothing is broadcasting", async () => {
     mocked.now.mockResolvedValue({
       genre: null,
       track: null,
@@ -108,6 +108,11 @@ describe("RadioPage", () => {
       source: "none",
     });
     render(<RadioPage />);
-    expect(await screen.findByText(/Off air/)).toBeInTheDocument();
+    expect(await screen.findByText(/radio offline/i)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /mute/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Volume")).not.toBeInTheDocument();
+    expect(screen.queryByText(/off air/i)).not.toBeInTheDocument();
   });
 });

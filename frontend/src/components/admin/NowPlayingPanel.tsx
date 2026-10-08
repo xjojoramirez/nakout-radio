@@ -176,6 +176,16 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
     }
   };
 
+  const stopPlayback = async () => {
+    try {
+      await api.playbackStop();
+      onNotice("Stopped playback.");
+      refresh();
+    } catch (err) {
+      onError(messageFor(err));
+    }
+  };
+
   const syncButton = (
     <button type="button" className="btn btn-secondary" onClick={syncAll}>
       Sync all playlists
@@ -251,8 +261,20 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
         <button
           type="button"
           className="btn btn-secondary"
+          onClick={stopPlayback}
+          disabled={!state?.track}
+        >
+          Stop
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
           onClick={goAuto}
-          disabled={state?.source !== "manual"}
+          disabled={
+            state == null ||
+            state.source === "schedule" ||
+            state.source === "default"
+          }
         >
           Auto
         </button>

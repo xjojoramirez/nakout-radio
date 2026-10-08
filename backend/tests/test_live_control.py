@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import pytest
 from sqlmodel import Session, SQLModel, create_engine, delete
 
-from app.broadcast import get_current, play_now, set_auto, set_order, skip
+from app.broadcast import get_current, play_now, set_auto, set_order, skip, stop
 from app.models import Playlist, Genre, TrackCache
 
 
@@ -158,3 +158,42 @@ def test_set_order_when_current_track_removed_resets_offset(tmp_path):
         now_state = get_current(s, later)
         assert now_state.track.youtube_video_id in {"a", "c"}
         assert now_state.offset_seconds == 0
+
+
+def test_stop_goes_off_air_and_stays(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "chill", ["a", "b"], default=True)
+        set_auto(s, now=NOW)
+        assert get_current(s, NOW).source == "default"
+        stop(s, now=NOW)
+        now_state = get_current(s, NOW)
+        assert now_state.source == "none"
+        assert now_state.track is None
+        # Time passing must not silently resume the schedule.
+        later = NOW + timedelta(seconds=500)
+        assert get_current(s, later).source == "none"
+
+
+def test_stop_then_auto_resumes(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "chill", ["a", "b"], default=True)
+        set_auto(s, now=NOW)
+        stop(s, now=NOW)
+        assert get_current(s, NOW).source == "none"
+        set_auto(s, now=NOW)
+        now_state = get_current(s, NOW)
+        assert now_state.source == "default"
+        assert now_state.track.youtube_video_id == "a"
+
+
+def test_stop_then_play_resumes(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed(s, "chill", ["a", "b"], default=True)
+        stop(s, now=NOW)
+        play_now(s, st.id, "b", now=NOW)
+        now_state = get_current(s, NOW)
+        assert now_state.source == "manual"
+        assert now_state.track.youtube_video_id == "b"

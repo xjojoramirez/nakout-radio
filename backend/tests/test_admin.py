@@ -1018,6 +1018,24 @@ def test_play_and_auto_endpoints(tmp_path):
     assert client.get("/api/now").json()["source"] == "default"
 
 
+def test_stop_endpoint_takes_station_off_air(tmp_path):
+    client, engine = _client(tmp_path)
+    sid = _seed_genre_with_tracks(engine)
+    client.post("/api/admin/login", json={"password": "test-pass"})
+    client.post(
+        "/api/admin/playback/play",
+        json={"genre_id": sid, "youtube_video_id": "a"},
+    )
+    assert client.get("/api/now").json()["source"] == "manual"
+    assert client.post("/api/admin/playback/stop").status_code == 200
+    body = client.get("/api/now").json()
+    assert body["source"] == "none"
+    assert body["track"] is None
+    assert body["genre"] is None
+    assert client.post("/api/admin/playback/auto").status_code == 200
+    assert client.get("/api/now").json()["source"] == "default"
+
+
 def test_next_prev_endpoints(tmp_path):
     client, engine = _client(tmp_path)
     sid = _seed_genre_with_tracks(engine)
@@ -1063,6 +1081,7 @@ def test_playback_endpoints_require_auth(tmp_path):
         == 401
     )
     assert client.post("/api/admin/playback/auto").status_code == 401
+    assert client.post("/api/admin/playback/stop").status_code == 401
     assert (
         client.put(
             f"/api/admin/genres/{sid}/order", json={"video_ids": []}

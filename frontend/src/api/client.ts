@@ -85,6 +85,8 @@ export const api = {
     }),
   playbackAuto: () =>
     request<{ status: string }>("/admin/playback/auto", { method: "POST" }),
+  playbackStop: () =>
+    request<{ status: string }>("/admin/playback/stop", { method: "POST" }),
   setGenreOrder: (genreId: number, videoIds: string[]) =>
     request<{ status: string }>(`/admin/genres/${genreId}/order`, {
       method: "PUT",

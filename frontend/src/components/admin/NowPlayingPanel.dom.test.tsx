@@ -25,6 +25,7 @@ vi.mock("../../api/client", async () => {
       playbackNext: vi.fn(),
       playbackPrev: vi.fn(),
       playbackAuto: vi.fn(),
+      playbackStop: vi.fn(),
       setGenreOrder: vi.fn(),
     },
   };
@@ -189,7 +190,49 @@ describe("NowPlayingPanel", () => {
     await waitFor(() => expect(mocked.playbackPrev).toHaveBeenCalledWith(1));
   });
 
-  it("enables Auto only in manual mode and returns to schedule", async () => {
+  it("stops playback and takes the station off air", async () => {
+    mocked.now.mockResolvedValue({
+      genre: GENRE,
+      track: TRACK_A,
+      offset_seconds: 0,
+      server_time: "x",
+      source: "schedule",
+    });
+    mocked.playbackStop.mockResolvedValue({ status: "ok" });
+    const onNotice = vi.fn();
+    render(
+      <NowPlayingPanel genres={[GENRE]} onNotice={onNotice} onError={vi.fn()} />,
+    );
+    fireEvent.click(await screen.findByText("Stop"));
+    await waitFor(() => expect(mocked.playbackStop).toHaveBeenCalled());
+    expect(onNotice).toHaveBeenCalledWith("Stopped playback.");
+  });
+
+  it("disables Stop when nothing is on air", async () => {
+    mocked.now.mockResolvedValue({
+      genre: null,
+      track: null,
+      offset_seconds: 0,
+      server_time: "x",
+      source: "none",
+    });
+    renderPanel([GENRE]);
+    expect(await screen.findByText("Stop")).toBeDisabled();
+  });
+
+  it("enables Auto after the station is stopped", async () => {
+    mocked.now.mockResolvedValue({
+      genre: null,
+      track: null,
+      offset_seconds: 0,
+      server_time: "x",
+      source: "none",
+    });
+    renderPanel([GENRE]);
+    expect(await screen.findByText("Auto")).not.toBeDisabled();
+  });
+
+  it("enables Auto in manual mode and returns to schedule", async () => {
     mocked.now.mockResolvedValue({
       genre: GENRE,
       track: TRACK_A,
