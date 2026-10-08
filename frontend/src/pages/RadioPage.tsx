@@ -5,6 +5,36 @@ import { useBroadcast } from "../hooks/useBroadcast";
 import { useListenerCount } from "../hooks/useListenerCount";
 import { useYouTubePlayer } from "../hooks/useYouTubePlayer";
 
+function SoundOnIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+      <path d="M3 9v6h4l5 4V5L7 9H3Z" fill="currentColor" />
+      <path
+        d="M15.5 8.7a4.7 4.7 0 0 1 0 6.6M18.3 6a8.5 8.5 0 0 1 0 12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function SoundOffIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+      <path d="M3 9v6h4l5 4V5L7 9H3Z" fill="currentColor" />
+      <path
+        d="M4.3 3 21 19.7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function RadioPage() {
   const listeners = useListenerCount();
   const { state, refresh } = useBroadcast();
@@ -45,10 +75,12 @@ export function RadioPage() {
             ) : (
               <button
                 type="button"
-                className="tune-in"
+                className="mute-btn"
                 onClick={player.toggleMute}
+                aria-label={player.muted ? "Unmute" : "Mute"}
+                title={player.muted ? "Unmute" : "Mute"}
               >
-                {player.muted ? "UNMUTE" : "MUTE"}
+                {player.muted ? <SoundOffIcon /> : <SoundOnIcon />}
               </button>
             )}
             <label className="volume">

@@ -84,18 +84,18 @@ describe("RadioPage", () => {
     expect(await screen.findByText(/Tuned: Morning/)).toBeInTheDocument();
   });
 
-  it("starts muted and offers an UNMUTE control", async () => {
+  it("starts muted and offers an Unmute control", async () => {
     render(<RadioPage />);
     expect(
-      await screen.findByRole("button", { name: "UNMUTE" }),
+      await screen.findByRole("button", { name: "Unmute" }),
     ).toBeInTheDocument();
   });
 
   it("toggles the mute control", async () => {
     render(<RadioPage />);
-    fireEvent.click(await screen.findByRole("button", { name: "UNMUTE" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Unmute" }));
     expect(
-      await screen.findByRole("button", { name: "MUTE" }),
+      await screen.findByRole("button", { name: "Mute" }),
     ).toBeInTheDocument();
   });
 
