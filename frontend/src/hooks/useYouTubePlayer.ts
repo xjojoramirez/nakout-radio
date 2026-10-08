@@ -71,6 +71,14 @@ export function liveTarget(broadcast: BroadcastState, now = Date.now()): number 
   return Math.max(0, broadcast.offset + broadcast.rttMs / 2000 + elapsed);
 }
 
+function isPlayerReady(player: YTPlayer | null): player is YTPlayer {
+  return (
+    player != null &&
+    typeof player.getPlayerState === "function" &&
+    typeof player.getCurrentTime === "function"
+  );
+}
+
 function targetFor(broadcast: BroadcastState, now = Date.now()): number {
   const duration = broadcast.track?.duration_seconds ?? 0;
   const target = liveTarget(broadcast, now);
@@ -184,9 +192,13 @@ export function useYouTubePlayer(
     currentVideoRef.current = initialId;
     return () => {
       if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
-      player.destroy();
       playerRef.current = null;
       currentVideoRef.current = null;
+      try {
+        player.destroy();
+      } catch {
+        // The player may already have been torn down by the iframe API.
+      }
       setReady(false);
       setPlaying(false);
     };
@@ -195,6 +207,7 @@ export function useYouTubePlayer(
   useEffect(() => {
     const player = playerRef.current;
     if (!player || !broadcast?.track) return;
+    if (!isPlayerReady(player)) return;
     const videoId = broadcast.track.youtube_video_id;
     const target = targetFor(broadcast);
     const yt = window.YT;
@@ -217,7 +230,7 @@ export function useYouTubePlayer(
 
   useEffect(() => {
     const player = playerRef.current;
-    if (!player) return;
+    if (!isPlayerReady(player)) return;
     player.setVolume(volume);
     if (muted || volume === 0) player.mute();
     else player.unMute();
@@ -227,13 +240,15 @@ export function useYouTubePlayer(
     const timer = window.setInterval(() => {
       const player = playerRef.current;
       const yt = window.YT;
-      if (!player || !yt) return;
-      setProgress(player.getCurrentTime());
+      if (!isPlayerReady(player) || !yt) return;
       const current = broadcastRef.current;
-      if (current && player.getPlayerState() === yt.PlayerState.PLAYING) {
-        const target = targetFor(current);
-        if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
-          player.seekTo(target, true);
+      if (current?.track) {
+        setProgress(player.getCurrentTime());
+        if (player.getPlayerState() === yt.PlayerState.PLAYING) {
+          const target = targetFor(current);
+          if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
+            player.seekTo(target, true);
+          }
         }
       }
       if (endedRef.current) onEndedRef.current();
