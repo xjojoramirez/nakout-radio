@@ -3,6 +3,46 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — vinyl deck turntable + volume knob components (deck CSS, TDD)
+
+- Added the reusable vinyl-deck components for the upcoming homepage and
+  admin Now Playing panels:
+  - `TurntableDeck({ playing, artUrl })`: wooden deck shell with spinning
+    record (rAF spin loop, 33⅓ RPM target with spin-up/down inertia, honors
+    `prefers-reduced-motion`), cover art on the record label, tonearm that
+    swings when playing, 33/45 RPM markers
+    (`frontend/src/components/deck/TurntableDeck.tsx`).
+  - `VolumeKnob({ value, onChange, label, disabled })`: accessible
+    `role="slider"` knob — arrow keys (±2), shift (±10), PageUp/PageDown,
+    Home/End, vertical pointer drag with pointer capture, 0-100 clamping,
+    `--r` rotation CSS variable
+    (`frontend/src/components/deck/VolumeKnob.tsx`).
+- Strict TDD: 6 `VolumeKnob` + 2 `TurntableDeck` DOM tests, verified red
+  (module missing / drag coordinates lost) before green
+  (`frontend/src/components/deck/*.dom.test.tsx`).
+- Appended the "Vinyl deck" CSS section (deck/platter/record/tonearm, RPM
+  badges, mixer row, knob, now-playing sleeve/bar/times/tune button,
+  schedule list, responsive + reduced-motion blocks) to the end of
+  `frontend/src/styles/vintage.css`; the pre-existing `.vu-meter` rules are
+  only overridden via `.mixer .vu-meter { height: 44px; }`.
+- Test-env fix (deviation note): jsdom 25 lacks a `PointerEvent`
+  constructor, so RTL `fireEvent.pointer*` dropped `clientY`/`pointerId`
+  and the knob drag test got `NaN`. Added a minimal `PointerEvent`
+  polyfill (MouseEvent-based) to `frontend/src/test/setup.ts`, following
+  the existing `matchMedia`/`scrollIntoView` polyfill style there; the
+  existing `jest` shim and other shims are untouched.
+- Files touched: `frontend/src/styles/vintage.css`,
+  `frontend/src/components/deck/TurntableDeck.tsx`,
+  `frontend/src/components/deck/TurntableDeck.dom.test.tsx`,
+  `frontend/src/components/deck/VolumeKnob.tsx`,
+  `frontend/src/components/deck/VolumeKnob.dom.test.tsx`,
+  `frontend/src/test/setup.ts`.
+- **Container restart required (container `frontend` only):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` (120 tests in 16 files, incl. the 8 new
+  deck tests) + `npm run build` + `npm run typecheck` green.
+
 ## 2026-10-09 — vinyl deck dark theme takeover (tokens + fonts) across site incl. admin
 
 - Replaced the Google Fonts load (Bebas Neue + Inter) with Bricolage
