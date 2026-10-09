@@ -3,6 +3,44 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — admin studio Now Playing rebuilt as vinyl deck (full transport/queue intact); dead GenreDial + btn-danger hover contrast fixed
+
+- Rebuilt the admin Now Playing panel JSX
+  (`frontend/src/components/admin/NowPlayingPanel.tsx`) as a two-column
+  vinyl studio: wooden `TurntableDeck` + mixer (VU meter, stationary deck
+  knobs, "On the decks" genre strip) on the left; genre select, sleeve
+  (cover art, genre kicker, track title/artist), progress bar with
+  `formatClock(state.offset)` elapsed time and source badge, full transport
+  (Prev/Next/Stop/Auto), draggable queue with Shuffle and per-row Play, and
+  the interrupt-playback ConfirmDialog on the right. All logic, handlers,
+  disabled conditions and state are unchanged — only markup/classes moved
+  (old `.now-playing`/`.meta`/`.source` block is gone; "On air" appears only
+  as the queue-badge, the sleeve uses `SOURCE_LABELS` like "Schedule").
+- New `formatClock(totalSeconds)` helper appended to
+  `frontend/src/utils/format.ts` (elapsed clock; `formatDuration` kept for
+  queue rows).
+- Admin deck CSS appended to `frontend/src/styles/vintage.css` right after
+  the `#panel-now .queue-list` shell rules (`#panel-now .admin-deck` flex
+  fill + `.np-col` column-flex override, 0.9fr/1.1fr grid, capped 460px
+  deck, 84px admin sleeve, tightened gaps/title clamp), plus mobile
+  (≤600px) additions inside the existing block (`.admin-deck` → `display:
+  block`, uncapped `.deck`); queue overflow guards untouched.
+- Fixed the `.btn-danger-solid:hover:not(:disabled)` hover-contrast issue
+  (was darkened `#9c2d23`; now `var(--danger)` background with `#1c110a`
+  text so the label stays readable on hover).
+- Removed dead code `frontend/src/components/GenreDial.tsx` (own commit;
+  referenced nowhere else — verified before deletion).
+- Files touched: `frontend/src/components/admin/NowPlayingPanel.tsx`,
+  `frontend/src/utils/format.ts`, `frontend/src/styles/vintage.css`,
+  `frontend/src/components/GenreDial.tsx` (removed).
+- **Container restart required (container `frontend` only):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` (129 tests in 17 files, incl. unchanged
+  `NowPlayingPanel.dom.test.tsx`) + `npm run typecheck` + `npm run build`
+  green; `rg "now-playing|radio-cabinet"` (non-test files) reports no
+  remaining matches.
+
 ## 2026-10-09 — vinyl deck homepage rebuild (Tune in / Tune out, no skip/stop)
 
 - Rebuilt the listener homepage (`frontend/src/pages/RadioPage.tsx`) around
