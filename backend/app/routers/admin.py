@@ -101,6 +101,10 @@ def _validate_color(value: str | None) -> str | None:
     return value.lower()
 
 
+class PlaylistUpdate(BaseModel):
+    genre_id: int
+
+
 def _first_unused_color(session: Session) -> str:
     used = {row for row in session.exec(select(Genre.color)).all() if row}
     if len(used) < len(GENRE_PALETTE):
@@ -301,6 +305,22 @@ def create_playlist(
         "synced": synced,
         "sync_error": sync_error,
     }
+
+
+@router.put("/playlists/{playlist_id}", dependencies=[Depends(require_admin)])
+def update_playlist(
+    playlist_id: int, body: PlaylistUpdate, session: Session = Depends(get_session)
+) -> dict:
+    playlist = session.get(Playlist, playlist_id)
+    if playlist is None:
+        raise HTTPException(status_code=404, detail="playlist not found")
+    if session.get(Genre, body.genre_id) is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    playlist.genre_id = body.genre_id
+    session.add(playlist)
+    session.commit()
+    notify_radio(build_now(session, utcnow()).model_dump())
+    return {"status": "updated"}
 
 
 @router.get(

@@ -599,6 +599,65 @@ def test_refresh_missing_playlist_404(tmp_path):
     assert client.post("/api/studio/playlists/999/refresh").status_code == 404
 
 
+def test_move_playlist_updates_genre(tmp_path, monkeypatch):
+    client, engine = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    g1 = client.post(
+        "/api/studio/genres", json={"name": "A", "slug": "a"}
+    ).json()["id"]
+    g2 = client.post(
+        "/api/studio/genres", json={"name": "B", "slug": "b"}
+    ).json()["id"]
+    monkeypatch.setattr(
+        "app.routers.admin._build_fetch",
+        lambda: _fake_fetch([TrackData("v1", "T", "A", "u", 0)]),
+    )
+    pid = client.post(
+        "/api/studio/playlists",
+        json={
+            "genre_id": g1,
+            "youtube_playlist_url": (
+                "https://www.youtube.com/playlist?list=PLabc123"
+            ),
+        },
+    ).json()["id"]
+    resp = client.put(f"/api/studio/playlists/{pid}", json={"genre_id": g2})
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "updated"}
+    listed = client.get("/api/studio/playlists").json()
+    assert [p for p in listed if p["id"] == pid][0]["genre_id"] == g2
+
+
+def test_move_playlist_unknown_genre_404(tmp_path, monkeypatch):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    g1 = client.post(
+        "/api/studio/genres", json={"name": "A", "slug": "a"}
+    ).json()["id"]
+    monkeypatch.setattr(
+        "app.routers.admin._build_fetch",
+        lambda: _fake_fetch([TrackData("v1", "T", "A", "u", 0)]),
+    )
+    pid = client.post(
+        "/api/studio/playlists",
+        json={"genre_id": g1, "youtube_playlist_url": "PLabc123"},
+    ).json()["id"]
+    resp = client.put(f"/api/studio/playlists/{pid}", json={"genre_id": 9999})
+    assert resp.status_code == 404
+    assert (
+        client.put("/api/studio/playlists/999", json={"genre_id": g1}).status_code
+        == 404
+    )
+
+
+def test_move_playlist_requires_auth(tmp_path):
+    client, _ = _client(tmp_path)
+    assert (
+        client.put("/api/studio/playlists/1", json={"genre_id": 1}).status_code
+        == 401
+    )
+
+
 def test_sync_all_reports_each_playlist(tmp_path, monkeypatch):
     client, _ = _client(tmp_path)
     client.post("/api/studio/login", json={"password": "test-pass"})

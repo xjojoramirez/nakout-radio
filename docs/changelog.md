@@ -3,6 +3,100 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — task 7: playlists panel reskin — genre groups, chips, refresh-all, channel grid, move endpoint
+
+- `frontend/src/components/admin/PlaylistsPanel.tsx`: rebuilt from the
+  two-column layout to a single reference column — `h2.sec` "Playlists" +
+  `.sub` summary (`N playlist(s) · M tracks across G genres.` with the
+  computed totals); the add form became `form.card`/`.addlink` with a
+  `.seg` two-toggle ("Paste a link" / "From your channel",
+  `aria-pressed`), the link input is labelled "YouTube playlist link"
+  (`inputmode=url`) with a live `.hint` (`.ok` "Playlist ID found: …" /
+  `.err` for an invalid link *and* for duplicates — the duplicate hint
+  reads "This playlist is already added under <genre>." and shows
+  regardless of the selected genre); genre choice now uses
+  `<GenreChipRadio>` (radiogroup "Genre") and Add playlist stays
+  disabled until genre + a valid, non-duplicate link are in play;
+  channel mode keeps the existing setup/save/browse logic but re-styles
+  the saved list as a `.browse` grid of `.pcard`s (`.pc` 16:9 thumb with
+  the real `<img>` when present, `cssCover(title)` background fallback
+  when `thumbnail_url` is empty; header shows channel name + Change /
+  "Refresh list", `already_added` cards render the `.added-badge`
+  "Added to <genre>"); "Your playlists" `.head` pairs the `.ttl` with a
+  `.filter-input` search (`input[type=search]`, `aria-label "Search
+  playlists"`, kept contract) that filters rows across genre groups;
+  groups are `section.group[style=--gc]` (dot, name, `.mono` count
+  "N playlist(s) · M tracks", per-group "Refresh all" when N>0 firing
+  all of the group's `refreshPlaylist` calls via `Promise.allSettled`
+  then one combined notice — "Refreshing <genre>..." while pending;
+  rows get a `.chip`/"Syncing" spinner while their refresh is in
+  flight (`syncingIds`), and per-group busy state disables the
+  buttons); rows are `.prow` (labelled `.pid` link or raw-id `.pid
+  .idonly`, chips "N tracks" + mono "Synced <timeAgo>", Refresh /
+  Remove) with a NEW genre move `<select aria-label="Genre for
+  <playlist>">` that calls the new `api.updatePlaylist` and flashes the
+  row (`.prow .flash` 1.4 s, same ref-guarded timer as the genre panel);
+  flash also lands on newly added rows; empty states: a genre group
+  with nothing shows `.gempty` "No playlists yet. Add one" (the link
+  preselects that genre and flips back to link mode), a search with no
+  matches shows `.empty` `No playlists match "<q>".`, and no genres at
+  all shows `.empty` "Create a genre first, then add playlists to it."
+  with a "Go to Genres" button via the new optional `onJump` prop
+  (same `(tab, intent?)` signature as GenresPanel); `initialGenre` from
+  the Genres quick link is now consumed once on mount via a `useRef`
+  guard (StrictMode-safe): sets link mode + preselects the chip, then
+  calls `onIntentConsumed` exactly once; the `onCountChange` contract
+  (tab badge) is kept after loads/mutations.
+- `frontend/src/api/client.ts`: added `updatePlaylist(id, { genre_id })`
+  (`PUT /studio/playlists/{id}`).
+- `backend/app/routers/admin.py`: added the `PlaylistUpdate` model and
+  `PUT /studio/playlists/{playlist_id}` (requires admin; 404 for unknown
+  playlist or genre; reassigns `genre_id`, commits, then pushes the
+  refreshed `now` payload to the radio with the same build/commit order
+  as `update_genre`).
+- `backend/tests/test_admin.py`: move tests — happy-path genre update
+  (200/`updated` + listed payload), unknown-genre/unknown-playlist 404,
+  and an unauthenticated 401 (`3` new tests; `notify_radio` uses the
+  monkeypatch-faked `_build_fetch` here only to keep the created
+  playlist's sync offline).
+- `frontend/src/styles/vintage.css`: added the playlists reference
+  families (`.head`/`.sp`, `.filter-input`, `.addlink`, `.seg` with
+  `aria-pressed` highlight + `font-family` inherit per the gchip fix
+  pattern, `.addchannel`, `.browse`, `.pcard`/`.pc img` full-bleed
+  16:9, `.groups`/`.group`/`.ghead`/`.prow`/`.prow .act select` pill,
+  `a.pid`(+`.idonly`)/`.gempty`, `.empty` upgraded to the dashed-border
+  grid style); removed the dead layout families it replaces —
+  `.playlists-layout`/`.playlists-main`/`.playlists-side`/
+  `.side-block`, the old `.added-playlists` row list (and its
+  responsive rules), and the old channel chrome (`.channel-block`,
+  `.channel-head`/`.channel-name`, `.channel-scroll`, `.channel-grid`,
+  `.channel-card*`) — `.channel-setup`, `.count-pill` (Schedule),
+  `.row-actions`, `.added-badge`, `.panel-head` (Now Playing) kept
+  because they are still referenced; responsive tweaks for `.browse`
+  at ≤920px and ≤380px and for `.prow` rows at ≤920px. Grep across
+  `frontend/src` confirms no stale class references either way.
+- `frontend/src/pages/AdminPage.tsx`: passes `onJump={jump}` to
+  PlaylistsPanel so the "Go to Genres" button works.
+- `frontend/src/pages/AdminPage.dom.test.tsx`: quick-link assertion now
+  targets the new "Your playlists" heading; the add-by-URL test uses
+  the chip radiogroup + "YouTube playlist link" label; the two channel
+  tests click the "From your channel" segment first, "(5 tracks)" chip
+  text, `synced_at` fixture completeness. No other flows changed.
+- `frontend/src/components/admin/PlaylistsPanel.dom.test.tsx` (new):
+  21 contract tests covering the summary line, genre groups + per-group
+  empty/Refresh-all, row anatomy (links, chips, `timeAgo`, move select
+  → `updatePlaylist` + flash, "Syncing" spinner), search filtering +
+  no-match empty, segmented control, add-form hints (valid/invalid/
+  duplicate), chip-driven add + notice, create/refresh error paths,
+  channel save/browse/reload/add-from-browse + `cssCover` fallback,
+  `initialGenre` intent consumption (once), refresh-all fan-out,
+  ConfirmDialog removal, count callback and the no-genres empty state.
+- Restart: backend + frontend —
+  `docker compose up -d --build backend frontend` (then hard refresh).
+- Verification: backend `python -m pytest -q` (221 passed), frontend
+  `npm run test` (194 tests / 26 files), `npm run typecheck`,
+  `npm run build` — all green.
+
 ## 2026-10-09 — task 6 follow-up: genre panel polish — flash timing, quick-link labels, default swatch
 
 - `frontend/src/components/admin/GenresPanel.tsx`: `flash(created.id)`
