@@ -3,6 +3,47 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — admin-deck-ui branch complete — admin reskinned to the Nakout Admin reference: genre colours, grouped playlists, visual schedule timeline, reference nowcard
+
+- Admin studio (`/studio`) now matches `UI reference/Nakout Admin.html`
+  (untracked reference; same vinyl-deck world as the homepage):
+  - **Backend**: `Genre.color` (hex accent colour, palette backfill
+    migration `a1b2c3d4e5f6`; colour CRUD on studio endpoints; colour
+    serialized on public genre/now/schedule responses; radio WS push on
+    change) and `Playlist.synced_at` (migration `b2c3d4e5f6a7`, set on
+    every sync, backfilled from track cache) plus a new
+    `PUT /api/studio/playlists/{id}` genre-move endpoint.
+  - **Shell**: brand header ("Nakout.Radio Admin" + back + logout), tab
+    pills with live counts (playlists/genres/slots), natural page scroll,
+    toast feedback (role="status", 2.2 s, re-arms on repeats) replacing
+    success banners; errors stay inline; confirm dialogs unchanged.
+  - **Playlists**: summary line, add card with "Paste a link / From your
+    channel" segments, colour-chip genre picker, per-genre groups with
+    refresh-all, per-row "Synced X ago", YouTube links, move select
+    (flash), channel browse as cover-card grid (generative cover
+    fallback).
+  - **Genres**: colour swatches, cards with colour top edge, stats chips,
+    "Add one" / "Schedule it" quick links, "Play now" (starts the genre's
+    first track), inline edit with colour, cascade delete confirm.
+  - **Schedule**: on-air card (genre since / next slot from
+    `GET /api/schedule/now` — newly consumed), Sun-first day pills with
+    today dot, visual 24h timeline (coloured blocks, carry-over,
+    "Nothing scheduled" gaps, Now marker, click-empty-to-add,
+    click-block-to-edit), slot form with presets and live sentence
+    preview, 409 conflicts inline, day list rows.
+  - **Now Playing**: reference nowcard (cover + title/artist/meta +
+    progress bar, a11y preserved), decorative knobs removed, sync-all
+    spinner.
+- Deliberate cuts vs the reference (no undo on destructive actions —
+  confirm dialogs instead; genre-card "N playlists" and "Starts …" chips
+  — data not exposed by the API; browser-local schedule hints carry a
+  "Times are shown in your local time zone." note).
+- **Container restart required (backend + frontend):**
+  `docker compose up -d --build backend frontend`, then hard-refresh
+  the browser (Ctrl+Shift+R).
+- Verification: backend `pytest -q` 221 passed; frontend 231 tests /
+  28 files, `npm run typecheck` + `npm run build` clean.
+
 ## 2026-10-09 — task 9: now playing panel polish to reference (nowcard, mixer, sync spinner)
 
 - `frontend/src/components/admin/NowPlayingPanel.tsx`: the on-air card is
