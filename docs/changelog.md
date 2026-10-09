@@ -3,6 +3,18 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — volume fader follow-ups: Home/End key test added; fader spec drag-gain wording corrected
+
+- Added a Home/End bounds test to
+  `frontend/src/components/deck/VolumeFader.dom.test.tsx` (suite now
+  138 tests in 18 files).
+- Corrected the drag-gain wording in
+  `docs/superpowers/specs/2026-10-09-volume-fader-design.md` (1:1, not
+  the knob's delta/2 — code was already correct).
+- Tests/docs only — no container restart required.
+- Verification: `npm run test` (138 tests in 18 files) +
+  `npm run typecheck` + `npm run build` green.
+
 ## 2026-10-09 — homepage mixer: added vertical volume fader beside master knob; removed decorative mini-knobs
 
 - Added `VolumeFader` (`frontend/src/components/deck/VolumeFader.tsx`,

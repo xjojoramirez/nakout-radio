@@ -15,8 +15,8 @@ volume. Admin Now Playing's decorative knob row is untouched.
 - New component `frontend/src/components/deck/VolumeFader.tsx`:
   - Vertical rail with a draggable thumb; thumb position maps linearly to volume
     (bottom = 0, top = 100), driven by the `value` prop.
-  - Pointer drag: pointerdown captures, vertical movement maps to volume with the same
-    gain as the knob (delta / 2 per move event), clamped 0–100; `touch-action: none`.
+  - Pointer drag: pointerdown captures, vertical movement maps to volume 1:1
+    (delta = volume points, clamped 0–100); `touch-action: none`.
   - Keyboard: Left/Down −2, Right/Up +2, PageDown/PageUp ±10, Home 0, End 100.
   - A11y: `role="slider"`, `tabIndex=0`, `aria-orientation="vertical"`, `aria-valuemin`
     0, `aria-valuemax` 100, `aria-valuenow`, accessible name from `label` prop.
