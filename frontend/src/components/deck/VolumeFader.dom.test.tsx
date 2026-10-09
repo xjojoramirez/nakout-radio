@@ -41,6 +41,16 @@ describe("VolumeFader", () => {
     expect(onChange).toHaveBeenLastCalledWith(70);
   });
 
+  it("jumps to bounds with Home and End keys", () => {
+    const onChange = vi.fn();
+    render(<VolumeFader value={50} onChange={onChange} label="Volume fader" />);
+    const fader = screen.getByRole("slider", { name: "Volume fader" });
+    fireEvent.keyDown(fader, { key: "Home" });
+    expect(onChange).toHaveBeenLastCalledWith(0);
+    fireEvent.keyDown(fader, { key: "End" });
+    expect(onChange).toHaveBeenLastCalledWith(100);
+  });
+
   it("clamps to 0-100", () => {
     const onChange = vi.fn();
     render(
