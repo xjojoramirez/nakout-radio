@@ -3,6 +3,32 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — frontend schedule/today types + useTodaySchedule hook (5-min refresh)
+
+- Added the frontend fetch layer for the listener-homepage schedule deck
+  (rendering lands in a later task):
+  - `SlotToday` / `ScheduleToday` types appended after `ScheduleSlot`
+    (`frontend/src/types.ts`).
+  - `api.scheduleToday()` calling `GET /api/schedule/today`
+    (`frontend/src/api/client.ts`).
+  - `useTodaySchedule()` hook: fetch on mount, then a 5-minute
+    `REFRESH_MS` interval; keeps the last good schedule when a refresh
+    fails, cancelled flag on unmount (same pattern as `useBroadcast`)
+    (`frontend/src/hooks/useTodaySchedule.ts`).
+- Test infra: aliased `globalThis.jest = vi` in the Vitest setup so
+  @testing-library's `waitFor` can advance Vitest's fake timers (`waitFor`
+  otherwise hangs forever with fake timers, since RTL gates its timer
+  advance on a global `jest`) (`frontend/src/test/setup.ts`).
+- Files touched: `frontend/src/types.ts`, `frontend/src/api/client.ts`,
+  `frontend/src/hooks/useTodaySchedule.ts`,
+  `frontend/src/hooks/useTodaySchedule.dom.test.ts`,
+  `frontend/src/test/setup.ts`, `docs/changelog.md` (this entry).
+- **Container restart required (frontend changed):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` green — 112 passed, including 3 new
+  `useTodaySchedule` hook tests; `npm run typecheck` clean.
+
 ## 2026-10-09 — Public `GET /api/schedule/today` endpoint
 
 - Added a public, read-only schedule listing for the listener homepage deck:
