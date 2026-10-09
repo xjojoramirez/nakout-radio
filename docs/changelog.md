@@ -3,6 +3,48 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — shared admin UI primitives: Toast, PaletteSwatches, GenreChipRadio + CSS (admin reskin task 4)
+
+- New `frontend/src/components/admin/`: `Toast.tsx` (capsule
+  `role="status"` toast, 2.2 s auto-hide via `setTimeout`, renders null
+  when the message is empty, timer keyed on the message only),
+  `PaletteSwatches.tsx` (radiogroup of 8 `role="radio"` swatch buttons
+  from `GENRE_PALETTE`, colour exposed as `--gc`), `GenreChipRadio.tsx`
+  (radiogroup of genre chips with colour dot, `--gc` falling back to
+  `var(--amber)` when `color` is empty; empty-genre list renders a
+  `.hint` paragraph instead of the group). TDD: tests first, verified
+  they failed, then implemented.
+- `frontend/src/styles/vintage.css`: appended additive admin-primitive
+  families (`.toast`, `.chips`/`.gchip`/`.dot`, `.swatches`/`.sw`,
+  `.hint`, `.flash`, `.spin` + `@keyframes flash`/`spin`) anchored at the
+  end of the admin section (after the schedule-slot rules, immediately
+  before the `/* ---------- Vinyl deck ---------- */` comment) so all
+  admin styles stay contiguous. Overlap audit before insertion: no
+  pre-existing `.toast`, `.chips`, `.gchip`, `.swatches`, `.dot`,
+  `.flash`, `.spin`, or `@keyframes spin` (keyframes in file were only
+  `vu-flicker`, `skeleton-shimmer`, `modal-fade-in`, `modal-pop-in`).
+  `.hint` existed only as the scoped `.admin-login .hint` (line ~554)
+  with compatible colours, so the new bare `.hint` was safe to add
+  unchanged (it only adds `min-height: 1.2em` where the scoped rule
+  wins on colour/size/margin).
+- New tests `Toast.dom.test.tsx` / `PaletteSwatches.dom.test.tsx` /
+  `GenreChipRadio.dom.test.tsx` (10 tests total; task spec estimated
+  ~12, spec-provided tests total 10). Deviation: `Toast` dep array is
+  `[message]` with an eslint-disable comment instead of `[message,
+  onDone]`, per task note (repo has no eslint setup; inline-arrow
+  `onDone` at call sites would otherwise restart the timer per render).
+- Files: `frontend/src/components/admin/Toast.tsx`,
+  `PaletteSwatches.tsx`, `GenreChipRadio.tsx`,
+  `Toast.dom.test.tsx`, `PaletteSwatches.dom.test.tsx`,
+  `GenreChipRadio.dom.test.tsx`, `frontend/src/styles/vintage.css`,
+  `docs/changelog.md`.
+- Restart: frontend only (components unused elsewhere yet, no UI
+  churn) — `docker compose up -d --build frontend`.
+- Verification: `npm run test` → 24 files / 157 tests passed (147
+  existing + 10 new); `npm run typecheck` → clean; `npm run build` →
+  success.
+
+
 ## 2026-10-09 — follow-up: timeAgo offset parsing fixed + client colour-path payload tests
 
 - `timeAgo` (`frontend/src/utils/format.ts`) appended `Z` to every
