@@ -232,6 +232,7 @@ export function AdminPage() {
                 onCountChange={setPlaylistCount}
                 initialGenre={playlistIntent}
                 onIntentConsumed={consumePlaylistIntent}
+                onJump={jump}
               />
             )}
             {tab === "genres" && (

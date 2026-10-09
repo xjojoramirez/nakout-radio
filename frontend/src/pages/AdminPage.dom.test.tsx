@@ -227,7 +227,7 @@ describe("AdminPage", () => {
     expect(
       await screen.findByRole("tabpanel"),
     ).toHaveAttribute("id", "panel-playlists");
-    expect(await screen.findByText("Added playlists")).toBeInTheDocument();
+    expect(await screen.findByText("Your playlists")).toBeInTheDocument();
   });
 
   it("logs out and returns to the login screen", async () => {
@@ -255,13 +255,13 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
-    fireEvent.change(screen.getByLabelText("Playlist genre"), {
-      target: { value: "1" },
-    });
-    fireEvent.change(screen.getByPlaceholderText("YouTube playlist URL"), {
+    await screen.findByLabelText("YouTube playlist link");
+    fireEvent.change(screen.getByLabelText("YouTube playlist link"), {
       target: { value: "https://www.youtube.com/playlist?list=PL1" },
     });
-    fireEvent.click(screen.getByText("Add playlist"));
+    const radioGroup = screen.getByRole("radiogroup", { name: "Genre" });
+    fireEvent.click(within(radioGroup).getByRole("radio", { name: "Chill" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add playlist" }));
     await waitFor(() =>
       expect(mocked.createPlaylist).toHaveBeenCalledWith(
         1,
@@ -287,6 +287,7 @@ describe("AdminPage", () => {
         youtube_playlist_id: "PL1",
         label: "",
         track_count: 4,
+        synced_at: null,
       },
     ]);
     render(<AdminPage />);
@@ -312,6 +313,7 @@ describe("AdminPage", () => {
         youtube_playlist_id: "PL1",
         label: "",
         track_count: 4,
+        synced_at: null,
       },
     ]);
     mocked.refreshPlaylist.mockResolvedValue({ id: 9, synced: 4 });
@@ -352,6 +354,7 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
+    fireEvent.click(screen.getByRole("button", { name: "From your channel" }));
     await screen.findByPlaceholderText("@handle or channel URL");
     fireEvent.change(screen.getByPlaceholderText("@handle or channel URL"), {
       target: { value: "@me" },
@@ -361,7 +364,7 @@ describe("AdminPage", () => {
       expect(mocked.setChannelSource).toHaveBeenCalledWith("@me"),
     );
     expect(await screen.findByText("New One")).toBeInTheDocument();
-    expect(await screen.findByText("(5 tracks)")).toBeInTheDocument();
+    expect(await screen.findByText("5 tracks")).toBeInTheDocument();
   });
 
   it("adds a browsed playlist to the chosen genre", async () => {
@@ -391,6 +394,7 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
+    fireEvent.click(screen.getByRole("button", { name: "From your channel" }));
     await screen.findByText("New One");
     fireEvent.change(screen.getByLabelText("Genre for New One"), {
       target: { value: "1" },

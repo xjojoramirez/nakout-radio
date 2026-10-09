@@ -145,6 +145,11 @@ export const api = {
     ),
   deletePlaylist: (id: number) =>
     request<{ status: string }>(`/studio/playlists/${id}`, { method: "DELETE" }),
+  updatePlaylist: (id: number, updates: { genre_id: number }) =>
+    request<{ status: string }>(`/studio/playlists/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(updates),
+    }),
   listSlots: () => request<ScheduleSlot[]>("/studio/slots"),
   createSlot: (slot: {
     genre_id: number;
