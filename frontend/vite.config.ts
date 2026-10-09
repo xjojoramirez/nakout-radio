@@ -12,7 +12,7 @@ function seo(siteUrl: string): Plugin {
   const robots = [
     "User-agent: *",
     "Allow: /",
-    "Disallow: /admin",
+    "Disallow: /studio",
     "",
     `Sitemap: ${siteUrl}/sitemap.xml`,
     "",
