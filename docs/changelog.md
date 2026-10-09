@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — vinyl deck dark theme takeover (tokens + fonts) across site incl. admin
+
+- Replaced the Google Fonts load (Bebas Neue + Inter) with Bricolage
+  Grotesque (variable display/body face) + DM Mono (`frontend/index.html`;
+  preconnect links unchanged).
+- Took over the token palette in `:root` with the vinyl-deck dark theme
+  (dark wood/cream/amber tokens, new `--font-mono`, `--vinyl`, `--led`,
+  `color-scheme: dark`), and retuned headings + selection to the new
+  display face.
+- Dark-surface sweep across shared controls and admin surfaces: buttons
+  (primary text, secondary, danger hover), inputs, admin card, banners
+  untouched surfaces via tokens, progress track, skeletons, admin tabs,
+  confirmation modal, lists, badges, queue rows, back link, channel
+  cards, slot editor, scrollbars
+  (`frontend/src/styles/vintage.css`).
+- Files touched: `frontend/index.html`,
+  `frontend/src/styles/vintage.css`.
+- **Container restart required (container `frontend` only):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` + `npm run build` green (112 tests passed
+  in 14 files; vite build succeeded).
+
 ## 2026-10-09 — frontend schedule/today types + useTodaySchedule hook (5-min refresh)
 
 - Added the frontend fetch layer for the listener-homepage schedule deck
