@@ -50,7 +50,7 @@ from app.youtube import (
     resolve_channel_id,
 )
 
-router = APIRouter(prefix="/api/admin", tags=["admin"])
+router = APIRouter(prefix="/api/studio", tags=["admin"])
 
 logger = logging.getLogger(__name__)
 

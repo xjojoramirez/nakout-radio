@@ -6,7 +6,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/" element={<RadioPage />} />
-      <Route path="/admin" element={<AdminPage />} />
+      <Route path="/studio" element={<AdminPage />} />
       <Route path="*" element={<RadioPage />} />
     </Routes>
   );

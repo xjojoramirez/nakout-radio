@@ -3,6 +3,27 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — Renamed admin routes to `/studio`
+
+- Renamed the admin surface away from the common `/admin` path to reduce
+  scanner/brute-force noise (obscurity only; auth still does the real work).
+  - UI route: `/admin` → `/studio` (`frontend/src/App.tsx`).
+  - API prefix: `/api/admin/*` → `/api/studio/*`
+    (`backend/app/routers/admin.py`). Router module, `require_admin`
+    dependency, auth subject and config field names are unchanged.
+  - `robots.txt` `Disallow` updated to `/studio` (`frontend/vite.config.ts`).
+- Files touched:
+  - `frontend/src/App.tsx`, `frontend/src/api/client.ts`,
+    `frontend/src/api/client.test.ts`, `frontend/vite.config.ts`
+  - `backend/app/routers/admin.py`, `backend/tests/test_admin.py`,
+    `backend/tests/test_ws.py`
+  - `README.md` (docs), `docs/changelog.md` (docs)
+- **Container restart required (frontend + backend changed):**
+  `docker compose up -d --build backend frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: `pytest` 205 passed; `npm test` 109 passed;
+  `npm run typecheck` clean.
+
 ## 2026-10-08 — Favicon and logo set
 
 - Added a hand-authored vintage-radio logo in the site palette, at two detail

@@ -73,7 +73,7 @@ Root (`.env`):
    Create a root `.env` with `DOMAIN=<your-domain>`.
 4. Run `docker compose up -d --build`.
 5. Caddy obtains and renews TLS certificates automatically.
-6. Visit `https://<your-domain>/admin`, log in, add genres and YouTube
+6. Visit `https://<your-domain>/studio`, log in, add genres and YouTube
    playlist URLs, then add schedule slots. Adding a playlist fetches and caches
    its tracks immediately; use **Sync all playlists** to refresh later.
 

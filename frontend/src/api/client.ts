@@ -57,16 +57,16 @@ export const api = {
       body: JSON.stringify({ cursor, direction }),
     }),
   login: (password: string) =>
-    request<{ status: string }>("/admin/login", {
+    request<{ status: string }>("/studio/login", {
       method: "POST",
       body: JSON.stringify({ password }),
     }),
-  logout: () => request<{ status: string }>("/admin/logout", { method: "POST" }),
-  session: () => request<{ status: string }>("/admin/session"),
+  logout: () => request<{ status: string }>("/studio/logout", { method: "POST" }),
+  session: () => request<{ status: string }>("/studio/session"),
   genreTracks: (genreId: number) =>
-    request<Track[]>(`/admin/genres/${genreId}/tracks`),
+    request<Track[]>(`/studio/genres/${genreId}/tracks`),
   play: (genreId: number, youtubeVideoId: string) =>
-    request<{ status: string }>("/admin/playback/play", {
+    request<{ status: string }>("/studio/playback/play", {
       method: "POST",
       body: JSON.stringify({
         genre_id: genreId,
@@ -74,39 +74,39 @@ export const api = {
       }),
     }),
   playbackNext: (genreId: number) =>
-    request<{ status: string }>("/admin/playback/next", {
+    request<{ status: string }>("/studio/playback/next", {
       method: "POST",
       body: JSON.stringify({ genre_id: genreId }),
     }),
   playbackPrev: (genreId: number) =>
-    request<{ status: string }>("/admin/playback/prev", {
+    request<{ status: string }>("/studio/playback/prev", {
       method: "POST",
       body: JSON.stringify({ genre_id: genreId }),
     }),
   playbackAuto: () =>
-    request<{ status: string }>("/admin/playback/auto", { method: "POST" }),
+    request<{ status: string }>("/studio/playback/auto", { method: "POST" }),
   playbackStop: () =>
-    request<{ status: string }>("/admin/playback/stop", { method: "POST" }),
+    request<{ status: string }>("/studio/playback/stop", { method: "POST" }),
   setGenreOrder: (genreId: number, videoIds: string[]) =>
-    request<{ status: string }>(`/admin/genres/${genreId}/order`, {
+    request<{ status: string }>(`/studio/genres/${genreId}/order`, {
       method: "PUT",
       body: JSON.stringify({ video_ids: videoIds }),
     }),
   syncAll: () =>
     request<{ results: { id: number; synced: number; error: string | null }[] }>(
-      "/admin/sync",
+      "/studio/sync",
       { method: "POST" },
     ),
-  getChannelSource: () => request<ChannelSource>("/admin/youtube/channel"),
+  getChannelSource: () => request<ChannelSource>("/studio/youtube/channel"),
   setChannelSource: (channel: string) =>
-    request<ChannelSource>("/admin/youtube/channel", {
+    request<ChannelSource>("/studio/youtube/channel", {
       method: "PUT",
       body: JSON.stringify({ channel }),
     }),
   listChannelPlaylists: () =>
-    request<ChannelPlaylist[]>("/admin/youtube/playlists"),
+    request<ChannelPlaylist[]>("/studio/youtube/playlists"),
   createGenre: (name: string, slug: string) =>
-    request<Genre>("/admin/genres", {
+    request<Genre>("/studio/genres", {
       method: "POST",
       body: JSON.stringify({ name, slug }),
     }),
@@ -114,19 +114,19 @@ export const api = {
     id: number,
     updates: Partial<Pick<Genre, "name" | "slug" | "is_default">>,
   ) =>
-    request<Genre>(`/admin/genres/${id}`, {
+    request<Genre>(`/studio/genres/${id}`, {
       method: "PUT",
       body: JSON.stringify(updates),
     }),
   deleteGenre: (id: number) =>
-    request<{ status: string }>(`/admin/genres/${id}`, { method: "DELETE" }),
+    request<{ status: string }>(`/studio/genres/${id}`, { method: "DELETE" }),
   createPlaylist: (genreId: number, url: string, label: string) =>
     request<{
       id: number;
       youtube_playlist_id: string;
       synced: number;
       sync_error: string | null;
-    }>("/admin/playlists", {
+    }>("/studio/playlists", {
       method: "POST",
       body: JSON.stringify({
         genre_id: genreId,
@@ -134,21 +134,21 @@ export const api = {
         label,
       }),
     }),
-  listPlaylists: () => request<AddedPlaylist[]>("/admin/playlists"),
+  listPlaylists: () => request<AddedPlaylist[]>("/studio/playlists"),
   refreshPlaylist: (id: number) =>
     request<{ id: number; synced: number }>(
-      `/admin/playlists/${id}/refresh`,
+      `/studio/playlists/${id}/refresh`,
       { method: "POST" },
     ),
   deletePlaylist: (id: number) =>
-    request<{ status: string }>(`/admin/playlists/${id}`, { method: "DELETE" }),
-  listSlots: () => request<ScheduleSlot[]>("/admin/slots"),
+    request<{ status: string }>(`/studio/playlists/${id}`, { method: "DELETE" }),
+  listSlots: () => request<ScheduleSlot[]>("/studio/slots"),
   createSlot: (slot: {
     genre_id: number;
     days_of_week: number[];
     start_time: string;
   }) =>
-    request<ScheduleSlot>("/admin/slots", {
+    request<ScheduleSlot>("/studio/slots", {
       method: "POST",
       body: JSON.stringify(slot),
     }),
@@ -160,10 +160,10 @@ export const api = {
       start_time: string;
     }>,
   ) =>
-    request<ScheduleSlot>(`/admin/slots/${id}`, {
+    request<ScheduleSlot>(`/studio/slots/${id}`, {
       method: "PUT",
       body: JSON.stringify(updates),
     }),
   deleteSlot: (id: number) =>
-    request<{ status: string }>(`/admin/slots/${id}`, { method: "DELETE" }),
+    request<{ status: string }>(`/studio/slots/${id}`, { method: "DELETE" }),
 };

@@ -100,10 +100,10 @@ def test_radio_pushes_manual_play_at_zero(tmp_path):
     client, engine = _radio_client(tmp_path)
     with Session(engine) as s:
         gid = _seed(s, "chill", ["a", "b", "c"]).id
-    client.post("/api/admin/login", json={"password": "test-pass"})
+    client.post("/api/studio/login", json={"password": "test-pass"})
     with client.websocket_connect("/api/ws/radio") as ws:
         resp = client.post(
-            "/api/admin/playback/play",
+            "/api/studio/playback/play",
             json={"genre_id": gid, "youtube_video_id": "b"},
         )
         assert resp.status_code == 200
@@ -117,9 +117,9 @@ def test_radio_play_without_clients_succeeds(tmp_path):
     client, engine = _radio_client(tmp_path)
     with Session(engine) as s:
         gid = _seed(s, "chill", ["a", "b"]).id
-    client.post("/api/admin/login", json={"password": "test-pass"})
+    client.post("/api/studio/login", json={"password": "test-pass"})
     resp = client.post(
-        "/api/admin/playback/play",
+        "/api/studio/playback/play",
         json={"genre_id": gid, "youtube_video_id": "b"},
     )
     assert resp.status_code == 200
@@ -129,14 +129,14 @@ def test_radio_pushes_skip(tmp_path):
     client, engine = _radio_client(tmp_path)
     with Session(engine) as s:
         gid = _seed(s, "chill", ["a", "b", "c"]).id
-    client.post("/api/admin/login", json={"password": "test-pass"})
+    client.post("/api/studio/login", json={"password": "test-pass"})
     client.post(
-        "/api/admin/playback/play",
+        "/api/studio/playback/play",
         json={"genre_id": gid, "youtube_video_id": "a"},
     )
     with client.websocket_connect("/api/ws/radio") as ws:
         resp = client.post(
-            "/api/admin/playback/next", json={"genre_id": gid}
+            "/api/studio/playback/next", json={"genre_id": gid}
         )
         assert resp.status_code == 200
         message = ws.receive_json()

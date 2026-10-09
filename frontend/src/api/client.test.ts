@@ -45,7 +45,7 @@ describe("api client", () => {
       }),
     );
     const result = await api.getChannelSource();
-    expect(spy.mock.calls[0][0]).toBe("/api/admin/youtube/channel");
+    expect(spy.mock.calls[0][0]).toBe("/api/studio/youtube/channel");
     expect(result).toEqual({ channel_id: "UC1", title: "Mine" });
   });
 
@@ -57,7 +57,7 @@ describe("api client", () => {
     );
     await api.setChannelSource("@me");
     const [url, init] = spy.mock.calls[0];
-    expect(url).toBe("/api/admin/youtube/channel");
+    expect(url).toBe("/api/studio/youtube/channel");
     expect(init?.method).toBe("PUT");
     expect(init?.body).toBe(JSON.stringify({ channel: "@me" }));
   });
@@ -67,7 +67,7 @@ describe("api client", () => {
       new Response(JSON.stringify([]), { status: 200 }),
     );
     await api.listChannelPlaylists();
-    expect(spy.mock.calls[0][0]).toBe("/api/admin/youtube/playlists");
+    expect(spy.mock.calls[0][0]).toBe("/api/studio/youtube/playlists");
   });
 
   it("GETs added playlists", async () => {
@@ -75,7 +75,7 @@ describe("api client", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(JSON.stringify([]), { status: 200 }));
     await api.listPlaylists();
-    expect(spy.mock.calls[0][0]).toBe("/api/admin/playlists");
+    expect(spy.mock.calls[0][0]).toBe("/api/studio/playlists");
   });
 
   it("POSTs a playlist refresh", async () => {
@@ -84,7 +84,7 @@ describe("api client", () => {
     );
     await api.refreshPlaylist(3);
     const [url, init] = spy.mock.calls[0];
-    expect(url).toBe("/api/admin/playlists/3/refresh");
+    expect(url).toBe("/api/studio/playlists/3/refresh");
     expect(init?.method).toBe("POST");
   });
 
@@ -94,7 +94,7 @@ describe("api client", () => {
     );
     await api.deletePlaylist(3);
     const [url, init] = spy.mock.calls[0];
-    expect(url).toBe("/api/admin/playlists/3");
+    expect(url).toBe("/api/studio/playlists/3");
     expect(init?.method).toBe("DELETE");
   });
 
@@ -105,7 +105,7 @@ describe("api client", () => {
         new Response(JSON.stringify({ status: "ok" }), { status: 200 }),
       );
     const result = await api.session();
-    expect(spy.mock.calls[0][0]).toBe("/api/admin/session");
+    expect(spy.mock.calls[0][0]).toBe("/api/studio/session");
     expect(result).toEqual({ status: "ok" });
   });
 
@@ -137,7 +137,7 @@ describe("api client", () => {
       );
     await api.setGenreOrder(3, ["a", "b"]);
     const [url, init] = spy.mock.calls[0];
-    expect(url).toBe("/api/admin/genres/3/order");
+    expect(url).toBe("/api/studio/genres/3/order");
     expect(init?.method).toBe("PUT");
     expect(init?.body).toBe(JSON.stringify({ video_ids: ["a", "b"] }));
   });
@@ -150,7 +150,7 @@ describe("api client", () => {
       );
     await api.play(3, "vid");
     const [url, init] = spy.mock.calls[0];
-    expect(url).toBe("/api/admin/playback/play");
+    expect(url).toBe("/api/studio/playback/play");
     expect(init?.method).toBe("POST");
     expect(init?.body).toBe(
       JSON.stringify({ genre_id: 3, youtube_video_id: "vid" }),
@@ -167,8 +167,8 @@ describe("api client", () => {
       );
     await api.playbackNext(3);
     await api.playbackPrev(3);
-    expect(spy.mock.calls[0][0]).toBe("/api/admin/playback/next");
-    expect(spy.mock.calls[1][0]).toBe("/api/admin/playback/prev");
+    expect(spy.mock.calls[0][0]).toBe("/api/studio/playback/next");
+    expect(spy.mock.calls[1][0]).toBe("/api/studio/playback/prev");
   });
 
   it("GETs a genre's ordered tracks", async () => {
@@ -176,6 +176,6 @@ describe("api client", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(JSON.stringify([]), { status: 200 }));
     await api.genreTracks(3);
-    expect(spy.mock.calls[0][0]).toBe("/api/admin/genres/3/tracks");
+    expect(spy.mock.calls[0][0]).toBe("/api/studio/genres/3/tracks");
   });
 });
