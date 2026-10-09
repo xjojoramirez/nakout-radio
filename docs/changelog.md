@@ -3,6 +3,35 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — backend: playlist synced_at (set on sync, backfilled)
+
+- `Playlist` gained a nullable `synced_at` datetime column
+  (`backend/app/models.py`).
+- `sync_playlist` (`backend/app/sync.py`) now stamps `playlist.synced_at` with
+  naive UTC now just before its commit, so create, refresh, and sync-all all
+  update the timestamp (all three call `sync_playlist` after the playlist row
+  is committed).
+- New migration
+  `backend/alembic/versions/b2c3d4e5f6a7_playlist_synced_at.py`
+  (revision `b2c3d4e5f6a7`, down_revision `a1b2c3d4e5f6`): batch-adds the
+  nullable `synced_at` column and backfills it from `MAX(trackcache.fetched_at)`
+  per playlist; playlists with no cached tracks stay NULL.
+- `PlaylistOut` gained `synced_at: str | None = None`
+  (`backend/app/schemas.py`); `list_added_playlists` serializes it as
+  ISO-8601 with a `Z` suffix (`backend/app/routers/admin.py`).
+- Files: `backend/app/models.py`, `backend/app/sync.py`,
+  `backend/app/schemas.py`, `backend/app/routers/admin.py`,
+  `backend/alembic/versions/b2c3d4e5f6a7_playlist_synced_at.py`,
+  `backend/tests/test_admin.py`, `docs/changelog.md`.
+- Restart required: backend only (model + migration + serialization changed) —
+  `docker compose up -d --build backend`.
+- Verification: `python -m pytest tests/test_admin.py -k synced_at -q` →
+  3 passed (create-listing non-null, refresh non-null, migration backfill
+  == `2026-10-01 10:00:00`); full `python -m pytest -q` → 218 passed
+  (215 prior + 3 new). `python -m alembic heads` → single head
+  `b2c3d4e5f6a7`; `alembic upgrade head` on a scratch sqlite db upgraded the
+  full chain with `playlist.synced_at` present.
+
 ## 2026-10-09 — backend colour review fixes: honest palette wraparound, newline-safe colour validation
 
 - Palette wraparound made honest in both places: exhausted-palette fallback

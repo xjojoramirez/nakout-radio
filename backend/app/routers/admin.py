@@ -330,6 +330,7 @@ def list_added_playlists(
             youtube_playlist_id=p.youtube_playlist_id,
             label=p.label,
             track_count=counts.get(p.id, 0),
+            synced_at=(p.synced_at.isoformat() + "Z") if p.synced_at else None,
         )
         for p in playlists
     ]

@@ -34,6 +34,7 @@ class Playlist(SQLModel, table=True):
     genre_id: int = Field(foreign_key="genre.id", index=True)
     youtube_playlist_id: str
     label: str = ""
+    synced_at: datetime | None = Field(default=None)
 
 
 class TrackCache(SQLModel, table=True):

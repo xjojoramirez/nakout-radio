@@ -144,6 +144,7 @@ class PlaylistOut(BaseModel):
     youtube_playlist_id: str
     label: str
     track_count: int
+    synced_at: str | None = None
 
 
 class PlayIn(BaseModel):
