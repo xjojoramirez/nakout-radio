@@ -3,6 +3,23 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — task 4 primitives polish: gchip font inheritance, hint variants, toast cosmetics + unmount test
+
+- `frontend/src/styles/vintage.css` (admin primitives block):
+  `.gchip` now declares `font-family: var(--font-body)` +
+  `font-size: 0.9rem` (buttons don't inherit fonts from this file);
+  added `.hint.err` / `.hint.ok` variants after the bare `.hint` rule;
+  `.toast` set to `opacity: 1` and `transform: translateX(-50%)`
+  (dropped the dead 8px offset). No visual change to anything currently
+  rendered — the touched selectors are not used on-screen yet.
+- Added a timer-unmount test to
+  `frontend/src/components/admin/Toast.dom.test.tsx`
+  (`onDone` never fires after unmount; suite now 158 tests in 24 files).
+- Restart: frontend only (`frontend/src/styles/**` is a served change,
+  per AGENTS.md rule) — `docker compose up -d --build frontend`.
+- Verification: `npm run test` (158 tests) + `npm run typecheck` +
+  `npm run build` green.
+
 ## 2026-10-09 — shared admin UI primitives: Toast, PaletteSwatches, GenreChipRadio + CSS (admin reskin task 4)
 
 - New `frontend/src/components/admin/`: `Toast.tsx` (capsule

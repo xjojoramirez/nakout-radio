@@ -1084,8 +1084,8 @@ body.admin-fixed {
   position: fixed;
   left: 50%;
   bottom: 24px;
-  transform: translate(-50%, 8px);
-  opacity: 0.98;
+  transform: translateX(-50%);
+  opacity: 1;
   pointer-events: none;
   background: var(--cream);
   color: var(--bg-2);
@@ -1114,6 +1114,8 @@ body.admin-fixed {
   border: 1px solid var(--border);
   background: var(--wood);
   color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
 }
@@ -1171,6 +1173,14 @@ body.admin-fixed {
   font-size: 0.85rem;
   color: var(--muted);
   min-height: 1.2em;
+}
+
+.hint.err {
+  color: var(--danger);
+}
+
+.hint.ok {
+  color: var(--ok);
 }
 
 .flash {
