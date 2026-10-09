@@ -3,6 +3,21 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — schedule panel fixes: tz note, strip-click guard, form a11y, stale error clearing
+
+- `frontend/src/components/admin/SchedulePanel.tsx`: browser-timezone note
+  in the `.sub` intro line wrapped in `.mono`; form day toggles wrapped in
+  `role="group"` `aria-label="Repeat on"` (visual label kept); sentence
+  falls back to "Pick a genre and a start time." when no days are
+  selected; inline conflict error now also clears on genre-chip and
+  day-pill/preset changes (was only time-change/reopen/submit).
+- `frontend/src/components/admin/ScheduleTimeline.tsx`: strip clicks are
+  ignored when the strip rect width is 0 (guards Infinity minute math).
+- Frontend source only; no Docker restart required (rebuild `frontend`
+  to ship: `docker compose up -d --build frontend`).
+- Verification: `npm run test` 227 passed (28 files), `npm run typecheck`
+  clean, `npm run build` ok.
+
 ## 2026-10-09 — task 8: admin schedule timeline, on-air card, day pills, sentence form
 
 - `frontend/src/components/admin/ScheduleTimeline.tsx` (new): the 24h

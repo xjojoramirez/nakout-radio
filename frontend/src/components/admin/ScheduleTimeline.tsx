@@ -92,6 +92,7 @@ export function ScheduleTimeline({
     const target = e.target as HTMLElement;
     if (target.closest("button")) return;
     const rect = e.currentTarget.getBoundingClientRect();
+    if (!rect.width) return;
     const raw = ((e.clientX - rect.left) / rect.width) * 1440;
     const min = Math.round(raw / 30) * 30;
     onOpenNew(Math.min(1410, Math.max(0, min)));
