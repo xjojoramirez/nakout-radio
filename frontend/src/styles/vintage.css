@@ -896,7 +896,7 @@ body.admin-fixed {
 
 .btn-danger-solid {
   background: var(--danger);
-  color: var(--cream);
+  color: #1c110a;
 }
 
 .btn-danger-solid:hover:not(:disabled) {
@@ -1214,7 +1214,7 @@ body.admin-fixed {
 .admin .days button.active {
   background: var(--amber);
   border-color: var(--amber);
-  color: var(--ink);
+  color: #1c110a;
 }
 
 .time-pair {
