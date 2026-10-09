@@ -7,6 +7,8 @@ import type {
   Genre,
   GenreDetail,
   ScheduleSlot,
+  ScheduleToday,
+  SlotToday,
   Track,
 } from "../types";
 
@@ -51,6 +53,7 @@ export const api = {
   getGenre: (slug: string) => request<GenreDetail>(`/genres/${slug}`),
   scheduleNow: () => request<CurrentGenre>("/schedule/now"),
   now: () => request<BroadcastNow>("/now"),
+  scheduleToday: () => request<ScheduleToday>("/schedule/today"),
   advance: (cursor: string, direction: "next" | "prev" | "random") =>
     request<{ track: Track | null; cursor: string }>("/queue/advance", {
       method: "POST",

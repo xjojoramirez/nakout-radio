@@ -64,3 +64,15 @@ export interface ScheduleSlot {
   days_of_week: number[];
   start_time: string;
 }
+
+export interface SlotToday {
+  id: number;
+  genre_id: number;
+  genre_name: string;
+  start_time: string;
+}
+
+export interface ScheduleToday {
+  current_id: number | null;
+  slots: SlotToday[];
+}

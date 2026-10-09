@@ -3,6 +3,261 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — volume fader follow-ups: Home/End key test added; fader spec drag-gain wording corrected
+
+- Added a Home/End bounds test to
+  `frontend/src/components/deck/VolumeFader.dom.test.tsx` (suite now
+  138 tests in 18 files).
+- Corrected the drag-gain wording in
+  `docs/superpowers/specs/2026-10-09-volume-fader-design.md` (1:1, not
+  the knob's delta/2 — code was already correct).
+- Tests/docs only — no container restart required.
+- Verification: `npm run test` (138 tests in 18 files) +
+  `npm run typecheck` + `npm run build` green.
+
+## 2026-10-09 — homepage mixer: added vertical volume fader beside master knob; removed decorative mini-knobs
+
+- Added `VolumeFader` (`frontend/src/components/deck/VolumeFader.tsx`,
+  `frontend/src/components/deck/VolumeFader.dom.test.tsx`): vertical
+  `role="slider"` rail with drag (1:1 vertical gain, pointer
+  capture/cancel), keyboard steps (arrows ±2 or ±10 with shift,
+  PageUp/PageDown ±10, Home/End), clamped 0–100, `disabled` support.
+- Wired into the RadioPage mixer below the master `VolumeKnob`
+  (`frontend/src/pages/RadioPage.tsx`), bound to `player.volume` /
+  `player.setVolume`, disabled when off air; the three decorative
+  `.deck-knob` spans were removed (master knob unchanged).
+- Fader rail/thumb styles added after the deck-knob rules
+  (`frontend/src/styles/vintage.css`); `.deck-knob` styles kept for the
+  admin Now Playing panel.
+- Page DOM test extended: knob + fader share the same `aria-valuenow`,
+  decorative knobs asserted gone (`frontend/src/pages/
+  RadioPage.dom.test.tsx`).
+- **Container restart required (frontend only):**
+  `docker compose up -d --build frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: `npm run test` (137 tests in 18 files) +
+  `npm run typecheck` + `npm run build` green.
+
+## 2026-10-09 — vinyl-deck-ui branch complete — dark deck homepage (no listener skip/stop), dark admin studio with deck Now Playing (full transport), public GET /api/schedule/today
+
+- Umbrella entry for the whole branch (details in the entries below), plus
+  the final verification pass and two polish fixes: the admin sleeve
+  progress bar gained `aria-label="Playback position"`
+  (`frontend/src/components/admin/NowPlayingPanel.tsx`), and the RadioPage
+  DOM suite gained a test covering the player-error Retry path (the
+  `onError` wiring fires → "Retry" renders → clicking it re-fetches
+  `/api/now`) (`frontend/src/pages/RadioPage.dom.test.tsx`, now 8 tests).
+- Files touched: see entries below (branch-wide), plus the two polish files
+  above and `docs/changelog.md` (this entry).
+- **Container restart required (cumulative for the branch — both
+  containers):** `docker compose up -d --build backend frontend`, then
+  hard-refresh the browser (Ctrl+Shift+R).
+- Verification: `npm run test` (130 tests in 17 files) + `npm run typecheck`
+  + `npm run build` green; `python -m pytest -q` 209 passed.
+
+## 2026-10-09 — admin studio Now Playing rebuilt as vinyl deck (full transport/queue intact); dead GenreDial + btn-danger hover contrast fixed
+
+- Rebuilt the admin Now Playing panel JSX
+  (`frontend/src/components/admin/NowPlayingPanel.tsx`) as a two-column
+  vinyl studio: wooden `TurntableDeck` + mixer (VU meter, stationary deck
+  knobs, "On the decks" genre strip) on the left; genre select, sleeve
+  (cover art, genre kicker, track title/artist), progress bar with
+  `formatClock(state.offset)` elapsed time and source badge, full transport
+  (Prev/Next/Stop/Auto), draggable queue with Shuffle and per-row Play, and
+  the interrupt-playback ConfirmDialog on the right. All logic, handlers,
+  disabled conditions and state are unchanged — only markup/classes moved
+  (old `.now-playing`/`.meta`/`.source` block is gone; "On air" appears only
+  as the queue-badge, the sleeve uses `SOURCE_LABELS` like "Schedule").
+- New `formatClock(totalSeconds)` helper appended to
+  `frontend/src/utils/format.ts` (elapsed clock; `formatDuration` kept for
+  queue rows).
+- Admin deck CSS appended to `frontend/src/styles/vintage.css` right after
+  the `#panel-now .queue-list` shell rules (`#panel-now .admin-deck` flex
+  fill + `.np-col` column-flex override, 0.9fr/1.1fr grid, capped 460px
+  deck, 84px admin sleeve, tightened gaps/title clamp), plus mobile
+  (≤600px) additions inside the existing block (`.admin-deck` → `display:
+  block`, uncapped `.deck`); queue overflow guards untouched.
+- Fixed the `.btn-danger-solid:hover:not(:disabled)` affordance (previously
+  a darkened hover that read as lower contrast; now `filter:
+  brightness(1.08)` so the label stays readable on hover).
+- Removed dead code `frontend/src/components/GenreDial.tsx` (own commit;
+  referenced nowhere else — verified before deletion).
+- Review follow-ups: scoped `.admin-deck`/`.admin-sleeve` grid columns with
+  `#panel-now` (they were being beaten by later base rules in the deck
+  section), replaced the hover rule with `filter: brightness(1.08)` and
+  deleted the dead `.source .badge` rule, added a margin guard
+  (`.admin-deck .np-title { margin: 6px 0 4px; }` against the global
+  `.admin h2` margin), and gave the np-bar fill `role="progressbar"` +
+  aria value attributes driven by a shared `livePct` const.
+- Files touched: `frontend/src/components/admin/NowPlayingPanel.tsx`,
+  `frontend/src/utils/format.ts`, `frontend/src/styles/vintage.css`,
+  `frontend/src/components/GenreDial.tsx` (removed).
+- **Container restart required (container `frontend` only):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` (129 tests in 17 files, incl. unchanged
+  `NowPlayingPanel.dom.test.tsx`) + `npm run typecheck` + `npm run build`
+  green; `rg "now-playing|radio-cabinet"` (non-test files) reports no
+  remaining matches.
+
+## 2026-10-09 — vinyl deck homepage rebuild (Tune in / Tune out, no skip/stop)
+
+- Rebuilt the listener homepage (`frontend/src/pages/RadioPage.tsx`) around
+  the vinyl deck: turntable + mixer with VU meter and draggable volume knob
+  (knob stays interactive even when offline), brand header with on-air LED
+  and live listener count, now-playing sleeve with cover art + progress bar,
+  and "Today's schedule" list highlighting the current slot (wraparound
+  ranges, e.g. "5 pm – 5 am").
+- Listener controls are now a single Tune in / Tune out mute button
+  (playback stays muted until tuned in); no Next record / Stop on the
+  homepage. A Retry button appears when the player errors.
+- New schedule formatting helpers (`frontend/src/utils/deck.ts`):
+  `formatClock`, `hourLabel`, `slotRange`, `todayScheduleRows` — unit tested
+  in `frontend/src/utils/deck.unit.test.ts` (5 tests, red → green).
+- RadioPage DOM tests rewritten (7 tests, verified failing against the old
+  page first): genre kicker, tune in/out toggle, volume knob slider, absence
+  of skip/stop controls, schedule rendering + current-slot highlight, graceful
+  fallback when the schedule request fails, offline notice with disabled tune
+  control.
+- Removed the obsolete `frontend/src/components/NowPlaying.tsx` (only
+  RadioPage imported it) and pruned the now-unused homepage CSS from
+  `frontend/src/styles/vintage.css` (`.radio-cabinet`, `.radio-header`,
+  `.listeners`, `.now-playing`, `.genre-row`, `.tuned-label`, `.genre-list`,
+  `.auto`, `.controls`, `.genre-error`, `.volume`) plus the matching mobile
+  (≤600px / ≤380px) rules; mobile homepage rules now target `.radio-page`,
+  `.brand`, `.tune-btn`, `.sleeve`, `.np-cover`, `.np-title`. Admin still
+  references `.now-playing` until its rebuild lands next.
+- Files touched: `frontend/src/pages/RadioPage.tsx` (+ rewritten
+  `RadioPage.dom.test.tsx`), `frontend/src/utils/deck.ts` (+ new
+  `deck.unit.test.ts`), `frontend/src/styles/vintage.css`,
+  `frontend/src/components/NowPlaying.tsx` (removed).
+- **Container restart required (container `frontend` only):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` (129 tests in 17 files) + `npm run typecheck`
+  + `npm run build` green.
+
+## 2026-10-09 — vinyl deck turntable + volume knob components (deck CSS, TDD)
+
+- Added the reusable vinyl-deck components for the upcoming homepage and
+  admin Now Playing panels:
+  - `TurntableDeck({ playing, artUrl })`: wooden deck shell with spinning
+    record (rAF spin loop, 33⅓ RPM target with spin-up/down inertia, honors
+    `prefers-reduced-motion`), cover art on the record label, tonearm that
+    swings when playing, 33/45 RPM markers
+    (`frontend/src/components/deck/TurntableDeck.tsx`).
+  - `VolumeKnob({ value, onChange, label, disabled })`: accessible
+    `role="slider"` knob — arrow keys (±2), shift (±10), PageUp/PageDown,
+    Home/End, vertical pointer drag with pointer capture, 0-100 clamping,
+    `--r` rotation CSS variable
+    (`frontend/src/components/deck/VolumeKnob.tsx`).
+- Strict TDD: 6 `VolumeKnob` + 2 `TurntableDeck` DOM tests, verified red
+  (module missing / drag coordinates lost) before green
+  (`frontend/src/components/deck/*.dom.test.tsx`).
+- Added the "Vinyl deck" CSS section (deck/platter/record/tonearm, RPM
+  badges, mixer row, knob, now-playing sleeve/bar/times/tune button,
+  schedule list, responsive + reduced-motion blocks) ahead of the
+  mobile-width blocks in `frontend/src/styles/vintage.css`; the
+  pre-existing `.vu-meter` rules are only overridden via
+  `.mixer .vu-meter { height: 44px; }`. Review follow-up: the section was
+  moved from EOF to sit just before the Mobile ≤600px block
+  (`style: move vinyl deck section ahead of the mobile blocks`), and the
+  knob gained a `pointerCancel` handler + 7th test clearing drag state
+  mid-drag (`fix: clear knob drag state on pointer cancel`).
+- Test-env fix (deviation note): jsdom 25 lacks a `PointerEvent`
+  constructor, so RTL `fireEvent.pointer*` dropped `clientY`/`pointerId`
+  and the knob drag test got `NaN`. Added a minimal `PointerEvent`
+  polyfill (MouseEvent-based) to `frontend/src/test/setup.ts`, following
+  the existing `matchMedia`/`scrollIntoView` polyfill style there; the
+  existing `jest` shim and other shims are untouched.
+- Files touched: `frontend/src/styles/vintage.css`,
+  `frontend/src/components/deck/TurntableDeck.tsx`,
+  `frontend/src/components/deck/TurntableDeck.dom.test.tsx`,
+  `frontend/src/components/deck/VolumeKnob.tsx`,
+  `frontend/src/components/deck/VolumeKnob.dom.test.tsx`,
+  `frontend/src/test/setup.ts`.
+- **Container restart required (container `frontend` only):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` (121 tests in 16 files, incl. the 9 new
+  deck tests) + `npm run build` + `npm run typecheck` green.
+
+## 2026-10-09 — vinyl deck dark theme takeover (tokens + fonts) across site incl. admin
+
+- Replaced the Google Fonts load (Bebas Neue + Inter) with Bricolage
+  Grotesque (variable display/body face) + DM Mono (`frontend/index.html`;
+  preconnect links unchanged).
+- Took over the token palette in `:root` with the vinyl-deck dark theme
+  (dark wood/cream/amber tokens, new `--font-mono`, `--vinyl`, `--led`,
+  `color-scheme: dark`), and retuned headings + selection to the new
+  display face.
+- Dark-surface sweep across shared controls and admin surfaces: buttons
+  (primary text, secondary, danger hover), inputs, admin card, banners
+  untouched surfaces via tokens, progress track, skeletons, admin tabs,
+  confirmation modal, lists, badges, queue rows, back link, channel
+  cards, slot editor, scrollbars
+  (`frontend/src/styles/vintage.css`).
+- Files touched: `frontend/index.html`,
+  `frontend/src/styles/vintage.css`. Review follow-up: the same takeover
+  also fixed dark-theme contrast on `.admin .days button.active` and
+  `.btn-danger-solid` (dark `#1c110a` text on amber/danger fills).
+- **Container restart required (container `frontend` only):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` + `npm run build` green (112 tests passed
+  in 14 files; vite build succeeded).
+
+## 2026-10-09 — frontend schedule/today types + useTodaySchedule hook (5-min refresh)
+
+- Added the frontend fetch layer for the listener-homepage schedule deck
+  (rendering lands in a later task):
+  - `SlotToday` / `ScheduleToday` types appended after `ScheduleSlot`
+    (`frontend/src/types.ts`).
+  - `api.scheduleToday()` calling `GET /api/schedule/today`
+    (`frontend/src/api/client.ts`).
+  - `useTodaySchedule()` hook: fetch on mount, then a 5-minute
+    `REFRESH_MS` interval; keeps the last good schedule when a refresh
+    fails, cancelled flag on unmount (same pattern as `useBroadcast`)
+    (`frontend/src/hooks/useTodaySchedule.ts`).
+- Test infra: aliased `globalThis.jest = vi` in the Vitest setup so
+  @testing-library's `waitFor` can advance Vitest's fake timers (`waitFor`
+  otherwise hangs forever with fake timers, since RTL gates its timer
+  advance on a global `jest`) (`frontend/src/test/setup.ts`).
+- Files touched: `frontend/src/types.ts`, `frontend/src/api/client.ts`,
+  `frontend/src/hooks/useTodaySchedule.ts`,
+  `frontend/src/hooks/useTodaySchedule.dom.test.ts`,
+  `frontend/src/test/setup.ts`, `docs/changelog.md` (this entry).
+- **Container restart required (frontend changed):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` green — 112 passed, including 3 new
+  `useTodaySchedule` hook tests; `npm run typecheck` clean.
+
+## 2026-10-09 — Public `GET /api/schedule/today` endpoint
+
+- Added a public, read-only schedule listing for the listener homepage deck:
+  today's slots (weekday filter from `GENRE_TZ`, Asia/Manila) sorted by start
+  time, plus `current_id` — the latest slot that already started today, or
+  `null` before the first start (unchanged behavior: an overnight slot from
+  yesterday still governs `/api/schedule/now` but is not part of today's
+  list).
+  - New response models `SlotTodayOut` / `ScheduleTodayOut`
+    (`backend/app/schemas.py`).
+  - New route `schedule_today` appended after `/now`
+    (`backend/app/routers/schedule.py`).
+  - Tests: fixture client override pattern from `test_admin.py`; endpoint
+    time is monkeypatched to a frozen Monday 09:30 / 04:59 Manila so the
+    suite is deterministic any day it runs
+    (`backend/tests/test_schedule_today.py`, 4 tests).
+- Files touched:
+  - `backend/app/schemas.py`, `backend/app/routers/schedule.py`,
+    `backend/tests/test_schedule_today.py` (commit `d4f50f7`)
+  - `docs/changelog.md` (this entry)
+- **Container restart required (backend changed):**
+  `docker compose up -d --build backend`
+- Verification: `python -m pytest tests/test_schedule_today.py -q` 4 passed;
+  full suite `python -m pytest -q` 209 passed.
+
 ## 2026-10-09 — Renamed admin routes to `/studio`
 
 - Renamed the admin surface away from the common `/admin` path to reduce

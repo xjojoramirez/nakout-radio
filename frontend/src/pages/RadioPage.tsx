@@ -1,104 +1,153 @@
-import { NowPlaying } from "../components/NowPlaying";
 import { OfflineNotice } from "../components/OfflineNotice";
 import { VUMeter } from "../components/VUMeter";
+import { TurntableDeck } from "../components/deck/TurntableDeck";
+import { VolumeFader } from "../components/deck/VolumeFader";
+import { VolumeKnob } from "../components/deck/VolumeKnob";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { useListenerCount } from "../hooks/useListenerCount";
+import { useTodaySchedule } from "../hooks/useTodaySchedule";
 import { useYouTubePlayer } from "../hooks/useYouTubePlayer";
-
-function SoundOnIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-      <path d="M3 9v6h4l5 4V5L7 9H3Z" fill="currentColor" />
-      <path
-        d="M15.5 8.7a4.7 4.7 0 0 1 0 6.6M18.3 6a8.5 8.5 0 0 1 0 12"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function SoundOffIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-      <path d="M3 9v6h4l5 4V5L7 9H3Z" fill="currentColor" />
-      <path
-        d="M4.3 3 21 19.7"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+import { formatClock, todayScheduleRows } from "../utils/deck";
 
 export function RadioPage() {
   const listeners = useListenerCount();
+  const { today } = useTodaySchedule();
   const { state, refresh } = useBroadcast();
   const player = useYouTubePlayer("yt-player", state, refresh);
 
   const offline = state != null && (state.source === "none" || !state.track);
+  const track = player.error ? null : player.track;
+  const genreName = state?.genre?.name ?? null;
+  const duration = track?.duration_seconds ?? 0;
+  const pct =
+    duration > 0
+      ? Math.min(100, Math.max(0, (player.progress / duration) * 100))
+      : 0;
+  const rows = todayScheduleRows(today);
 
   return (
-    <div className={offline ? "radio-cabinet offline" : "radio-cabinet"}>
-      <header className="radio-header">
-        <h1>Nakout Radio</h1>
-        <span className="listeners">{listeners} listening</span>
+    <div className={offline ? "radio-page offline" : "radio-page"}>
+      <header className="radio-top">
+        <div className="brand">
+          Nakout<span>.</span>Radio
+        </div>
+        <div className="onair">
+          <span
+            className={player.playing ? "led on" : "led"}
+            aria-hidden="true"
+          />
+          <span>{player.playing ? "On air" : "Standing by"}</span>
+          <span>{listeners} listening</span>
+        </div>
       </header>
 
       <div id="yt-player" className="hidden-player" />
 
-      {offline ? (
-        <OfflineNotice />
-      ) : (
-        <>
-          <NowPlaying
-            track={player.error ? null : player.track}
-            progress={player.progress}
+      <main className="deck-grid">
+        <section className="deck-side" aria-label="Turntable">
+          <TurntableDeck
+            playing={player.playing}
+            artUrl={track?.thumbnail_url ?? null}
           />
-          <VUMeter playing={player.playing} seed={0} />
-
-          <div className="genre-row">
-            <span className="tuned-label">
-              {state?.genre ? `Tuned: ${state.genre.name}` : "Off air"}
-            </span>
+          <div className="mixer">
+            <div className="dj">
+              <small>On the decks</small>
+              <strong>{genreName ?? "Nakout Radio"}</strong>
+            </div>
+            <VUMeter playing={player.playing} seed={0} />
+            <div className="knob-row">
+              <VolumeKnob
+                label="Volume"
+                value={player.volume}
+                onChange={player.setVolume}
+              />
+              <VolumeFader
+                label="Volume fader"
+                value={player.volume}
+                onChange={player.setVolume}
+                disabled={offline}
+              />
+            </div>
           </div>
+        </section>
 
-          <div className="controls">
-            {player.error ? (
-              <button type="button" className="tune-in" onClick={refresh}>
-                RETRY
+        <section className="np-col">
+          {offline ? (
+            <>
+              <OfflineNotice />
+              <p className="np-artist">
+                The deck is at rest. Come back for the next show.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="sleeve">
+                {track?.thumbnail_url && (
+                  <img className="np-cover" src={track.thumbnail_url} alt="" />
+                )}
+                <div>
+                  <div className="kicker">
+                    {genreName ? `${genreName} · live now` : "Live now"}
+                  </div>
+                  <h1 className="np-title">{track?.title ?? "Tune in"}</h1>
+                  <div className="np-artist">
+                    {track?.artist || "Nakout Radio"}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div className="np-bar">
+                  <div
+                    className="np-bar-fill"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(pct)}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <div className="np-times">
+                  <span>{formatClock(player.progress)}</span>
+                  <span>{formatClock(duration)}</span>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="np-controls">
+            {player.error && !offline ? (
+              <button type="button" className="tune-btn" onClick={refresh}>
+                Retry
               </button>
             ) : (
               <button
                 type="button"
-                className="mute-btn"
+                className="tune-btn"
                 onClick={player.toggleMute}
-                aria-label={player.muted ? "Unmute" : "Mute"}
-                title={player.muted ? "Unmute" : "Mute"}
+                disabled={offline}
               >
-                {player.muted ? <SoundOffIcon /> : <SoundOnIcon />}
+                {player.muted ? "Tune in" : "Tune out"}
               </button>
             )}
-            <label className="volume">
-              Volume
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={player.volume}
-                onChange={(event) =>
-                  player.setVolume(Number(event.target.value))
-                }
-                aria-label="Volume"
-              />
-            </label>
           </div>
-        </>
-      )}
+
+          <section className="sched" aria-label="Today's schedule">
+            <h2>Today's schedule</h2>
+            {rows.length > 0 ? (
+              <ul>
+                {rows.map((row) => (
+                  <li key={row.id} className={row.isNow ? "now" : undefined}>
+                    <span>{row.name}</span>
+                    <span>{row.range}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="np-artist">No schedule slots yet.</p>
+            )}
+          </section>
+        </section>
+      </main>
     </div>
   );
 }
