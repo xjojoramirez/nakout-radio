@@ -37,4 +37,14 @@ describe("Toast", () => {
     });
     expect(onDone).toHaveBeenCalledTimes(1);
   });
+
+  it("cleans the timer on unmount (onDone never fires)", () => {
+    const onDone = vi.fn();
+    const { unmount } = render(<Toast message="Gone" onDone={onDone} />);
+    unmount();
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(onDone).not.toHaveBeenCalled();
+  });
 });
