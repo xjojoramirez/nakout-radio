@@ -25,11 +25,18 @@ restart is required (see `AGENTS.md` for the restart commands).
   deck, 84px admin sleeve, tightened gaps/title clamp), plus mobile
   (≤600px) additions inside the existing block (`.admin-deck` → `display:
   block`, uncapped `.deck`); queue overflow guards untouched.
-- Fixed the `.btn-danger-solid:hover:not(:disabled)` hover-contrast issue
-  (was darkened `#9c2d23`; now `var(--danger)` background with `#1c110a`
-  text so the label stays readable on hover).
+- Fixed the `.btn-danger-solid:hover:not(:disabled)` affordance (previously
+  a darkened hover that read as lower contrast; now `filter:
+  brightness(1.08)` so the label stays readable on hover).
 - Removed dead code `frontend/src/components/GenreDial.tsx` (own commit;
   referenced nowhere else — verified before deletion).
+- Review follow-ups: scoped `.admin-deck`/`.admin-sleeve` grid columns with
+  `#panel-now` (they were being beaten by later base rules in the deck
+  section), replaced the hover rule with `filter: brightness(1.08)` and
+  deleted the dead `.source .badge` rule, added a margin guard
+  (`.admin-deck .np-title { margin: 6px 0 4px; }` against the global
+  `.admin h2` margin), and gave the np-bar fill `role="progressbar"` +
+  aria value attributes driven by a shared `livePct` const.
 - Files touched: `frontend/src/components/admin/NowPlayingPanel.tsx`,
   `frontend/src/utils/format.ts`, `frontend/src/styles/vintage.css`,
   `frontend/src/components/GenreDial.tsx` (removed).
