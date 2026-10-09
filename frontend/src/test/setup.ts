@@ -27,6 +27,25 @@ if (typeof window.matchMedia !== "function") {
   });
 }
 
+// jsdom does not implement PointerEvent constructors (jsdom#2527); RTL's
+// fireEvent.pointer* falls back to a plain Event and drops pointerId/clientY.
+// Polyfill on the test window via MouseEvent so coordinates flow through.
+if (typeof window.PointerEvent !== "function") {
+  class PointerEventPolyfill extends MouseEvent {
+    readonly pointerId: number;
+    readonly pointerType: string;
+    readonly isPrimary: boolean;
+    constructor(type: string, init: { pointerId?: number; pointerType?: string; isPrimary?: boolean } & MouseEventInit = {}) {
+      const { pointerId = 0, pointerType = "", isPrimary = false, ...rest } = init;
+      super(type, rest);
+      this.pointerId = pointerId;
+      this.pointerType = pointerType;
+      this.isPrimary = isPrimary;
+    }
+  }
+  window.PointerEvent = PointerEventPolyfill as unknown as typeof PointerEvent;
+}
+
 class StubWebSocket {
   static readonly OPEN = 1;
   onopen: (() => void) | null = null;
