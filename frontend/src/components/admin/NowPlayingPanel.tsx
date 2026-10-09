@@ -92,6 +92,13 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
   const currentIndex = currentVideoId
     ? tracks.findIndex((t) => t.youtube_video_id === currentVideoId)
     : -1;
+  const livePct =
+    state?.track && state.track.duration_seconds > 0
+      ? Math.min(
+          100,
+          Math.max(0, (state.offset / state.track.duration_seconds) * 100),
+        )
+      : 0;
 
   useEffect(() => {
     const list = queueRef.current;
@@ -269,16 +276,11 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
                 <div className="np-bar">
                   <div
                     className="np-bar-fill"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        Math.max(
-                          0,
-                          ((state.offset / (state.track.duration_seconds || 1)) *
-                            100),
-                        ),
-                      )}%`,
-                    }}
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(livePct)}
+                    style={{ width: `${livePct}%` }}
                   />
                 </div>
                 <div className="np-times">
@@ -295,7 +297,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
             </p>
           )}
 
-              <div className="transport">
+          <div className="transport">
             <button
               type="button"
               className="btn btn-secondary"
