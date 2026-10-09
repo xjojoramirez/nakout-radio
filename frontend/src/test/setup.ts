@@ -1,4 +1,11 @@
 import "@testing-library/jest-dom";
+import { vi } from "vitest";
+
+// @testing-library's `waitFor` and act() drain detect fake timers via a
+// global `jest` and advance them with `jest.advanceTimersByTime`. Vitest does
+// not provide one, so alias `vi` (API-compatible for these calls); the shim
+// only takes effect when fake timers are installed.
+(globalThis as unknown as Record<string, unknown>).jest = vi;
 
 if (typeof Element.prototype.scrollIntoView !== "function") {
   Element.prototype.scrollIntoView = () => {};
