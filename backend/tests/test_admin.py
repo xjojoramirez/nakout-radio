@@ -948,7 +948,7 @@ def test_create_playlist_sets_synced_at_in_listing(tmp_path, monkeypatch):
 
 
 def test_refresh_playlist_updates_synced_at(tmp_path, monkeypatch):
-    client, _ = _client(tmp_path)
+    client, engine = _client(tmp_path)
     _login(client)
     sid = client.post(
         "/api/studio/genres", json={"name": "S", "slug": "s"}
@@ -961,6 +961,12 @@ def test_refresh_playlist_updates_synced_at(tmp_path, monkeypatch):
         "/api/studio/playlists",
         json={"genre_id": sid, "youtube_playlist_url": "PL1", "label": ""},
     ).json()["id"]
+    with Session(engine) as s:
+        playlist = s.get(Playlist, pid)
+        playlist.synced_at = None
+        s.add(playlist)
+        s.commit()
+    assert client.get("/api/studio/playlists").json()[0]["synced_at"] is None
     monkeypatch.setattr(
         "app.routers.admin._build_fetch",
         lambda: _fake_fetch([TrackData("v1", "One", "A", "u", 0)]),
@@ -999,7 +1005,7 @@ def test_playlist_synced_at_backfill_migration(tmp_path):
         CREATE TABLE genre (
             id INTEGER PRIMARY KEY, name VARCHAR NOT NULL,
             slug VARCHAR NOT NULL, is_default BOOLEAN,
-            sort_order INTEGER
+            sort_order INTEGER, color VARCHAR
         );
         INSERT INTO genre (name, slug, is_default, sort_order)
             VALUES ('A','a',0,0);
@@ -1009,6 +1015,8 @@ def test_playlist_synced_at_backfill_migration(tmp_path):
         );
         INSERT INTO playlist (genre_id, youtube_playlist_id, label)
             VALUES (1, 'PL1', '');
+        INSERT INTO playlist (genre_id, youtube_playlist_id, label)
+            VALUES (1, 'PL2', '');
         CREATE TABLE trackcache (
             id INTEGER PRIMARY KEY, playlist_id INTEGER NOT NULL,
             youtube_video_id VARCHAR NOT NULL, title VARCHAR NOT NULL,
@@ -1030,14 +1038,17 @@ def test_playlist_synced_at_backfill_migration(tmp_path):
     _alembic(db_url, "upgrade", "b2c3d4e5f6a7")
 
     conn = sqlite3.connect(db_path)
-    synced_at = conn.execute(
-        "SELECT synced_at FROM playlist WHERE id = 1"
-    ).fetchone()[0]
+    synced = [
+        r[0]
+        for r in conn.execute(
+            "SELECT synced_at FROM playlist ORDER BY id"
+        ).fetchall()
+    ]
     revision = conn.execute(
         "SELECT version_num FROM alembic_version"
     ).fetchall()
     conn.close()
-    assert synced_at == "2026-10-01 10:00:00"
+    assert synced == ["2026-10-01 10:00:00", None]
     assert revision == [("b2c3d4e5f6a7",)]
 
 
