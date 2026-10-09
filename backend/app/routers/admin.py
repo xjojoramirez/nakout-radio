@@ -96,17 +96,17 @@ _COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 def _validate_color(value: str | None) -> str | None:
     if value is None:
         return None
-    if not _COLOR_RE.match(value):
+    if not _COLOR_RE.fullmatch(value):
         raise HTTPException(status_code=422, detail="color must be #rrggbb")
     return value.lower()
 
 
 def _first_unused_color(session: Session) -> str:
     used = {row for row in session.exec(select(Genre.color)).all() if row}
-    return next(
-        (c for c in GENRE_PALETTE if c not in used),
-        GENRE_PALETTE[len(used) % len(GENRE_PALETTE)],
-    )
+    if len(used) < len(GENRE_PALETTE):
+        return next(c for c in GENRE_PALETTE if c not in used)
+    genre_count = len(session.exec(select(Genre.id)).all())
+    return GENRE_PALETTE[genre_count % len(GENRE_PALETTE)]
 
 
 def require_admin(

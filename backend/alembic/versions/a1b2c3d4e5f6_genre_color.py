@@ -37,10 +37,10 @@ def upgrade() -> None:
     conn = op.get_bind()
     rows = conn.execute(sa.text("SELECT id FROM genre ORDER BY id")).fetchall()
     used: set[str] = set()
-    for (genre_id,) in rows:
+    for index, (genre_id,) in enumerate(rows):
         color = next(
             (c for c in _PALETTE if c not in used),
-            _PALETTE[len(used) % len(_PALETTE)],
+            _PALETTE[index % len(_PALETTE)],
         )
         conn.execute(
             sa.text("UPDATE genre SET color = :c WHERE id = :id"),
