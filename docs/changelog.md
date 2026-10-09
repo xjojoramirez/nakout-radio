@@ -3,6 +3,43 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — vinyl deck homepage rebuild (Tune in / Tune out, no skip/stop)
+
+- Rebuilt the listener homepage (`frontend/src/pages/RadioPage.tsx`) around
+  the vinyl deck: turntable + mixer with VU meter and draggable volume knob
+  (knob stays interactive even when offline), brand header with on-air LED
+  and live listener count, now-playing sleeve with cover art + progress bar,
+  and "Today's schedule" list highlighting the current slot (wraparound
+  ranges, e.g. "5 pm – 5 am").
+- Listener controls are now a single Tune in / Tune out mute button
+  (playback stays muted until tuned in); no Next record / Stop on the
+  homepage. A Retry button appears when the player errors.
+- New schedule formatting helpers (`frontend/src/utils/deck.ts`):
+  `formatClock`, `hourLabel`, `slotRange`, `todayScheduleRows` — unit tested
+  in `frontend/src/utils/deck.unit.test.ts` (5 tests, red → green).
+- RadioPage DOM tests rewritten (7 tests, verified failing against the old
+  page first): genre kicker, tune in/out toggle, volume knob slider, absence
+  of skip/stop controls, schedule rendering + current-slot highlight, graceful
+  fallback when the schedule request fails, offline notice with disabled tune
+  control.
+- Removed the obsolete `frontend/src/components/NowPlaying.tsx` (only
+  RadioPage imported it) and pruned the now-unused homepage CSS from
+  `frontend/src/styles/vintage.css` (`.radio-cabinet`, `.radio-header`,
+  `.listeners`, `.now-playing`, `.genre-row`, `.tuned-label`, `.genre-list`,
+  `.auto`, `.controls`, `.genre-error`, `.volume`) plus the matching mobile
+  (≤600px / ≤380px) rules; mobile homepage rules now target `.radio-page`,
+  `.brand`, `.tune-btn`, `.sleeve`, `.np-cover`, `.np-title`. Admin still
+  references `.now-playing` until its rebuild lands next.
+- Files touched: `frontend/src/pages/RadioPage.tsx` (+ rewritten
+  `RadioPage.dom.test.tsx`), `frontend/src/utils/deck.ts` (+ new
+  `deck.unit.test.ts`), `frontend/src/styles/vintage.css`,
+  `frontend/src/components/NowPlaying.tsx` (removed).
+- **Container restart required (container `frontend` only):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm run test` (129 tests in 17 files) + `npm run typecheck`
+  + `npm run build` green.
+
 ## 2026-10-09 — vinyl deck turntable + volume knob components (deck CSS, TDD)
 
 - Added the reusable vinyl-deck components for the upcoming homepage and
