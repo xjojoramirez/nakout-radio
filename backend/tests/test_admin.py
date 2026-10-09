@@ -1213,3 +1213,8 @@ def test_palette_backfill_migration(tmp_path):
             ]
         )
     )
+
+    from app.models import GENRE_PALETTE
+
+    assert colors["A"] == GENRE_PALETTE[0]
+    assert colors["B"] == GENRE_PALETTE[1]
