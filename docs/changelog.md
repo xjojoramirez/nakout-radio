@@ -3,6 +3,23 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — vinyl-deck-ui branch complete — dark deck homepage (no listener skip/stop), dark admin studio with deck Now Playing (full transport), public GET /api/schedule/today
+
+- Umbrella entry for the whole branch (details in the entries below), plus
+  the final verification pass and two polish fixes: the admin sleeve
+  progress bar gained `aria-label="Playback position"`
+  (`frontend/src/components/admin/NowPlayingPanel.tsx`), and the RadioPage
+  DOM suite gained a test covering the player-error Retry path (the
+  `onError` wiring fires → "Retry" renders → clicking it re-fetches
+  `/api/now`) (`frontend/src/pages/RadioPage.dom.test.tsx`, now 8 tests).
+- Files touched: see entries below (branch-wide), plus the two polish files
+  above and `docs/changelog.md` (this entry).
+- **Container restart required (cumulative for the branch — both
+  containers):** `docker compose up -d --build backend frontend`, then
+  hard-refresh the browser (Ctrl+Shift+R).
+- Verification: `npm run test` (130 tests in 17 files) + `npm run typecheck`
+  + `npm run build` green; `python -m pytest -q` 209 passed.
+
 ## 2026-10-09 — admin studio Now Playing rebuilt as vinyl deck (full transport/queue intact); dead GenreDial + btn-danger hover contrast fixed
 
 - Rebuilt the admin Now Playing panel JSX
