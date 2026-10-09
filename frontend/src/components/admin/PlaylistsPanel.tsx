@@ -16,6 +16,10 @@ interface Props {
   onNotice: (message: string) => void;
   onError: (message: string) => void;
   onCountChange?: (count: number) => void;
+  /** Genre id preset by a cross-tab jump from the Genres panel (consumed in task 7). */
+  initialGenre?: number | null;
+  /** Fired when the panel has consumed its `initialGenre` intent. */
+  onIntentConsumed?: () => void;
 }
 
 export function PlaylistsPanel({

@@ -129,6 +129,7 @@ describe("AdminPage", () => {
       slug: "chill",
       is_default: false,
       track_count: 0,
+      color: "#d8c18a",
     });
     render(<AdminPage />);
     await login();
@@ -141,7 +142,11 @@ describe("AdminPage", () => {
     });
     fireEvent.click(screen.getByText("Add genre"));
     await waitFor(() =>
-      expect(mocked.createGenre).toHaveBeenCalledWith("Chill", "chill"),
+      expect(mocked.createGenre).toHaveBeenCalledWith(
+        "Chill",
+        "chill",
+        "#d8c18a",
+      ),
     );
     expect(mocked.listGenres).toHaveBeenCalledTimes(2);
   });
@@ -149,7 +154,14 @@ describe("AdminPage", () => {
   it("edits a genre", async () => {
     mocked.login.mockResolvedValue({ status: "ok" });
     mocked.listGenres.mockResolvedValue([
-      { id: 1, name: "Chill", slug: "chill", is_default: false, track_count: 0 },
+      {
+        id: 1,
+        name: "Chill",
+        slug: "chill",
+        is_default: false,
+        track_count: 0,
+        color: "#f2a33a",
+      },
     ]);
     mocked.updateGenre.mockResolvedValue({
       id: 1,
@@ -157,6 +169,7 @@ describe("AdminPage", () => {
       slug: "chillhop",
       is_default: true,
       track_count: 0,
+      color: "#f2a33a",
     });
     render(<AdminPage />);
     await login();
@@ -175,6 +188,7 @@ describe("AdminPage", () => {
         name: "Chillhop",
         slug: "chillhop",
         is_default: true,
+        color: "#f2a33a",
       }),
     );
   });
@@ -192,6 +206,28 @@ describe("AdminPage", () => {
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByText("Delete"));
     await waitFor(() => expect(mocked.deleteGenre).toHaveBeenCalledWith(1));
+  });
+
+  it("jumps from a genre card to the playlists tab via the quick link", async () => {
+    mocked.login.mockResolvedValue({ status: "ok" });
+    mocked.listGenres.mockResolvedValue([
+      {
+        id: 1,
+        name: "Chill",
+        slug: "chill",
+        is_default: false,
+        track_count: 0,
+        color: "#f2a33a",
+      },
+    ]);
+    render(<AdminPage />);
+    await login();
+    fireEvent.click(screen.getByRole("tab", { name: /^Genres/ }));
+    fireEvent.click(await screen.findByText("Add one"));
+    expect(
+      await screen.findByRole("tabpanel"),
+    ).toHaveAttribute("id", "panel-playlists");
+    expect(await screen.findByText("Added playlists")).toBeInTheDocument();
   });
 
   it("logs out and returns to the login screen", async () => {

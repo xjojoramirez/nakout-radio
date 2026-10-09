@@ -27,6 +27,8 @@ export function AdminPage() {
   const [tab, setTab] = useState("now");
   const [playlistCount, setPlaylistCount] = useState<number | null>(null);
   const [slotCount, setSlotCount] = useState<number | null>(null);
+  const [playlistIntent, setPlaylistIntent] = useState<number | null>(null);
+  const [scheduleIntent, setScheduleIntent] = useState<number | null>(null);
 
   const loginEpoch = useRef(0);
   const noticeEpoch = useRef(0);
@@ -96,6 +98,8 @@ export function AdminPage() {
     setNotice(null);
     setPlaylistCount(null);
     setSlotCount(null);
+    setPlaylistIntent(null);
+    setScheduleIntent(null);
   };
 
   const onNotice = (message: string) => {
@@ -107,6 +111,21 @@ export function AdminPage() {
     setNotice(null);
     setError(message);
   };
+
+  const jump = useCallback(
+    (
+      nextTab: string,
+      intent?: { playlistsGenre?: number; scheduleGenre?: number },
+    ) => {
+      if (intent?.playlistsGenre != null) setPlaylistIntent(intent.playlistsGenre);
+      if (intent?.scheduleGenre != null) setScheduleIntent(intent.scheduleGenre);
+      setTab(nextTab);
+    },
+    [],
+  );
+
+  const consumePlaylistIntent = useCallback(() => setPlaylistIntent(null), []);
+  const consumeScheduleIntent = useCallback(() => setScheduleIntent(null), []);
 
   if (phase === "checking") {
     return (
@@ -211,6 +230,8 @@ export function AdminPage() {
                 onNotice={onNotice}
                 onError={onError}
                 onCountChange={setPlaylistCount}
+                initialGenre={playlistIntent}
+                onIntentConsumed={consumePlaylistIntent}
               />
             )}
             {tab === "genres" && (
@@ -219,6 +240,7 @@ export function AdminPage() {
                 onGenresChanged={refreshGenres}
                 onNotice={onNotice}
                 onError={onError}
+                onJump={jump}
               />
             )}
             {tab === "schedule" && (
@@ -227,6 +249,8 @@ export function AdminPage() {
                 onNotice={onNotice}
                 onError={onError}
                 onCountChange={setSlotCount}
+                initialGenre={scheduleIntent}
+                onIntentConsumed={consumeScheduleIntent}
               />
             )}
           </>
