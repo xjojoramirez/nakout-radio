@@ -197,6 +197,7 @@ export function SchedulePanel({
     setFormDays((prev) =>
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
     );
+    setFormError("");
   };
 
   const submit = async () => {
@@ -276,7 +277,9 @@ export function SchedulePanel({
         <h2 className="sec">Schedule</h2>
         <p className="sub">
           Each slot starts a genre, and it plays until the next slot begins.{" "}
-          {tzLabel && `Times are shown in ${tzLabel}.`}
+          {tzLabel && (
+            <span className="mono">Times are shown in {tzLabel}.</span>
+          )}
         </p>
       </div>
 
@@ -375,29 +378,41 @@ export function SchedulePanel({
             label="Genre"
             genres={genres}
             value={formGenre}
-            onChange={setFormGenre}
+            onChange={(id) => {
+              setFormGenre(id);
+              setFormError("");
+            }}
           />
           <div className="lab">Repeat on</div>
-          <div className="dayrow">
+          <div className="dayrow" role="group" aria-label="Repeat on">
             <div className="presets">
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
-                onClick={() => setFormDays([0, 1, 2, 3, 4])}
+                onClick={() => {
+                  setFormDays([0, 1, 2, 3, 4]);
+                  setFormError("");
+                }}
               >
                 Weekdays
               </button>
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
-                onClick={() => setFormDays([5, 6])}
+                onClick={() => {
+                  setFormDays([5, 6]);
+                  setFormError("");
+                }}
               >
                 Weekends
               </button>
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
-                onClick={() => setFormDays([0, 1, 2, 3, 4, 5, 6])}
+                onClick={() => {
+                  setFormDays([0, 1, 2, 3, 4, 5, 6]);
+                  setFormError("");
+                }}
               >
                 Every day
               </button>
@@ -430,7 +445,7 @@ export function SchedulePanel({
             </label>
           </div>
           <div className="sentence" data-testid="sentence" aria-live="polite">
-            {formGenre != null && formTime ? (
+            {formGenre != null && formTime && formDays.length > 0 ? (
               <>
                 <b>{formGenreName}</b> will start at{" "}
                 <b>{twelveHour(minutesOf(formTime))}</b> {dayPhrase(formDays)}{" "}

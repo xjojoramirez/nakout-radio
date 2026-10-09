@@ -142,6 +142,17 @@ describe("ScheduleTimeline", () => {
     expect(onOpenNew).not.toHaveBeenCalled();
   });
 
+  it("ignores strip clicks when the strip has no measurable width", () => {
+    const { onOpenNew, container } = renderTimeline({
+      slots: [],
+      nowMinutes: null,
+    });
+    const tl = container.querySelector(".tl") as HTMLElement;
+    // jsdom's default getBoundingClientRect is a zero rect
+    fireEvent.click(tl, { clientX: 361, clientY: 20 });
+    expect(onOpenNew).not.toHaveBeenCalled();
+  });
+
   it("clamps strip clicks to the 0..1410 minute range", () => {
     const { onOpenNew, container } = renderTimeline({
       slots: [],
