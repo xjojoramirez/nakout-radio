@@ -928,6 +928,119 @@ def test_list_added_playlists_orders_by_genre_then_id(tmp_path):
     assert [p["genre_name"] for p in body] == ["A", "A", "B"]
 
 
+def test_create_playlist_sets_synced_at_in_listing(tmp_path, monkeypatch):
+    client, _ = _client(tmp_path)
+    _login(client)
+    sid = client.post(
+        "/api/studio/genres", json={"name": "S", "slug": "s"}
+    ).json()["id"]
+    monkeypatch.setattr(
+        "app.routers.admin._build_fetch",
+        lambda: _fake_fetch([TrackData("v1", "One", "A", "u", 0)]),
+    )
+    resp = client.post(
+        "/api/studio/playlists",
+        json={"genre_id": sid, "youtube_playlist_url": "PL1", "label": ""},
+    )
+    assert resp.status_code == 201
+    body = client.get("/api/studio/playlists").json()
+    assert body[0]["synced_at"] is not None
+
+
+def test_refresh_playlist_updates_synced_at(tmp_path, monkeypatch):
+    client, _ = _client(tmp_path)
+    _login(client)
+    sid = client.post(
+        "/api/studio/genres", json={"name": "S", "slug": "s"}
+    ).json()["id"]
+    monkeypatch.setattr(
+        "app.routers.admin._build_fetch",
+        lambda: _fake_fetch([]),
+    )
+    pid = client.post(
+        "/api/studio/playlists",
+        json={"genre_id": sid, "youtube_playlist_url": "PL1", "label": ""},
+    ).json()["id"]
+    monkeypatch.setattr(
+        "app.routers.admin._build_fetch",
+        lambda: _fake_fetch([TrackData("v1", "One", "A", "u", 0)]),
+    )
+    resp = client.post(f"/api/studio/playlists/{pid}/refresh")
+    assert resp.status_code == 200
+    body = client.get("/api/studio/playlists").json()
+    assert body[0]["synced_at"] is not None
+
+
+def test_playlist_synced_at_backfill_migration(tmp_path):
+    import os
+    import sqlite3
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    BACKEND_DIR = Path(__file__).resolve().parents[1]
+
+    def _alembic(db_url: str, *args: str) -> None:
+        env = dict(os.environ)
+        env["DATABASE_URL"] = db_url
+        subprocess.run(
+            [sys.executable, "-m", "alembic", *args],
+            cwd=str(BACKEND_DIR),
+            env=env,
+            check=True,
+            capture_output=True,
+        )
+
+    db_path = tmp_path / "pre_synced_at.db"
+    db_url = f"sqlite:///{db_path}"
+    conn = sqlite3.connect(db_path)
+    conn.executescript(
+        """
+        CREATE TABLE genre (
+            id INTEGER PRIMARY KEY, name VARCHAR NOT NULL,
+            slug VARCHAR NOT NULL, is_default BOOLEAN,
+            sort_order INTEGER
+        );
+        INSERT INTO genre (name, slug, is_default, sort_order)
+            VALUES ('A','a',0,0);
+        CREATE TABLE playlist (
+            id INTEGER PRIMARY KEY, genre_id INTEGER NOT NULL,
+            youtube_playlist_id VARCHAR NOT NULL, label VARCHAR NOT NULL
+        );
+        INSERT INTO playlist (genre_id, youtube_playlist_id, label)
+            VALUES (1, 'PL1', '');
+        CREATE TABLE trackcache (
+            id INTEGER PRIMARY KEY, playlist_id INTEGER NOT NULL,
+            youtube_video_id VARCHAR NOT NULL, title VARCHAR NOT NULL,
+            artist VARCHAR NOT NULL, thumbnail_url VARCHAR NOT NULL,
+            duration_seconds INTEGER NOT NULL, position INTEGER NOT NULL,
+            fetched_at DATETIME NOT NULL
+        );
+        INSERT INTO trackcache (
+            playlist_id, youtube_video_id, title, artist,
+            thumbnail_url, duration_seconds, position, fetched_at
+        ) VALUES (1, 'a', 'A', 'Artist', '', 0, 0, '2026-10-01 10:00:00');
+        CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL);
+        INSERT INTO alembic_version VALUES ('a1b2c3d4e5f6');
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    _alembic(db_url, "upgrade", "b2c3d4e5f6a7")
+
+    conn = sqlite3.connect(db_path)
+    synced_at = conn.execute(
+        "SELECT synced_at FROM playlist WHERE id = 1"
+    ).fetchone()[0]
+    revision = conn.execute(
+        "SELECT version_num FROM alembic_version"
+    ).fetchall()
+    conn.close()
+    assert synced_at == "2026-10-01 10:00:00"
+    assert revision == [("b2c3d4e5f6a7",)]
+
+
 def test_delete_playlist_leaves_other_playlists_tracks(tmp_path, monkeypatch):
     client, engine = _client(tmp_path)
     _login(client)
