@@ -19,7 +19,9 @@ restart is required (see `AGENTS.md` for the restart commands).
   cards, slot editor, scrollbars
   (`frontend/src/styles/vintage.css`).
 - Files touched: `frontend/index.html`,
-  `frontend/src/styles/vintage.css`.
+  `frontend/src/styles/vintage.css`. Review follow-up: the same takeover
+  also fixed dark-theme contrast on `.admin .days button.active` and
+  `.btn-danger-solid` (dark `#1c110a` text on amber/danger fills).
 - **Container restart required (container `frontend` only):**
   `docker compose up -d --build frontend`, then hard-refresh the browser
   (Ctrl+Shift+R).
