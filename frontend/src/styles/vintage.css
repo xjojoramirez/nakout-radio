@@ -192,12 +192,6 @@ h3 {
   color: var(--danger);
 }
 
-.admin .notice {
-  background: var(--ok-soft);
-  border: 1px solid rgba(47, 107, 70, 0.35);
-  color: var(--ok);
-}
-
 .muted {
   color: var(--muted);
   font-size: 0.85rem;
@@ -1708,10 +1702,6 @@ a.back:hover {
 /* ---------- Mobile: phones (≤600px) ---------- */
 
 @media (max-width: 600px) {
-  .admin-page {
-    padding-top: 8px;
-  }
-
   .admin-deck {
     display: block;
   }
@@ -1749,6 +1739,11 @@ a.back:hover {
   /* Admin header, tabs, forms */
   .admin {
     padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  /* Keep the page wrapper's own paddings (generous bottom clears the toast) */
+  .admin-page {
+    padding: 8px 4px 40px;
   }
 
   .admin-login h1 {
@@ -1872,6 +1867,10 @@ a.back:hover {
   .admin {
     padding: 16px;
     padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .admin-page {
+    padding: 16px 10px 40px;
   }
 
   .channel-grid {
