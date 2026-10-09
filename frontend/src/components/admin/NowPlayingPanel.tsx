@@ -277,6 +277,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
                   <div
                     className="np-bar-fill"
                     role="progressbar"
+                    aria-label="Playback position"
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={Math.round(livePct)}
