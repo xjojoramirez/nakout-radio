@@ -3,6 +3,71 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — task 6: genres panel reskin — colour cards, play now, cross-tab quick links
+
+- `frontend/src/components/admin/GenresPanel.tsx`: rebuilt from the list
+  layout to the reference card grid — `.ggrid` of `article.gcard` with a
+  `--gc` colour accent (inset top edge), `.gtop` (colour dot + name +
+  `/.mono` slug), `.gstats` chips ("N tracks", "default" when
+  `is_default`), and a `.gwarn` row on `track_count === 0`
+  ("No playlists" `chip.warn` + "Add one"/"Schedule it" `.btn-link`
+  quick links that call the new `onJump`). "Play now" fetches
+  `api.genreTracks(id)` and posts `api.play(id, first video id)`, toasts
+  "Now playing X." and jumps to the Now Playing tab; an empty queue
+  errors "\"X\" has no tracks yet. Add a playlist." instead. The add
+  form became `form.card.gform` ("New genre" `.ttl`, `.gf-grid`
+  name/slug with a `.pre` "/" prefix, `PaletteSwatches` "Genre colour";
+  slug auto-fills from the name until manually edited, submit sends the
+  swatch colour as the third `createGenre` argument, button disabled
+  until name+slug). Inline edit stays in the card (`.gedit`) with the
+  same "Edit genre name"/"Edit genre slug"/"Default genre" labels plus
+  swatches; Save sends `{ name, slug, is_default, color }`; Save is
+  disabled while name/slug is blank. Added a `flashId` "gcard flash"
+  animation on the just-added/just-edited genre (cleared after 1.5 s).
+  Section header is `h2.sec` "Genres" + `.sub` reference copy; empty
+  state is `.empty` "No genres yet. Create your first one above."
+  Delete keeps the ConfirmDialog message and flow. Heading semantics:
+  `h2` → `h2.sec`, add-form title is `h3.ttl`.
+- `frontend/src/pages/AdminPage.tsx`: cross-tab jump plumbing —
+  `playlistIntent`/`scheduleIntent` state plus a `useCallback` `jump`
+  that records an optional `{ playlistsGenre?, scheduleGenre? }` intent
+  and switches tabs; GenresPanel gets `onJump={jump}`;
+  PlaylistsPanel/SchedulePanel receive `initialGenre={…Intent}` and
+  `onIntentConsumed` (typed props only — consumed in tasks 7/8);
+  logout resets both intents.
+- `frontend/src/components/admin/PlaylistsPanel.tsx`,
+  `frontend/src/components/admin/SchedulePanel.tsx`: typing-only
+  optional props `initialGenre?: number | null` and
+  `onIntentConsumed?: () => void` with doc comments; no behaviour yet.
+- `frontend/src/styles/vintage.css`: added the missing admin
+  primitives (`.chip`/`.chip.warn`/`.chip.ok`, `.mono`, `h2.sec`,
+  `.sub`, `.ttl`, `.empty`) and the reference gcard family (`.gform`,
+  `.gf-grid` 1.4fr/1fr collapsing at ≤640px, `.pre` slash prefix,
+  `.ggrid` minmax(300px,1fr) collapsing at ≤400px, `.gcard` with the
+  `--gc` inset top edge — background tokenised to `--cream-soft` to
+  match existing cards, `.gtop`, `.gstats`, `.gwarn`, `.gact`,
+  `.gedit` + its `.field-inline` checkbox row since the old
+  `.genre-admin-list`-scoped rule no longer applies, `.btn-link`).
+  `.genre-admin-list`/`.st-name`/`.st-slug`/`.row-actions` kept for the
+  Schedule rows.
+- `frontend/src/components/admin/GenresPanel.dom.test.tsx` (new):
+  11 cases — card colour/slug/chips/default pill, empty-genre warning +
+  quick-link intents, slug auto-fill until touched, add button
+  disabled state, add with swatch colour + notice, Play now happy path
+  (genreTracks → play(v1) → notice + jump) and empty-queue error path
+  (no play call), edit colour change + flash class, Save disabled on
+  blank name/slug with no api call, delete confirm message + cancel +
+  confirm, empty state.
+- `frontend/src/pages/AdminPage.dom.test.tsx`: updated the genre
+  create/edit fixtures to carry `color` and the assertions to the
+  new `createGenre(name, slug, color)` / `updateGenre(id, {…, color})`
+  payloads; added a jump test ("Add one" switches to the Playlists
+  tab).
+- Restart: frontend only —
+  `docker compose up -d --build frontend` (then hard refresh).
+- Verification: `npm run test` (172 tests / 25 files),
+  `npm run typecheck`, `npm run build` — all green.
+
 ## 2026-10-09 — task 5 follow-up: toast re-arm on repeat notices, mobile page paddings, dead rule removal
 
 - `frontend/src/pages/AdminPage.tsx`: `notice` is now

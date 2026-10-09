@@ -1127,6 +1127,68 @@ a.back:hover {
   box-shadow: 0 0 0 2px var(--bg-2), 0 0 0 4px var(--cream);
 }
 
+.chip {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+.chip.warn {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.chip.ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* Panel heading (mono eyebrow + subline) */
+
+h2.sec {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.sub {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 62ch;
+}
+
+.ttl {
+  margin: 0;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 .hint {
   font-size: 0.85rem;
   color: var(--muted);
@@ -1152,6 +1214,123 @@ a.back:hover {
   100% {
     box-shadow: 0 0 0 2px transparent;
   }
+}
+
+/* Genre cards (reference: Nakout Admin.html) */
+
+.gform {
+  display: grid;
+  gap: 14px;
+}
+
+.gf-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .gf-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.pre {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pre span {
+  font: 500 1rem var(--font-mono);
+  color: var(--muted);
+  text-transform: none;
+}
+
+.ggrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 400px) {
+  .ggrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.gcard {
+  background: var(--cream-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 16px 14px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  box-shadow: inset 0 3px 0 var(--gc, var(--amber));
+  min-width: 0;
+}
+
+.gtop {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.gtop b {
+  font-size: 1.1rem;
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.gstats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.gwarn {
+  display: flex;
+  gap: 6px 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.gact {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.gedit {
+  display: grid;
+  gap: 10px;
+}
+
+.gedit .field-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: none;
+}
+
+.gedit .field-inline input {
+  width: auto;
+  margin: 0;
+}
+
+.btn-link {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--amber);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-size: inherit;
+  cursor: pointer;
 }
 
 .spin {
