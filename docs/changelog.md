@@ -20,11 +20,16 @@ restart is required (see `AGENTS.md` for the restart commands).
 - Strict TDD: 6 `VolumeKnob` + 2 `TurntableDeck` DOM tests, verified red
   (module missing / drag coordinates lost) before green
   (`frontend/src/components/deck/*.dom.test.tsx`).
-- Appended the "Vinyl deck" CSS section (deck/platter/record/tonearm, RPM
+- Added the "Vinyl deck" CSS section (deck/platter/record/tonearm, RPM
   badges, mixer row, knob, now-playing sleeve/bar/times/tune button,
-  schedule list, responsive + reduced-motion blocks) to the end of
-  `frontend/src/styles/vintage.css`; the pre-existing `.vu-meter` rules are
-  only overridden via `.mixer .vu-meter { height: 44px; }`.
+  schedule list, responsive + reduced-motion blocks) ahead of the
+  mobile-width blocks in `frontend/src/styles/vintage.css`; the
+  pre-existing `.vu-meter` rules are only overridden via
+  `.mixer .vu-meter { height: 44px; }`. Review follow-up: the section was
+  moved from EOF to sit just before the Mobile ≤600px block
+  (`style: move vinyl deck section ahead of the mobile blocks`), and the
+  knob gained a `pointerCancel` handler + 7th test clearing drag state
+  mid-drag (`fix: clear knob drag state on pointer cancel`).
 - Test-env fix (deviation note): jsdom 25 lacks a `PointerEvent`
   constructor, so RTL `fireEvent.pointer*` dropped `clientY`/`pointerId`
   and the knob drag test got `NaN`. Added a minimal `PointerEvent`
@@ -40,7 +45,7 @@ restart is required (see `AGENTS.md` for the restart commands).
 - **Container restart required (container `frontend` only):**
   `docker compose up -d --build frontend`, then hard-refresh the browser
   (Ctrl+Shift+R).
-- Verification: `npm run test` (120 tests in 16 files, incl. the 8 new
+- Verification: `npm run test` (121 tests in 16 files, incl. the 9 new
   deck tests) + `npm run build` + `npm run typecheck` green.
 
 ## 2026-10-09 — vinyl deck dark theme takeover (tokens + fonts) across site incl. admin
