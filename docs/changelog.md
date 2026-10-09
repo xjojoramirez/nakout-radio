@@ -3,6 +3,16 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — backend tests: strengthened synced_at coverage (test-only)
+
+- `backend/tests/test_admin.py` only: refresh test now nulls `synced_at`
+  after create before refreshing (was un-failable); backfill migration
+  fixture gained the `a1b2c3d4e5f6`-era `genre.color` column and a
+  trackless playlist whose `synced_at` stays NULL after upgrade.
+- Tests only — no container restart required.
+- Verification: `python -m pytest tests/test_admin.py -k "synced" -q` →
+  3 passed; full `python -m pytest -q` → 218 passed.
+
 ## 2026-10-09 — backend: playlist synced_at (set on sync, backfilled)
 
 - `Playlist` gained a nullable `synced_at` datetime column
