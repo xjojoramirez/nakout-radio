@@ -27,6 +27,7 @@ vi.mock("../api/client", async () => {
       createSlot: vi.fn(),
       updateSlot: vi.fn(),
       deleteSlot: vi.fn(),
+      scheduleNow: vi.fn(),
       syncAll: vi.fn(),
       now: vi.fn(),
       getChannelSource: vi.fn(),
@@ -54,6 +55,14 @@ beforeEach(() => {
   mocked.listPlaylists.mockResolvedValue([]);
   mocked.genreTracks.mockResolvedValue([]);
   mocked.listSlots.mockResolvedValue([]);
+  mocked.scheduleNow.mockResolvedValue({
+    genre: null,
+    track: null,
+    cursor: null,
+    source: "none",
+    offset_seconds: 0,
+    server_time: "2026-10-09T04:00:00+00:00",
+  });
   mocked.now.mockResolvedValue({
     genre: null,
     track: null,
@@ -421,21 +430,28 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
-    fireEvent.change(screen.getByLabelText("Slot genre"), {
-      target: { value: "1" },
+    await screen.findByText(/Each slot starts a genre/);
+    fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
+    const radioGroup = await screen.findByRole("radiogroup", {
+      name: "Genre",
     });
-    fireEvent.click(screen.getByText("Add slot"));
+    fireEvent.click(within(radioGroup).getByRole("radio", { name: "Chill" }));
+    fireEvent.click(
+      within(await screen.findByTestId("slot-form")).getByRole("button", {
+        name: "Add slot",
+      }),
+    );
     await waitFor(() =>
       expect(mocked.createSlot).toHaveBeenCalledWith({
         genre_id: 1,
-        days_of_week: [0, 1, 2, 3, 4],
+        days_of_week: [(new Date().getDay() + 6) % 7],
         start_time: "06:00",
       }),
     );
     expect(mocked.listSlots).toHaveBeenCalledTimes(2);
   });
 
-  it("surfaces a duplicate-start error from the API", async () => {
+  it("surfaces a duplicate-start error inline in the slot form", async () => {
     mocked.login.mockResolvedValue({ status: "ok" });
     mocked.listGenres.mockResolvedValue([
       { id: 1, name: "Chill", slug: "chill", is_default: false, track_count: 0 },
@@ -446,16 +462,22 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
-    fireEvent.change(screen.getByLabelText("Slot genre"), {
-      target: { value: "1" },
+    await screen.findByText(/Each slot starts a genre/);
+    fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
+    const radioGroup = await screen.findByRole("radiogroup", {
+      name: "Genre",
     });
-    fireEvent.click(screen.getByText("Add slot"));
-    expect(
-      await screen.findByText(/already starts at 06:00/),
-    ).toBeInTheDocument();
+    fireEvent.click(within(radioGroup).getByRole("radio", { name: "Chill" }));
+    fireEvent.click(
+      within(await screen.findByTestId("slot-form")).getByRole("button", {
+        name: "Add slot",
+      }),
+    );
+    const inline = await screen.findByText(/already starts at 06:00/);
+    expect(inline.closest(".hint")).toHaveClass("err");
   });
 
-  it("lists schedule slots with genre, days, and time", async () => {
+  it("lists schedule slots with genre, time range, duration and days", async () => {
     mocked.login.mockResolvedValue({ status: "ok" });
     mocked.listGenres.mockResolvedValue([
       { id: 1, name: "Chill", slug: "chill", is_default: false, track_count: 0 },
@@ -472,12 +494,14 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
-    const row = (await screen.findByText("Mon, Wed")).closest("li");
+    fireEvent.click(await screen.findByRole("button", { name: "Mon" }));
+    const row = (await screen.findByText("6:00 AM to Midnight")).closest(
+      ".srow",
+    );
     expect(row).not.toBeNull();
     expect(within(row as HTMLElement).getByText("Chill")).toBeInTheDocument();
-    expect(
-      within(row as HTMLElement).getByText("from 06:00"),
-    ).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByText("18h")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByText("Mon, Wed")).toBeInTheDocument();
   });
 
   it("edits a schedule slot", async () => {
@@ -490,7 +514,7 @@ describe("AdminPage", () => {
         id: 5,
         genre_id: 1,
         genre_name: "Chill",
-        days_of_week: [0],
+        days_of_week: [0, 1, 2, 3, 4, 5, 6],
         start_time: "06:00",
       },
     ]);
@@ -499,15 +523,17 @@ describe("AdminPage", () => {
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
     fireEvent.click(await screen.findByText("Edit"));
-    fireEvent.change(screen.getByLabelText("Edit slot start"), {
+    const form = await screen.findByTestId("slot-form");
+    expect(screen.getByText("Edit slot")).toBeInTheDocument();
+    fireEvent.change(within(form).getByLabelText("Start time"), {
       target: { value: "08:00" },
     });
-    fireEvent.click(screen.getByLabelText("Edit slot Wed"));
-    fireEvent.click(screen.getByText("Save"));
+    fireEvent.click(within(form).getByRole("button", { name: "Wed" }));
+    fireEvent.click(screen.getByText("Save slot"));
     await waitFor(() =>
       expect(mocked.updateSlot).toHaveBeenCalledWith(5, {
         genre_id: 1,
-        days_of_week: [0, 2],
+        days_of_week: [0, 1, 3, 4, 5, 6],
         start_time: "08:00",
       }),
     );
@@ -523,7 +549,7 @@ describe("AdminPage", () => {
         id: 5,
         genre_id: 1,
         genre_name: "Chill",
-        days_of_week: [0],
+        days_of_week: [0, 1, 2, 3, 4, 5, 6],
         start_time: "06:00",
       },
     ]);

@@ -26,6 +26,8 @@ export interface CurrentGenre {
   track: Track | null;
   cursor: string | null;
   source: string;
+  offset_seconds: number;
+  server_time: string | null;
 }
 
 export interface BroadcastNow {

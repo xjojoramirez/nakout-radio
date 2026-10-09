@@ -681,67 +681,6 @@ a.back:hover {
 
 /* Lists */
 
-.count-pill {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: var(--amber-soft);
-  color: var(--amber-strong);
-  white-space: nowrap;
-}
-
-.row-actions {
-  display: flex;
-  gap: 6px;
-  margin-left: auto;
-}
-
-.genre-admin-list {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.genre-admin-list li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  background: var(--cream-soft);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-
-.genre-admin-list .st-name {
-  font-weight: 700;
-}
-
-.genre-admin-list .st-slug {
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-
-.genre-admin-list .field {
-  flex: 1;
-  min-width: 140px;
-}
-
-.genre-admin-list .field-inline {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  text-transform: none;
-}
-
-.genre-admin-list .field-inline input {
-  width: auto;
-  margin: 0;
-}
-
 /* Channel setup input (kept from the previous layout) */
 
 .channel-setup {
@@ -761,94 +700,295 @@ a.back:hover {
   align-self: flex-start;
 }
 
-/* Schedule */
+/* Schedule (reference: Nakout Admin.html lines 173-207) */
 
-.days {
+/* Scoped: the public page header has its own mono .onair */
+.admin .onair {
   display: flex;
-  gap: 6px;
+  gap: 14px;
+  align-items: center;
   flex-wrap: wrap;
-  margin: 10px 0 4px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
-.days button {
+.admin .onair .big {
+  font-size: 1.15rem;
+  font-weight: 800;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin .onair .next {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.led.live {
+  background: var(--led);
+  box-shadow: 0 0 10px 2px rgba(255, 74, 58, 0.7);
+}
+
+.lab {
+  display: grid;
+  gap: 6px;
+  font: 500 0.68rem var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 0;
+}
+
+.tlscroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.tlinner {
+  min-width: 640px;
+}
+
+.tl {
+  position: relative;
+  height: 66px;
+  border-radius: 12px;
+  background: #241609;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  cursor: copy;
+}
+
+.blk {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  padding: 6px 10px;
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+  background: var(--gc, var(--amber));
+  color: #1c110a;
+  overflow: hidden;
+  box-shadow: inset -2px 0 0 var(--bg-2);
+  min-width: 0;
   cursor: pointer;
+  font-family: var(--font-display);
+}
+
+.blk:hover:not(:disabled) {
+  filter: brightness(1.08);
+  border-color: transparent;
+}
+
+.blk .bn {
+  font-weight: 800;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.blk .bt {
+  font: 500 0.68rem var(--font-mono);
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+.blk.carry,
+.blk.none {
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.07) 0 6px,
+    transparent 6px 12px
+  );
+  color: var(--muted);
+  cursor: copy;
+}
+
+.blk.carry {
+  box-shadow: inset 3px 0 0 var(--gc, var(--amber)), inset -2px 0 0 var(--bg-2);
+}
+
+.blk.none {
+  box-shadow: inset 0 0 0 1px var(--border);
+  pointer-events: none;
+}
+
+.nowl {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--led);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.nowl b {
+  position: absolute;
+  bottom: 3px;
+  left: 5px;
+  font: 500 0.62rem var(--font-mono);
+  background: var(--led);
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.ticks {
+  position: relative;
+  height: 20px;
+  margin-top: 8px;
+}
+
+.ticks span {
+  position: absolute;
+  font: 400 0.68rem var(--font-mono);
+  color: var(--muted);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.ticks span.f {
+  transform: none;
+}
+
+.ticks span.l {
+  transform: translateX(-100%);
+}
+
+.sform {
+  border: 1px solid var(--amber);
+}
+
+.dayrow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pill {
+  cursor: pointer;
+  position: relative;
   font-family: var(--font-body);
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 500;
+  padding: 7px 15px;
   border: 1.5px solid var(--border-strong);
   border-radius: 999px;
-  padding: 7px 14px;
   background: transparent;
   color: var(--muted);
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.days button:hover {
-  border-color: var(--wood);
-  color: var(--ink);
-}
-
-.admin .days button.active {
-  background: var(--amber);
+.pill:hover:not(:disabled) {
   border-color: var(--amber);
+  color: var(--cream);
+}
+
+.pill[aria-pressed="true"] {
+  background: var(--amber);
   color: #1c110a;
+  border-color: var(--amber);
+  font-weight: 800;
 }
 
-.time-pair {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+.pill .tdot {
+  position: absolute;
+  top: 5px;
+  right: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--led);
 }
 
-/* Schedule slot editor: inline vertical card */
-
-.genre-admin-list li.slot-editing {
+.presets {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 10px;
-  border-color: var(--amber-strong);
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sentence {
+  font-size: 1rem;
+  padding: 12px 14px;
+  border-radius: 10px;
   background: #241609;
-  box-shadow: var(--shadow-sm);
+  line-height: 1.4;
 }
 
-.genre-admin-list li.slot-editing .days {
-  margin: 0;
+.sentence b {
+  color: var(--amber);
 }
 
-.genre-admin-list li.slot-editing .field {
-  flex: none;
-  min-width: 0;
+.fa {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
-.slot-edit-head {
+.sform .two {
+  display: grid;
+  grid-template-columns: minmax(0, 220px);
+}
+
+.daylist {
+  display: grid;
+  gap: 8px;
+}
+
+.srow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--wood);
+  flex-wrap: wrap;
+  min-width: 0;
+  box-shadow: inset 4px 0 0 var(--gc, var(--border));
 }
 
-.edit-badge {
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--amber-soft);
-  color: var(--amber-strong);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
+.srow.dim {
+  box-shadow: none;
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  color: var(--muted);
 }
 
-.slot-form-actions {
+.srow .sm {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 12px;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
-.genre-admin-list li.slot-editing .slot-form-actions {
-  margin-top: 0;
+.srow .tr {
+  font: 500 0.82rem var(--font-mono);
+  color: var(--cream);
+  min-width: 150px;
+  font-variant-numeric: tabular-nums;
+}
+
+.srow.dim .tr {
+  color: var(--muted);
+}
+
+.srow .sa {
+  display: flex;
+  gap: 8px;
 }
 
 /* ---------- Admin reference components (Toast, chips, swatches) ---------- */
@@ -1902,10 +2042,6 @@ a.pid:hover {
     padding: 20px;
   }
 
-  .time-pair {
-    grid-template-columns: 1fr;
-  }
-
   /* Home page */
   .radio-page {
     width: min(1080px, 100vw - 16px);
@@ -1979,12 +2115,11 @@ a.pid:hover {
     min-height: 44px;
   }
 
-  .days button {
+  .pill {
     min-height: 44px;
   }
 
   /* List rows, queue, playlist browser */
-  .genre-admin-list li,
   .prow {
     flex-wrap: wrap;
   }
@@ -1993,15 +2128,8 @@ a.pid:hover {
     min-width: 0;
   }
 
-  .row-actions,
-  .slot-form-actions {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .row-actions .btn,
-  .slot-form-actions .btn {
-    flex: 1;
+  .srow .sa .btn {
+    min-height: 40px;
   }
 
   .queue-list .queue-row {
@@ -2085,7 +2213,7 @@ a.pid:hover {
 
   .btn,
   .admin-tabs button,
-  .days button {
+  .pill {
     transition: none;
   }
 }
