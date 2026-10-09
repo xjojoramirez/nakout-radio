@@ -3,6 +3,30 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — follow-up: timeAgo offset parsing fixed + client colour-path payload tests
+
+- `timeAgo` (`frontend/src/utils/format.ts`) appended `Z` to every
+  string, so explicit-offset timestamps became `…+00:00Z` (unparseable →
+  "NaNd ago"). It now parses strings ending in a `±HH:MM` offset or `Z`
+  as-is and appends `Z` only to naive strings. Deviation from the
+  suggested patch: the naive check also excludes `Z`-suffixed strings,
+  otherwise `"…31Z"` became `"…31ZZ"` → NaN (caught by the existing
+  unit test).
+- Extended `frontend/src/utils/format.unit.test.ts`: `+00:00` →
+  "5 min ago", `+02:00` → "2h ago" (offset honoured).
+- Added payload coverage for the colour paths
+  (`frontend/src/api/client.test.ts`, 15 → 18 tests): createGenre omits
+  colour when unsupplied, sends `{name, slug, color}` when supplied,
+  updateGenre forwards colour-only updates.
+- Files: `frontend/src/utils/format.ts`,
+  `frontend/src/utils/format.unit.test.ts`,
+  `frontend/src/api/client.test.ts`, `docs/changelog.md`.
+- Restart: frontend only (code changed) — `docker compose up -d --build
+  frontend`.
+- Verification: `npm run test` → 21 files / 147 tests passed (144 + 3
+  client payload tests); `npm run typecheck` → clean; `npm run build` →
+  success.
+
 ## 2026-10-09 — frontend data layer: colour/synced_at shapes, schedule time helpers, generated covers (admin reskin task 3)
 
 - `Genre` gained `color: string`; `AddedPlaylist` gained
@@ -29,6 +53,7 @@ restart is required (see `AGENTS.md` for the restart commands).
   `frontend/src/palette.ts`, `frontend/src/utils/format.unit.test.ts`,
   `frontend/src/utils/profile.unit.test.ts`,
   `frontend/src/palette.unit.test.ts`,
+  `frontend/src/api/client.test.ts`,
   `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`,
   `docs/changelog.md`.
 - Restart: frontend only (bundle-baked) — `docker compose up -d --build
@@ -36,7 +61,10 @@ restart is required (see `AGENTS.md` for the restart commands).
   visually consumed (that's a later reskin task).
 - Verification (TDD: new tests written first, confirmed red, then green):
   `npm run test` → 21 files / 144 tests passed (previous 138 + 6 new);
-  `npm run typecheck` → clean; `npm run build` → success.
+  `npm run typecheck` → clean; `npm run build` → success. (File list and
+  totals reflect the follow-up entry above; at this commit's time the
+  suite was 144 in 21 files, with `client.test.ts` extended to 18 by the
+  follow-up.)
 
 ## 2026-10-09 — backend tests: strengthened synced_at coverage (test-only)
 

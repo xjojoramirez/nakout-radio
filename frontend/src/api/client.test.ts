@@ -178,4 +178,79 @@ describe("api client", () => {
     await api.genreTracks(3);
     expect(spy.mock.calls[0][0]).toBe("/api/studio/genres/3/tracks");
   });
+
+  it("createGenre omits colour when not supplied", async () => {
+    const spy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 1,
+            name: "a",
+            slug: "b",
+            is_default: false,
+            track_count: 0,
+            color: "#f2a33a",
+          }),
+          { status: 200 },
+        ),
+      );
+    await api.createGenre("a", "b");
+    const [url, init] = spy.mock.calls[0];
+    expect(url).toBe("/api/studio/genres");
+    expect(init?.method).toBe("POST");
+    expect(JSON.parse(init?.body as string)).toEqual({ name: "a", slug: "b" });
+  });
+
+  it("createGenre sends colour when supplied", async () => {
+    const spy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 1,
+            name: "a",
+            slug: "b",
+            is_default: false,
+            track_count: 0,
+            color: "#5fb3b3",
+          }),
+          { status: 200 },
+        ),
+      );
+    await api.createGenre("a", "b", "#5fb3b3");
+    const [url, init] = spy.mock.calls[0];
+    expect(url).toBe("/api/studio/genres");
+    expect(init?.method).toBe("POST");
+    expect(JSON.parse(init?.body as string)).toEqual({
+      name: "a",
+      slug: "b",
+      color: "#5fb3b3",
+    });
+  });
+
+  it("updateGenre forwards colour updates", async () => {
+    const spy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 4,
+            name: "a",
+            slug: "b",
+            is_default: false,
+            track_count: 0,
+            color: "#d8c18a",
+          }),
+          { status: 200 },
+        ),
+      );
+    await api.updateGenre(4, { color: "#d8c18a" });
+    const [url, init] = spy.mock.calls[0];
+    expect(url).toBe("/api/studio/genres/4");
+    expect(init?.method).toBe("PUT");
+    expect(JSON.parse(init?.body as string)).toEqual({
+      color: "#d8c18a",
+    });
+  });
 });
