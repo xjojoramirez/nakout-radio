@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { api } from "../../api/client";
 import { useBroadcast } from "../../hooks/useBroadcast";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { messageFor } from "../../utils/errors";
-import { formatDuration } from "../../utils/format";
+import { formatClock, formatDuration } from "../../utils/format";
 import { reorder, shuffle } from "../../utils/queue";
 import { ConfirmDialog } from "../ConfirmDialog";
+import { VUMeter } from "../VUMeter";
+import { TurntableDeck } from "../deck/TurntableDeck";
 import type { Genre, Track } from "../../types";
 
 interface Props {
@@ -89,6 +92,13 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
   const currentIndex = currentVideoId
     ? tracks.findIndex((t) => t.youtube_video_id === currentVideoId)
     : -1;
+  const livePct =
+    state?.track && state.track.duration_seconds > 0
+      ? Math.min(
+          100,
+          Math.max(0, (state.offset / state.track.duration_seconds) * 100),
+        )
+      : 0;
 
   useEffect(() => {
     const list = queueRef.current;
@@ -193,175 +203,224 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
   );
 
   return (
-    <section className="admin-panel" aria-label="Now playing">
+    <section className="admin-panel np-panel" aria-label="Now playing">
       <div className="panel-head">
         <h2>Now playing</h2>
         {syncButton}
       </div>
 
-      {genres.length > 0 && (
-        <label className="field">
-          Genre
-          <select
-            aria-label="Genre to control"
-            value={selectedId ?? ""}
-            onChange={(e) => {
-              userSelectedRef.current = true;
-              setSelectedId(Number(e.target.value));
-            }}
-          >
-            {genres.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-
-      {state?.genre && state.track ? (
-        <div className="now-playing">
-          {state.track.thumbnail_url && (
-            <img className="art" src={state.track.thumbnail_url} alt="" />
-          )}
-          <div className="meta">
-            <div className="title">{state.track.title}</div>
-            <div className="artist">{state.track.artist}</div>
-            <div className="source">
-              Genre: {state.genre.name}
-              <span className={`badge source-${state.source}`}>
-                {SOURCE_LABELS[state.source] ?? state.source}
-              </span>
+      <div className="deck-grid admin-deck">
+        <div className="deck-side admin-deck-side">
+          <TurntableDeck
+            playing={Boolean(state?.track)}
+            artUrl={state?.track?.thumbnail_url ?? null}
+          />
+          <div className="mixer">
+            <div className="dj">
+              <small>On the decks</small>
+              <strong>{state?.genre?.name ?? "Station"}</strong>
+            </div>
+            <VUMeter playing={Boolean(state?.track)} seed={1} />
+            <div className="knob-row" aria-hidden="true">
+              <span className="deck-knob" />
+              <span
+                className="deck-knob"
+                style={{ "--r": "20deg" } as CSSProperties}
+              />
+              <span
+                className="deck-knob"
+                style={{ "--r": "70deg" } as CSSProperties}
+              />
             </div>
           </div>
         </div>
-      ) : (
-        <p>
-          {failed ? "Could not load playback status." : "Nothing scheduled."}
-        </p>
-      )}
 
-      <div className="transport">
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => transport("prev")}
-          disabled={tracks.length === 0}
-        >
-          Prev
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => transport("next")}
-          disabled={tracks.length === 0}
-        >
-          Next
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={stopPlayback}
-          disabled={!state?.track}
-        >
-          Stop
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={goAuto}
-          disabled={
-            state == null ||
-            state.source === "schedule" ||
-            state.source === "default"
-          }
-        >
-          Auto
-        </button>
-      </div>
-
-      <div className="queue-head">
-        <h3>Queue</h3>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => saveOrder(shuffle(tracks))}
-          disabled={tracks.length < 2}
-        >
-          Shuffle
-        </button>
-      </div>
-
-      {loading ? (
-        <p>Loading…</p>
-      ) : (
-        <ol className="queue-list" ref={queueRef}>
-          {tracks.map((t, i) => {
-            const isCurrent = i === currentIndex;
-            return (
-              <li
-                key={`${t.youtube_video_id}-${i}`}
-                ref={isCurrent ? currentRowRef : undefined}
-                className={isCurrent ? "queue-row current" : "queue-row"}
-                draggable
-                onDragStart={() => setDragIndex(i)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => {
-                  if (dragIndex !== null && dragIndex !== i) {
-                    saveOrder(reorder(tracks, dragIndex, i));
-                  }
-                  setDragIndex(null);
+        <div className="np-col admin-np-col">
+          {genres.length > 0 && (
+            <label className="field admin-genre-field">
+              Genre
+              <select
+                aria-label="Genre to control"
+                value={selectedId ?? ""}
+                onChange={(e) => {
+                  userSelectedRef.current = true;
+                  setSelectedId(Number(e.target.value));
                 }}
-                onDragEnd={() => setDragIndex(null)}
               >
-                <span className="drag-handle" aria-hidden="true">
-                  ⋮⋮
-                </span>
-                {t.thumbnail_url && (
-                  <img className="art small" src={t.thumbnail_url} alt="" />
-                )}
-                <span className="queue-title">{t.title}</span>
-                <span className="queue-artist">{t.artist}</span>
-                <span className="queue-duration">
-                  {formatDuration(t.duration_seconds)}
-                </span>
-                {isCurrent &&
-                  (isMobileView ? (
-                    <span
-                      className="on-air-dot"
-                      role="img"
-                      aria-label="On air"
-                    />
-                  ) : (
-                    <span className="badge">On air</span>
-                  ))}
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => playTrack(t)}
-                >
-                  Play
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-      )}
+                {genres.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
-      {pendingTrack && selectedId !== null && (
-        <ConfirmDialog
-          title="Interrupt playback?"
-          message={`A song is playing — play "${pendingTrack.title}" now?`}
-          confirmLabel="Play now"
-          onConfirm={() => {
-            const track = pendingTrack;
-            const genreId = selectedId;
-            setPendingTrack(null);
-            void playNow(genreId, track);
-          }}
-          onCancel={() => setPendingTrack(null)}
-        />
-      )}
+          {state?.genre && state.track ? (
+            <>
+              <div className="sleeve admin-sleeve">
+                {state.track.thumbnail_url && (
+                  <img
+                    className="np-cover"
+                    src={state.track.thumbnail_url}
+                    alt=""
+                  />
+                )}
+                <div>
+                  <div className="kicker">Genre: {state.genre.name}</div>
+                  <h2 className="np-title">{state.track.title}</h2>
+                  <div className="np-artist">{state.track.artist}</div>
+                </div>
+              </div>
+              <div>
+                <div className="np-bar">
+                  <div
+                    className="np-bar-fill"
+                    role="progressbar"
+                    aria-label="Playback position"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={Math.round(livePct)}
+                    style={{ width: `${livePct}%` }}
+                  />
+                </div>
+                <div className="np-times">
+                  <span>{formatClock(state.offset)}</span>
+                  <span className={`badge source-${state.source}`}>
+                    {SOURCE_LABELS[state.source] ?? state.source}
+                  </span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="muted">
+              {failed ? "Could not load playback status." : "Nothing scheduled."}
+            </p>
+          )}
+
+          <div className="transport">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => transport("prev")}
+              disabled={tracks.length === 0}
+            >
+              Prev
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => transport("next")}
+              disabled={tracks.length === 0}
+            >
+              Next
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={stopPlayback}
+              disabled={!state?.track}
+            >
+              Stop
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={goAuto}
+              disabled={
+                state == null ||
+                state.source === "schedule" ||
+                state.source === "default"
+              }
+            >
+              Auto
+            </button>
+          </div>
+
+          <div className="queue-head">
+            <h3>Queue</h3>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => saveOrder(shuffle(tracks))}
+              disabled={tracks.length < 2}
+            >
+              Shuffle
+            </button>
+          </div>
+
+          {loading ? (
+            <p className="muted">Loading…</p>
+          ) : (
+            <ol className="queue-list" ref={queueRef}>
+              {tracks.map((t, i) => {
+                const isCurrent = i === currentIndex;
+                return (
+                  <li
+                    key={`${t.youtube_video_id}-${i}`}
+                    ref={isCurrent ? currentRowRef : undefined}
+                    className={isCurrent ? "queue-row current" : "queue-row"}
+                    draggable
+                    onDragStart={() => setDragIndex(i)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => {
+                      if (dragIndex !== null && dragIndex !== i) {
+                        saveOrder(reorder(tracks, dragIndex, i));
+                      }
+                      setDragIndex(null);
+                    }}
+                    onDragEnd={() => setDragIndex(null)}
+                  >
+                    <span className="drag-handle" aria-hidden="true">
+                      ⋮⋮
+                    </span>
+                    {t.thumbnail_url && (
+                      <img className="art small" src={t.thumbnail_url} alt="" />
+                    )}
+                    <span className="queue-title">{t.title}</span>
+                    <span className="queue-artist">{t.artist}</span>
+                    <span className="queue-duration">
+                      {formatDuration(t.duration_seconds)}
+                    </span>
+                    {isCurrent &&
+                      (isMobileView ? (
+                        <span
+                          className="on-air-dot"
+                          role="img"
+                          aria-label="On air"
+                        />
+                      ) : (
+                        <span className="badge">On air</span>
+                      ))}
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => playTrack(t)}
+                    >
+                      Play
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+
+          {pendingTrack && selectedId !== null && (
+            <ConfirmDialog
+              title="Interrupt playback?"
+              message={`A song is playing — play "${pendingTrack.title}" now?`}
+              confirmLabel="Play now"
+              onConfirm={() => {
+                const track = pendingTrack;
+                const genreId = selectedId;
+                setPendingTrack(null);
+                void playNow(genreId, track);
+              }}
+              onCancel={() => setPendingTrack(null)}
+            />
+          )}
+        </div>
+      </div>
     </section>
   );
 }
