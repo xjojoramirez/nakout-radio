@@ -341,10 +341,6 @@ h3 {
   max-width: 460px;
 }
 
-#panel-now .admin-sleeve {
-  grid-template-columns: 84px minmax(0, 1fr);
-}
-
 .admin-deck .np-col {
   gap: 14px;
 }
@@ -352,6 +348,53 @@ h3 {
 .admin-deck .np-title {
   font-size: clamp(1.2rem, 2vw, 1.6rem);
   margin: 6px 0 4px;
+}
+
+/* On-air nowcard (reference .nowcard/.cover/.meta; reuses .np-title/.np-artist/.np-bar) */
+
+#panel-now .nowcard {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+#panel-now .nowcard .cover {
+  width: 96px;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background-size: cover;
+  background-position: center;
+  background-color: #3a2416;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+#panel-now .nowcard .nowcard-info {
+  min-width: 0;
+}
+
+#panel-now .nowcard .np-title {
+  margin: 0 0 3px;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  text-wrap: initial;
+}
+
+#panel-now .nowcard .meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+#panel-now .nowcard .np-bar,
+#panel-now .nowcard .np-times {
+  grid-column: 1 / -1;
+}
+
+#panel-now .nowcard .np-times {
+  margin-top: 0;
 }
 
 /* Skeleton loading states */

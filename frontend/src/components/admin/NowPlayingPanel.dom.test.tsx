@@ -10,6 +10,11 @@ import { ApiError, api } from "../../api/client";
 import type { Genre, Track } from "../../types";
 import { NowPlayingPanel } from "./NowPlayingPanel";
 
+vi.mock("../../utils/profile", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../utils/profile")>()),
+  cssCover: () => 'url("https://example.com/cover.png")',
+}));
+
 vi.mock("../../api/client", async () => {
   const actual =
     await vi.importActual<typeof import("../../api/client")>(
@@ -88,6 +93,41 @@ describe("NowPlayingPanel", () => {
     expect(screen.getByText("On air")).toBeInTheDocument();
     expect(screen.getAllByText("3:20").length).toBeGreaterThan(0);
     expect(screen.getByText("Schedule")).toBeInTheDocument();
+  });
+
+  it("renders the reference nowcard and keeps decorative knobs out of the mixer", async () => {
+    mocked.now.mockResolvedValue({
+      genre: GENRE,
+      track: TRACK_A,
+      offset_seconds: 100,
+      server_time: "x",
+      source: "schedule",
+    });
+    const { container } = renderPanel();
+    const nowcard = await waitFor(() => {
+      const card = container.querySelector(".admin-np-col .nowcard");
+      expect(card).not.toBeNull();
+      return card as HTMLElement;
+    });
+    expect(nowcard).toHaveClass("card", "nowcard");
+    expect(within(nowcard).getByText("Alpha")).toBeInTheDocument();
+    expect(nowcard.querySelector(".nowcard-info .meta .mono")).toHaveTextContent(
+      "Genre: Chill",
+    );
+    expect(
+      nowcard.querySelector(".nowcard-info .meta .badge"),
+    ).toHaveTextContent("Schedule");
+    const fill = nowcard.querySelector(".np-bar .np-bar-fill");
+    expect(fill).toHaveAttribute("role", "progressbar");
+    expect(fill).toHaveAttribute("aria-label", "Playback position");
+    expect(fill).toHaveAttribute("aria-valuemin", "0");
+    expect(fill).toHaveAttribute("aria-valuemax", "100");
+    expect(fill).toHaveAttribute("aria-valuenow", "50");
+    expect(container.querySelector(".knob-row")).toBeNull();
+    expect(container.querySelector(".deck-knob")).toBeNull();
+    expect(
+      container.querySelectorAll(".admin-deck-side .mixer .dj, .admin-deck-side .mixer .vu-meter"),
+    ).toHaveLength(2);
   });
 
   it("scrolls the current row into view on mobile after load", async () => {
@@ -323,6 +363,73 @@ describe("NowPlayingPanel", () => {
     fireEvent.click(screen.getByText("Sync all playlists"));
     await waitFor(() =>
       expect(mocked.genreTracks).toHaveBeenCalledTimes(2),
+    );
+  });
+
+  it("shows a syncing chip and disables the button while sync-all is pending", async () => {
+    mocked.now.mockResolvedValue({
+      genre: null,
+      track: null,
+      offset_seconds: 0,
+      server_time: "x",
+      source: "none",
+    });
+    let resolve!:
+      (value: { results: Array<{ id: number; synced: number }> }) => void;
+    mocked.syncAll.mockImplementation(
+      () =>
+        new Promise((res) => {
+          resolve = res;
+        }),
+    );
+    const { container } = renderPanel();
+    const button = (await screen.findByText(
+      "Sync all playlists",
+    )) as HTMLButtonElement;
+    fireEvent.click(button);
+    expect(button).toBeDisabled();
+    const chip = container.querySelector(".chip .spin");
+    expect(chip).not.toBeNull();
+    expect(screen.getByText("Syncing")).toBeInTheDocument();
+    resolve({ results: [{ id: 1, synced: 2 }] });
+    await waitFor(() => {
+      const next = screen.getByText("Sync all playlists");
+      expect(next as HTMLButtonElement).not.toBeDisabled();
+    });
+    expect(container.querySelector(".chip .spin")).toBeNull();
+    expect(screen.queryByText("Syncing")).not.toBeInTheDocument();
+  });
+
+  it("falls back to the generated palette cover when the on-air track has no thumbnail", async () => {
+    mocked.now.mockResolvedValue({
+      genre: GENRE,
+      track: TRACK_A,
+      offset_seconds: 0,
+      server_time: "x",
+      source: "schedule",
+    });
+    const { container } = renderPanel();
+    await screen.findByText("Schedule");
+    const cover = container.querySelector<HTMLElement>(".nowcard .cover");
+    expect(cover).not.toBeNull();
+    expect(cover!.style.backgroundImage).toContain(
+      "https://example.com/cover.png",
+    );
+  });
+
+  it("uses the track thumbnail as the on-air cover when available", async () => {
+    mocked.now.mockResolvedValue({
+      genre: GENRE,
+      track: { ...TRACK_A, thumbnail_url: "https://i.ytimg.com/vi/a/a.jpg" },
+      offset_seconds: 0,
+      server_time: "x",
+      source: "schedule",
+    });
+    const { container } = renderPanel();
+    await screen.findByText("Schedule");
+    const cover = container.querySelector<HTMLElement>(".nowcard .cover");
+    expect(cover!.style.backgroundImage).toContain(
+      "https://i.ytimg.com/vi/a/a.jpg",
     );
   });
 

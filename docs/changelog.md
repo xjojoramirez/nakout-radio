@@ -3,6 +3,38 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — task 9: now playing panel polish to reference (nowcard, mixer, sync spinner)
+
+- `frontend/src/components/admin/NowPlayingPanel.tsx`: the on-air card is
+  rebuilt as the reference `.nowcard` (`UI reference/Nakout Admin.html`
+  238-286) — 96px `.cover` (background-image from the live
+  `thumbnail_url`, falling back to `cssCover(track.title)`) beside info
+  (`h3.np-title`, `.np-artist`, `.meta` row with `Genre: X` `.mono` + the
+  unchanged `SOURCE_LABELS` `.badge source-*`); the `.np-bar`
+  progressbar spans the card grid below with its exact a11y attributes
+  preserved (`role="progressbar"` `aria-label="Playback position"`
+  `aria-valuenow`); the offset clock stays in `.np-times` (last grid row).
+  The three decorative `.deck-knob` spans were removed from the admin
+  mixer (reference mixer is DJ + VU only; `.deck-knob` CSS kept for the
+  public page / interactive knob). Sync-all shows a `.chip` with a
+  `.spin` icon and is disabled while the request is pending (local
+  `syncingAll`); notice/error handling unchanged.
+- `frontend/src/styles/vintage.css`: added `#panel-now`-scoped nowcard
+  rules (96px cover column, nowcard title sizing, `.meta` flex row,
+  `.np-bar`/`.np-times` spanning `grid-column: 1 / -1`); removed the dead
+  `#panel-now .admin-sleeve` rule. Public `.np-*`, `.sleeve`, `.np-cover`
+  and `.deck-knob` shared rules untouched.
+- `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`: added
+  nowcard layout + no-decorative-knob + progressbar-a11y test, sync-all
+  spinner pending/resolved test, cover fallback test (empty thumbnail →
+  `cssCover` style) and thumbnail-URL cover test; `cssCover` is mocked
+  (jsdom rejects the real SVG data URI's unencoded parens — same pattern
+  as `PlaylistsPanel.dom.test.tsx`).
+- Frontend source only; rebuild `frontend` to ship:
+  `docker compose up -d --build frontend` (hard-refresh after).
+- Verification: `npm run test` 231 passed (28 files), `npm run typecheck`
+  clean, `npm run build` ok.
+
 ## 2026-10-09 — schedule panel fixes: tz note, strip-click guard, form a11y, stale error clearing
 
 - `frontend/src/components/admin/SchedulePanel.tsx`: browser-timezone note
