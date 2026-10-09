@@ -59,4 +59,14 @@ describe("VolumeKnob", () => {
     });
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it("stops dragging when the pointer is cancelled", () => {
+    const onChange = vi.fn();
+    render(<VolumeKnob value={50} onChange={onChange} label="Volume" />);
+    const knob = screen.getByRole("slider", { name: "Volume" });
+    fireEvent.pointerDown(knob, { pointerId: 1, clientY: 100 });
+    fireEvent.pointerCancel(knob);
+    fireEvent.pointerMove(knob, { pointerId: 1, clientY: 80 });
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });
