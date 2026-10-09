@@ -20,6 +20,7 @@ class GenreOut(BaseModel):
     name: str
     slug: str
     is_default: bool
+    color: str = ""
     track_count: int
 
 

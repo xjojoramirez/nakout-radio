@@ -22,7 +22,14 @@ from app.auth import (
 from app.broadcast import play_now, set_auto, set_order, skip, stop, utcnow
 from app.config import get_settings
 from app.db import get_session
-from app.models import Playlist, ScheduleSlot, Setting, Genre, TrackCache
+from app.models import (
+    Playlist,
+    ScheduleSlot,
+    Setting,
+    Genre,
+    TrackCache,
+    GENRE_PALETTE,
+)
 from app.routers.genres import ordered_tracks_for_genre
 from app.routers.now import build_now
 from app.routers.ws import notify_radio
@@ -72,6 +79,7 @@ class GenreIn(BaseModel):
     slug: str = Field(min_length=1)
     is_default: bool = False
     sort_order: int = 0
+    color: str | None = None
 
 
 class GenreUpdate(BaseModel):
@@ -79,6 +87,26 @@ class GenreUpdate(BaseModel):
     slug: str | None = Field(default=None, min_length=1)
     is_default: bool | None = None
     sort_order: int | None = None
+    color: str | None = Field(default=None, min_length=1)
+
+
+_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def _validate_color(value: str | None) -> str | None:
+    if value is None:
+        return None
+    if not _COLOR_RE.match(value):
+        raise HTTPException(status_code=422, detail="color must be #rrggbb")
+    return value.lower()
+
+
+def _first_unused_color(session: Session) -> str:
+    used = {row for row in session.exec(select(Genre.color)).all() if row}
+    return next(
+        (c for c in GENRE_PALETTE if c not in used),
+        GENRE_PALETTE[len(used) % len(GENRE_PALETTE)],
+    )
 
 
 def require_admin(
@@ -184,6 +212,7 @@ def create_genre(body: GenreIn, session: Session = Depends(get_session)) -> Genr
     if existing is not None:
         raise HTTPException(status_code=409, detail="genre slug already exists")
     genre = Genre(**body.model_dump())
+    genre.color = _validate_color(genre.color) or _first_unused_color(session)
     session.add(genre)
     session.commit()
     session.refresh(genre)
@@ -204,6 +233,11 @@ def update_genre(
         ).first()
         if clash is not None:
             raise HTTPException(status_code=409, detail="genre slug already exists")
+    if "color" in updates:
+        valid = _validate_color(updates["color"])
+        if valid is None:
+            raise HTTPException(status_code=422, detail="color must be #rrggbb")
+        updates["color"] = valid
     if updates.get("is_default"):
         session.exec(
             update(Genre)
@@ -214,6 +248,7 @@ def update_genre(
         setattr(genre, field, value)
     session.add(genre)
     session.commit()
+    notify_radio(build_now(session, utcnow()).model_dump())
     session.refresh(genre)
     return genre
 

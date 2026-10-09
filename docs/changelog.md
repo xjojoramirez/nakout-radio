@@ -3,6 +3,35 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — backend: genre accent colour (model, migration, CRUD, serialization)
+
+- Added `GENRE_PALETTE` (8 hex colours) and nullable `Genre.color` column
+  (`backend/app/models.py`).
+- New migration `backend/alembic/versions/a1b2c3d4e5f6_genre_color.py`
+  (revision `a1b2c3d4e5f6`, down_revision `e5f6a7b8c9d0`): batch-adds the
+  nullable `color` column and backfills each existing genre with the first
+  unused palette colour (palette inlined in the migration, not imported).
+  Note: the implementation plan claimed `d4e5f6a7b8c9` was the repo's latest
+  revision; `e5f6a7b8c9d0` (add revoked session) was added later by the
+  security-hardening commit, so the chain was corrected to that.
+- `GenreOut` gained `color: str = ""` (`backend/app/schemas.py`); all
+  serialization sites pass it through (`backend/app/routers/genres.py`
+  list + detail, `backend/app/routers/now.py`, `backend/app/routers/schedule.py`).
+- `backend/app/routers/admin.py`: `GenreIn`/`GenreUpdate` accept `color`
+  (`#rrggbb` validated, lowercased, empty string rejected on update);
+  create assigns the first unused palette colour when omitted; update
+  validates before applying and now pushes `notify_radio(build_now(...))`
+  so the public page stays in sync (refresh moved after the notify because
+  the broadcast-state commit expires the returned ORM row).
+- Tests added to `backend/tests/test_admin.py`: explicit colour on create,
+  palette auto-assignment (first unused), update colour, invalid colour
+  rejected (422), public genre list includes colour, and a hand-built
+  pre-migration db backfill test via alembic subprocess (mirrors the
+  repo's existing migration-test pattern).
+- Restart required: backend only — `docker compose up -d --build backend`.
+- Verification: `python -m pytest tests/test_admin.py -q` → 84 passed;
+  `python -m pytest -q` (whole backend suite) → 215 passed.
+
 ## 2026-10-09 — volume fader follow-ups: Home/End key test added; fader spec drag-gain wording corrected
 
 - Added a Home/End bounds test to
