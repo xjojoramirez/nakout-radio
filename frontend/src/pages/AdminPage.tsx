@@ -4,6 +4,7 @@ import { NowPlayingPanel } from "../components/admin/NowPlayingPanel";
 import { PlaylistsPanel } from "../components/admin/PlaylistsPanel";
 import { SchedulePanel } from "../components/admin/SchedulePanel";
 import { GenresPanel } from "../components/admin/GenresPanel";
+import { Toast } from "../components/admin/Toast";
 import { Tabs, type TabDef } from "../components/admin/Tabs";
 import {
   PanelSkeleton,
@@ -12,13 +13,6 @@ import {
 } from "../components/admin/Skeleton";
 import type { Genre } from "../types";
 import { messageFor } from "../utils/errors";
-
-const TABS: TabDef[] = [
-  { id: "now", label: "Now Playing" },
-  { id: "playlists", label: "Playlists" },
-  { id: "genres", label: "Genres" },
-  { id: "schedule", label: "Schedule" },
-];
 
 type Phase = "checking" | "login" | "loading" | "ready";
 
@@ -29,8 +23,17 @@ export function AdminPage() {
   const [notice, setNotice] = useState("");
   const [genres, setGenres] = useState<Genre[]>([]);
   const [tab, setTab] = useState("now");
+  const [playlistCount, setPlaylistCount] = useState<number | null>(null);
+  const [slotCount, setSlotCount] = useState<number | null>(null);
 
   const loginEpoch = useRef(0);
+
+  const tabsDef: TabDef[] = [
+    { id: "now", label: "Now Playing" },
+    { id: "playlists", label: "Playlists", count: playlistCount },
+    { id: "genres", label: "Genres", count: genres.length },
+    { id: "schedule", label: "Schedule", count: slotCount },
+  ];
 
   const refreshGenres = useCallback(async () => {
     try {
@@ -88,6 +91,8 @@ export function AdminPage() {
     setPassword("");
     setError("");
     setNotice("");
+    setPlaylistCount(null);
+    setSlotCount(null);
   };
 
   const onNotice = (message: string) => {
@@ -100,16 +105,9 @@ export function AdminPage() {
     setError(message);
   };
 
-  useEffect(() => {
-    document.body.classList.toggle("admin-fixed", phase === "ready");
-    return () => {
-      document.body.classList.remove("admin-fixed");
-    };
-  }, [phase]);
-
   if (phase === "checking") {
     return (
-      <div className="admin admin-stable">
+      <div className="admin admin-page">
         <div className="admin-skeleton-card" aria-busy="true">
           <Skeleton variant="title" />
           <SkeletonForm count={1} />
@@ -120,7 +118,7 @@ export function AdminPage() {
 
   if (phase === "login") {
     return (
-      <div className="admin">
+      <div className="admin admin-page">
         <form
           className="admin-login"
           onSubmit={(e) => {
@@ -157,11 +155,13 @@ export function AdminPage() {
   }
 
   return (
-    <div className="admin admin-stable admin-shell">
-      <header className="admin-header">
-        <h1>Admin</h1>
-        <div className="admin-header-actions">
-          <a className="back-link" href="/">
+    <div className="admin admin-page">
+      <header className="admin-top">
+        <div className="brand">
+          Nakout<span>.</span>Radio <small>Admin</small>
+        </div>
+        <div className="top-r">
+          <a className="back" href="/">
             &larr; Back to radio
           </a>
           <button type="button" className="btn btn-secondary" onClick={logout}>
@@ -175,13 +175,9 @@ export function AdminPage() {
           {error}
         </p>
       )}
-      {notice && (
-        <p className="notice banner" aria-live="polite">
-          {notice}
-        </p>
-      )}
+      <Toast message={notice} onDone={() => setNotice("")} />
 
-      <Tabs tabs={TABS} active={tab} onChange={setTab} />
+      <Tabs tabs={tabsDef} active={tab} onChange={setTab} />
 
       <div
         id={`panel-${tab}`}
@@ -207,6 +203,7 @@ export function AdminPage() {
                 onGenresChanged={refreshGenres}
                 onNotice={onNotice}
                 onError={onError}
+                onCountChange={setPlaylistCount}
               />
             )}
             {tab === "genres" && (
@@ -222,6 +219,7 @@ export function AdminPage() {
                 genres={genres}
                 onNotice={onNotice}
                 onError={onError}
+                onCountChange={setSlotCount}
               />
             )}
           </>

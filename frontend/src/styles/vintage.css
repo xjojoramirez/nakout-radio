@@ -308,105 +308,35 @@ h3 {
   border: 1px solid var(--border);
 }
 
-/* Admin shell: no page scrolling; only the listed content areas scroll.
-   body class toggled from AdminPage (no :has dependency) */
-body.admin-fixed {
-  place-items: start center;
-  height: 100vh;
-  overflow: hidden;
+/* Admin shell: brand header, counted tabs, one scrolling page
+   (no fixed-height body lock; panels grow and the page scrolls) */
+
+.admin-page {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  display: grid;
+  gap: 22px;
+  padding: 10px 16px 80px;
 }
 
-.admin-shell {
-  height: calc(100vh - 32px);
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
+/* Realign blocks that carried their own top margins under the old shell */
+.admin-page .admin-tabs,
+.admin-page .banner,
+.admin-page .admin-panel {
+  margin-top: 0;
 }
 
 .admin-tabpanel {
-  flex: 1 1 0%;
-  min-height: 0;
-  overflow-y: auto;
+  display: grid;
+  gap: 18px;
+  min-width: 0;
 }
 
-/* Playlists tab: everything fits the shell; only the channel grid scrolls */
-
-#panel-playlists {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-#panel-playlists .admin-panel {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-#panel-playlists .channel-block {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-#panel-playlists .channel-block > div {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-#panel-playlists .channel-scroll {
-  flex: 1 1 auto;
-  min-height: 260px;
-  height: auto;
-}
-
-#panel-playlists .added-playlists {
-  max-height: 40vh;
-  overflow-y: auto;
-}
-
-/* Now Playing tab: everything fits the shell; only the queue list scrolls */
-
-#panel-now {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-#panel-now .admin-panel {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-#panel-now .queue-list {
-  flex: 1 1 auto;
-  min-height: 180px;
-  max-height: none;
-}
+/* Now Playing tab: deck proportions kept across the shell removal */
 
 #panel-now .admin-deck {
-  flex: 1 1 auto;
-  min-height: 0;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   padding-top: 18px;
-}
-
-#panel-now .admin-deck > .np-col {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-#panel-now .admin-deck .queue-list {
-  flex: 1 1 auto;
 }
 
 .admin-deck-side {
@@ -507,25 +437,44 @@ body.admin-fixed {
   width: 120px;
 }
 
-.admin-header {
+.admin-top {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border);
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.admin-header h1,
+.admin-top .brand {
+  font-size: 1.5rem;
+}
+
+.admin .brand small {
+  font: 500 0.7rem var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.top-r {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+a.back {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+a.back:hover {
+  color: var(--cream);
+}
+
 .admin-login h1 {
   font-size: 1.9rem;
   line-height: 1;
-}
-
-.admin-header-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
 }
 
 .back-link {
@@ -769,6 +718,9 @@ body.admin-fixed {
   padding: 8px 16px;
   background: transparent;
   color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
@@ -780,6 +732,18 @@ body.admin-fixed {
   background: var(--wood-dark);
   color: var(--cream);
   box-shadow: var(--shadow-sm);
+}
+
+.count {
+  font: 500 0.68rem var(--font-mono);
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+}
+
+.admin-tabs .active .count {
+  background: rgba(28, 17, 10, 0.2);
 }
 
 /* Lists */
@@ -1744,37 +1708,8 @@ body.admin-fixed {
 /* ---------- Mobile: phones (≤600px) ---------- */
 
 @media (max-width: 600px) {
-  /* Normal page scrolling: neutralize the admin fixed shell */
-  body.admin-fixed {
-    height: auto;
-    overflow: auto;
-    place-items: start center;
-  }
-
-  .admin-shell {
-    height: auto;
-    min-height: 100%;
-    display: block;
-  }
-
-  .admin-tabpanel {
-    overflow: visible;
-  }
-
-  #panel-now,
-  #panel-playlists {
-    display: block;
-    overflow: visible;
-  }
-
-  #panel-now .queue-list,
-  #panel-playlists .channel-scroll,
-  #panel-playlists .added-playlists {
-    flex: 0 0 auto;
-    height: auto;
-    min-height: 0;
-    max-height: none;
-    overflow: visible;
+  .admin-page {
+    padding-top: 8px;
   }
 
   .admin-deck {
@@ -1792,10 +1727,6 @@ body.admin-fixed {
   /* Carried over from the old 560px block so nothing regresses */
   .admin {
     padding: 20px;
-  }
-
-  .admin-stable {
-    min-height: min(360px, 55vh);
   }
 
   .time-pair {
@@ -1820,17 +1751,21 @@ body.admin-fixed {
     padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
 
-  .admin-header h1,
   .admin-login h1 {
     font-size: 1.5rem;
   }
 
-  .admin-header {
-    flex-wrap: wrap;
+  .admin-top .brand {
+    font-size: 1.3rem;
   }
 
-  .admin-header .back-link,
-  .admin-header-actions .btn {
+  .top-r {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .top-r .btn,
+  .top-r .back {
     white-space: nowrap;
   }
 
@@ -1947,7 +1882,7 @@ body.admin-fixed {
     font-size: 0.8rem;
   }
 
-  .admin-header-actions {
+  .top-r {
     gap: 4px;
   }
 

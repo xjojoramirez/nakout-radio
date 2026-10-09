@@ -15,6 +15,7 @@ interface Props {
   onGenresChanged: () => Promise<void> | void;
   onNotice: (message: string) => void;
   onError: (message: string) => void;
+  onCountChange?: (count: number) => void;
 }
 
 export function PlaylistsPanel({
@@ -22,6 +23,7 @@ export function PlaylistsPanel({
   onGenresChanged,
   onNotice,
   onError,
+  onCountChange,
 }: Props) {
   const [added, setAdded] = useState<AddedPlaylist[]>([]);
   const [addedError, setAddedError] = useState("");
@@ -44,12 +46,14 @@ export function PlaylistsPanel({
 
   const loadAdded = useCallback(async () => {
     try {
-      setAdded(await api.listPlaylists());
+      const loaded = await api.listPlaylists();
+      setAdded(loaded);
+      onCountChange?.(loaded.length);
       setAddedError("");
     } catch (err) {
       setAddedError(messageFor(err));
     }
-  }, []);
+  }, [onCountChange]);
 
   const loadChannel = useCallback(async () => {
     try {
