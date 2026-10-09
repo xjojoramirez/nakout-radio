@@ -3,6 +3,83 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — task 8: admin schedule timeline, on-air card, day pills, sentence form
+
+- `frontend/src/components/admin/ScheduleTimeline.tsx` (new): the 24h
+  timeline strip — segments mirror the reference `buildSegs`: a carry-over
+  block into `[0, firstStart)` labelled "continues" with the previous
+  day's (Mon=0 indexing, previous six days only) last slot and its
+  `--gc`, a `.blk.none` "Nothing scheduled" head gap when no previous
+  slot exists, and one absolutely-positioned slot `<button>` per slot
+  (left/width in % of 1440 min, `--gc` from the genre colour, 12h start
+  label). Clicking a slot opens it for edit; clicking the strip (bubbling
+  from the carry div, passing through the `pointer-events: none` gap
+  divs) opens the add form at the clicked minute (30-min grid, clamped
+  0..1410). `.nowl` "Now" marker only when the selected day is today and
+  `nowMinutes` is provided. Ticks every 3 h labelled "12 AM … 12 PM …
+  12 AM" (no "Midnight"); `.tl` carries
+  `aria-label="Timeline for <full weekday>"`; `tlscroll/tlinner` keep the
+  640 px min-width horizontal scroll.
+- `frontend/src/components/admin/SchedulePanel.tsx`: rebuilt to the
+  reference column — `h2.sec` "Schedule" + `.sub` line with the local
+  timezone; `.card.onair` fed by `api.scheduleNow()` (fetched on mount,
+  on slots change, and polled every 60 s via a cleared-on-unmount
+  interval): live state shows `.led.live`, the genre dot + "On air:" +
+  `since <time>[ <weekday>]` and `Next: <genre> at <time>
+  today|tomorrow|<weekday>` computed from the slots and the local clock,
+  null-genre shows "Nothing scheduled yet / Add a slot to start the
+  automatic schedule."; `.head` pairs the Sun-first `.dayseg` day pills
+  (`aria-pressed`, `.pill`, red `.tdot` "Today" dot inside today's pill,
+  selecting a pill re-scopes an open ADD form's days to that day) with a
+  "+ Add slot" button that toggles to "Close" while the fresh-add form is
+  open; the sentence form `.card.sform` (amber border) has genre chips
+  (`GenreChipRadio`), "Weekdays/Weekends/Every day" `.presets` plus
+  individual `.pill` day toggles, a ≤220 px "Start time" time input, the
+  `data-testid="sentence"` preview ("<Genre> will start at <12h time> on
+  <day label> and play until the next slot begins."), inline `.hint.err`
+  for API conflicts (409s no longer go to the global error toast), and
+  Cancel + "Add slot"/"Save slot" actions (save gated on genre + days +
+  time); fresh adds prefill the start at the first free 30-min boundary
+  from 06:00 (`freeStart`) or the clicked minute; day list rows `.srow`
+  (+ `.dim`) per segment with the "6:00 AM to 9:30 AM"-style range,
+  genre, `fmtMin` duration chip, `formatDays` repeat label, Edit/Delete
+  (delete keeps the ConfirmDialog), "… continues from <weekday>" carry
+  rows, "Nothing scheduled" gap rows whose "Add slot" opens the form at
+  that minute, and an "Add the first slot" empty state opening at 06:00;
+  `initialGenre` is consumed once on mount behind a ref guard (preselects
+  the chip for fresh adds, fires `onIntentConsumed` once); the
+  `onCountChange` tab-badge contract is kept.
+- `frontend/src/components/admin/ScheduleTimeline.dom.test.tsx` (new,
+  8 tests) and `frontend/src/components/admin/SchedulePanel.dom.test.tsx`
+  (new, 19 tests): colours/labels/positioning, carry + gap segments,
+  strip-click rounding with a mocked `getBoundingClientRect`, now-marker
+  presence, tick labels, Sun-first pills + today dot, pill swapping,
+  prefilled edit form, presets/sentence/save gating, create/update
+  payloads, inline 409, confirm-dialog delete, day-list rows, intent
+  consumption, count + on-air refresh.
+- `frontend/src/pages/AdminPage.dom.test.tsx`: the four schedule-slot
+  tests updated to the new markup (chip radiogroup, "+ Add slot", inline
+  `.hint.err` conflict assertion, day-list rows instead of the old
+  `<li>` list) and `scheduleNow` added to the mocked API.
+- `frontend/src/styles/vintage.css`: added the schedule reference
+  families (`.admin .onair` scoped so the public deck header keeps its
+  mono `.onair`, `.led.live`, `.lab`, `.tlscroll/.tlinner/.tl/.blk`
+  (`.bn/.bt/.carry/.none`)/`.nowl/.ticks` (`.f/.l`), `.sform`, `.dayrow`,
+  `.pill` (+ `aria-pressed`, `.tdot`), `.presets`, `.sentence`, `.fa`,
+  `.sform .two`, `.daylist`, `.srow` (+ `.dim/.sm/.tr/.sa`)); removed the
+  now-unreferenced old schedule-list rules (`.days`, `.time-pair`,
+  `.slot-form-actions`, `.genre-admin-list` + `.slot-editing`,
+  `.slot-edit-head`, `.edit-badge`, `.st-name/.st-slug`, `.row-actions`,
+  `.count-pill`) and their mobile/reduced-motion references, with `.pill`
+  inheriting the 44 px touch target.
+- `frontend/src/types.ts`: `CurrentGenre` now carries `offset_seconds`
+  and `server_time` (matches `CurrentGenreOut`).
+- `frontend/src/components/admin/GenreSelect.tsx`: deleted — its only
+  consumer (the old schedule form) was replaced by the chip radio.
+- Frontend-only; restart required: `docker compose up -d --build frontend`.
+- Verified: `npm run test` 222 pass (28 files), `npm run typecheck` clean,
+  `npm run build` ok.
+
 ## 2026-10-09 — fix: playlist thumb fit, dead media query, move-error test
 
 - `frontend/src/styles/vintage.css`: `.pcard .pc img` now uses
