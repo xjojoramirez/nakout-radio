@@ -13,6 +13,7 @@ export interface Genre {
   slug: string;
   is_default: boolean;
   track_count: number;
+  color: string;
 }
 
 export interface GenreDetail extends Genre {
@@ -55,6 +56,7 @@ export interface AddedPlaylist {
   youtube_playlist_id: string;
   label: string;
   track_count: number;
+  synced_at: string | null;
 }
 
 export interface ScheduleSlot {

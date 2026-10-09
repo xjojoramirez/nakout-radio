@@ -3,6 +3,41 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — frontend data layer: colour/synced_at shapes, schedule time helpers, generated covers (admin reskin task 3)
+
+- `Genre` gained `color: string`; `AddedPlaylist` gained
+  `synced_at: string | null` (`frontend/src/types.ts`) — typed against the
+  task-1/2 backend API (backend serializes `color` as `genre.color or ""`,
+  `synced_at` as ISO-8601-with-`Z` or null).
+- `api.createGenre` takes an optional `color` (omitted from the body when
+  absent) and `api.updateGenre` accepts `color` in its updates
+  (`frontend/src/api/client.ts`).
+- New pure helpers in `frontend/src/utils/format.ts`:
+  `minutesOf` ("06:05" → 365), `twelveHour` (minutes → "6:30 AM"/"Midnight"),
+  `fmtMin` (90 → "1h 30m"), `timeAgo` (ISO string/null → "5 min ago"/"never",
+  tolerant of a missing `Z`).
+- New `frontend/src/utils/profile.ts`: `cssCover(seed)` renders a deterministic
+  generative SVG (hash-picked palette/geometry) as a `url("data:image/svg+xml…")`
+  CSS background value.
+- New `frontend/src/palette.ts`: `GENRE_PALETTE` — 8 hex colours mirroring
+  `backend/app/models.py` (parity re-checked in review; the frontend test is a
+  sanity check, length + first colour).
+- Test fixtures in `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`
+  gained the now-required `Genre.color` field.
+- Files: `frontend/src/types.ts`, `frontend/src/api/client.ts`,
+  `frontend/src/utils/format.ts`, `frontend/src/utils/profile.ts`,
+  `frontend/src/palette.ts`, `frontend/src/utils/format.unit.test.ts`,
+  `frontend/src/utils/profile.unit.test.ts`,
+  `frontend/src/palette.unit.test.ts`,
+  `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`,
+  `docs/changelog.md`.
+- Restart: frontend only (bundle-baked) — `docker compose up -d --build
+  frontend`; note the colour/synced_at API shapes are typed but not yet
+  visually consumed (that's a later reskin task).
+- Verification (TDD: new tests written first, confirmed red, then green):
+  `npm run test` → 21 files / 144 tests passed (previous 138 + 6 new);
+  `npm run typecheck` → clean; `npm run build` → success.
+
 ## 2026-10-09 — backend tests: strengthened synced_at coverage (test-only)
 
 - `backend/tests/test_admin.py` only: refresh test now nulls `synced_at`

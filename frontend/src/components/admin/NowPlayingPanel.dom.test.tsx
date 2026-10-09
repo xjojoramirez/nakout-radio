@@ -39,6 +39,7 @@ const GENRE: Genre = {
   slug: "chill",
   is_default: true,
   track_count: 2,
+  color: "#f2a33a",
 };
 
 const track = (id: string, title: string, position: number): Track => ({
@@ -332,6 +333,7 @@ describe("NowPlayingPanel", () => {
       slug: "jazz",
       is_default: false,
       track_count: 0,
+      color: "#e0654a",
     };
     mocked.now.mockResolvedValue({
       genre: GENRE,
@@ -356,6 +358,7 @@ describe("NowPlayingPanel", () => {
       slug: "jazz",
       is_default: false,
       track_count: 0,
+      color: "#e0654a",
     };
     mocked.now.mockResolvedValue({
       genre: GENRE_2,
