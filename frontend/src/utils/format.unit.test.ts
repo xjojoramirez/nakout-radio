@@ -29,5 +29,7 @@ describe("schedule time helpers", () => {
     expect(timeAgo("2026-10-06T12:00:00Z", now)).toBe("3d ago");
     expect(timeAgo(null, now)).toBe("never");
     expect(timeAgo("2026-10-09T11:55:00", now)).toBe("5 min ago"); // tolerant of missing Z
+    expect(timeAgo("2026-10-09T11:55:00+00:00", now)).toBe("5 min ago");
+    expect(timeAgo("2026-10-09T11:55:00+02:00", now)).toBe("2h ago"); // offset honoured
   });
 });
