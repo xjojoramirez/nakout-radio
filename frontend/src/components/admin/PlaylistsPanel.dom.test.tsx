@@ -235,6 +235,24 @@ describe("PlaylistsPanel", () => {
     );
   });
 
+  it("reports a move failure while still refetching the list", async () => {
+    mocked.updatePlaylist.mockRejectedValue(
+      new ApiError(409, "Move rejected by the server."),
+    );
+    const { onError } = renderPanel();
+    const select = await screen.findByLabelText("Genre for Work Drive Mix");
+    fireEvent.change(select, { target: { value: "1" } });
+    await waitFor(() =>
+      expect(mocked.updatePlaylist).toHaveBeenCalledWith(12, {
+        genre_id: 1,
+      }),
+    );
+    await waitFor(() =>
+      expect(onError).toHaveBeenCalledWith("Move rejected by the server."),
+    );
+    expect(mocked.listPlaylists.mock.calls.length).toBeGreaterThan(1);
+  });
+
   it("shows a Syncing chip while a refresh is in flight", async () => {
     let resolve!: (value: { id: number; synced: number }) => void;
     mocked.refreshPlaylist.mockImplementation(

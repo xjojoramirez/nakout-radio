@@ -3,6 +3,19 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — fix: playlist thumb fit, dead media query, move-error test
+
+- `frontend/src/styles/vintage.css`: `.pcard .pc img` now uses
+  `object-fit: cover` (was `fill`) so 4:3 YouTube thumbs aren't stretched
+  in the 16:9 card; removed the dead `@media (max-width: 920px) .browse`
+  duplicate (the later ≤920px `repeat(2, 1fr)` block wins).
+- `frontend/src/components/admin/PlaylistsPanel.dom.test.tsx`: added a
+  move-error test — rejected `updatePlaylist` calls `onError` and still
+  refetches via `listPlaylists`.
+- Frontend-only; restart required: `docker compose up -d --build frontend`.
+- Verified: `npm run test` 195 pass, `npm run typecheck` clean,
+  `npm run build` ok.
+
 ## 2026-10-09 — task 7: playlists panel reskin — genre groups, chips, refresh-all, channel grid, move endpoint
 
 - `frontend/src/components/admin/PlaylistsPanel.tsx`: rebuilt from the
