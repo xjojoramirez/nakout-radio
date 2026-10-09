@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { api } from "../../api/client";
 import { messageFor } from "../../utils/errors";
@@ -47,9 +47,7 @@ export function GenresPanel({
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
-  const [color, setColor] = useState<string>(
-    GENRE_PALETTE[GENRE_PALETTE.length - 1],
-  );
+  const [color, setColor] = useState<string>(GENRE_PALETTE[0]);
   const [editId, setEditId] = useState<number | null>(null);
   const [draft, setDraft] = useState<Draft>({
     name: "",
@@ -59,10 +57,18 @@ export function GenresPanel({
   });
   const [pendingDelete, setPendingDelete] = useState<Genre | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (flashTimer.current) clearTimeout(flashTimer.current);
+    };
+  }, []);
 
   const flash = (id: number) => {
     setFlashId(id);
-    window.setTimeout(
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(
       () => setFlashId((current) => (current === id ? null : current)),
       1500,
     );
@@ -78,11 +84,11 @@ export function GenresPanel({
       setSlug("");
       setSlugTouched(false);
       setColor(nextColor([...genres.map((g) => g.color), color]));
-      flash(created.id);
       onNotice(
         `${created.name} added. Add a playlist and a schedule slot to put it on air.`,
       );
       await onGenresChanged();
+      flash(created.id);
     } catch (err) {
       onError(messageFor(err));
     }
@@ -306,6 +312,7 @@ export function GenresPanel({
                     <button
                       type="button"
                       className="btn-link"
+                      aria-label={`Add playlist to ${g.name}`}
                       onClick={() =>
                         onJump?.("playlists", { playlistsGenre: g.id })
                       }
@@ -315,6 +322,7 @@ export function GenresPanel({
                     <button
                       type="button"
                       className="btn-link"
+                      aria-label={`Schedule ${g.name}`}
                       onClick={() =>
                         onJump?.("schedule", { scheduleGenre: g.id })
                       }

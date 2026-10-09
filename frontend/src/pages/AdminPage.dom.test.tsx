@@ -129,7 +129,7 @@ describe("AdminPage", () => {
       slug: "chill",
       is_default: false,
       track_count: 0,
-      color: "#d8c18a",
+      color: "#f2a33a",
     });
     render(<AdminPage />);
     await login();
@@ -145,7 +145,7 @@ describe("AdminPage", () => {
       expect(mocked.createGenre).toHaveBeenCalledWith(
         "Chill",
         "chill",
-        "#d8c18a",
+        "#f2a33a",
       ),
     );
     expect(mocked.listGenres).toHaveBeenCalledTimes(2);

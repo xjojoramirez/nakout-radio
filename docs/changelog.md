@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — task 6 follow-up: genre panel polish — flash timing, quick-link labels, default swatch
+
+- `frontend/src/components/admin/GenresPanel.tsx`: `flash(created.id)`
+  in `addGenre` now runs after `await onGenresChanged()` resolves (a
+  slow refresh can no longer strand the flash before the new card
+  exists); the flash timer lives in a `useRef` (mirroring `Toast.tsx`)
+  that is cleared before re-arming and on unmount via an empty-deps
+  `useEffect` cleanup, keeping the identity-guarded functional update;
+  empty-genre quick links got descriptive accessible names
+  (`aria-label="Add playlist to X"` / `aria-label="Schedule X"`); the
+  add-form colour now defaults to `GENRE_PALETTE[0]` (#f2a33a brand
+  amber) instead of palette[7].
+- `frontend/src/components/admin/GenresPanel.dom.test.tsx`: quick-link
+  clicks updated to the new role names; added a rejection-path test —
+  `updateGenre` rejecting (409) toasts the error and keeps the inline
+  editor open.
+- `frontend/src/pages/AdminPage.dom.test.tsx`: create-genre fixture +
+  assertion use the new `#f2a33a` default colour.
+- Restart: frontend only — `docker compose up -d --build frontend`
+  (then hard refresh).
+- Verification: `npm run test` (173 tests / 25 files),
+  `npm run typecheck`, `npm run build` — all green.
+
 ## 2026-10-09 — task 6: genres panel reskin — colour cards, play now, cross-tab quick links
 
 - `frontend/src/components/admin/GenresPanel.tsx`: rebuilt from the list

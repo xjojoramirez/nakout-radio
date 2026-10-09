@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { api } from "../../api/client";
+import { ApiError, api } from "../../api/client";
 import type { Genre, Track } from "../../types";
 import { GenresPanel } from "./GenresPanel";
 
@@ -123,12 +123,14 @@ describe("GenresPanel", () => {
       within(card as HTMLElement).getByText("No playlists"),
     ).toBeInTheDocument();
     fireEvent.click(
-      within(card as HTMLElement).getByRole("button", { name: "Add one" }),
+      within(card as HTMLElement).getByRole("button", {
+        name: "Add playlist to NU Metal",
+      }),
     );
     expect(onJump).toHaveBeenCalledWith("playlists", { playlistsGenre: 2 });
     fireEvent.click(
       within(card as HTMLElement).getByRole("button", {
-        name: "Schedule it",
+        name: "Schedule NU Metal",
       }),
     );
     expect(onJump).toHaveBeenCalledWith("schedule", { scheduleGenre: 2 });
@@ -263,6 +265,26 @@ describe("GenresPanel", () => {
     });
     expect(save).toBeDisabled();
     expect(mocked.updateGenre).not.toHaveBeenCalled();
+  });
+
+  it("a failed update surfaces the error and keeps the inline editor open", async () => {
+    mocked.updateGenre.mockRejectedValue(
+      new ApiError(409, "The short code /EN is already used."),
+    );
+    const { onError } = renderPanel();
+    fireEvent.click(screen.getByRole("button", { name: "Edit Emo Night" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(mocked.updateGenre).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ name: "Emo Night" }),
+      ),
+    );
+    expect(onError).toHaveBeenCalledWith("The short code /EN is already used.");
+    expect(screen.getByLabelText("Edit genre name")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Save" }),
+    ).toBeInTheDocument();
   });
 
   it("delete keeps the confirm dialog flow and cancel aborts", async () => {
