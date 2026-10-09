@@ -20,6 +20,7 @@ def build_now(session: Session, ts: datetime) -> NowOut:
             name=state.genre.name,
             slug=state.genre.slug,
             is_default=state.genre.is_default,
+            color=state.genre.color or "",
             track_count=len(tracks_for_genre(session, state.genre.id)),
         )
     return NowOut(

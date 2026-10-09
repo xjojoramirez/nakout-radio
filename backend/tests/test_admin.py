@@ -1102,3 +1102,114 @@ def test_next_prev_unknown_genre_and_empty_genre(tmp_path):
         client.post("/api/studio/playback/next", json={"genre_id": empty}).status_code
         == 400
     )
+
+
+def test_create_genre_with_explicit_color(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    resp = client.post(
+        "/api/studio/genres",
+        json={"name": "Chill", "slug": "chill", "color": "#123abc"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["color"] == "#123abc"
+
+
+def test_create_genre_without_color_gets_first_unused_palette(tmp_path):
+    from app.models import GENRE_PALETTE
+
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    first = client.post("/api/studio/genres", json={"name": "A", "slug": "a"}).json()
+    second = client.post("/api/studio/genres", json={"name": "B", "slug": "b"}).json()
+    assert first["color"] == GENRE_PALETTE[0]
+    assert second["color"] == GENRE_PALETTE[1]
+
+
+def test_update_genre_color(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    gid = client.post("/api/studio/genres", json={"name": "A", "slug": "a"}).json()["id"]
+    resp = client.put(f"/api/studio/genres/{gid}", json={"color": "#ff00ff"})
+    assert resp.status_code == 200
+    assert resp.json()["color"] == "#ff00ff"
+
+
+def test_invalid_color_rejected(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    resp = client.post(
+        "/api/studio/genres", json={"name": "A", "slug": "a", "color": "red"}
+    )
+    assert resp.status_code == 422
+
+
+def test_public_genre_list_includes_color(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    client.post("/api/studio/genres", json={"name": "Chill", "slug": "chill"})
+    listed = client.get("/api/genres").json()
+    assert listed[0]["color"]
+
+
+def test_palette_backfill_migration(tmp_path):
+    import sqlite3
+    from pathlib import Path
+
+    BACKEND_DIR = Path(__file__).resolve().parents[1]
+
+    def _alembic(db_url: str, *args: str) -> None:
+        import os
+        import subprocess
+        import sys
+
+        env = dict(os.environ)
+        env["DATABASE_URL"] = db_url
+        subprocess.run(
+            [sys.executable, "-m", "alembic", *args],
+            cwd=str(BACKEND_DIR),
+            env=env,
+            check=True,
+            capture_output=True,
+        )
+
+    db_path = tmp_path / "pre.db"
+    db_url = f"sqlite:///{db_path}"
+    conn = sqlite3.connect(db_path)
+    conn.executescript(
+        """
+        CREATE TABLE genre (
+            id INTEGER PRIMARY KEY, name VARCHAR NOT NULL,
+            slug VARCHAR NOT NULL, is_default BOOLEAN,
+            sort_order INTEGER
+        );
+        INSERT INTO genre (name, slug, is_default, sort_order)
+            VALUES ('A','a',0,0), ('B','b',0,0);
+        CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL);
+        INSERT INTO alembic_version VALUES ('e5f6a7b8c9d0');
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    _alembic(db_url, "upgrade", "a1b2c3d4e5f6")
+
+    conn = sqlite3.connect(db_path)
+    colors = dict(conn.execute("SELECT name, color FROM genre").fetchall())
+    conn.close()
+    assert colors["A"] and colors["B"]
+    assert not list(
+        set(colors.values())
+        - set(
+            [
+                "#f2a33a",
+                "#e0654a",
+                "#8fb996",
+                "#5fb3b3",
+                "#6fa3e0",
+                "#a58be0",
+                "#e58fb0",
+                "#d8c18a",
+            ]
+        )
+    )
