@@ -3,6 +3,30 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — task 5 follow-up: toast re-arm on repeat notices, mobile page paddings, dead rule removal
+
+- `frontend/src/pages/AdminPage.tsx`: `notice` is now
+  `{ text: string; id: number } | null` with a monotonic
+  `noticeEpoch` ref; `onNotice` bumps the epoch and `<Toast>` is
+  rendered with `key={notice?.id ?? 0}`, so a repeated identical
+  message remounts the toast and restarts its 2.2 s auto-hide instead
+  of being swallowed by the still-running timer. `onDone`/`onError`/
+  logout clear to `null`. No test was added for the double-notice
+  flow (fake timers vs `findByRole`-style async utils in this suite
+  are flake-prone; the re-arm is a plain `key` remount verified by
+  the existing 160-test suite).
+- `frontend/src/styles/vintage.css`: inside the ≤600px media block the
+  page wrapper keeps its own paddings via
+  `.admin-page { padding: 8px 4px 40px; }` (declared after the
+  `.admin` shorthands, generous bottom clears the fixed toast), and
+  the ≤380px block gets `.admin-page { padding: 16px 10px 40px; }`.
+- Removed the dead `.admin .notice` rule (no JSX consumer — notices
+  render through `Toast` since the task 5 shell change).
+- Restart: frontend only —
+  `docker compose up -d --build frontend` (then hard refresh).
+- Verification: `npm run test` (160 tests / 24 files),
+  `npm run typecheck`, `npm run build` — all green.
+
 ## 2026-10-09 — task 5 admin shell: brand header, counted tabs, toast, scrolling page
 
 - `frontend/src/pages/AdminPage.tsx`: ready header replaced with the

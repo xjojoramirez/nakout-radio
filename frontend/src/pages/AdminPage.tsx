@@ -20,13 +20,16 @@ export function AdminPage() {
   const [phase, setPhase] = useState<Phase>("checking");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<{ text: string; id: number } | null>(
+    null,
+  );
   const [genres, setGenres] = useState<Genre[]>([]);
   const [tab, setTab] = useState("now");
   const [playlistCount, setPlaylistCount] = useState<number | null>(null);
   const [slotCount, setSlotCount] = useState<number | null>(null);
 
   const loginEpoch = useRef(0);
+  const noticeEpoch = useRef(0);
 
   const tabsDef: TabDef[] = [
     { id: "now", label: "Now Playing" },
@@ -90,18 +93,18 @@ export function AdminPage() {
     setGenres([]);
     setPassword("");
     setError("");
-    setNotice("");
+    setNotice(null);
     setPlaylistCount(null);
     setSlotCount(null);
   };
 
   const onNotice = (message: string) => {
-    setError("");
-    setNotice(message);
+    noticeEpoch.current += 1;
+    setNotice({ text: message, id: noticeEpoch.current });
   };
 
   const onError = (message: string) => {
-    setNotice("");
+    setNotice(null);
     setError(message);
   };
 
@@ -175,7 +178,11 @@ export function AdminPage() {
           {error}
         </p>
       )}
-      <Toast message={notice} onDone={() => setNotice("")} />
+      <Toast
+        key={notice?.id ?? 0}
+        message={notice?.text ?? ""}
+        onDone={() => setNotice(null)}
+      />
 
       <Tabs tabs={tabsDef} active={tab} onChange={setTab} />
 
