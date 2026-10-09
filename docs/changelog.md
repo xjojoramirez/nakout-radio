@@ -3,6 +3,31 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — Public `GET /api/schedule/today` endpoint
+
+- Added a public, read-only schedule listing for the listener homepage deck:
+  today's slots (weekday filter from `GENRE_TZ`, Asia/Manila) sorted by start
+  time, plus `current_id` — the latest slot that already started today, or
+  `null` before the first start (unchanged behavior: an overnight slot from
+  yesterday still governs `/api/schedule/now` but is not part of today's
+  list).
+  - New response models `SlotTodayOut` / `ScheduleTodayOut`
+    (`backend/app/schemas.py`).
+  - New route `schedule_today` appended after `/now`
+    (`backend/app/routers/schedule.py`).
+  - Tests: fixture client override pattern from `test_admin.py`; endpoint
+    time is monkeypatched to a frozen Monday 09:30 / 04:59 Manila so the
+    suite is deterministic any day it runs
+    (`backend/tests/test_schedule_today.py`, 4 tests).
+- Files touched:
+  - `backend/app/schemas.py`, `backend/app/routers/schedule.py`,
+    `backend/tests/test_schedule_today.py` (commit `d4f50f7`)
+  - `docs/changelog.md` (this entry)
+- **Container restart required (backend changed):**
+  `docker compose up -d --build backend`
+- Verification: `python -m pytest tests/test_schedule_today.py -q` 4 passed;
+  full suite `python -m pytest -q` 209 passed.
+
 ## 2026-10-09 — Renamed admin routes to `/studio`
 
 - Renamed the admin surface away from the common `/admin` path to reduce
