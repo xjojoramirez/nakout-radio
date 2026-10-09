@@ -41,6 +41,10 @@ export function VolumeKnob({ value, onChange, label, disabled }: Props) {
     }
   };
 
+  const onPointerCancel = () => {
+    dragRef.current = null;
+  };
+
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
     const step = event.shiftKey ? 10 : 2;
@@ -82,6 +86,7 @@ export function VolumeKnob({ value, onChange, label, disabled }: Props) {
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
       onKeyDown={onKeyDown}
     />
   );
