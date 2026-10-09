@@ -11,6 +11,7 @@ interface Props {
   genres: Genre[];
   onNotice: (message: string) => void;
   onError: (message: string) => void;
+  onCountChange?: (count: number) => void;
 }
 
 interface Draft {
@@ -28,7 +29,7 @@ function formatDays(days: number[]): string {
   return sorted.map((d) => DAY_LABELS[d]).join(", ");
 }
 
-export function SchedulePanel({ genres, onNotice, onError }: Props) {
+export function SchedulePanel({ genres, onNotice, onError, onCountChange }: Props) {
   const [slots, setSlots] = useState<ScheduleSlot[]>([]);
   const [slotsError, setSlotsError] = useState("");
 
@@ -46,12 +47,14 @@ export function SchedulePanel({ genres, onNotice, onError }: Props) {
 
   const loadSlots = useCallback(async () => {
     try {
-      setSlots(await api.listSlots());
+      const loaded = await api.listSlots();
+      setSlots(loaded);
+      onCountChange?.(loaded.length);
       setSlotsError("");
     } catch (err) {
       setSlotsError(messageFor(err));
     }
-  }, []);
+  }, [onCountChange]);
 
   useEffect(() => {
     loadSlots();

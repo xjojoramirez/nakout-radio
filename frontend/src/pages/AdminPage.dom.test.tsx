@@ -73,7 +73,7 @@ async function login() {
     target: { value: "pw" },
   });
   fireEvent.click(screen.getByText("Log in"));
-  await screen.findByRole("tab", { name: "Genres" });
+  await screen.findByRole("tab", { name: /^Genres/ });
 }
 
 describe("AdminPage", () => {
@@ -82,9 +82,22 @@ describe("AdminPage", () => {
     mocked.listGenres.mockResolvedValue([]);
     render(<AdminPage />);
     await login();
-    expect(screen.getByRole("tab", { name: "Now Playing" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Playlists" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Schedule" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /^Now Playing/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /^Playlists/ })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /^Schedule/ })).toBeInTheDocument();
+  });
+
+  it("renders the brand header", async () => {
+    mocked.login.mockResolvedValue({ status: "ok" });
+    mocked.listGenres.mockResolvedValue([]);
+    render(<AdminPage />);
+    await login();
+    expect(screen.getByText(/Nakout/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Back to radio/ }),
+    ).toBeInTheDocument();
   });
 
   it("restores the session on mount after a refresh", async () => {
@@ -92,7 +105,7 @@ describe("AdminPage", () => {
     mocked.listGenres.mockResolvedValue([]);
     render(<AdminPage />);
     expect(
-      await screen.findByRole("tab", { name: "Now Playing" }),
+      await screen.findByRole("tab", { name: /^Now Playing/ }),
     ).toBeInTheDocument();
     expect(screen.queryByPlaceholderText("Password")).not.toBeInTheDocument();
   });
@@ -119,7 +132,7 @@ describe("AdminPage", () => {
     });
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Genres" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Genres/ }));
     fireEvent.change(screen.getByPlaceholderText("Name"), {
       target: { value: "Chill" },
     });
@@ -147,7 +160,7 @@ describe("AdminPage", () => {
     });
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Genres" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Genres/ }));
     fireEvent.click(await screen.findByText("Edit"));
     fireEvent.change(screen.getByLabelText("Edit genre name"), {
       target: { value: "Chillhop" },
@@ -174,7 +187,7 @@ describe("AdminPage", () => {
     mocked.deleteGenre.mockResolvedValue({ status: "deleted" });
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Genres" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Genres/ }));
     fireEvent.click(await screen.findByText("Delete"));
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByText("Delete"));
@@ -205,7 +218,7 @@ describe("AdminPage", () => {
     });
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Playlists" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
     fireEvent.change(screen.getByLabelText("Playlist genre"), {
       target: { value: "1" },
     });
@@ -221,8 +234,8 @@ describe("AdminPage", () => {
       ),
     );
     expect(
-      await screen.findByText(/Playlist synced \(3 tracks\)/),
-    ).toBeInTheDocument();
+      await screen.findByRole("status"),
+    ).toHaveTextContent(/Playlist synced \(3 tracks\)/);
   });
 
   it("lists added playlists with genre and track count", async () => {
@@ -242,9 +255,12 @@ describe("AdminPage", () => {
     ]);
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Playlists" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
     expect(await screen.findByText("PL1")).toBeInTheDocument();
     expect(screen.getByText("4 tracks")).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /^Playlists/ }),
+    ).toHaveTextContent("1");
   });
 
   it("refreshes and removes an added playlist", async () => {
@@ -266,7 +282,7 @@ describe("AdminPage", () => {
     mocked.deletePlaylist.mockResolvedValue({ status: "deleted" });
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Playlists" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
     await screen.findByText("PL1");
     fireEvent.click(screen.getByText("Refresh"));
     await waitFor(() =>
@@ -299,7 +315,7 @@ describe("AdminPage", () => {
     ]);
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Playlists" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
     await screen.findByPlaceholderText("@handle or channel URL");
     fireEvent.change(screen.getByPlaceholderText("@handle or channel URL"), {
       target: { value: "@me" },
@@ -338,7 +354,7 @@ describe("AdminPage", () => {
     });
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Playlists" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
     await screen.findByText("New One");
     fireEvent.change(screen.getByLabelText("Genre for New One"), {
       target: { value: "1" },
@@ -352,8 +368,8 @@ describe("AdminPage", () => {
       ),
     );
     expect(
-      await screen.findByText(/Playlist synced \(5 tracks\)/),
-    ).toBeInTheDocument();
+      await screen.findByRole("status"),
+    ).toHaveTextContent(/Playlist synced \(5 tracks\)/);
   });
 
   it("adds a schedule slot and refreshes the list", async () => {
@@ -364,7 +380,7 @@ describe("AdminPage", () => {
     mocked.createSlot.mockResolvedValue({});
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Schedule" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
     fireEvent.change(screen.getByLabelText("Slot genre"), {
       target: { value: "1" },
     });
@@ -389,7 +405,7 @@ describe("AdminPage", () => {
     );
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Schedule" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
     fireEvent.change(screen.getByLabelText("Slot genre"), {
       target: { value: "1" },
     });
@@ -415,7 +431,7 @@ describe("AdminPage", () => {
     ]);
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Schedule" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
     const row = (await screen.findByText("Mon, Wed")).closest("li");
     expect(row).not.toBeNull();
     expect(within(row as HTMLElement).getByText("Chill")).toBeInTheDocument();
@@ -441,7 +457,7 @@ describe("AdminPage", () => {
     mocked.updateSlot.mockResolvedValue({});
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Schedule" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
     fireEvent.click(await screen.findByText("Edit"));
     fireEvent.change(screen.getByLabelText("Edit slot start"), {
       target: { value: "08:00" },
@@ -474,7 +490,7 @@ describe("AdminPage", () => {
     mocked.deleteSlot.mockResolvedValue({ status: "deleted" });
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: "Schedule" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
     fireEvent.click(await screen.findByText("Delete"));
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByText("Delete"));
@@ -501,7 +517,7 @@ describe("AdminPage", () => {
         }),
     );
     render(<AdminPage />);
-    await screen.findByRole("tab", { name: "Now Playing" });
+    await screen.findByRole("tab", { name: /^Now Playing/ });
     expect(
       document.querySelector('[role="tabpanel"] .skeleton'),
     ).not.toBeNull();
@@ -515,7 +531,7 @@ describe("AdminPage", () => {
     mocked.session.mockResolvedValue({ status: "ok" });
     mocked.listGenres.mockRejectedValue(new ApiError(500, "boom"));
     render(<AdminPage />);
-    await screen.findByRole("tab", { name: "Now Playing" });
+    await screen.findByRole("tab", { name: /^Now Playing/ });
     expect(
       document.querySelector('[role="tabpanel"] .skeleton'),
     ).toBeNull();

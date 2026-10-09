@@ -3,6 +3,51 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — task 5 admin shell: brand header, counted tabs, toast, scrolling page
+
+- `frontend/src/pages/AdminPage.tsx`: ready header replaced with the
+  reference brand row (`header.admin-top` › `div.brand` "Nakout.Radio
+  Admin" + `.top-r` with `a.back` and the Log out button); notice banner
+  swapped for `Toast`; wrappers now `.admin.admin-page` in all phases
+  (checking/login/ready); dropped the `admin-fixed` body-class effect and
+  the `admin-stable` class; moved `tabsDef` inside the component with
+  live counts (`Playlists`/`Schedule` start `null`, `Genres` =
+  `genres.length`); logout resets the counts; passes
+  `onCountChange={setPlaylistCount}` / `{setSlotCount}` to the panels.
+- `frontend/src/components/admin/Tabs.tsx`: `TabDef` gains
+  `count?: number | null`; renders `span.count` after the label when a
+  count is present.
+- `frontend/src/components/admin/PlaylistsPanel.tsx` +
+  `SchedulePanel.tsx`: optional `onCountChange?: (count: number) => void`
+  prop; called with the resolved list length in `loadAdded` /
+  `loadSlots` (destructured `loaded` value), so tab counts update on
+  add/remove/delete and tab mount.
+- `frontend/src/styles/vintage.css`: REMOVED `body.admin-fixed`,
+  `.admin-shell`, the shell-fit `#panel-playlists`/`#panel-now`
+  flex/overflow/scroll blocks, mobile neutralizers for the same,
+  `.admin-stable`, `.admin-header`/`.admin-header-actions`, and kept
+  only deck proportions (`#panel-now .admin-deck` trimmed to
+  grid columns + padding, `#panel-now .admin-sleeve` intact).
+  `.admin-tabpanel` is now `display: grid; gap: 18px; min-width: 0`.
+  ADDED `.admin-page` (1120px shell, 22px grid gap, natural page
+  scroll), margin resets for `.admin-tabs`/`.banner`/`.admin-panel`
+  inside it, `.admin-top`, `.admin .brand small`, `.top-r`, `a.back`
+  (+ hover), `.count` pill + `.admin-tabs .active .count`, flex
+  alignment on `.admin-tabs button`; mobile block updated
+  (`.admin-top .brand`, `.top-r` rules; login `h1` sizing kept).
+  Reuses the existing public `.brand`/`.brand span` rules — no admin
+  additions leak onto the public page.
+- Tests: `AdminPage.dom.test.tsx` — tab-name queries moved to
+  `/^Label/` regexes (counts append), playlist-sync notices asserted
+  via `findByRole("status")` toast instead of the banner, added
+  "renders the brand header" test and a Playlists-tab count
+  assertion (21 tests). `Tabs.dom.test.tsx` — added count-pill
+  test (2 tests).
+- Restart: frontend only —
+  `docker compose up -d --build frontend` (then hard refresh).
+- Verification: `npm run test` (160 tests / 24 files, was 158),
+  `npm run typecheck`, `npm run build` — all green.
+
 ## 2026-10-09 — task 4 primitives polish: gchip font inheritance, hint variants, toast cosmetics + unmount test
 
 - `frontend/src/styles/vintage.css` (admin primitives block):
