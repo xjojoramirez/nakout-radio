@@ -1078,6 +1078,132 @@ body.admin-fixed {
   margin-top: 0;
 }
 
+/* ---------- Admin reference components (Toast, chips, swatches) ---------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 8px);
+  opacity: 0.98;
+  pointer-events: none;
+  background: var(--cream);
+  color: var(--bg-2);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  max-width: min(92vw, 480px);
+  text-align: center;
+  z-index: 30;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gchip {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--wood);
+  color: var(--cream);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.gchip[aria-checked="true"] {
+  background: var(--gc, var(--amber));
+  color: var(--bg-2);
+  border-color: var(--gc, var(--amber));
+  font-weight: 800;
+}
+
+.gchip .dot {
+  background: var(--gc, var(--amber));
+}
+
+.gchip[aria-checked="true"] .dot {
+  background: var(--bg-2);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gc, var(--amber));
+  flex: 0 0 auto;
+  display: inline-block;
+}
+
+.dot.big {
+  width: 14px;
+  height: 14px;
+}
+
+.swatches {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sw {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--gc, var(--amber));
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.sw[aria-checked="true"] {
+  box-shadow: 0 0 0 2px var(--bg-2), 0 0 0 4px var(--cream);
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  min-height: 1.2em;
+}
+
+.flash {
+  animation: flash 1.4s ease-out;
+}
+
+@keyframes flash {
+  0% {
+    box-shadow: 0 0 0 2px var(--amber);
+  }
+  100% {
+    box-shadow: 0 0 0 2px transparent;
+  }
+}
+
+.spin {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--amber-soft);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: -1px;
+  margin-right: 6px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ---------- Vinyl deck (reference: Nakout Vinyl Deck.html) ---------- */
 
 .radio-page {
