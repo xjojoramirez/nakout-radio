@@ -1113,6 +1113,12 @@ def test_create_genre_with_explicit_color(tmp_path):
     )
     assert resp.status_code == 201
     assert resp.json()["color"] == "#123abc"
+    upper = client.post(
+        "/api/studio/genres",
+        json={"name": "Warm", "slug": "warm", "color": "#FF00FF"},
+    )
+    assert upper.status_code == 201
+    assert upper.json()["color"] == "#ff00ff"
 
 
 def test_create_genre_without_color_gets_first_unused_palette(tmp_path):
@@ -1142,6 +1148,10 @@ def test_invalid_color_rejected(tmp_path):
         "/api/studio/genres", json={"name": "A", "slug": "a", "color": "red"}
     )
     assert resp.status_code == 422
+    newline = client.post(
+        "/api/studio/genres", json={"name": "B", "slug": "b", "color": "#123abc\n"}
+    )
+    assert newline.status_code == 422
 
 
 def test_public_genre_list_includes_color(tmp_path):

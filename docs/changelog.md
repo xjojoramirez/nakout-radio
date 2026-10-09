@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — backend colour review fixes: honest palette wraparound, newline-safe colour validation
+
+- Palette wraparound made honest in both places: exhausted-palette fallback
+  now cycles by genre count (`backend/app/routers/admin.py`,
+  `_first_unused_color`) instead of holding one colour forever, and the
+  migration backfill (`backend/alembic/versions/a1b2c3d4e5f6_genre_color.py`)
+  uses its `ORDER BY id` loop index to rotate. First-unused assignment for
+  the ≤8-genre case is unchanged.
+- Colour validation switched to `_COLOR_RE.fullmatch`
+  (`backend/app/routers/admin.py`) so `"#123abc\n"` is rejected (422);
+  normalize-then-store unchanged (`#FF00FF` → `#ff00ff`).
+- Also includes the test-only commit `63478d9` (backfill migration test now
+  asserts A = palette[0], B = palette[1] exactly); tests only, no behaviour
+  change.
+- Files: `backend/app/routers/admin.py`,
+  `backend/alembic/versions/a1b2c3d4e5f6_genre_color.py`,
+  `backend/tests/test_admin.py`, `docs/changelog.md`.
+- Restart required: backend only (router logic + migration changed) —
+  `docker compose up -d --build backend`.
+- Verification: `python -m pytest -q` (whole backend suite) → 215 passed
+  (colour tests: 6 passed, incl. new newline-reject + uppercase-normalize
+  assertions).
+
 ## 2026-10-09 — backend: genre accent colour (model, migration, CRUD, serialization)
 
 - Added `GENRE_PALETTE` (8 hex colours) and nullable `Genre.color` column
