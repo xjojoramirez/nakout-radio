@@ -42,8 +42,14 @@ class FakeWebSocket {
   }
 }
 
+interface FakePlayerOpts {
+  videoId: string;
+  events?: { onError?: () => void };
+}
+
 class FakePlayer {
-  opts: { videoId: string };
+  static instances: FakePlayer[] = [];
+  opts: FakePlayerOpts;
   loadVideoById = vi.fn();
   playVideo = vi.fn();
   pauseVideo = vi.fn();
@@ -54,8 +60,9 @@ class FakePlayer {
   getPlayerState = vi.fn(() => 1);
   getCurrentTime = vi.fn(() => 0);
   destroy = vi.fn();
-  constructor(_el: string, opts: { videoId: string }) {
+  constructor(_el: string, opts: FakePlayerOpts) {
     this.opts = opts;
+    FakePlayer.instances.push(this);
   }
 }
 
@@ -72,6 +79,7 @@ window.matchMedia =
 beforeEach(() => {
   window.localStorage.clear();
   FakeWebSocket.instances = [];
+  FakePlayer.instances = [];
   (globalThis as unknown as { WebSocket: unknown }).WebSocket = FakeWebSocket;
   (window as unknown as { YT: unknown }).YT = {
     PlayerState: { PLAYING: 1, ENDED: 8 },
@@ -113,6 +121,20 @@ describe("RadioPage", () => {
     expect(
       await screen.findByRole("button", { name: "Tune out" }),
     ).toBeInTheDocument();
+  });
+
+  it("offers Retry when the player errors out", async () => {
+    render(<RadioPage />);
+    await screen.findByRole("button", { name: "Tune in" });
+    await screen.findByText("live"); // broadcast loaded; player effect ran
+    const instances = FakePlayer.instances;
+    const player = instances[instances.length - 1];
+    if (!player) throw new Error("player not created");
+    player.opts.events?.onError?.();
+    const retry = await screen.findByRole("button", { name: "Retry" });
+    const before = mocked.now.mock.calls.length;
+    fireEvent.click(retry);
+    expect(mocked.now.mock.calls.length).toBeGreaterThan(before);
   });
 
   it("offers a volume knob slider", async () => {
