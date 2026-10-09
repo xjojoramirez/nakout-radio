@@ -138,9 +138,14 @@ describe("RadioPage", () => {
   });
 
   it("offers a volume knob slider", async () => {
-    render(<RadioPage />);
+    const { container } = render(<RadioPage />);
     const slider = await screen.findByRole("slider", { name: "Volume" });
     expect(slider).toHaveAttribute("aria-valuemax", "100");
+    const fader = screen.getByRole("slider", { name: "Volume fader" });
+    expect(fader).toHaveAttribute("aria-valuenow", slider.getAttribute("aria-valuenow"));
+    expect(
+      container.querySelectorAll(".knob-row .deck-knob:not(.interactive)"),
+    ).toHaveLength(0);
   });
 
   it("has no next-record or stop station controls", async () => {
