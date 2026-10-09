@@ -9,5 +9,4 @@ dist/
 .venv/
 .superpowers/
 UI reference/
-docs/superpowers/plans/
 .DS_Store
