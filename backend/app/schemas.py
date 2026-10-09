@@ -156,3 +156,15 @@ class GenreRefIn(BaseModel):
 
 class OrderIn(BaseModel):
     video_ids: list[str]
+
+
+class SlotTodayOut(BaseModel):
+    id: int
+    genre_id: int
+    genre_name: str
+    start_time: str
+
+
+class ScheduleTodayOut(BaseModel):
+    current_id: int | None = None
+    slots: list[SlotTodayOut] = []
