@@ -1,7 +1,7 @@
-import type { CSSProperties } from "react";
 import { OfflineNotice } from "../components/OfflineNotice";
 import { VUMeter } from "../components/VUMeter";
 import { TurntableDeck } from "../components/deck/TurntableDeck";
+import { VolumeFader } from "../components/deck/VolumeFader";
 import { VolumeKnob } from "../components/deck/VolumeKnob";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { useListenerCount } from "../hooks/useListenerCount";
@@ -61,16 +61,11 @@ export function RadioPage() {
                 value={player.volume}
                 onChange={player.setVolume}
               />
-              <span className="deck-knob" aria-hidden="true" />
-              <span
-                className="deck-knob"
-                aria-hidden="true"
-                style={{ "--r": "20deg" } as CSSProperties}
-              />
-              <span
-                className="deck-knob"
-                aria-hidden="true"
-                style={{ "--r": "70deg" } as CSSProperties}
+              <VolumeFader
+                label="Volume fader"
+                value={player.volume}
+                onChange={player.setVolume}
+                disabled={offline}
               />
             </div>
           </div>
