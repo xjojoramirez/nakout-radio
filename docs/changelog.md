@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-09 — homepage mixer: added vertical volume fader beside master knob; removed decorative mini-knobs
+
+- Added `VolumeFader` (`frontend/src/components/deck/VolumeFader.tsx`,
+  `frontend/src/components/deck/VolumeFader.dom.test.tsx`): vertical
+  `role="slider"` rail with drag (1:1 vertical gain, pointer
+  capture/cancel), keyboard steps (arrows ±2 or ±10 with shift,
+  PageUp/PageDown ±10, Home/End), clamped 0–100, `disabled` support.
+- Wired into the RadioPage mixer below the master `VolumeKnob`
+  (`frontend/src/pages/RadioPage.tsx`), bound to `player.volume` /
+  `player.setVolume`, disabled when off air; the three decorative
+  `.deck-knob` spans were removed (master knob unchanged).
+- Fader rail/thumb styles added after the deck-knob rules
+  (`frontend/src/styles/vintage.css`); `.deck-knob` styles kept for the
+  admin Now Playing panel.
+- Page DOM test extended: knob + fader share the same `aria-valuenow`,
+  decorative knobs asserted gone (`frontend/src/pages/
+  RadioPage.dom.test.tsx`).
+- **Container restart required (frontend only):**
+  `docker compose up -d --build frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: `npm run test` (137 tests in 18 files) +
+  `npm run typecheck` + `npm run build` green.
+
 ## 2026-10-09 — vinyl-deck-ui branch complete — dark deck homepage (no listener skip/stop), dark admin studio with deck Now Playing (full transport), public GET /api/schedule/today
 
 - Umbrella entry for the whole branch (details in the entries below), plus
