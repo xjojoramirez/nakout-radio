@@ -108,14 +108,14 @@ export const api = {
     }),
   listChannelPlaylists: () =>
     request<ChannelPlaylist[]>("/studio/youtube/playlists"),
-  createGenre: (name: string, slug: string) =>
+  createGenre: (name: string, slug: string, color?: string) =>
     request<Genre>("/studio/genres", {
       method: "POST",
-      body: JSON.stringify({ name, slug }),
+      body: JSON.stringify({ name, slug, ...(color ? { color } : {}) }),
     }),
   updateGenre: (
     id: number,
-    updates: Partial<Pick<Genre, "name" | "slug" | "is_default">>,
+    updates: Partial<Pick<Genre, "name" | "slug" | "is_default" | "color">>,
   ) =>
     request<Genre>(`/studio/genres/${id}`, {
       method: "PUT",
