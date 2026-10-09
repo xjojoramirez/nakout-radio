@@ -1274,369 +1274,6 @@ body.admin-fixed {
   margin-top: 0;
 }
 
-/* ---------- Mobile: phones (≤600px) ---------- */
-
-@media (max-width: 600px) {
-  /* Normal page scrolling: neutralize the admin fixed shell */
-  body.admin-fixed {
-    height: auto;
-    overflow: auto;
-    place-items: start center;
-  }
-
-  .admin-shell {
-    height: auto;
-    min-height: 100%;
-    display: block;
-  }
-
-  .admin-tabpanel {
-    overflow: visible;
-  }
-
-  #panel-now,
-  #panel-playlists {
-    display: block;
-    overflow: visible;
-  }
-
-  #panel-now .queue-list,
-  #panel-playlists .channel-scroll,
-  #panel-playlists .added-playlists {
-    flex: 0 0 auto;
-    height: auto;
-    min-height: 0;
-    max-height: none;
-    overflow: visible;
-  }
-
-  body {
-    padding: 8px 0;
-  }
-
-  /* Carried over from the old 560px block so nothing regresses */
-  .admin {
-    padding: 20px;
-  }
-
-  .admin-stable {
-    min-height: min(360px, 55vh);
-  }
-
-  .radio-cabinet {
-    padding: 20px;
-  }
-
-  .time-pair {
-    grid-template-columns: 1fr;
-  }
-
-  /* Home page */
-  .radio-cabinet {
-    border-width: 4px;
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
-  }
-
-  .radio-header {
-    flex-wrap: wrap;
-  }
-
-  .radio-header h1 {
-    font-size: 1.5rem;
-  }
-
-  .genre-row {
-    justify-content: center;
-  }
-
-  .controls button {
-    min-height: 44px;
-    min-width: 88px;
-  }
-
-  .volume {
-    flex: 1;
-  }
-
-  .volume input[type="range"] {
-    flex: 1;
-    width: auto;
-    min-width: 100px;
-    max-width: 160px;
-  }
-
-  /* Admin header, tabs, forms */
-  .admin {
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
-  }
-
-  .admin-header h1,
-  .admin-login h1 {
-    font-size: 1.5rem;
-  }
-
-  .admin-header {
-    flex-wrap: wrap;
-  }
-
-  .admin-header .back-link,
-  .admin-header-actions .btn {
-    white-space: nowrap;
-  }
-
-  .admin-tabs {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-  }
-
-  .admin-tabs button {
-    min-height: 44px;
-    padding: 10px 12px;
-  }
-
-  .form-grid,
-  .skeleton-form {
-    grid-template-columns: 1fr;
-  }
-
-  .field input:not([type="checkbox"]),
-  .admin input:not([type="checkbox"]),
-  .admin select {
-    font-size: 16px;
-    min-height: 44px;
-  }
-
-  .form-grid .btn {
-    height: auto;
-    min-height: 44px;
-  }
-
-  .btn {
-    min-height: 44px;
-  }
-
-  .days button {
-    min-height: 44px;
-  }
-
-  /* List rows, queue, playlist browser */
-  .added-playlists li,
-  .genre-admin-list li {
-    flex-wrap: wrap;
-  }
-
-  .added-playlists .pl-main {
-    min-width: 0;
-  }
-
-  .pl-actions,
-  .row-actions,
-  .slot-form-actions {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .pl-actions .btn,
-  .row-actions .btn,
-  .slot-form-actions .btn {
-    flex: 1;
-  }
-
-  .queue-list .queue-row {
-    gap: 8px;
-  }
-
-  .drag-handle {
-    min-width: 32px;
-    text-align: center;
-  }
-
-  .queue-title,
-  .queue-artist {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .channel-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* ---------- Small phones (≤380px) ---------- */
-
-@media (max-width: 380px) {
-  .radio-cabinet {
-    padding: 16px;
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-  }
-
-  .now-playing {
-    gap: 12px;
-    padding: 12px;
-  }
-
-  .now-playing .art {
-    width: 72px;
-    height: 72px;
-  }
-
-  .now-playing .title {
-    font-size: 0.95rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .admin {
-    padding: 16px;
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-  }
-
-  .channel-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-
-  .channel-card .ch-title {
-    font-size: 0.8rem;
-  }
-
-  .admin-header-actions {
-    gap: 4px;
-  }
-
-  /* Queue rows: hide handle + duration for room (HTML5 drag is touch-inert) */
-  .queue-list .queue-row .drag-handle,
-  .queue-list .queue-row .queue-duration {
-    display: none;
-  }
-
-  .volume input[type="range"] {
-    min-width: 64px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .vu-meter.playing .vu-bar {
-    animation: none;
-  }
-
-  .skeleton {
-    animation: none;
-  }
-
-  .modal-overlay,
-  .modal-card {
-    animation: none;
-  }
-
-  .btn,
-  .controls button,
-  .genre-list button,
-  .admin-tabs button,
-  .days button {
-    transition: none;
-  }
-}
-
-.transport {
-  display: flex;
-  gap: 8px;
-  margin: 12px 0;
-}
-
-.queue-head h3 {
-  font-size: 1rem;
-  margin-bottom: 6px;
-}
-
-.queue-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.queue-list {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-  max-height: 420px;
-  overflow-y: auto;
-}
-
-.queue-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.queue-list::-webkit-scrollbar-thumb {
-  background: rgba(241, 228, 208, 0.22);
-  border-radius: 4px;
-}
-
-.queue-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
-  cursor: grab;
-}
-
-.queue-row.current {
-  background: rgba(241, 228, 208, 0.06);
-  border-radius: var(--radius-sm);
-}
-
-.drag-handle {
-  color: var(--muted);
-  letter-spacing: -2px;
-}
-
-.queue-title {
-  font-weight: 600;
-}
-
-.queue-artist {
-  color: var(--muted);
-  flex: 1;
-}
-
-.badge {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--amber);
-  color: #1c110a;
-}
-
-.on-air-dot {
-  flex: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 35% 30%, #ff9b82, var(--danger) 68%);
-  box-shadow: 0 0 10px rgba(179, 55, 44, 0.75);
-}
-
-.art.small {
-  width: 36px;
-  height: 36px;
-}
-
-.queue-duration {
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.source .badge {
-  margin-left: 8px;
-}
-
 /* ---------- Vinyl deck (reference: Nakout Vinyl Deck.html) ---------- */
 
 .radio-page {
@@ -2101,4 +1738,367 @@ body.admin-fixed {
   .led {
     transition: none;
   }
+}
+
+/* ---------- Mobile: phones (≤600px) ---------- */
+
+@media (max-width: 600px) {
+  /* Normal page scrolling: neutralize the admin fixed shell */
+  body.admin-fixed {
+    height: auto;
+    overflow: auto;
+    place-items: start center;
+  }
+
+  .admin-shell {
+    height: auto;
+    min-height: 100%;
+    display: block;
+  }
+
+  .admin-tabpanel {
+    overflow: visible;
+  }
+
+  #panel-now,
+  #panel-playlists {
+    display: block;
+    overflow: visible;
+  }
+
+  #panel-now .queue-list,
+  #panel-playlists .channel-scroll,
+  #panel-playlists .added-playlists {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  body {
+    padding: 8px 0;
+  }
+
+  /* Carried over from the old 560px block so nothing regresses */
+  .admin {
+    padding: 20px;
+  }
+
+  .admin-stable {
+    min-height: min(360px, 55vh);
+  }
+
+  .radio-cabinet {
+    padding: 20px;
+  }
+
+  .time-pair {
+    grid-template-columns: 1fr;
+  }
+
+  /* Home page */
+  .radio-cabinet {
+    border-width: 4px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .radio-header {
+    flex-wrap: wrap;
+  }
+
+  .radio-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .genre-row {
+    justify-content: center;
+  }
+
+  .controls button {
+    min-height: 44px;
+    min-width: 88px;
+  }
+
+  .volume {
+    flex: 1;
+  }
+
+  .volume input[type="range"] {
+    flex: 1;
+    width: auto;
+    min-width: 100px;
+    max-width: 160px;
+  }
+
+  /* Admin header, tabs, forms */
+  .admin {
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .admin-header h1,
+  .admin-login h1 {
+    font-size: 1.5rem;
+  }
+
+  .admin-header {
+    flex-wrap: wrap;
+  }
+
+  .admin-header .back-link,
+  .admin-header-actions .btn {
+    white-space: nowrap;
+  }
+
+  .admin-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .admin-tabs button {
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+
+  .form-grid,
+  .skeleton-form {
+    grid-template-columns: 1fr;
+  }
+
+  .field input:not([type="checkbox"]),
+  .admin input:not([type="checkbox"]),
+  .admin select {
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .form-grid .btn {
+    height: auto;
+    min-height: 44px;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .days button {
+    min-height: 44px;
+  }
+
+  /* List rows, queue, playlist browser */
+  .added-playlists li,
+  .genre-admin-list li {
+    flex-wrap: wrap;
+  }
+
+  .added-playlists .pl-main {
+    min-width: 0;
+  }
+
+  .pl-actions,
+  .row-actions,
+  .slot-form-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .pl-actions .btn,
+  .row-actions .btn,
+  .slot-form-actions .btn {
+    flex: 1;
+  }
+
+  .queue-list .queue-row {
+    gap: 8px;
+  }
+
+  .drag-handle {
+    min-width: 32px;
+    text-align: center;
+  }
+
+  .queue-title,
+  .queue-artist {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .channel-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---------- Small phones (≤380px) ---------- */
+
+@media (max-width: 380px) {
+  .radio-cabinet {
+    padding: 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .now-playing {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .now-playing .art {
+    width: 72px;
+    height: 72px;
+  }
+
+  .now-playing .title {
+    font-size: 0.95rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .admin {
+    padding: 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .channel-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .channel-card .ch-title {
+    font-size: 0.8rem;
+  }
+
+  .admin-header-actions {
+    gap: 4px;
+  }
+
+  /* Queue rows: hide handle + duration for room (HTML5 drag is touch-inert) */
+  .queue-list .queue-row .drag-handle,
+  .queue-list .queue-row .queue-duration {
+    display: none;
+  }
+
+  .volume input[type="range"] {
+    min-width: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vu-meter.playing .vu-bar {
+    animation: none;
+  }
+
+  .skeleton {
+    animation: none;
+  }
+
+  .modal-overlay,
+  .modal-card {
+    animation: none;
+  }
+
+  .btn,
+  .controls button,
+  .genre-list button,
+  .admin-tabs button,
+  .days button {
+    transition: none;
+  }
+}
+
+.transport {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.queue-head h3 {
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.queue-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.queue-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.queue-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.queue-list::-webkit-scrollbar-thumb {
+  background: rgba(241, 228, 208, 0.22);
+  border-radius: 4px;
+}
+
+.queue-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  cursor: grab;
+}
+
+.queue-row.current {
+  background: rgba(241, 228, 208, 0.06);
+  border-radius: var(--radius-sm);
+}
+
+.drag-handle {
+  color: var(--muted);
+  letter-spacing: -2px;
+}
+
+.queue-title {
+  font-weight: 600;
+}
+
+.queue-artist {
+  color: var(--muted);
+  flex: 1;
+}
+
+.badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--amber);
+  color: #1c110a;
+}
+
+.on-air-dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #ff9b82, var(--danger) 68%);
+  box-shadow: 0 0 10px rgba(179, 55, 44, 0.75);
+}
+
+.art.small {
+  width: 36px;
+  height: 36px;
+}
+
+.queue-duration {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.source .badge {
+  margin-left: 8px;
 }
