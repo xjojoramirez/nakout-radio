@@ -3,6 +3,27 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-10 — tests: de-flake NowPlayingPanel mobile-scroll assertion
+
+- `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`: the
+  "scrolls the current row into view on mobile" test asserted
+  synchronously right after the now-state badge appeared, while the
+  scroll effect also waits on the genre-tracks fetch — under load the
+  row could exist before the effect flushed and the spy stayed empty.
+  The positive assertion now retries via `waitFor`, and the desktop
+  counterpart waits for the queue row before asserting
+  `scrollIntoView` was never called (previously vacuous if tracks were
+  still loading). Test-file change verified 5× in a row plus full
+  suite; the `act(...)` stderr warnings visible during test runs are
+  pre-existing (useBroadcast / useYouTubePlayer / RadioPage hook
+  tests), unrelated to this failure.
+- **Container restart required?** No — tests only, nothing served
+  changes.
+- Verification: `npx vitest run src/components/admin/NowPlayingPanel.dom.test.tsx`
+  25/25 five consecutive runs; full suite 231/231 in 28 files;
+  `npm run typecheck` clean.
+
+
 ## 2026-10-10 — studio layout: constant page width across tabs, schedule panel no longer overflows
 
 - `frontend/src/styles/vintage.css`:
@@ -1437,3 +1458,4 @@ restart is required (see `AGENTS.md` for the restart commands).
   nginx :8012).
 - Verification: `npm run typecheck` (pass), `npm test` 89/89 pass,
   `npm run build` pass.
+
