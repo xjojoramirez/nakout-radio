@@ -40,6 +40,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -302,6 +306,12 @@ h3 {
   border: 1px solid var(--border);
 }
 
+/* Studio pages fill a definite-width column: #root must not shrink-to-fit
+   the active tab's content, or every tab gets its own page width */
+body:has(.admin-page) {
+  justify-items: stretch;
+}
+
 /* Admin shell: brand header, counted tabs, one scrolling page
    (no fixed-height body lock; panels grow and the page scrolls) */
 
@@ -555,6 +565,7 @@ a.back:hover {
 
 .admin-panel {
   margin-top: 16px;
+  min-width: 0;
 }
 
 .panel-head {
