@@ -3,6 +3,697 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-10 — tests: de-flake NowPlayingPanel mobile-scroll assertion
+
+- `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`: the
+  "scrolls the current row into view on mobile" test asserted
+  synchronously right after the now-state badge appeared, while the
+  scroll effect also waits on the genre-tracks fetch — under load the
+  row could exist before the effect flushed and the spy stayed empty.
+  The positive assertion now retries via `waitFor`, and the desktop
+  counterpart waits for the queue row before asserting
+  `scrollIntoView` was never called (previously vacuous if tracks were
+  still loading). Test-file change verified 5× in a row plus full
+  suite; the `act(...)` stderr warnings visible during test runs are
+  pre-existing (useBroadcast / useYouTubePlayer / RadioPage hook
+  tests), unrelated to this failure.
+- **Container restart required?** No — tests only, nothing served
+  changes.
+- Verification: `npx vitest run src/components/admin/NowPlayingPanel.dom.test.tsx`
+  25/25 five consecutive runs; full suite 231/231 in 28 files;
+  `npm run typecheck` clean.
+
+
+## 2026-10-10 — studio layout: constant page width across tabs, schedule panel no longer overflows
+
+- `frontend/src/styles/vintage.css`:
+  - `body:has(.admin-page) { justify-items: stretch }` — `body` is a
+    `place-items: center` grid, which made `#root` shrink-to-fit the
+    active tab's content, so `.admin-page`'s
+    `min(1120px, calc(100% - 32px))` resolved against a different parent
+    width on every tab (measured 1120 / 696 / 557 / 676 px on
+    Now / Playlists / Genres / Schedule). Stretching `#root` gives the
+    page column one definite width on all tabs; the login box
+    (no `.admin-page`) keeps its old centered fit.
+  - `html { scrollbar-gutter: stable }` — stops the ~15 px column jump
+    when tabs toggle the vertical scrollbar.
+  - `.admin-panel { min-width: 0 }` — the schedule panel (grid item)
+    couldn't shrink below the timeline's `min-width: 640px` plus card
+    padding, so it poked past the page's rounded edge at narrow widths;
+    now the timeline scrolls inside its card instead
+    (`.tlscroll` handles it).
+- Verified with headless-Edge probes against the running container:
+  page width 1120 px on all four tabs at 1440 viewport / 753 px at
+  800, zero elements poking past the page edge, no horizontal page
+  scroll, login page and public homepage unchanged.
+- **Container restart required (frontend):**
+  `docker compose up -d --build frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: frontend 231 tests / 28 files, `npm run typecheck` +
+  `npm run build` clean (CSS-only change).
+
+## 2026-10-09 — admin-deck-ui branch complete — admin reskinned to the Nakout Admin reference: genre colours, grouped playlists, visual schedule timeline, reference nowcard
+
+- Admin studio (`/studio`) now matches `UI reference/Nakout Admin.html`
+  (untracked reference; same vinyl-deck world as the homepage):
+  - **Backend**: `Genre.color` (hex accent colour, palette backfill
+    migration `a1b2c3d4e5f6`; colour CRUD on studio endpoints; colour
+    serialized on public genre/now/schedule responses; radio WS push on
+    change) and `Playlist.synced_at` (migration `b2c3d4e5f6a7`, set on
+    every sync, backfilled from track cache) plus a new
+    `PUT /api/studio/playlists/{id}` genre-move endpoint.
+  - **Shell**: brand header ("Nakout.Radio Admin" + back + logout), tab
+    pills with live counts (playlists/genres/slots), natural page scroll,
+    toast feedback (role="status", 2.2 s, re-arms on repeats) replacing
+    success banners; errors stay inline; confirm dialogs unchanged.
+  - **Playlists**: summary line, add card with "Paste a link / From your
+    channel" segments, colour-chip genre picker, per-genre groups with
+    refresh-all, per-row "Synced X ago", YouTube links, move select
+    (flash), channel browse as cover-card grid (generative cover
+    fallback).
+  - **Genres**: colour swatches, cards with colour top edge, stats chips,
+    "Add one" / "Schedule it" quick links, "Play now" (starts the genre's
+    first track), inline edit with colour, cascade delete confirm.
+  - **Schedule**: on-air card (genre since / next slot from
+    `GET /api/schedule/now` — newly consumed), Sun-first day pills with
+    today dot, visual 24h timeline (coloured blocks, carry-over,
+    "Nothing scheduled" gaps, Now marker, click-empty-to-add,
+    click-block-to-edit), slot form with presets and live sentence
+    preview, 409 conflicts inline, day list rows.
+  - **Now Playing**: reference nowcard (cover + title/artist/meta +
+    progress bar, a11y preserved), decorative knobs removed, sync-all
+    spinner.
+- Deliberate cuts vs the reference (no undo on destructive actions —
+  confirm dialogs instead; genre-card "N playlists" and "Starts …" chips
+  — data not exposed by the API; browser-local schedule hints carry a
+  "Times are shown in your local time zone." note).
+- **Container restart required (backend + frontend):**
+  `docker compose up -d --build backend frontend`, then hard-refresh
+  the browser (Ctrl+Shift+R).
+- Verification: backend `pytest -q` 221 passed; frontend 231 tests /
+  28 files, `npm run typecheck` + `npm run build` clean.
+
+## 2026-10-09 — task 9: now playing panel polish to reference (nowcard, mixer, sync spinner)
+
+- `frontend/src/components/admin/NowPlayingPanel.tsx`: the on-air card is
+  rebuilt as the reference `.nowcard` (`UI reference/Nakout Admin.html`
+  238-286) — 96px `.cover` (background-image from the live
+  `thumbnail_url`, falling back to `cssCover(track.title)`) beside info
+  (`h3.np-title`, `.np-artist`, `.meta` row with `Genre: X` `.mono` + the
+  unchanged `SOURCE_LABELS` `.badge source-*`); the `.np-bar`
+  progressbar spans the card grid below with its exact a11y attributes
+  preserved (`role="progressbar"` `aria-label="Playback position"`
+  `aria-valuenow`); the offset clock stays in `.np-times` (last grid row).
+  The three decorative `.deck-knob` spans were removed from the admin
+  mixer (reference mixer is DJ + VU only; `.deck-knob` CSS kept for the
+  public page / interactive knob). Sync-all shows a `.chip` with a
+  `.spin` icon and is disabled while the request is pending (local
+  `syncingAll`); notice/error handling unchanged.
+- `frontend/src/styles/vintage.css`: added `#panel-now`-scoped nowcard
+  rules (96px cover column, nowcard title sizing, `.meta` flex row,
+  `.np-bar`/`.np-times` spanning `grid-column: 1 / -1`); removed the dead
+  `#panel-now .admin-sleeve` rule. Public `.np-*`, `.sleeve`, `.np-cover`
+  and `.deck-knob` shared rules untouched.
+- `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`: added
+  nowcard layout + no-decorative-knob + progressbar-a11y test, sync-all
+  spinner pending/resolved test, cover fallback test (empty thumbnail →
+  `cssCover` style) and thumbnail-URL cover test; `cssCover` is mocked
+  (jsdom rejects the real SVG data URI's unencoded parens — same pattern
+  as `PlaylistsPanel.dom.test.tsx`).
+- Frontend source only; rebuild `frontend` to ship:
+  `docker compose up -d --build frontend` (hard-refresh after).
+- Verification: `npm run test` 231 passed (28 files), `npm run typecheck`
+  clean, `npm run build` ok.
+
+## 2026-10-09 — schedule panel fixes: tz note, strip-click guard, form a11y, stale error clearing
+
+- `frontend/src/components/admin/SchedulePanel.tsx`: browser-timezone note
+  in the `.sub` intro line wrapped in `.mono`; form day toggles wrapped in
+  `role="group"` `aria-label="Repeat on"` (visual label kept); sentence
+  falls back to "Pick a genre and a start time." when no days are
+  selected; inline conflict error now also clears on genre-chip and
+  day-pill/preset changes (was only time-change/reopen/submit).
+- `frontend/src/components/admin/ScheduleTimeline.tsx`: strip clicks are
+  ignored when the strip rect width is 0 (guards Infinity minute math).
+- Frontend source only; no Docker restart required (rebuild `frontend`
+  to ship: `docker compose up -d --build frontend`).
+- Verification: `npm run test` 227 passed (28 files), `npm run typecheck`
+  clean, `npm run build` ok.
+
+## 2026-10-09 — task 8: admin schedule timeline, on-air card, day pills, sentence form
+
+- `frontend/src/components/admin/ScheduleTimeline.tsx` (new): the 24h
+  timeline strip — segments mirror the reference `buildSegs`: a carry-over
+  block into `[0, firstStart)` labelled "continues" with the previous
+  day's (Mon=0 indexing, previous six days only) last slot and its
+  `--gc`, a `.blk.none` "Nothing scheduled" head gap when no previous
+  slot exists, and one absolutely-positioned slot `<button>` per slot
+  (left/width in % of 1440 min, `--gc` from the genre colour, 12h start
+  label). Clicking a slot opens it for edit; clicking the strip (bubbling
+  from the carry div, passing through the `pointer-events: none` gap
+  divs) opens the add form at the clicked minute (30-min grid, clamped
+  0..1410). `.nowl` "Now" marker only when the selected day is today and
+  `nowMinutes` is provided. Ticks every 3 h labelled "12 AM … 12 PM …
+  12 AM" (no "Midnight"); `.tl` carries
+  `aria-label="Timeline for <full weekday>"`; `tlscroll/tlinner` keep the
+  640 px min-width horizontal scroll.
+- `frontend/src/components/admin/SchedulePanel.tsx`: rebuilt to the
+  reference column — `h2.sec` "Schedule" + `.sub` line with the local
+  timezone; `.card.onair` fed by `api.scheduleNow()` (fetched on mount,
+  on slots change, and polled every 60 s via a cleared-on-unmount
+  interval): live state shows `.led.live`, the genre dot + "On air:" +
+  `since <time>[ <weekday>]` and `Next: <genre> at <time>
+  today|tomorrow|<weekday>` computed from the slots and the local clock,
+  null-genre shows "Nothing scheduled yet / Add a slot to start the
+  automatic schedule."; `.head` pairs the Sun-first `.dayseg` day pills
+  (`aria-pressed`, `.pill`, red `.tdot` "Today" dot inside today's pill,
+  selecting a pill re-scopes an open ADD form's days to that day) with a
+  "+ Add slot" button that toggles to "Close" while the fresh-add form is
+  open; the sentence form `.card.sform` (amber border) has genre chips
+  (`GenreChipRadio`), "Weekdays/Weekends/Every day" `.presets` plus
+  individual `.pill` day toggles, a ≤220 px "Start time" time input, the
+  `data-testid="sentence"` preview ("<Genre> will start at <12h time> on
+  <day label> and play until the next slot begins."), inline `.hint.err`
+  for API conflicts (409s no longer go to the global error toast), and
+  Cancel + "Add slot"/"Save slot" actions (save gated on genre + days +
+  time); fresh adds prefill the start at the first free 30-min boundary
+  from 06:00 (`freeStart`) or the clicked minute; day list rows `.srow`
+  (+ `.dim`) per segment with the "6:00 AM to 9:30 AM"-style range,
+  genre, `fmtMin` duration chip, `formatDays` repeat label, Edit/Delete
+  (delete keeps the ConfirmDialog), "… continues from <weekday>" carry
+  rows, "Nothing scheduled" gap rows whose "Add slot" opens the form at
+  that minute, and an "Add the first slot" empty state opening at 06:00;
+  `initialGenre` is consumed once on mount behind a ref guard (preselects
+  the chip for fresh adds, fires `onIntentConsumed` once); the
+  `onCountChange` tab-badge contract is kept.
+- `frontend/src/components/admin/ScheduleTimeline.dom.test.tsx` (new,
+  8 tests) and `frontend/src/components/admin/SchedulePanel.dom.test.tsx`
+  (new, 19 tests): colours/labels/positioning, carry + gap segments,
+  strip-click rounding with a mocked `getBoundingClientRect`, now-marker
+  presence, tick labels, Sun-first pills + today dot, pill swapping,
+  prefilled edit form, presets/sentence/save gating, create/update
+  payloads, inline 409, confirm-dialog delete, day-list rows, intent
+  consumption, count + on-air refresh.
+- `frontend/src/pages/AdminPage.dom.test.tsx`: the four schedule-slot
+  tests updated to the new markup (chip radiogroup, "+ Add slot", inline
+  `.hint.err` conflict assertion, day-list rows instead of the old
+  `<li>` list) and `scheduleNow` added to the mocked API.
+- `frontend/src/styles/vintage.css`: added the schedule reference
+  families (`.admin .onair` scoped so the public deck header keeps its
+  mono `.onair`, `.led.live`, `.lab`, `.tlscroll/.tlinner/.tl/.blk`
+  (`.bn/.bt/.carry/.none`)/`.nowl/.ticks` (`.f/.l`), `.sform`, `.dayrow`,
+  `.pill` (+ `aria-pressed`, `.tdot`), `.presets`, `.sentence`, `.fa`,
+  `.sform .two`, `.daylist`, `.srow` (+ `.dim/.sm/.tr/.sa`)); removed the
+  now-unreferenced old schedule-list rules (`.days`, `.time-pair`,
+  `.slot-form-actions`, `.genre-admin-list` + `.slot-editing`,
+  `.slot-edit-head`, `.edit-badge`, `.st-name/.st-slug`, `.row-actions`,
+  `.count-pill`) and their mobile/reduced-motion references, with `.pill`
+  inheriting the 44 px touch target.
+- `frontend/src/types.ts`: `CurrentGenre` now carries `offset_seconds`
+  and `server_time` (matches `CurrentGenreOut`).
+- `frontend/src/components/admin/GenreSelect.tsx`: deleted — its only
+  consumer (the old schedule form) was replaced by the chip radio.
+- Frontend-only; restart required: `docker compose up -d --build frontend`.
+- Verified: `npm run test` 222 pass (28 files), `npm run typecheck` clean,
+  `npm run build` ok.
+
+## 2026-10-09 — fix: playlist thumb fit, dead media query, move-error test
+
+- `frontend/src/styles/vintage.css`: `.pcard .pc img` now uses
+  `object-fit: cover` (was `fill`) so 4:3 YouTube thumbs aren't stretched
+  in the 16:9 card; removed the dead `@media (max-width: 920px) .browse`
+  duplicate (the later ≤920px `repeat(2, 1fr)` block wins).
+- `frontend/src/components/admin/PlaylistsPanel.dom.test.tsx`: added a
+  move-error test — rejected `updatePlaylist` calls `onError` and still
+  refetches via `listPlaylists`.
+- Frontend-only; restart required: `docker compose up -d --build frontend`.
+- Verified: `npm run test` 195 pass, `npm run typecheck` clean,
+  `npm run build` ok.
+
+## 2026-10-09 — task 7: playlists panel reskin — genre groups, chips, refresh-all, channel grid, move endpoint
+
+- `frontend/src/components/admin/PlaylistsPanel.tsx`: rebuilt from the
+  two-column layout to a single reference column — `h2.sec` "Playlists" +
+  `.sub` summary (`N playlist(s) · M tracks across G genres.` with the
+  computed totals); the add form became `form.card`/`.addlink` with a
+  `.seg` two-toggle ("Paste a link" / "From your channel",
+  `aria-pressed`), the link input is labelled "YouTube playlist link"
+  (`inputmode=url`) with a live `.hint` (`.ok` "Playlist ID found: …" /
+  `.err` for an invalid link *and* for duplicates — the duplicate hint
+  reads "This playlist is already added under <genre>." and shows
+  regardless of the selected genre); genre choice now uses
+  `<GenreChipRadio>` (radiogroup "Genre") and Add playlist stays
+  disabled until genre + a valid, non-duplicate link are in play;
+  channel mode keeps the existing setup/save/browse logic but re-styles
+  the saved list as a `.browse` grid of `.pcard`s (`.pc` 16:9 thumb with
+  the real `<img>` when present, `cssCover(title)` background fallback
+  when `thumbnail_url` is empty; header shows channel name + Change /
+  "Refresh list", `already_added` cards render the `.added-badge`
+  "Added to <genre>"); "Your playlists" `.head` pairs the `.ttl` with a
+  `.filter-input` search (`input[type=search]`, `aria-label "Search
+  playlists"`, kept contract) that filters rows across genre groups;
+  groups are `section.group[style=--gc]` (dot, name, `.mono` count
+  "N playlist(s) · M tracks", per-group "Refresh all" when N>0 firing
+  all of the group's `refreshPlaylist` calls via `Promise.allSettled`
+  then one combined notice — "Refreshing <genre>..." while pending;
+  rows get a `.chip`/"Syncing" spinner while their refresh is in
+  flight (`syncingIds`), and per-group busy state disables the
+  buttons); rows are `.prow` (labelled `.pid` link or raw-id `.pid
+  .idonly`, chips "N tracks" + mono "Synced <timeAgo>", Refresh /
+  Remove) with a NEW genre move `<select aria-label="Genre for
+  <playlist>">` that calls the new `api.updatePlaylist` and flashes the
+  row (`.prow .flash` 1.4 s, same ref-guarded timer as the genre panel);
+  flash also lands on newly added rows; empty states: a genre group
+  with nothing shows `.gempty` "No playlists yet. Add one" (the link
+  preselects that genre and flips back to link mode), a search with no
+  matches shows `.empty` `No playlists match "<q>".`, and no genres at
+  all shows `.empty` "Create a genre first, then add playlists to it."
+  with a "Go to Genres" button via the new optional `onJump` prop
+  (same `(tab, intent?)` signature as GenresPanel); `initialGenre` from
+  the Genres quick link is now consumed once on mount via a `useRef`
+  guard (StrictMode-safe): sets link mode + preselects the chip, then
+  calls `onIntentConsumed` exactly once; the `onCountChange` contract
+  (tab badge) is kept after loads/mutations.
+- `frontend/src/api/client.ts`: added `updatePlaylist(id, { genre_id })`
+  (`PUT /studio/playlists/{id}`).
+- `backend/app/routers/admin.py`: added the `PlaylistUpdate` model and
+  `PUT /studio/playlists/{playlist_id}` (requires admin; 404 for unknown
+  playlist or genre; reassigns `genre_id`, commits, then pushes the
+  refreshed `now` payload to the radio with the same build/commit order
+  as `update_genre`).
+- `backend/tests/test_admin.py`: move tests — happy-path genre update
+  (200/`updated` + listed payload), unknown-genre/unknown-playlist 404,
+  and an unauthenticated 401 (`3` new tests; `notify_radio` uses the
+  monkeypatch-faked `_build_fetch` here only to keep the created
+  playlist's sync offline).
+- `frontend/src/styles/vintage.css`: added the playlists reference
+  families (`.head`/`.sp`, `.filter-input`, `.addlink`, `.seg` with
+  `aria-pressed` highlight + `font-family` inherit per the gchip fix
+  pattern, `.addchannel`, `.browse`, `.pcard`/`.pc img` full-bleed
+  16:9, `.groups`/`.group`/`.ghead`/`.prow`/`.prow .act select` pill,
+  `a.pid`(+`.idonly`)/`.gempty`, `.empty` upgraded to the dashed-border
+  grid style); removed the dead layout families it replaces —
+  `.playlists-layout`/`.playlists-main`/`.playlists-side`/
+  `.side-block`, the old `.added-playlists` row list (and its
+  responsive rules), and the old channel chrome (`.channel-block`,
+  `.channel-head`/`.channel-name`, `.channel-scroll`, `.channel-grid`,
+  `.channel-card*`) — `.channel-setup`, `.count-pill` (Schedule),
+  `.row-actions`, `.added-badge`, `.panel-head` (Now Playing) kept
+  because they are still referenced; responsive tweaks for `.browse`
+  at ≤920px and ≤380px and for `.prow` rows at ≤920px. Grep across
+  `frontend/src` confirms no stale class references either way.
+- `frontend/src/pages/AdminPage.tsx`: passes `onJump={jump}` to
+  PlaylistsPanel so the "Go to Genres" button works.
+- `frontend/src/pages/AdminPage.dom.test.tsx`: quick-link assertion now
+  targets the new "Your playlists" heading; the add-by-URL test uses
+  the chip radiogroup + "YouTube playlist link" label; the two channel
+  tests click the "From your channel" segment first, "(5 tracks)" chip
+  text, `synced_at` fixture completeness. No other flows changed.
+- `frontend/src/components/admin/PlaylistsPanel.dom.test.tsx` (new):
+  21 contract tests covering the summary line, genre groups + per-group
+  empty/Refresh-all, row anatomy (links, chips, `timeAgo`, move select
+  → `updatePlaylist` + flash, "Syncing" spinner), search filtering +
+  no-match empty, segmented control, add-form hints (valid/invalid/
+  duplicate), chip-driven add + notice, create/refresh error paths,
+  channel save/browse/reload/add-from-browse + `cssCover` fallback,
+  `initialGenre` intent consumption (once), refresh-all fan-out,
+  ConfirmDialog removal, count callback and the no-genres empty state.
+- Restart: backend + frontend —
+  `docker compose up -d --build backend frontend` (then hard refresh).
+- Verification: backend `python -m pytest -q` (221 passed), frontend
+  `npm run test` (194 tests / 26 files), `npm run typecheck`,
+  `npm run build` — all green.
+
+## 2026-10-09 — task 6 follow-up: genre panel polish — flash timing, quick-link labels, default swatch
+
+- `frontend/src/components/admin/GenresPanel.tsx`: `flash(created.id)`
+  in `addGenre` now runs after `await onGenresChanged()` resolves (a
+  slow refresh can no longer strand the flash before the new card
+  exists); the flash timer lives in a `useRef` (mirroring `Toast.tsx`)
+  that is cleared before re-arming and on unmount via an empty-deps
+  `useEffect` cleanup, keeping the identity-guarded functional update;
+  empty-genre quick links got descriptive accessible names
+  (`aria-label="Add playlist to X"` / `aria-label="Schedule X"`); the
+  add-form colour now defaults to `GENRE_PALETTE[0]` (#f2a33a brand
+  amber) instead of palette[7].
+- `frontend/src/components/admin/GenresPanel.dom.test.tsx`: quick-link
+  clicks updated to the new role names; added a rejection-path test —
+  `updateGenre` rejecting (409) toasts the error and keeps the inline
+  editor open.
+- `frontend/src/pages/AdminPage.dom.test.tsx`: create-genre fixture +
+  assertion use the new `#f2a33a` default colour.
+- Restart: frontend only — `docker compose up -d --build frontend`
+  (then hard refresh).
+- Verification: `npm run test` (173 tests / 25 files),
+  `npm run typecheck`, `npm run build` — all green.
+
+## 2026-10-09 — task 6: genres panel reskin — colour cards, play now, cross-tab quick links
+
+- `frontend/src/components/admin/GenresPanel.tsx`: rebuilt from the list
+  layout to the reference card grid — `.ggrid` of `article.gcard` with a
+  `--gc` colour accent (inset top edge), `.gtop` (colour dot + name +
+  `/.mono` slug), `.gstats` chips ("N tracks", "default" when
+  `is_default`), and a `.gwarn` row on `track_count === 0`
+  ("No playlists" `chip.warn` + "Add one"/"Schedule it" `.btn-link`
+  quick links that call the new `onJump`). "Play now" fetches
+  `api.genreTracks(id)` and posts `api.play(id, first video id)`, toasts
+  "Now playing X." and jumps to the Now Playing tab; an empty queue
+  errors "\"X\" has no tracks yet. Add a playlist." instead. The add
+  form became `form.card.gform` ("New genre" `.ttl`, `.gf-grid`
+  name/slug with a `.pre` "/" prefix, `PaletteSwatches` "Genre colour";
+  slug auto-fills from the name until manually edited, submit sends the
+  swatch colour as the third `createGenre` argument, button disabled
+  until name+slug). Inline edit stays in the card (`.gedit`) with the
+  same "Edit genre name"/"Edit genre slug"/"Default genre" labels plus
+  swatches; Save sends `{ name, slug, is_default, color }`; Save is
+  disabled while name/slug is blank. Added a `flashId` "gcard flash"
+  animation on the just-added/just-edited genre (cleared after 1.5 s).
+  Section header is `h2.sec` "Genres" + `.sub` reference copy; empty
+  state is `.empty` "No genres yet. Create your first one above."
+  Delete keeps the ConfirmDialog message and flow. Heading semantics:
+  `h2` → `h2.sec`, add-form title is `h3.ttl`.
+- `frontend/src/pages/AdminPage.tsx`: cross-tab jump plumbing —
+  `playlistIntent`/`scheduleIntent` state plus a `useCallback` `jump`
+  that records an optional `{ playlistsGenre?, scheduleGenre? }` intent
+  and switches tabs; GenresPanel gets `onJump={jump}`;
+  PlaylistsPanel/SchedulePanel receive `initialGenre={…Intent}` and
+  `onIntentConsumed` (typed props only — consumed in tasks 7/8);
+  logout resets both intents.
+- `frontend/src/components/admin/PlaylistsPanel.tsx`,
+  `frontend/src/components/admin/SchedulePanel.tsx`: typing-only
+  optional props `initialGenre?: number | null` and
+  `onIntentConsumed?: () => void` with doc comments; no behaviour yet.
+- `frontend/src/styles/vintage.css`: added the missing admin
+  primitives (`.chip`/`.chip.warn`/`.chip.ok`, `.mono`, `h2.sec`,
+  `.sub`, `.ttl`, `.empty`) and the reference gcard family (`.gform`,
+  `.gf-grid` 1.4fr/1fr collapsing at ≤640px, `.pre` slash prefix,
+  `.ggrid` minmax(300px,1fr) collapsing at ≤400px, `.gcard` with the
+  `--gc` inset top edge — background tokenised to `--cream-soft` to
+  match existing cards, `.gtop`, `.gstats`, `.gwarn`, `.gact`,
+  `.gedit` + its `.field-inline` checkbox row since the old
+  `.genre-admin-list`-scoped rule no longer applies, `.btn-link`).
+  `.genre-admin-list`/`.st-name`/`.st-slug`/`.row-actions` kept for the
+  Schedule rows.
+- `frontend/src/components/admin/GenresPanel.dom.test.tsx` (new):
+  11 cases — card colour/slug/chips/default pill, empty-genre warning +
+  quick-link intents, slug auto-fill until touched, add button
+  disabled state, add with swatch colour + notice, Play now happy path
+  (genreTracks → play(v1) → notice + jump) and empty-queue error path
+  (no play call), edit colour change + flash class, Save disabled on
+  blank name/slug with no api call, delete confirm message + cancel +
+  confirm, empty state.
+- `frontend/src/pages/AdminPage.dom.test.tsx`: updated the genre
+  create/edit fixtures to carry `color` and the assertions to the
+  new `createGenre(name, slug, color)` / `updateGenre(id, {…, color})`
+  payloads; added a jump test ("Add one" switches to the Playlists
+  tab).
+- Restart: frontend only —
+  `docker compose up -d --build frontend` (then hard refresh).
+- Verification: `npm run test` (172 tests / 25 files),
+  `npm run typecheck`, `npm run build` — all green.
+
+## 2026-10-09 — task 5 follow-up: toast re-arm on repeat notices, mobile page paddings, dead rule removal
+
+- `frontend/src/pages/AdminPage.tsx`: `notice` is now
+  `{ text: string; id: number } | null` with a monotonic
+  `noticeEpoch` ref; `onNotice` bumps the epoch and `<Toast>` is
+  rendered with `key={notice?.id ?? 0}`, so a repeated identical
+  message remounts the toast and restarts its 2.2 s auto-hide instead
+  of being swallowed by the still-running timer. `onDone`/`onError`/
+  logout clear to `null`. No test was added for the double-notice
+  flow (fake timers vs `findByRole`-style async utils in this suite
+  are flake-prone; the re-arm is a plain `key` remount verified by
+  the existing 160-test suite).
+- `frontend/src/styles/vintage.css`: inside the ≤600px media block the
+  page wrapper keeps its own paddings via
+  `.admin-page { padding: 8px 4px 40px; }` (declared after the
+  `.admin` shorthands, generous bottom clears the fixed toast), and
+  the ≤380px block gets `.admin-page { padding: 16px 10px 40px; }`.
+- Removed the dead `.admin .notice` rule (no JSX consumer — notices
+  render through `Toast` since the task 5 shell change).
+- Restart: frontend only —
+  `docker compose up -d --build frontend` (then hard refresh).
+- Verification: `npm run test` (160 tests / 24 files),
+  `npm run typecheck`, `npm run build` — all green.
+
+## 2026-10-09 — task 5 admin shell: brand header, counted tabs, toast, scrolling page
+
+- `frontend/src/pages/AdminPage.tsx`: ready header replaced with the
+  reference brand row (`header.admin-top` › `div.brand` "Nakout.Radio
+  Admin" + `.top-r` with `a.back` and the Log out button); notice banner
+  swapped for `Toast`; wrappers now `.admin.admin-page` in all phases
+  (checking/login/ready); dropped the `admin-fixed` body-class effect and
+  the `admin-stable` class; moved `tabsDef` inside the component with
+  live counts (`Playlists`/`Schedule` start `null`, `Genres` =
+  `genres.length`); logout resets the counts; passes
+  `onCountChange={setPlaylistCount}` / `{setSlotCount}` to the panels.
+- `frontend/src/components/admin/Tabs.tsx`: `TabDef` gains
+  `count?: number | null`; renders `span.count` after the label when a
+  count is present.
+- `frontend/src/components/admin/PlaylistsPanel.tsx` +
+  `SchedulePanel.tsx`: optional `onCountChange?: (count: number) => void`
+  prop; called with the resolved list length in `loadAdded` /
+  `loadSlots` (destructured `loaded` value), so tab counts update on
+  add/remove/delete and tab mount.
+- `frontend/src/styles/vintage.css`: REMOVED `body.admin-fixed`,
+  `.admin-shell`, the shell-fit `#panel-playlists`/`#panel-now`
+  flex/overflow/scroll blocks, mobile neutralizers for the same,
+  `.admin-stable`, `.admin-header`/`.admin-header-actions`, and kept
+  only deck proportions (`#panel-now .admin-deck` trimmed to
+  grid columns + padding, `#panel-now .admin-sleeve` intact).
+  `.admin-tabpanel` is now `display: grid; gap: 18px; min-width: 0`.
+  ADDED `.admin-page` (1120px shell, 22px grid gap, natural page
+  scroll), margin resets for `.admin-tabs`/`.banner`/`.admin-panel`
+  inside it, `.admin-top`, `.admin .brand small`, `.top-r`, `a.back`
+  (+ hover), `.count` pill + `.admin-tabs .active .count`, flex
+  alignment on `.admin-tabs button`; mobile block updated
+  (`.admin-top .brand`, `.top-r` rules; login `h1` sizing kept).
+  Reuses the existing public `.brand`/`.brand span` rules — no admin
+  additions leak onto the public page.
+- Tests: `AdminPage.dom.test.tsx` — tab-name queries moved to
+  `/^Label/` regexes (counts append), playlist-sync notices asserted
+  via `findByRole("status")` toast instead of the banner, added
+  "renders the brand header" test and a Playlists-tab count
+  assertion (21 tests). `Tabs.dom.test.tsx` — added count-pill
+  test (2 tests).
+- Restart: frontend only —
+  `docker compose up -d --build frontend` (then hard refresh).
+- Verification: `npm run test` (160 tests / 24 files, was 158),
+  `npm run typecheck`, `npm run build` — all green.
+
+## 2026-10-09 — task 4 primitives polish: gchip font inheritance, hint variants, toast cosmetics + unmount test
+
+- `frontend/src/styles/vintage.css` (admin primitives block):
+  `.gchip` now declares `font-family: var(--font-body)` +
+  `font-size: 0.9rem` (buttons don't inherit fonts from this file);
+  added `.hint.err` / `.hint.ok` variants after the bare `.hint` rule;
+  `.toast` set to `opacity: 1` and `transform: translateX(-50%)`
+  (dropped the dead 8px offset). No visual change to anything currently
+  rendered — the touched selectors are not used on-screen yet.
+- Added a timer-unmount test to
+  `frontend/src/components/admin/Toast.dom.test.tsx`
+  (`onDone` never fires after unmount; suite now 158 tests in 24 files).
+- Restart: frontend only (`frontend/src/styles/**` is a served change,
+  per AGENTS.md rule) — `docker compose up -d --build frontend`.
+- Verification: `npm run test` (158 tests) + `npm run typecheck` +
+  `npm run build` green.
+
+## 2026-10-09 — shared admin UI primitives: Toast, PaletteSwatches, GenreChipRadio + CSS (admin reskin task 4)
+
+- New `frontend/src/components/admin/`: `Toast.tsx` (capsule
+  `role="status"` toast, 2.2 s auto-hide via `setTimeout`, renders null
+  when the message is empty, timer keyed on the message only),
+  `PaletteSwatches.tsx` (radiogroup of 8 `role="radio"` swatch buttons
+  from `GENRE_PALETTE`, colour exposed as `--gc`), `GenreChipRadio.tsx`
+  (radiogroup of genre chips with colour dot, `--gc` falling back to
+  `var(--amber)` when `color` is empty; empty-genre list renders a
+  `.hint` paragraph instead of the group). TDD: tests first, verified
+  they failed, then implemented.
+- `frontend/src/styles/vintage.css`: appended additive admin-primitive
+  families (`.toast`, `.chips`/`.gchip`/`.dot`, `.swatches`/`.sw`,
+  `.hint`, `.flash`, `.spin` + `@keyframes flash`/`spin`) anchored at the
+  end of the admin section (after the schedule-slot rules, immediately
+  before the `/* ---------- Vinyl deck ---------- */` comment) so all
+  admin styles stay contiguous. Overlap audit before insertion: no
+  pre-existing `.toast`, `.chips`, `.gchip`, `.swatches`, `.dot`,
+  `.flash`, `.spin`, or `@keyframes spin` (keyframes in file were only
+  `vu-flicker`, `skeleton-shimmer`, `modal-fade-in`, `modal-pop-in`).
+  `.hint` existed only as the scoped `.admin-login .hint` (line ~554)
+  with compatible colours, so the new bare `.hint` was safe to add
+  unchanged (it only adds `min-height: 1.2em` where the scoped rule
+  wins on colour/size/margin).
+- New tests `Toast.dom.test.tsx` / `PaletteSwatches.dom.test.tsx` /
+  `GenreChipRadio.dom.test.tsx` (10 tests total; task spec estimated
+  ~12, spec-provided tests total 10). Deviation: `Toast` dep array is
+  `[message]` with an eslint-disable comment instead of `[message,
+  onDone]`, per task note (repo has no eslint setup; inline-arrow
+  `onDone` at call sites would otherwise restart the timer per render).
+- Files: `frontend/src/components/admin/Toast.tsx`,
+  `PaletteSwatches.tsx`, `GenreChipRadio.tsx`,
+  `Toast.dom.test.tsx`, `PaletteSwatches.dom.test.tsx`,
+  `GenreChipRadio.dom.test.tsx`, `frontend/src/styles/vintage.css`,
+  `docs/changelog.md`.
+- Restart: frontend only (components unused elsewhere yet, no UI
+  churn) — `docker compose up -d --build frontend`.
+- Verification: `npm run test` → 24 files / 157 tests passed (147
+  existing + 10 new); `npm run typecheck` → clean; `npm run build` →
+  success.
+
+
+## 2026-10-09 — follow-up: timeAgo offset parsing fixed + client colour-path payload tests
+
+- `timeAgo` (`frontend/src/utils/format.ts`) appended `Z` to every
+  string, so explicit-offset timestamps became `…+00:00Z` (unparseable →
+  "NaNd ago"). It now parses strings ending in a `±HH:MM` offset or `Z`
+  as-is and appends `Z` only to naive strings. Deviation from the
+  suggested patch: the naive check also excludes `Z`-suffixed strings,
+  otherwise `"…31Z"` became `"…31ZZ"` → NaN (caught by the existing
+  unit test).
+- Extended `frontend/src/utils/format.unit.test.ts`: `+00:00` →
+  "5 min ago", `+02:00` → "2h ago" (offset honoured).
+- Added payload coverage for the colour paths
+  (`frontend/src/api/client.test.ts`, 15 → 18 tests): createGenre omits
+  colour when unsupplied, sends `{name, slug, color}` when supplied,
+  updateGenre forwards colour-only updates.
+- Files: `frontend/src/utils/format.ts`,
+  `frontend/src/utils/format.unit.test.ts`,
+  `frontend/src/api/client.test.ts`, `docs/changelog.md`.
+- Restart: frontend only (code changed) — `docker compose up -d --build
+  frontend`.
+- Verification: `npm run test` → 21 files / 147 tests passed (144 + 3
+  client payload tests); `npm run typecheck` → clean; `npm run build` →
+  success.
+
+## 2026-10-09 — frontend data layer: colour/synced_at shapes, schedule time helpers, generated covers (admin reskin task 3)
+
+- `Genre` gained `color: string`; `AddedPlaylist` gained
+  `synced_at: string | null` (`frontend/src/types.ts`) — typed against the
+  task-1/2 backend API (backend serializes `color` as `genre.color or ""`,
+  `synced_at` as ISO-8601-with-`Z` or null).
+- `api.createGenre` takes an optional `color` (omitted from the body when
+  absent) and `api.updateGenre` accepts `color` in its updates
+  (`frontend/src/api/client.ts`).
+- New pure helpers in `frontend/src/utils/format.ts`:
+  `minutesOf` ("06:05" → 365), `twelveHour` (minutes → "6:30 AM"/"Midnight"),
+  `fmtMin` (90 → "1h 30m"), `timeAgo` (ISO string/null → "5 min ago"/"never",
+  tolerant of a missing `Z`).
+- New `frontend/src/utils/profile.ts`: `cssCover(seed)` renders a deterministic
+  generative SVG (hash-picked palette/geometry) as a `url("data:image/svg+xml…")`
+  CSS background value.
+- New `frontend/src/palette.ts`: `GENRE_PALETTE` — 8 hex colours mirroring
+  `backend/app/models.py` (parity re-checked in review; the frontend test is a
+  sanity check, length + first colour).
+- Test fixtures in `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`
+  gained the now-required `Genre.color` field.
+- Files: `frontend/src/types.ts`, `frontend/src/api/client.ts`,
+  `frontend/src/utils/format.ts`, `frontend/src/utils/profile.ts`,
+  `frontend/src/palette.ts`, `frontend/src/utils/format.unit.test.ts`,
+  `frontend/src/utils/profile.unit.test.ts`,
+  `frontend/src/palette.unit.test.ts`,
+  `frontend/src/api/client.test.ts`,
+  `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`,
+  `docs/changelog.md`.
+- Restart: frontend only (bundle-baked) — `docker compose up -d --build
+  frontend`; note the colour/synced_at API shapes are typed but not yet
+  visually consumed (that's a later reskin task).
+- Verification (TDD: new tests written first, confirmed red, then green):
+  `npm run test` → 21 files / 144 tests passed (previous 138 + 6 new);
+  `npm run typecheck` → clean; `npm run build` → success. (File list and
+  totals reflect the follow-up entry above; at this commit's time the
+  suite was 144 in 21 files, with `client.test.ts` extended to 18 by the
+  follow-up.)
+
+## 2026-10-09 — backend tests: strengthened synced_at coverage (test-only)
+
+- `backend/tests/test_admin.py` only: refresh test now nulls `synced_at`
+  after create before refreshing (was un-failable); backfill migration
+  fixture gained the `a1b2c3d4e5f6`-era `genre.color` column and a
+  trackless playlist whose `synced_at` stays NULL after upgrade.
+- Tests only — no container restart required.
+- Verification: `python -m pytest tests/test_admin.py -k "synced" -q` →
+  3 passed; full `python -m pytest -q` → 218 passed.
+
+## 2026-10-09 — backend: playlist synced_at (set on sync, backfilled)
+
+- `Playlist` gained a nullable `synced_at` datetime column
+  (`backend/app/models.py`).
+- `sync_playlist` (`backend/app/sync.py`) now stamps `playlist.synced_at` with
+  naive UTC now just before its commit, so create, refresh, and sync-all all
+  update the timestamp (all three call `sync_playlist` after the playlist row
+  is committed).
+- New migration
+  `backend/alembic/versions/b2c3d4e5f6a7_playlist_synced_at.py`
+  (revision `b2c3d4e5f6a7`, down_revision `a1b2c3d4e5f6`): batch-adds the
+  nullable `synced_at` column and backfills it from `MAX(trackcache.fetched_at)`
+  per playlist; playlists with no cached tracks stay NULL.
+- `PlaylistOut` gained `synced_at: str | None = None`
+  (`backend/app/schemas.py`); `list_added_playlists` serializes it as
+  ISO-8601 with a `Z` suffix (`backend/app/routers/admin.py`).
+- Files: `backend/app/models.py`, `backend/app/sync.py`,
+  `backend/app/schemas.py`, `backend/app/routers/admin.py`,
+  `backend/alembic/versions/b2c3d4e5f6a7_playlist_synced_at.py`,
+  `backend/tests/test_admin.py`, `docs/changelog.md`.
+- Restart required: backend only (model + migration + serialization changed) —
+  `docker compose up -d --build backend`.
+- Verification: `python -m pytest tests/test_admin.py -k synced_at -q` →
+  3 passed (create-listing non-null, refresh non-null, migration backfill
+  == `2026-10-01 10:00:00`); full `python -m pytest -q` → 218 passed
+  (215 prior + 3 new). `python -m alembic heads` → single head
+  `b2c3d4e5f6a7`; `alembic upgrade head` on a scratch sqlite db upgraded the
+  full chain with `playlist.synced_at` present.
+
+## 2026-10-09 — backend colour review fixes: honest palette wraparound, newline-safe colour validation
+
+- Palette wraparound made honest in both places: exhausted-palette fallback
+  now cycles by genre count (`backend/app/routers/admin.py`,
+  `_first_unused_color`) instead of holding one colour forever, and the
+  migration backfill (`backend/alembic/versions/a1b2c3d4e5f6_genre_color.py`)
+  uses its `ORDER BY id` loop index to rotate. First-unused assignment for
+  the ≤8-genre case is unchanged.
+- Colour validation switched to `_COLOR_RE.fullmatch`
+  (`backend/app/routers/admin.py`) so `"#123abc\n"` is rejected (422);
+  normalize-then-store unchanged (`#FF00FF` → `#ff00ff`).
+- Also includes the test-only commit `63478d9` (backfill migration test now
+  asserts A = palette[0], B = palette[1] exactly); tests only, no behaviour
+  change.
+- Files: `backend/app/routers/admin.py`,
+  `backend/alembic/versions/a1b2c3d4e5f6_genre_color.py`,
+  `backend/tests/test_admin.py`, `docs/changelog.md`.
+- Restart required: backend only (router logic + migration changed) —
+  `docker compose up -d --build backend`.
+- Verification: `python -m pytest -q` (whole backend suite) → 215 passed
+  (colour tests: 6 passed, incl. new newline-reject + uppercase-normalize
+  assertions).
+
+## 2026-10-09 — backend: genre accent colour (model, migration, CRUD, serialization)
+
+- Added `GENRE_PALETTE` (8 hex colours) and nullable `Genre.color` column
+  (`backend/app/models.py`).
+- New migration `backend/alembic/versions/a1b2c3d4e5f6_genre_color.py`
+  (revision `a1b2c3d4e5f6`, down_revision `e5f6a7b8c9d0`): batch-adds the
+  nullable `color` column and backfills each existing genre with the first
+  unused palette colour (palette inlined in the migration, not imported).
+  Note: the implementation plan claimed `d4e5f6a7b8c9` was the repo's latest
+  revision; `e5f6a7b8c9d0` (add revoked session) was added later by the
+  security-hardening commit, so the chain was corrected to that.
+- `GenreOut` gained `color: str = ""` (`backend/app/schemas.py`); all
+  serialization sites pass it through (`backend/app/routers/genres.py`
+  list + detail, `backend/app/routers/now.py`, `backend/app/routers/schedule.py`).
+- `backend/app/routers/admin.py`: `GenreIn`/`GenreUpdate` accept `color`
+  (`#rrggbb` validated, lowercased, empty string rejected on update);
+  create assigns the first unused palette colour when omitted; update
+  validates before applying and now pushes `notify_radio(build_now(...))`
+  so the public page stays in sync (refresh moved after the notify because
+  the broadcast-state commit expires the returned ORM row).
+- Tests added to `backend/tests/test_admin.py`: explicit colour on create,
+  palette auto-assignment (first unused), update colour, invalid colour
+  rejected (422), public genre list includes colour, and a hand-built
+  pre-migration db backfill test via alembic subprocess (mirrors the
+  repo's existing migration-test pattern).
+- Restart required: backend only — `docker compose up -d --build backend`.
+- Verification: `python -m pytest tests/test_admin.py -q` → 84 passed;
+  `python -m pytest -q` (whole backend suite) → 215 passed.
+
 ## 2026-10-09 — volume fader follow-ups: Home/End key test added; fader spec drag-gain wording corrected
 
 - Added a Home/End bounds test to
@@ -767,3 +1458,4 @@ restart is required (see `AGENTS.md` for the restart commands).
   nginx :8012).
 - Verification: `npm run typecheck` (pass), `npm test` 89/89 pass,
   `npm run build` pass.
+

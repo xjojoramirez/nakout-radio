@@ -4,6 +4,7 @@ import { NowPlayingPanel } from "../components/admin/NowPlayingPanel";
 import { PlaylistsPanel } from "../components/admin/PlaylistsPanel";
 import { SchedulePanel } from "../components/admin/SchedulePanel";
 import { GenresPanel } from "../components/admin/GenresPanel";
+import { Toast } from "../components/admin/Toast";
 import { Tabs, type TabDef } from "../components/admin/Tabs";
 import {
   PanelSkeleton,
@@ -13,24 +14,31 @@ import {
 import type { Genre } from "../types";
 import { messageFor } from "../utils/errors";
 
-const TABS: TabDef[] = [
-  { id: "now", label: "Now Playing" },
-  { id: "playlists", label: "Playlists" },
-  { id: "genres", label: "Genres" },
-  { id: "schedule", label: "Schedule" },
-];
-
 type Phase = "checking" | "login" | "loading" | "ready";
 
 export function AdminPage() {
   const [phase, setPhase] = useState<Phase>("checking");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<{ text: string; id: number } | null>(
+    null,
+  );
   const [genres, setGenres] = useState<Genre[]>([]);
   const [tab, setTab] = useState("now");
+  const [playlistCount, setPlaylistCount] = useState<number | null>(null);
+  const [slotCount, setSlotCount] = useState<number | null>(null);
+  const [playlistIntent, setPlaylistIntent] = useState<number | null>(null);
+  const [scheduleIntent, setScheduleIntent] = useState<number | null>(null);
 
   const loginEpoch = useRef(0);
+  const noticeEpoch = useRef(0);
+
+  const tabsDef: TabDef[] = [
+    { id: "now", label: "Now Playing" },
+    { id: "playlists", label: "Playlists", count: playlistCount },
+    { id: "genres", label: "Genres", count: genres.length },
+    { id: "schedule", label: "Schedule", count: slotCount },
+  ];
 
   const refreshGenres = useCallback(async () => {
     try {
@@ -87,29 +95,41 @@ export function AdminPage() {
     setGenres([]);
     setPassword("");
     setError("");
-    setNotice("");
+    setNotice(null);
+    setPlaylistCount(null);
+    setSlotCount(null);
+    setPlaylistIntent(null);
+    setScheduleIntent(null);
   };
 
   const onNotice = (message: string) => {
-    setError("");
-    setNotice(message);
+    noticeEpoch.current += 1;
+    setNotice({ text: message, id: noticeEpoch.current });
   };
 
   const onError = (message: string) => {
-    setNotice("");
+    setNotice(null);
     setError(message);
   };
 
-  useEffect(() => {
-    document.body.classList.toggle("admin-fixed", phase === "ready");
-    return () => {
-      document.body.classList.remove("admin-fixed");
-    };
-  }, [phase]);
+  const jump = useCallback(
+    (
+      nextTab: string,
+      intent?: { playlistsGenre?: number; scheduleGenre?: number },
+    ) => {
+      if (intent?.playlistsGenre != null) setPlaylistIntent(intent.playlistsGenre);
+      if (intent?.scheduleGenre != null) setScheduleIntent(intent.scheduleGenre);
+      setTab(nextTab);
+    },
+    [],
+  );
+
+  const consumePlaylistIntent = useCallback(() => setPlaylistIntent(null), []);
+  const consumeScheduleIntent = useCallback(() => setScheduleIntent(null), []);
 
   if (phase === "checking") {
     return (
-      <div className="admin admin-stable">
+      <div className="admin admin-page">
         <div className="admin-skeleton-card" aria-busy="true">
           <Skeleton variant="title" />
           <SkeletonForm count={1} />
@@ -120,7 +140,7 @@ export function AdminPage() {
 
   if (phase === "login") {
     return (
-      <div className="admin">
+      <div className="admin admin-page">
         <form
           className="admin-login"
           onSubmit={(e) => {
@@ -157,11 +177,13 @@ export function AdminPage() {
   }
 
   return (
-    <div className="admin admin-stable admin-shell">
-      <header className="admin-header">
-        <h1>Admin</h1>
-        <div className="admin-header-actions">
-          <a className="back-link" href="/">
+    <div className="admin admin-page">
+      <header className="admin-top">
+        <div className="brand">
+          Nakout<span>.</span>Radio <small>Admin</small>
+        </div>
+        <div className="top-r">
+          <a className="back" href="/">
             &larr; Back to radio
           </a>
           <button type="button" className="btn btn-secondary" onClick={logout}>
@@ -175,13 +197,13 @@ export function AdminPage() {
           {error}
         </p>
       )}
-      {notice && (
-        <p className="notice banner" aria-live="polite">
-          {notice}
-        </p>
-      )}
+      <Toast
+        key={notice?.id ?? 0}
+        message={notice?.text ?? ""}
+        onDone={() => setNotice(null)}
+      />
 
-      <Tabs tabs={TABS} active={tab} onChange={setTab} />
+      <Tabs tabs={tabsDef} active={tab} onChange={setTab} />
 
       <div
         id={`panel-${tab}`}
@@ -207,6 +229,10 @@ export function AdminPage() {
                 onGenresChanged={refreshGenres}
                 onNotice={onNotice}
                 onError={onError}
+                onCountChange={setPlaylistCount}
+                initialGenre={playlistIntent}
+                onIntentConsumed={consumePlaylistIntent}
+                onJump={jump}
               />
             )}
             {tab === "genres" && (
@@ -215,6 +241,7 @@ export function AdminPage() {
                 onGenresChanged={refreshGenres}
                 onNotice={onNotice}
                 onError={onError}
+                onJump={jump}
               />
             )}
             {tab === "schedule" && (
@@ -222,6 +249,9 @@ export function AdminPage() {
                 genres={genres}
                 onNotice={onNotice}
                 onError={onError}
+                onCountChange={setSlotCount}
+                initialGenre={scheduleIntent}
+                onIntentConsumed={consumeScheduleIntent}
               />
             )}
           </>

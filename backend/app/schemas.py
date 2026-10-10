@@ -20,6 +20,7 @@ class GenreOut(BaseModel):
     name: str
     slug: str
     is_default: bool
+    color: str = ""
     track_count: int
 
 
@@ -143,6 +144,7 @@ class PlaylistOut(BaseModel):
     youtube_playlist_id: str
     label: str
     track_count: int
+    synced_at: str | None = None
 
 
 class PlayIn(BaseModel):

@@ -90,6 +90,7 @@ def list_genres(session: Session = Depends(get_session)) -> list[GenreOut]:
             name=s.name,
             slug=s.slug,
             is_default=s.is_default,
+            color=s.color or "",
             track_count=len(tracks_for_genre(session, s.id)),
         )
         for s in genres
@@ -107,6 +108,7 @@ def get_genre(slug: str, session: Session = Depends(get_session)) -> GenreDetail
         name=genre.name,
         slug=genre.slug,
         is_default=genre.is_default,
+        color=genre.color or "",
         track_count=total,
         track=track,
         cursor=cursor,

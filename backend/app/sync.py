@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from sqlmodel import Session, delete
 
-from app.models import Playlist, TrackCache
+from app.models import Playlist, TrackCache, _utcnow
 from app.youtube import TrackData
 
 
@@ -25,5 +25,7 @@ def sync_playlist(
                 duration_seconds=t.duration_seconds,
             )
         )
+    playlist.synced_at = _utcnow()
+    session.add(playlist)
     session.commit()
     return len(tracks)

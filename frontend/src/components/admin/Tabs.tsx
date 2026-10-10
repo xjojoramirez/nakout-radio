@@ -1,6 +1,7 @@
 export interface TabDef {
   id: string;
   label: string;
+  count?: number | null;
 }
 
 interface Props {
@@ -24,6 +25,7 @@ export function Tabs({ tabs, active, onChange }: Props) {
           onClick={() => onChange(t.id)}
         >
           {t.label}
+          {t.count != null && <span className="count">{t.count}</span>}
         </button>
       ))}
     </nav>

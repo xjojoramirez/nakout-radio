@@ -13,6 +13,7 @@ export interface Genre {
   slug: string;
   is_default: boolean;
   track_count: number;
+  color: string;
 }
 
 export interface GenreDetail extends Genre {
@@ -25,6 +26,8 @@ export interface CurrentGenre {
   track: Track | null;
   cursor: string | null;
   source: string;
+  offset_seconds: number;
+  server_time: string | null;
 }
 
 export interface BroadcastNow {
@@ -55,6 +58,7 @@ export interface AddedPlaylist {
   youtube_playlist_id: string;
   label: string;
   track_count: number;
+  synced_at: string | null;
 }
 
 export interface ScheduleSlot {
