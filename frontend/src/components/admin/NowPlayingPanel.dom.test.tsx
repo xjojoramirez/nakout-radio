@@ -155,7 +155,7 @@ describe("NowPlayingPanel", () => {
         .closest("li");
       expect(row).not.toBeNull();
       const instances = spy.mock.instances as unknown[];
-      expect(instances).toContain(row);
+      await waitFor(() => expect(instances).toContain(row));
       expect(instances.filter((el) => el === row)).toHaveLength(1);
     } finally {
       window.matchMedia = original;
@@ -173,6 +173,7 @@ describe("NowPlayingPanel", () => {
     const spy = vi.spyOn(Element.prototype, "scrollIntoView");
     renderPanel();
     await screen.findByText("On air");
+    await within(screen.getByRole("list")).findByText("Alpha");
     expect(spy).not.toHaveBeenCalled();
   });
 
