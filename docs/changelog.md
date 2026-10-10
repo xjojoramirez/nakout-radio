@@ -3,6 +3,34 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-10 — studio layout: constant page width across tabs, schedule panel no longer overflows
+
+- `frontend/src/styles/vintage.css`:
+  - `body:has(.admin-page) { justify-items: stretch }` — `body` is a
+    `place-items: center` grid, which made `#root` shrink-to-fit the
+    active tab's content, so `.admin-page`'s
+    `min(1120px, calc(100% - 32px))` resolved against a different parent
+    width on every tab (measured 1120 / 696 / 557 / 676 px on
+    Now / Playlists / Genres / Schedule). Stretching `#root` gives the
+    page column one definite width on all tabs; the login box
+    (no `.admin-page`) keeps its old centered fit.
+  - `html { scrollbar-gutter: stable }` — stops the ~15 px column jump
+    when tabs toggle the vertical scrollbar.
+  - `.admin-panel { min-width: 0 }` — the schedule panel (grid item)
+    couldn't shrink below the timeline's `min-width: 640px` plus card
+    padding, so it poked past the page's rounded edge at narrow widths;
+    now the timeline scrolls inside its card instead
+    (`.tlscroll` handles it).
+- Verified with headless-Edge probes against the running container:
+  page width 1120 px on all four tabs at 1440 viewport / 753 px at
+  800, zero elements poking past the page edge, no horizontal page
+  scroll, login page and public homepage unchanged.
+- **Container restart required (frontend):**
+  `docker compose up -d --build frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: frontend 231 tests / 28 files, `npm run typecheck` +
+  `npm run build` clean (CSS-only change).
+
 ## 2026-10-09 — admin-deck-ui branch complete — admin reskinned to the Nakout Admin reference: genre colours, grouped playlists, visual schedule timeline, reference nowcard
 
 - Admin studio (`/studio`) now matches `UI reference/Nakout Admin.html`
