@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
 import { api } from "../../api/client";
 import { useBroadcast } from "../../hooks/useBroadcast";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { messageFor } from "../../utils/errors";
 import { formatClock, formatDuration } from "../../utils/format";
 import { reorder, shuffle } from "../../utils/queue";
+import { cssCover } from "../../utils/profile";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { VUMeter } from "../VUMeter";
 import { TurntableDeck } from "../deck/TurntableDeck";
@@ -35,6 +35,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [reload, setReload] = useState(0);
   const [pendingTrack, setPendingTrack] = useState<Track | null>(null);
+  const [syncingAll, setSyncingAll] = useState(false);
   const queueRef = useRef<HTMLOListElement | null>(null);
   const currentRowRef = useRef<HTMLLIElement | null>(null);
   const didFirstScrollRef = useRef(false);
@@ -115,6 +116,8 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
   }, [currentIndex, tracks, loading, isMobileView]);
 
   const syncAll = async () => {
+    if (syncingAll) return;
+    setSyncingAll(true);
     try {
       const result = await api.syncAll();
       setReload((n) => n + 1);
@@ -126,6 +129,8 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
       );
     } catch (err) {
       onError(messageFor(err));
+    } finally {
+      setSyncingAll(false);
     }
   };
 
@@ -197,7 +202,18 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
   };
 
   const syncButton = (
-    <button type="button" className="btn btn-secondary" onClick={syncAll}>
+    <button
+      type="button"
+      className="btn btn-secondary"
+      onClick={syncAll}
+      disabled={syncingAll}
+    >
+      {syncingAll && (
+        <span className="chip">
+          <i className="spin" aria-hidden="true" />
+          Syncing
+        </span>
+      )}
       Sync all playlists
     </button>
   );
@@ -221,17 +237,6 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
               <strong>{state?.genre?.name ?? "Station"}</strong>
             </div>
             <VUMeter playing={Boolean(state?.track)} seed={1} />
-            <div className="knob-row" aria-hidden="true">
-              <span className="deck-knob" />
-              <span
-                className="deck-knob"
-                style={{ "--r": "20deg" } as CSSProperties}
-              />
-              <span
-                className="deck-knob"
-                style={{ "--r": "70deg" } as CSSProperties}
-              />
-            </div>
           </div>
         </div>
 
@@ -257,41 +262,40 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
           )}
 
           {state?.genre && state.track ? (
-            <>
-              <div className="sleeve admin-sleeve">
-                {state.track.thumbnail_url && (
-                  <img
-                    className="np-cover"
-                    src={state.track.thumbnail_url}
-                    alt=""
-                  />
-                )}
-                <div>
-                  <div className="kicker">Genre: {state.genre.name}</div>
-                  <h2 className="np-title">{state.track.title}</h2>
-                  <div className="np-artist">{state.track.artist}</div>
-                </div>
-              </div>
-              <div>
-                <div className="np-bar">
-                  <div
-                    className="np-bar-fill"
-                    role="progressbar"
-                    aria-label="Playback position"
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={Math.round(livePct)}
-                    style={{ width: `${livePct}%` }}
-                  />
-                </div>
-                <div className="np-times">
-                  <span>{formatClock(state.offset)}</span>
+            <div className="card nowcard">
+              <div
+                className="cover"
+                style={{
+                  backgroundImage: state.track.thumbnail_url
+                    ? `url("${state.track.thumbnail_url}")`
+                    : cssCover(state.track.title),
+                }}
+              />
+              <div className="nowcard-info">
+                <h3 className="np-title">{state.track.title}</h3>
+                <div className="np-artist">{state.track.artist}</div>
+                <div className="meta">
+                  <span className="mono">Genre: {state.genre.name}</span>
                   <span className={`badge source-${state.source}`}>
                     {SOURCE_LABELS[state.source] ?? state.source}
                   </span>
                 </div>
               </div>
-            </>
+              <div className="np-bar">
+                <div
+                  className="np-bar-fill"
+                  role="progressbar"
+                  aria-label="Playback position"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(livePct)}
+                  style={{ width: `${livePct}%` }}
+                />
+              </div>
+              <div className="np-times">
+                <span>{formatClock(state.offset)}</span>
+              </div>
+            </div>
           ) : (
             <p className="muted">
               {failed ? "Could not load playback status." : "Nothing scheduled."}

@@ -8,12 +8,25 @@ def _utcnow() -> datetime:
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
+GENRE_PALETTE: tuple[str, ...] = (
+    "#f2a33a",
+    "#e0654a",
+    "#8fb996",
+    "#5fb3b3",
+    "#6fa3e0",
+    "#a58be0",
+    "#e58fb0",
+    "#d8c18a",
+)
+
+
 class Genre(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     slug: str = Field(index=True, unique=True)
     is_default: bool = False
     sort_order: int = 0
+    color: str | None = Field(default=None)
 
 
 class Playlist(SQLModel, table=True):
@@ -21,6 +34,7 @@ class Playlist(SQLModel, table=True):
     genre_id: int = Field(foreign_key="genre.id", index=True)
     youtube_playlist_id: str
     label: str = ""
+    synced_at: datetime | None = Field(default=None)
 
 
 class TrackCache(SQLModel, table=True):

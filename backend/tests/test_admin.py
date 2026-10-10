@@ -599,6 +599,65 @@ def test_refresh_missing_playlist_404(tmp_path):
     assert client.post("/api/studio/playlists/999/refresh").status_code == 404
 
 
+def test_move_playlist_updates_genre(tmp_path, monkeypatch):
+    client, engine = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    g1 = client.post(
+        "/api/studio/genres", json={"name": "A", "slug": "a"}
+    ).json()["id"]
+    g2 = client.post(
+        "/api/studio/genres", json={"name": "B", "slug": "b"}
+    ).json()["id"]
+    monkeypatch.setattr(
+        "app.routers.admin._build_fetch",
+        lambda: _fake_fetch([TrackData("v1", "T", "A", "u", 0)]),
+    )
+    pid = client.post(
+        "/api/studio/playlists",
+        json={
+            "genre_id": g1,
+            "youtube_playlist_url": (
+                "https://www.youtube.com/playlist?list=PLabc123"
+            ),
+        },
+    ).json()["id"]
+    resp = client.put(f"/api/studio/playlists/{pid}", json={"genre_id": g2})
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "updated"}
+    listed = client.get("/api/studio/playlists").json()
+    assert [p for p in listed if p["id"] == pid][0]["genre_id"] == g2
+
+
+def test_move_playlist_unknown_genre_404(tmp_path, monkeypatch):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    g1 = client.post(
+        "/api/studio/genres", json={"name": "A", "slug": "a"}
+    ).json()["id"]
+    monkeypatch.setattr(
+        "app.routers.admin._build_fetch",
+        lambda: _fake_fetch([TrackData("v1", "T", "A", "u", 0)]),
+    )
+    pid = client.post(
+        "/api/studio/playlists",
+        json={"genre_id": g1, "youtube_playlist_url": "PLabc123"},
+    ).json()["id"]
+    resp = client.put(f"/api/studio/playlists/{pid}", json={"genre_id": 9999})
+    assert resp.status_code == 404
+    assert (
+        client.put("/api/studio/playlists/999", json={"genre_id": g1}).status_code
+        == 404
+    )
+
+
+def test_move_playlist_requires_auth(tmp_path):
+    client, _ = _client(tmp_path)
+    assert (
+        client.put("/api/studio/playlists/1", json={"genre_id": 1}).status_code
+        == 401
+    )
+
+
 def test_sync_all_reports_each_playlist(tmp_path, monkeypatch):
     client, _ = _client(tmp_path)
     client.post("/api/studio/login", json={"password": "test-pass"})
@@ -928,6 +987,130 @@ def test_list_added_playlists_orders_by_genre_then_id(tmp_path):
     assert [p["genre_name"] for p in body] == ["A", "A", "B"]
 
 
+def test_create_playlist_sets_synced_at_in_listing(tmp_path, monkeypatch):
+    client, _ = _client(tmp_path)
+    _login(client)
+    sid = client.post(
+        "/api/studio/genres", json={"name": "S", "slug": "s"}
+    ).json()["id"]
+    monkeypatch.setattr(
+        "app.routers.admin._build_fetch",
+        lambda: _fake_fetch([TrackData("v1", "One", "A", "u", 0)]),
+    )
+    resp = client.post(
+        "/api/studio/playlists",
+        json={"genre_id": sid, "youtube_playlist_url": "PL1", "label": ""},
+    )
+    assert resp.status_code == 201
+    body = client.get("/api/studio/playlists").json()
+    assert body[0]["synced_at"] is not None
+
+
+def test_refresh_playlist_updates_synced_at(tmp_path, monkeypatch):
+    client, engine = _client(tmp_path)
+    _login(client)
+    sid = client.post(
+        "/api/studio/genres", json={"name": "S", "slug": "s"}
+    ).json()["id"]
+    monkeypatch.setattr(
+        "app.routers.admin._build_fetch",
+        lambda: _fake_fetch([]),
+    )
+    pid = client.post(
+        "/api/studio/playlists",
+        json={"genre_id": sid, "youtube_playlist_url": "PL1", "label": ""},
+    ).json()["id"]
+    with Session(engine) as s:
+        playlist = s.get(Playlist, pid)
+        playlist.synced_at = None
+        s.add(playlist)
+        s.commit()
+    assert client.get("/api/studio/playlists").json()[0]["synced_at"] is None
+    monkeypatch.setattr(
+        "app.routers.admin._build_fetch",
+        lambda: _fake_fetch([TrackData("v1", "One", "A", "u", 0)]),
+    )
+    resp = client.post(f"/api/studio/playlists/{pid}/refresh")
+    assert resp.status_code == 200
+    body = client.get("/api/studio/playlists").json()
+    assert body[0]["synced_at"] is not None
+
+
+def test_playlist_synced_at_backfill_migration(tmp_path):
+    import os
+    import sqlite3
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    BACKEND_DIR = Path(__file__).resolve().parents[1]
+
+    def _alembic(db_url: str, *args: str) -> None:
+        env = dict(os.environ)
+        env["DATABASE_URL"] = db_url
+        subprocess.run(
+            [sys.executable, "-m", "alembic", *args],
+            cwd=str(BACKEND_DIR),
+            env=env,
+            check=True,
+            capture_output=True,
+        )
+
+    db_path = tmp_path / "pre_synced_at.db"
+    db_url = f"sqlite:///{db_path}"
+    conn = sqlite3.connect(db_path)
+    conn.executescript(
+        """
+        CREATE TABLE genre (
+            id INTEGER PRIMARY KEY, name VARCHAR NOT NULL,
+            slug VARCHAR NOT NULL, is_default BOOLEAN,
+            sort_order INTEGER, color VARCHAR
+        );
+        INSERT INTO genre (name, slug, is_default, sort_order)
+            VALUES ('A','a',0,0);
+        CREATE TABLE playlist (
+            id INTEGER PRIMARY KEY, genre_id INTEGER NOT NULL,
+            youtube_playlist_id VARCHAR NOT NULL, label VARCHAR NOT NULL
+        );
+        INSERT INTO playlist (genre_id, youtube_playlist_id, label)
+            VALUES (1, 'PL1', '');
+        INSERT INTO playlist (genre_id, youtube_playlist_id, label)
+            VALUES (1, 'PL2', '');
+        CREATE TABLE trackcache (
+            id INTEGER PRIMARY KEY, playlist_id INTEGER NOT NULL,
+            youtube_video_id VARCHAR NOT NULL, title VARCHAR NOT NULL,
+            artist VARCHAR NOT NULL, thumbnail_url VARCHAR NOT NULL,
+            duration_seconds INTEGER NOT NULL, position INTEGER NOT NULL,
+            fetched_at DATETIME NOT NULL
+        );
+        INSERT INTO trackcache (
+            playlist_id, youtube_video_id, title, artist,
+            thumbnail_url, duration_seconds, position, fetched_at
+        ) VALUES (1, 'a', 'A', 'Artist', '', 0, 0, '2026-10-01 10:00:00');
+        CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL);
+        INSERT INTO alembic_version VALUES ('a1b2c3d4e5f6');
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    _alembic(db_url, "upgrade", "b2c3d4e5f6a7")
+
+    conn = sqlite3.connect(db_path)
+    synced = [
+        r[0]
+        for r in conn.execute(
+            "SELECT synced_at FROM playlist ORDER BY id"
+        ).fetchall()
+    ]
+    revision = conn.execute(
+        "SELECT version_num FROM alembic_version"
+    ).fetchall()
+    conn.close()
+    assert synced == ["2026-10-01 10:00:00", None]
+    assert revision == [("b2c3d4e5f6a7",)]
+
+
 def test_delete_playlist_leaves_other_playlists_tracks(tmp_path, monkeypatch):
     client, engine = _client(tmp_path)
     _login(client)
@@ -1102,3 +1285,129 @@ def test_next_prev_unknown_genre_and_empty_genre(tmp_path):
         client.post("/api/studio/playback/next", json={"genre_id": empty}).status_code
         == 400
     )
+
+
+def test_create_genre_with_explicit_color(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    resp = client.post(
+        "/api/studio/genres",
+        json={"name": "Chill", "slug": "chill", "color": "#123abc"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["color"] == "#123abc"
+    upper = client.post(
+        "/api/studio/genres",
+        json={"name": "Warm", "slug": "warm", "color": "#FF00FF"},
+    )
+    assert upper.status_code == 201
+    assert upper.json()["color"] == "#ff00ff"
+
+
+def test_create_genre_without_color_gets_first_unused_palette(tmp_path):
+    from app.models import GENRE_PALETTE
+
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    first = client.post("/api/studio/genres", json={"name": "A", "slug": "a"}).json()
+    second = client.post("/api/studio/genres", json={"name": "B", "slug": "b"}).json()
+    assert first["color"] == GENRE_PALETTE[0]
+    assert second["color"] == GENRE_PALETTE[1]
+
+
+def test_update_genre_color(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    gid = client.post("/api/studio/genres", json={"name": "A", "slug": "a"}).json()["id"]
+    resp = client.put(f"/api/studio/genres/{gid}", json={"color": "#ff00ff"})
+    assert resp.status_code == 200
+    assert resp.json()["color"] == "#ff00ff"
+
+
+def test_invalid_color_rejected(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    resp = client.post(
+        "/api/studio/genres", json={"name": "A", "slug": "a", "color": "red"}
+    )
+    assert resp.status_code == 422
+    newline = client.post(
+        "/api/studio/genres", json={"name": "B", "slug": "b", "color": "#123abc\n"}
+    )
+    assert newline.status_code == 422
+
+
+def test_public_genre_list_includes_color(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    client.post("/api/studio/genres", json={"name": "Chill", "slug": "chill"})
+    listed = client.get("/api/genres").json()
+    assert listed[0]["color"]
+
+
+def test_palette_backfill_migration(tmp_path):
+    import sqlite3
+    from pathlib import Path
+
+    BACKEND_DIR = Path(__file__).resolve().parents[1]
+
+    def _alembic(db_url: str, *args: str) -> None:
+        import os
+        import subprocess
+        import sys
+
+        env = dict(os.environ)
+        env["DATABASE_URL"] = db_url
+        subprocess.run(
+            [sys.executable, "-m", "alembic", *args],
+            cwd=str(BACKEND_DIR),
+            env=env,
+            check=True,
+            capture_output=True,
+        )
+
+    db_path = tmp_path / "pre.db"
+    db_url = f"sqlite:///{db_path}"
+    conn = sqlite3.connect(db_path)
+    conn.executescript(
+        """
+        CREATE TABLE genre (
+            id INTEGER PRIMARY KEY, name VARCHAR NOT NULL,
+            slug VARCHAR NOT NULL, is_default BOOLEAN,
+            sort_order INTEGER
+        );
+        INSERT INTO genre (name, slug, is_default, sort_order)
+            VALUES ('A','a',0,0), ('B','b',0,0);
+        CREATE TABLE alembic_version (version_num VARCHAR(32) NOT NULL);
+        INSERT INTO alembic_version VALUES ('e5f6a7b8c9d0');
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    _alembic(db_url, "upgrade", "a1b2c3d4e5f6")
+
+    conn = sqlite3.connect(db_path)
+    colors = dict(conn.execute("SELECT name, color FROM genre").fetchall())
+    conn.close()
+    assert colors["A"] and colors["B"]
+    assert not list(
+        set(colors.values())
+        - set(
+            [
+                "#f2a33a",
+                "#e0654a",
+                "#8fb996",
+                "#5fb3b3",
+                "#6fa3e0",
+                "#a58be0",
+                "#e58fb0",
+                "#d8c18a",
+            ]
+        )
+    )
+
+    from app.models import GENRE_PALETTE
+
+    assert colors["A"] == GENRE_PALETTE[0]
+    assert colors["B"] == GENRE_PALETTE[1]

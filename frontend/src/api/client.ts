@@ -108,14 +108,14 @@ export const api = {
     }),
   listChannelPlaylists: () =>
     request<ChannelPlaylist[]>("/studio/youtube/playlists"),
-  createGenre: (name: string, slug: string) =>
+  createGenre: (name: string, slug: string, color?: string) =>
     request<Genre>("/studio/genres", {
       method: "POST",
-      body: JSON.stringify({ name, slug }),
+      body: JSON.stringify({ name, slug, ...(color ? { color } : {}) }),
     }),
   updateGenre: (
     id: number,
-    updates: Partial<Pick<Genre, "name" | "slug" | "is_default">>,
+    updates: Partial<Pick<Genre, "name" | "slug" | "is_default" | "color">>,
   ) =>
     request<Genre>(`/studio/genres/${id}`, {
       method: "PUT",
@@ -145,6 +145,11 @@ export const api = {
     ),
   deletePlaylist: (id: number) =>
     request<{ status: string }>(`/studio/playlists/${id}`, { method: "DELETE" }),
+  updatePlaylist: (id: number, updates: { genre_id: number }) =>
+    request<{ status: string }>(`/studio/playlists/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(updates),
+    }),
   listSlots: () => request<ScheduleSlot[]>("/studio/slots"),
   createSlot: (slot: {
     genre_id: number;
