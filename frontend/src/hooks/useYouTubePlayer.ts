@@ -89,7 +89,6 @@ export interface PlayerControls {
   ready: boolean;
   playing: boolean;
   progress: number;
-  error: boolean;
   muted: boolean;
   volume: number;
   track: Track | null;
@@ -112,7 +111,6 @@ export function useYouTubePlayer(
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState(false);
   const [muted, setMuted] = useState(() => storedMuted());
   const [volume, setVolumeState] = useState(() => storedVolume());
 
@@ -122,8 +120,48 @@ export function useYouTubePlayer(
   mutedRef.current = muted;
   const currentVideoRef = useRef<string | null>(null);
   const endedRef = useRef(false);
+  const retryAttemptRef = useRef(0);
+  const retryTimerRef = useRef<number | null>(null);
 
   const hasTrack = broadcast?.track != null;
+
+  const clearRetry = useCallback(() => {
+    if (retryTimerRef.current !== null) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+  }, []);
+
+  const reloadCurrent = useCallback(() => {
+    const player = playerRef.current;
+    const current = broadcastRef.current;
+    if (!player || !current?.track || !isPlayerReady(player)) return;
+    try {
+      player.loadVideoById({
+        videoId: current.track.youtube_video_id,
+        startSeconds: targetFor(current),
+      });
+      player.playVideo();
+    } catch {
+      // The iframe may still be initialising; the next attempt retries.
+    }
+  }, []);
+
+  const scheduleRetry = useCallback(() => {
+    if (retryTimerRef.current !== null) return;
+    const attempt = retryAttemptRef.current;
+    retryAttemptRef.current = attempt + 1;
+    const delay = Math.min(1000 * 2 ** attempt, 15000);
+    retryTimerRef.current = window.setTimeout(() => {
+      retryTimerRef.current = null;
+      reloadCurrent();
+    }, delay);
+  }, [reloadCurrent]);
+
+  const resetRetry = useCallback(() => {
+    retryAttemptRef.current = 0;
+    clearRetry();
+  }, [clearRetry]);
 
   useEffect(() => {
     let cancelled = false;
@@ -143,7 +181,6 @@ export function useYouTubePlayer(
     const start = targetFor(current);
     const yt = window.YT;
     let fallbackTimer: number | null = null;
-    setError(false);
     const player = new yt.Player(containerId, {
       height: "1",
       width: "1",
@@ -179,19 +216,23 @@ export function useYouTubePlayer(
         onStateChange: (e: { data: number }) => {
           const isPlaying = e.data === yt.PlayerState.PLAYING;
           setPlaying(isPlaying);
-          if (isPlaying) endedRef.current = false;
+          if (isPlaying) {
+            endedRef.current = false;
+            resetRetry();
+          }
           if (e.data === yt.PlayerState.ENDED) {
             endedRef.current = true;
             onEndedRef.current();
           }
         },
-        onError: () => setError(true),
+        onError: () => scheduleRetry(),
       },
     });
     playerRef.current = player;
     currentVideoRef.current = initialId;
     return () => {
       if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
+      clearRetry();
       playerRef.current = null;
       currentVideoRef.current = null;
       try {
@@ -202,7 +243,7 @@ export function useYouTubePlayer(
       setReady(false);
       setPlaying(false);
     };
-  }, [apiReady, hasTrack, containerId]);
+  }, [apiReady, hasTrack, containerId, scheduleRetry, resetRetry, clearRetry]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -214,7 +255,7 @@ export function useYouTubePlayer(
     if (currentVideoRef.current !== videoId) {
       currentVideoRef.current = videoId;
       endedRef.current = false;
-      setError(false);
+      resetRetry();
       player.loadVideoById({ videoId, startSeconds: target });
       return;
     }
@@ -278,7 +319,6 @@ export function useYouTubePlayer(
     ready,
     playing,
     progress,
-    error,
     muted,
     volume,
     track: broadcast?.track ?? null,

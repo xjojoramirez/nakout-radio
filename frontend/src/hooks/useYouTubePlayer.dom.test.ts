@@ -115,6 +115,78 @@ describe("useYouTubePlayer", () => {
     expect(onEnded).toHaveBeenCalled();
   });
 
+  it("auto-reloads the current track after the player errors", async () => {
+    vi.useFakeTimers();
+    renderHook(() => useYouTubePlayer("yt-player", broadcast(), vi.fn()));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    act(() => {
+      players[0].opts.events.onError();
+    });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].loadVideoById).toHaveBeenCalledWith({
+      videoId: "a",
+      startSeconds: expect.any(Number),
+    });
+  });
+
+  it("backs off between repeated errors", async () => {
+    vi.useFakeTimers();
+    renderHook(() => useYouTubePlayer("yt-player", broadcast(), vi.fn()));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    const onError = players[0].opts.events.onError;
+    act(() => {
+      onError();
+    });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].loadVideoById).toHaveBeenCalledTimes(1);
+    act(() => {
+      onError();
+    });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].loadVideoById).toHaveBeenCalledTimes(1);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].loadVideoById).toHaveBeenCalledTimes(2);
+  });
+
+  it("resets the retry backoff once playback resumes", async () => {
+    vi.useFakeTimers();
+    renderHook(() => useYouTubePlayer("yt-player", broadcast(), vi.fn()));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    act(() => {
+      players[0].opts.events.onError();
+    });
+    act(() => {
+      players[0].opts.events.onStateChange({ data: 1 });
+    });
+    act(() => {
+      players[0].opts.events.onError();
+    });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].loadVideoById).toHaveBeenCalledTimes(1);
+  });
+
   it("starts muted on first visit", () => {
     const { result } = renderHook(() =>
       useYouTubePlayer("yt-player", broadcast(), vi.fn()),

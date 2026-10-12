@@ -118,15 +118,21 @@ def _parse_iso_duration(value: str) -> int:
     )
 
 
-def fetch_video_durations(
+@dataclass
+class VideoInfo:
+    duration_seconds: int = 0
+    embeddable: bool = True
+
+
+def fetch_video_info(
     video_ids: list[str], api_key: str, client: httpx.Client
-) -> dict[str, int]:
-    durations: dict[str, int] = {}
+) -> dict[str, VideoInfo]:
+    infos: dict[str, VideoInfo] = {}
     unique = list(dict.fromkeys(video_ids))
     for start in range(0, len(unique), 50):
         batch = unique[start : start + 50]
         params = {
-            "part": "contentDetails",
+            "part": "contentDetails,status",
             "id": ",".join(batch),
             "key": api_key,
         }
@@ -137,8 +143,36 @@ def fetch_video_durations(
             if not video_id:
                 continue
             content = item.get("contentDetails") or {}
-            durations[video_id] = _parse_iso_duration(content.get("duration", ""))
-    return durations
+            status = item.get("status") or {}
+            infos[video_id] = VideoInfo(
+                duration_seconds=_parse_iso_duration(content.get("duration", "")),
+                embeddable=bool(status.get("embeddable", True)),
+            )
+    return infos
+
+
+def fetch_playlist_tracks(
+    playlist_id: str, api_key: str, client: httpx.Client
+) -> list[TrackData]:
+    """Fetch a playlist's tracks, keeping only those playable in an embed.
+
+    YouTube omits deleted/private videos from ``videos.list`` and reports
+    ``status.embeddable == false`` when the owner disabled embedding. Both make
+    the listener iframe fire ``onError``, so they are dropped here rather than
+    being served as a permanent "Retry" dead end.
+    """
+    tracks = fetch_playlist_items(playlist_id, api_key, client)
+    infos = fetch_video_info(
+        [t.youtube_video_id for t in tracks], api_key, client
+    )
+    playable: list[TrackData] = []
+    for track in tracks:
+        info = infos.get(track.youtube_video_id)
+        if info is None or not info.embeddable:
+            continue
+        track.duration_seconds = info.duration_seconds
+        playable.append(track)
+    return playable
 
 
 def fetch_channel_playlists(
