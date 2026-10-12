@@ -123,18 +123,18 @@ describe("RadioPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("offers Retry when the player errors out", async () => {
+  it("keeps the tune control when the player errors (no Retry button)", async () => {
     render(<RadioPage />);
-    await screen.findByRole("button", { name: "Tune in" });
     await screen.findByText("live"); // broadcast loaded; player effect ran
     const instances = FakePlayer.instances;
     const player = instances[instances.length - 1];
     if (!player) throw new Error("player not created");
     player.opts.events?.onError?.();
-    const retry = await screen.findByRole("button", { name: "Retry" });
-    const before = mocked.now.mock.calls.length;
-    fireEvent.click(retry);
-    expect(mocked.now.mock.calls.length).toBeGreaterThan(before);
+    expect(
+      screen.queryByRole("button", { name: "Retry" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tune in" })).toBeInTheDocument();
+    expect(screen.getByText("live")).toBeInTheDocument();
   });
 
   it("offers a volume knob slider", async () => {

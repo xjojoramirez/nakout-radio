@@ -414,8 +414,8 @@ def test_parse_iso_duration():
     assert _parse_iso_duration("garbage") == 0
 
 
-def test_fetch_video_durations_parses():
-    from app.youtube import fetch_video_durations
+def test_fetch_video_info_parses_duration_and_embeddable():
+    from app.youtube import VideoInfo, fetch_video_info
 
     calls = []
 
@@ -431,20 +431,28 @@ def test_fetch_video_durations_parses():
                 def json(self_inner):
                     return {
                         "items": [
-                            {"id": v, "contentDetails": {"duration": "PT2M"}}
+                            {
+                                "id": v,
+                                "contentDetails": {"duration": "PT2M"},
+                                "status": {"embeddable": v != "b"},
+                            }
                             for v in ids
                         ]
                     }
 
             return R()
 
-    durations = fetch_video_durations(["a", "b"], "key", FakeClient())
-    assert durations == {"a": 120, "b": 120}
+    info = fetch_video_info(["a", "b"], "key", FakeClient())
+    assert info == {
+        "a": VideoInfo(duration_seconds=120, embeddable=True),
+        "b": VideoInfo(duration_seconds=120, embeddable=False),
+    }
     assert calls[0]["id"] == "a,b"
+    assert calls[0]["part"] == "contentDetails,status"
 
 
-def test_fetch_video_durations_chunks_batches():
-    from app.youtube import fetch_video_durations
+def test_fetch_video_info_chunks_batches():
+    from app.youtube import fetch_video_info
 
     seen = []
 
@@ -460,7 +468,11 @@ def test_fetch_video_durations_chunks_batches():
                 def json(self_inner):
                     return {
                         "items": [
-                            {"id": v, "contentDetails": {"duration": "PT1S"}}
+                            {
+                                "id": v,
+                                "contentDetails": {"duration": "PT1S"},
+                                "status": {"embeddable": True},
+                            }
                             for v in ids
                         ]
                     }
@@ -468,7 +480,92 @@ def test_fetch_video_durations_chunks_batches():
             return R()
 
     ids = [f"v{i}" for i in range(120)]
-    durations = fetch_video_durations(ids, "key", FakeClient())
-    assert len(durations) == 120
+    info = fetch_video_info(ids, "key", FakeClient())
+    assert len(info) == 120
     assert len(seen) == 3
     assert len(seen[0].split(",")) == 50
+
+
+def test_fetch_video_info_defaults_embeddable_when_status_missing():
+    from app.youtube import fetch_video_info
+
+    class FakeClient:
+        def get(self, url, params=None):
+            class R:
+                def raise_for_status(self):
+                    return None
+
+                def json(self_inner):
+                    return {
+                        "items": [
+                            {"id": "a", "contentDetails": {"duration": "PT3M"}}
+                        ]
+                    }
+
+            return R()
+
+    info = fetch_video_info(["a"], "key", FakeClient())
+    assert info["a"].embeddable is True
+    assert info["a"].duration_seconds == 180
+
+
+def test_fetch_playlist_tracks_drops_unembeddable_and_missing():
+    from app.youtube import fetch_playlist_tracks
+
+    playlist_payload = {
+        "items": [
+            {
+                "snippet": {
+                    "title": "Good",
+                    "position": 0,
+                    "resourceId": {"videoId": "good"},
+                }
+            },
+            {
+                "snippet": {
+                    "title": "Blocked",
+                    "position": 1,
+                    "resourceId": {"videoId": "blocked"},
+                }
+            },
+            {
+                "snippet": {
+                    "title": "Gone",
+                    "position": 2,
+                    "resourceId": {"videoId": "gone"},
+                }
+            },
+        ]
+    }
+    videos_payload = {
+        "items": [
+            {
+                "id": "good",
+                "contentDetails": {"duration": "PT4M"},
+                "status": {"embeddable": True},
+            },
+            {
+                "id": "blocked",
+                "contentDetails": {"duration": "PT4M"},
+                "status": {"embeddable": False},
+            },
+        ]
+    }
+
+    class FakeClient:
+        def get(self, url, params=None):
+            payload = videos_payload if "videos" in url else playlist_payload
+
+            class R:
+                def raise_for_status(self):
+                    return None
+
+                def json(self_inner):
+                    return payload
+
+            return R()
+
+    tracks = fetch_playlist_tracks("PL1", "key", FakeClient())
+    assert [t.youtube_video_id for t in tracks] == ["good"]
+    assert tracks[0].duration_seconds == 240
+

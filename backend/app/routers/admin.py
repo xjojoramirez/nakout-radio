@@ -51,8 +51,7 @@ from app.sync import sync_playlist
 from app.youtube import (
     TrackData,
     fetch_channel_playlists,
-    fetch_playlist_items,
-    fetch_video_durations,
+    fetch_playlist_tracks,
     parse_playlist_id,
     resolve_channel_id,
 )
@@ -144,13 +143,9 @@ def _build_fetch() -> Callable[[str], list[TrackData]]:
 
     def fetch(playlist_id: str) -> list[TrackData]:
         with httpx.Client(timeout=10) as client:
-            tracks = fetch_playlist_items(playlist_id, settings.yt_api_key, client)
-            durations = fetch_video_durations(
-                [t.youtube_video_id for t in tracks], settings.yt_api_key, client
+            return fetch_playlist_tracks(
+                playlist_id, settings.yt_api_key, client
             )
-            for track in tracks:
-                track.duration_seconds = durations.get(track.youtube_video_id, 0)
-            return tracks
 
     return fetch
 
