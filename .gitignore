@@ -8,5 +8,5 @@ node_modules/
 dist/
 .venv/
 .superpowers/
-UI reference/
+dev reference/
 .DS_Store

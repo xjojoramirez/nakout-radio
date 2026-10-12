@@ -16,7 +16,7 @@ export function RadioPage() {
   const player = useYouTubePlayer("yt-player", state, refresh);
 
   const offline = state != null && (state.source === "none" || !state.track);
-  const track = player.error ? null : player.track;
+  const track = player.track;
   const genreName = state?.genre?.name ?? null;
   const duration = track?.duration_seconds ?? 0;
   const pct =
@@ -115,20 +115,14 @@ export function RadioPage() {
           )}
 
           <div className="np-controls">
-            {player.error && !offline ? (
-              <button type="button" className="tune-btn" onClick={refresh}>
-                Retry
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="tune-btn"
-                onClick={player.toggleMute}
-                disabled={offline}
-              >
-                {player.muted ? "Tune in" : "Tune out"}
-              </button>
-            )}
+            <button
+              type="button"
+              className="tune-btn"
+              onClick={player.toggleMute}
+              disabled={offline}
+            >
+              {player.muted ? "Tune in" : "Tune out"}
+            </button>
           </div>
 
           <section className="sched" aria-label="Today's schedule">

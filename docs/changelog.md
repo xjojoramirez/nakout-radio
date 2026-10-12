@@ -3,6 +3,46 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-12 — playback: never serve non-embeddable tracks; listener auto-retries instead of dead-ending on Retry
+
+Fixes the weekend "Tune in 0:00 / 0:00 + Retry" dead end. Root cause:
+the listener "player" is a YouTube IFrame; `onError` (embedding
+disabled / removed / age- or region-locked) left the page stuck because
+the old Retry button only re-polled `/api/now`, and `setError(false)`
+ran only when the video id changed — so Retry was a no-op while the
+same track stayed current.
+
+- `backend/app/youtube.py`: replaced `fetch_video_durations` with
+  `fetch_video_info` (a `videos.list` call now requesting
+  `part=contentDetails,status`, returning a `VideoInfo` with
+  `duration_seconds` + `embeddable`), and added `fetch_playlist_tracks`
+  which drops any track whose video is `embeddable == false` or omitted
+  from `videos.list` (deleted/private). This is the real fix: bad
+  videos never enter `TrackCache`.
+  - Operational note: filtering happens at sync time, so admins should
+    re-run Sync (per-playlist refresh or "sync all") once after deploy
+    to purge already-cached non-embeddable tracks.
+- `backend/app/routers/admin.py`: `_build_fetch` now delegates to
+  `fetch_playlist_tracks`, so create/refresh/sync-all all filter.
+- `frontend/src/hooks/useYouTubePlayer.ts`: removed the `error` control
+  and added automatic recovery — `onError` schedules
+  `loadVideoById` of the current track with capped exponential backoff
+  (1s → 15s), reset on `PLAYING` and on track change; the timer is
+  cleared on unmount.
+- `frontend/src/pages/RadioPage.tsx`: removed the Retry button; the
+  track info is no longer hidden behind `player.error`.
+- Tests: `backend/tests/test_youtube.py` (video-info parse, batching,
+  embeddable-default, playlist filtering), `frontend/src/hooks/
+  useYouTubePlayer.dom.test.ts` (auto-reload on error, backoff,
+  backoff reset on resume), `frontend/src/pages/RadioPage.dom.test.tsx`
+  (no Retry button after error, tune control + track remain).
+- **Container restart required?** Yes — both halves changed:
+  `docker compose up -d --build backend frontend` (backend filters on
+  sync, frontend changes the served bundle). Hard-refresh after.
+- Verification: `python -m pytest -q` 223 passed; `npx vitest run`
+  234 passed in 28 files; `npm run typecheck` clean.
+
+
 ## 2026-10-10 — tests: de-flake NowPlayingPanel mobile-scroll assertion
 
 - `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`: the
