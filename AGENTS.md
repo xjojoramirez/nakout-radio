@@ -28,3 +28,16 @@ Every time code or configuration is changed, add an entry to `docs/changelog.md`
   rebuilt and the container recreated.
 - The `frontend` image bakes the built `dist/` bundle in at build time.
 - After restarting the frontend, hard-refresh the browser (Ctrl+Shift+R).
+
+## Git & GitHub accounts
+
+All git and GitHub activity in this project must use the **xjojoramirez**
+account — never `jojoxprimary`:
+
+- Commits: the repo-local git config is
+  `Jojo Ramirez <31147978+xjojoramirez@users.noreply.github.com>`.
+- `gh` CLI: `gh auth switch --user xjojoramirez` and confirm the active
+  account before any `gh` command (PRs, issues, API calls).
+- `main` is protected by the repository ruleset `main-protection`
+  (no force-pushes or deletion; changes land via pull requests) — push a
+  branch and open a PR instead of committing to `main` directly.
