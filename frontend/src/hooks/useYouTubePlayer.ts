@@ -125,6 +125,7 @@ export function useYouTubePlayer(
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
   const currentVideoRef = useRef<string | null>(null);
+  const preloadedVideoRef = useRef<string | null>(null);
   const endedRef = useRef(false);
   const retryAttemptRef = useRef(0);
   const retryTimerRef = useRef<number | null>(null);
@@ -139,10 +140,31 @@ export function useYouTubePlayer(
     }
   }, []);
 
+  const preloadNext = useCallback((next: Track) => {
+    const player = playerRef.current;
+    if (!player || !isPlayerReady(player)) return;
+    try {
+      player.mute();
+      player.loadVideoById({
+        videoId: next.youtube_video_id,
+        startSeconds: 0,
+      });
+      player.pauseVideo();
+    } catch {
+      return;
+    }
+    preloadedVideoRef.current = next.youtube_video_id;
+  }, []);
+
   const reloadCurrent = useCallback(() => {
     const player = playerRef.current;
     const current = broadcastRef.current;
-    if (!player || !current?.track || !isPlayerReady(player)) return;
+    if (!player || !isPlayerReady(player)) return;
+    if (current?.phase === "gap" && current.nextTrack) {
+      preloadNext(current.nextTrack);
+      return;
+    }
+    if (!current?.track) return;
     try {
       player.loadVideoById({
         videoId: current.track.youtube_video_id,
@@ -152,7 +174,7 @@ export function useYouTubePlayer(
     } catch {
       // The iframe may still be initialising; the next attempt retries.
     }
-  }, []);
+  }, [preloadNext]);
 
   const scheduleRetry = useCallback(() => {
     if (retryTimerRef.current !== null) return;
@@ -256,9 +278,21 @@ export function useYouTubePlayer(
     const player = playerRef.current;
     if (!player || !broadcast?.track) return;
     if (!isPlayerReady(player)) return;
+    const yt = window.YT;
+
+    if (broadcast.phase === "gap") {
+      if (yt && player.getPlayerState() === yt.PlayerState.PLAYING) {
+        player.pauseVideo();
+      }
+      if (!broadcast.nextTrack) return;
+      if (preloadedVideoRef.current !== broadcast.nextTrack.youtube_video_id) {
+        preloadNext(broadcast.nextTrack);
+      }
+      return;
+    }
+
     const videoId = broadcast.track.youtube_video_id;
     const target = targetFor(broadcast);
-    const yt = window.YT;
     if (currentVideoRef.current !== videoId) {
       currentVideoRef.current = videoId;
       endedRef.current = false;
@@ -274,7 +308,7 @@ export function useYouTubePlayer(
     } else if (state === yt.PlayerState.PLAYING && drift > DRIFT_THRESHOLD) {
       player.seekTo(target, true);
     }
-  }, [broadcast]);
+  }, [broadcast, preloadNext, resetRetry]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -293,29 +327,31 @@ export function useYouTubePlayer(
       if (current?.track) {
         setProgress(player.getCurrentTime());
         const playerState = player.getPlayerState();
-        if (playerState === yt.PlayerState.PLAYING) {
-          lastResumeAtRef.current = 0;
-          const target = targetFor(current);
-          if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
-            player.seekTo(target, true);
-          }
-        } else if (
-          playerState === yt.PlayerState.PAUSED ||
-          playerState === yt.PlayerState.CUED
-        ) {
-          // Mobile OSes pause the iframe player when the page is suspended
-          // (screen lock, app switch). Resume at the live position so the
-          // listener rejoins the broadcast; throttled in case the browser
-          // keeps blocking playback.
-          const now = Date.now();
-          if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
-            lastResumeAtRef.current = now;
-            player.seekTo(targetFor(current), true);
-            player.playVideo();
+        if (current.phase !== "gap") {
+          if (playerState === yt.PlayerState.PLAYING) {
+            lastResumeAtRef.current = 0;
+            const target = targetFor(current);
+            if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
+              player.seekTo(target, true);
+            }
+          } else if (
+            playerState === yt.PlayerState.PAUSED ||
+            playerState === yt.PlayerState.CUED
+          ) {
+            // Mobile OSes pause the iframe player when the page is suspended
+            // (screen lock, app switch). Resume at the live position so the
+            // listener rejoins the broadcast; throttled in case the browser
+            // keeps blocking playback.
+            const now = Date.now();
+            if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
+              lastResumeAtRef.current = now;
+              player.seekTo(targetFor(current), true);
+              player.playVideo();
+            }
           }
         }
       }
-      if (endedRef.current) onEndedRef.current();
+      if (endedRef.current && current?.phase !== "gap") onEndedRef.current();
     }, 1000);
     return () => window.clearInterval(timer);
   }, []);

@@ -25,6 +25,10 @@ function broadcast(overrides: Partial<BroadcastState> = {}): BroadcastState {
   };
 }
 
+function nextTrack() {
+  return { ...broadcast().track!, youtube_video_id: "b", title: "b" };
+}
+
 describe("useYouTubePlayer", () => {
   let players: any[];
 
@@ -479,5 +483,124 @@ describe("useYouTubePlayer", () => {
       vi.advanceTimersByTime(1000);
     });
     expect(player.seekTo).toHaveBeenCalled();
+  });
+
+  it("preloads the next track muted and paused during a gap", async () => {
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      { initialProps: { b: broadcast() } },
+    );
+    await waitFor(() => expect(players.length).toBe(1));
+    rerender({
+      b: broadcast({
+        phase: "gap",
+        nextTrack: nextTrack(),
+        secondsUntilStart: 2,
+        fetchedAt: Date.now(),
+      }),
+    });
+    await waitFor(() =>
+      expect(players[0].loadVideoById).toHaveBeenCalledWith({
+        videoId: "b",
+        startSeconds: 0,
+      }),
+    );
+    expect(players[0].mute).toHaveBeenCalled();
+    expect(players[0].pauseVideo).toHaveBeenCalled();
+    expect(players[0].playVideo).not.toHaveBeenCalled();
+  });
+
+  it("does not drift-correct or auto-resume during a gap", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      { initialProps: { b: broadcast({ offset: 10 }) } },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    rerender({
+      b: broadcast({
+        phase: "gap",
+        nextTrack: nextTrack(),
+        secondsUntilStart: 5,
+        fetchedAt: Date.now(),
+      }),
+    });
+    players[0].seekTo.mockClear();
+    players[0].playVideo.mockClear();
+    players[0].getPlayerState.mockReturnValue(2); // PAUSED during preload
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(players[0].seekTo).not.toHaveBeenCalled();
+    expect(players[0].playVideo).not.toHaveBeenCalled();
+  });
+
+  it("stops requesting a resync while the gap is on", async () => {
+    vi.useFakeTimers();
+    const onEnded = vi.fn();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, onEnded),
+      { initialProps: { b: broadcast() } },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    act(() => {
+      players[0].opts.events.onStateChange({ data: 8 });
+    });
+    expect(onEnded).toHaveBeenCalledTimes(1);
+    rerender({
+      b: broadcast({
+        phase: "gap",
+        nextTrack: nextTrack(),
+        secondsUntilStart: 5,
+        fetchedAt: Date.now(),
+      }),
+    });
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(onEnded).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries the upcoming track when preloading fails during a gap", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      { initialProps: { b: broadcast() } },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    rerender({
+      b: broadcast({
+        phase: "gap",
+        nextTrack: nextTrack(),
+        secondsUntilStart: 10,
+        fetchedAt: Date.now(),
+      }),
+    });
+    act(() => {
+      players[0].opts.events.onError();
+    });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].loadVideoById).toHaveBeenLastCalledWith({
+      videoId: "b",
+      startSeconds: 0,
+    });
   });
 });
