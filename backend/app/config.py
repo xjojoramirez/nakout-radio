@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./radio.db"
     frontend_origin: str = "http://localhost:5173"
     cache_ttl_minutes: int = 60
+    track_gap_seconds: float = 2.0
     cookie_secure: bool = True
 
     @field_validator("yt_api_key", "admin_password", "secret_key")
@@ -31,6 +32,13 @@ class Settings(BaseSettings):
             ZoneInfo(v)
         except Exception as exc:
             raise ValueError(f"invalid timezone: {v}") from exc
+        return v
+
+    @field_validator("track_gap_seconds")
+    @classmethod
+    def _valid_gap(cls, v: float) -> float:
+        if not 0 <= v <= 30:
+            raise ValueError("track_gap_seconds must be between 0 and 30")
         return v
 
 
