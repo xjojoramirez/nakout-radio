@@ -13,6 +13,36 @@ restart is required (see `AGENTS.md` for the restart commands).
   served changes.
 - Verification: none (no code changed).
 
+## 2026-10-13 — listener playback: auto-resume after mobile suspends the player (issue #4)
+
+Mobile listeners could return to a silent radio page while the backend
+kept advancing: when the OS/browser suspends the tab mid-song (screen
+lock, app switch, network stall — the `wss://…/api/ws/radio` "opening
+handshake timed out" console log is part of that same suspension), the
+YouTube iframe is left PAUSED/CUED. The sync logic only ever corrected
+a PLAYING player (drift seek) or reloaded an ENDED one, so if the
+*same* track was still live on return, nothing ever resumed playback —
+"sometimes stops playing" until the next track change or reload.
+
+- `frontend/src/hooks/useYouTubePlayer.ts`: the 1 s reconcile tick now
+  resumes a PAUSED or CUED player while a live track is current — it
+  seeks to the live position and calls `playVideo()`. Throttled to one
+  attempt per 3 s while the browser keeps the player stopped, reset as
+  soon as PLAYING is observed. BUFFERING is left untouched and ENDED
+  keeps its existing reload path.
+- Tests: `useYouTubePlayer.dom.test.ts` (resume on pause, throttle,
+  throttle reset after resume, buffering untouched) plus PAUSED/CUED in
+  the player-state fixtures of `RadioPage.dom.test.tsx`.
+- WebSocket reconnect needs no change: close/error already reconnects
+  with capped backoff and the 5 s `/api/now` poll covers state while the
+  socket is down; Chrome's handshake-timeout message is a symptom of the
+  suspension, not the cause of the silence.
+- **Container restart required (frontend):**
+  `docker compose up -d --build frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: `npx vitest run` 238 passed in 28 files (was 234; +4 new
+  tests), `npm run typecheck` + `npm run build` clean.
+
 ## 2026-10-12 — playback: never serve non-embeddable tracks; listener auto-retries instead of dead-ending on Retry
 
 Fixes the weekend "Tune in 0:00 / 0:00 + Retry" dead end. Root cause:
