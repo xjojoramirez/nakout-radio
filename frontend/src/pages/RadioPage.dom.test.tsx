@@ -82,7 +82,7 @@ beforeEach(() => {
   FakePlayer.instances = [];
   (globalThis as unknown as { WebSocket: unknown }).WebSocket = FakeWebSocket;
   (window as unknown as { YT: unknown }).YT = {
-    PlayerState: { PLAYING: 1, ENDED: 8 },
+    PlayerState: { PLAYING: 1, ENDED: 8, PAUSED: 2, CUED: 5 },
     Player: FakePlayer,
   };
   mocked.now.mockResolvedValue({
