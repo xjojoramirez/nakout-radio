@@ -3,6 +3,16 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-13 — docs: git/GitHub activity must use the xjojoramirez account
+
+- `AGENTS.md`: new "Git & GitHub accounts" section — all commits and
+  `gh` operations in this project run as xjojoramirez (never
+  jojoxprimary); documents the repo-local git identity, the `gh auth
+  switch` pre-flight, and the `main-protection` ruleset (PRs only).
+- **Container restart required?** No — documentation only, nothing
+  served changes.
+- Verification: none (no code changed).
+
 ## 2026-10-12 — playback: never serve non-embeddable tracks; listener auto-retries instead of dead-ending on Retry
 
 Fixes the weekend "Tune in 0:00 / 0:00 + Retry" dead end. Root cause:
