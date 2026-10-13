@@ -189,4 +189,29 @@ describe("RadioPage", () => {
     expect(screen.getByRole("button", { name: "Tune in" })).toBeDisabled();
     expect(screen.queryByText(/off air/i)).not.toBeInTheDocument();
   });
+
+  it("keeps the previous track visible during the gap without a progress bar", async () => {
+    mocked.now.mockResolvedValue({
+      genre: {
+        id: 1,
+        name: "Morning",
+        slug: "morning",
+        is_default: true,
+        track_count: 1,
+      },
+      track: track("prev"),
+      offset_seconds: 199,
+      server_time: "2026-01-01T00:00:00+00:00",
+      source: "default",
+      phase: "gap",
+      next_track: track("next"),
+      seconds_until_start: 1.5,
+    });
+    render(<RadioPage />);
+    expect(await screen.findByText("prev")).toBeInTheDocument();
+    expect(screen.getByText("On air")).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    expect(screen.queryByText("3:20")).not.toBeInTheDocument();
+    expect(screen.queryByText("next")).not.toBeInTheDocument();
+  });
 });
