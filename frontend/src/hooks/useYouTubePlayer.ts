@@ -6,6 +6,7 @@ const VOLUME_KEY = "nakout.volume";
 const MUTED_KEY = "nakout.muted";
 const DRIFT_THRESHOLD = 3;
 const AUTOPLAY_FALLBACK_MS = 1500;
+const RESUME_THROTTLE_MS = 3000;
 
 interface YTPlayer {
   loadVideoById: (opts: { videoId: string; startSeconds?: number }) => void;
@@ -22,7 +23,12 @@ interface YTPlayer {
 
 interface YTNamespace {
   Player: new (element: string | HTMLElement, options: unknown) => YTPlayer;
-  PlayerState: { PLAYING: number; ENDED: number };
+  PlayerState: {
+    PLAYING: number;
+    ENDED: number;
+    PAUSED: number;
+    CUED: number;
+  };
 }
 
 declare global {
@@ -122,6 +128,7 @@ export function useYouTubePlayer(
   const endedRef = useRef(false);
   const retryAttemptRef = useRef(0);
   const retryTimerRef = useRef<number | null>(null);
+  const lastResumeAtRef = useRef(0);
 
   const hasTrack = broadcast?.track != null;
 
@@ -285,10 +292,26 @@ export function useYouTubePlayer(
       const current = broadcastRef.current;
       if (current?.track) {
         setProgress(player.getCurrentTime());
-        if (player.getPlayerState() === yt.PlayerState.PLAYING) {
+        const playerState = player.getPlayerState();
+        if (playerState === yt.PlayerState.PLAYING) {
+          lastResumeAtRef.current = 0;
           const target = targetFor(current);
           if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
             player.seekTo(target, true);
+          }
+        } else if (
+          playerState === yt.PlayerState.PAUSED ||
+          playerState === yt.PlayerState.CUED
+        ) {
+          // Mobile OSes pause the iframe player when the page is suspended
+          // (screen lock, app switch). Resume at the live position so the
+          // listener rejoins the broadcast; throttled in case the browser
+          // keeps blocking playback.
+          const now = Date.now();
+          if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
+            lastResumeAtRef.current = now;
+            player.seekTo(targetFor(current), true);
+            player.playVideo();
           }
         }
       }

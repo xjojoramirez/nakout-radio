@@ -46,7 +46,7 @@ describe("useYouTubePlayer", () => {
       }
     }
     (window as unknown as { YT: unknown }).YT = {
-      PlayerState: { PLAYING: 1, ENDED: 8 },
+      PlayerState: { PLAYING: 1, ENDED: 8, PAUSED: 2, CUED: 5 },
       Player: FakePlayer,
     };
   });
@@ -268,6 +268,95 @@ describe("useYouTubePlayer", () => {
     expect(players[0].seekTo).not.toHaveBeenCalled();
   });
 
+  it("resumes a player the mobile OS paused while the track is still live", async () => {
+    vi.useFakeTimers();
+    renderHook(() =>
+      useYouTubePlayer("yt-player", broadcast({ offset: 10 }), vi.fn()),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    players[0].getPlayerState.mockReturnValue(2);
+    players[0].getCurrentTime.mockReturnValue(5);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].seekTo).toHaveBeenCalledWith(expect.any(Number), true);
+    expect(players[0].playVideo).toHaveBeenCalledTimes(1);
+  });
+
+  it("throttles resume attempts while the player stays non-playing", async () => {
+    vi.useFakeTimers();
+    renderHook(() => useYouTubePlayer("yt-player", broadcast(), vi.fn()));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    players[0].getPlayerState.mockReturnValue(2);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].playVideo).toHaveBeenCalledTimes(1);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].playVideo).toHaveBeenCalledTimes(1);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].playVideo).toHaveBeenCalledTimes(1);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].playVideo).toHaveBeenCalledTimes(2);
+  });
+
+  it("resumes immediately again after playback stops a second time", async () => {
+    vi.useFakeTimers();
+    renderHook(() => useYouTubePlayer("yt-player", broadcast(), vi.fn()));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    players[0].getPlayerState.mockReturnValue(2);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].playVideo).toHaveBeenCalledTimes(1);
+    players[0].getPlayerState.mockReturnValue(1);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    players[0].getPlayerState.mockReturnValue(5);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].playVideo).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not interfere while the player is buffering", async () => {
+    vi.useFakeTimers();
+    renderHook(() =>
+      useYouTubePlayer("yt-player", broadcast({ offset: 0 }), vi.fn()),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    players[0].getPlayerState.mockReturnValue(3);
+    players[0].getCurrentTime.mockReturnValue(0);
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(players[0].seekTo).not.toHaveBeenCalled();
+    expect(players[0].playVideo).not.toHaveBeenCalled();
+  });
+
   it("clears the autoplay fallback timer on unmount", async () => {
     vi.useFakeTimers();
     window.localStorage.setItem("nakout.muted", "false");
@@ -352,7 +441,7 @@ describe("useYouTubePlayer", () => {
       }
     }
     (window as unknown as { YT: unknown }).YT = {
-      PlayerState: { PLAYING: 1, ENDED: 8 },
+      PlayerState: { PLAYING: 1, ENDED: 8, PAUSED: 2, CUED: 5 },
       Player: LazyPlayer,
     };
 
