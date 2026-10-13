@@ -36,6 +36,9 @@ export interface BroadcastNow {
   offset_seconds: number;
   server_time: string;
   source: string;
+  phase: "playing" | "gap";
+  next_track: Track | null;
+  seconds_until_start: number | null;
 }
 
 export interface ChannelSource {

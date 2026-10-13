@@ -178,3 +178,101 @@ def test_manual_advance_wraps_to_first_track():
     assert result.index == 0
     assert result.started_at == START + timedelta(seconds=100)
     assert calls == []
+
+
+def test_gap_holds_previous_track_after_boundary():
+    state = _state(1, [10, 11], [100, 100], 0, START)
+    result = advance(
+        state,
+        START + timedelta(seconds=101),
+        lambda at: 1,
+        lambda sid: ([10, 11], [100, 100]),
+        gap_seconds=2.0,
+    )
+    assert result.index == 0
+    assert result.started_at == START
+
+
+def test_gap_shifts_next_track_start():
+    state = _state(1, [10, 11], [100, 100], 0, START)
+    result = advance(
+        state,
+        START + timedelta(seconds=102),
+        lambda at: 1,
+        lambda sid: ([10, 11], [100, 100]),
+        gap_seconds=2.0,
+    )
+    assert result.index == 1
+    assert result.started_at == START + timedelta(seconds=102)
+
+
+def test_gaps_accumulate_across_catch_up():
+    state = _state(1, [10, 11], [100, 100], 0, START)
+    result = advance(
+        state,
+        START + timedelta(seconds=204),
+        lambda at: 1,
+        lambda sid: ([10, 11], [100, 100]),
+        gap_seconds=2.0,
+    )
+    # 100s song + 2s gap + 100s song + 2s gap = 204s
+    assert result.index == 0
+    assert result.started_at == START + timedelta(seconds=204)
+
+
+def test_zero_gap_matches_previous_behavior():
+    state = _state(1, [10, 11], [100, 100], 0, START)
+    result = advance(
+        state,
+        START + timedelta(seconds=100),
+        lambda at: 1,
+        lambda sid: ([10, 11], [100, 100]),
+        gap_seconds=0.0,
+    )
+    assert result.index == 1
+    assert result.started_at == START + timedelta(seconds=100)
+
+
+def test_genre_switch_lands_after_the_gap():
+    state = _state(1, [10], [100], 0, START)
+    desired = _desired_at([(START, 1), (START + timedelta(seconds=101), 2)])
+    table = {1: ([10], [100]), 2: ([20, 21], [100, 100])}
+    result = advance(
+        state,
+        START + timedelta(seconds=150),
+        desired,
+        lambda sid: table[sid],
+        gap_seconds=2.0,
+    )
+    assert result.genre_id == 2
+    assert result.index == 0
+    # Song ends at 100s, the 2s gap runs to 102s, the new genre starts there.
+    assert result.started_at == START + timedelta(seconds=102)
+
+
+def test_manual_advance_includes_gap():
+    state = BroadcastState(
+        genre_id=1,
+        track_ids=[10, 11],
+        durations=[100, 100],
+        index=0,
+        started_at=START,
+        manual=True,
+    )
+    mid_gap = advance(
+        state,
+        START + timedelta(seconds=101),
+        lambda at: 1,
+        lambda sid: ([10, 11], [100, 100]),
+        gap_seconds=2.0,
+    )
+    assert mid_gap.index == 0
+    after = advance(
+        state,
+        START + timedelta(seconds=102),
+        lambda at: 1,
+        lambda sid: ([10, 11], [100, 100]),
+        gap_seconds=2.0,
+    )
+    assert after.index == 1
+    assert after.started_at == START + timedelta(seconds=102)

@@ -1,9 +1,9 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlmodel import Session, SQLModel, create_engine, delete, select
 
-from app.broadcast import _load, get_current
+from app.broadcast import _load, get_current, play_now
 from app.db import get_session
 from app.main import create_app
 from app.models import Playlist, ScheduleSlot, Setting, Genre, TrackCache
@@ -63,6 +63,9 @@ def test_now_returns_track_offset_and_server_time(tmp_path):
     assert body["track"]["youtube_video_id"] == "vid"
     assert 0 <= body["offset_seconds"] < 200
     assert body["server_time"]
+    assert body["phase"] == "playing"
+    assert body["next_track"] is None
+    assert body["seconds_until_start"] is None
 
 
 def test_now_off_air(tmp_path):
@@ -258,3 +261,75 @@ def test_build_now_matches_endpoint_shape(tmp_path):
     assert body.track is not None and body.track.youtube_video_id == "bv"
     assert body.offset_seconds == 0
     assert body.server_time
+
+
+def test_now_reports_gap_between_songs(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed_genre(s, "morning", default=True, duration=200)
+    with Session(engine) as s:
+        t0 = datetime(2026, 1, 1, 0, 0, 0)
+        first = get_current(s, t0)
+        assert first.phase == "playing"
+        assert first.next_track is None
+        assert first.seconds_until_start is None
+
+        during = get_current(s, t0 + timedelta(seconds=201))
+        assert during.phase == "gap"
+        assert during.track.youtube_video_id == "vid"  # previous track stays
+        assert during.next_track.youtube_video_id == "vid"  # wraps on one track
+        assert 0 < during.seconds_until_start <= 2
+        assert during.offset_seconds == 199
+
+        after = get_current(s, t0 + timedelta(seconds=202))
+        assert after.phase == "playing"
+        assert after.offset_seconds == 0
+
+
+def test_gap_after_manual_play_but_placement_is_instant(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed_genre(s, "morning", default=True, duration=200)
+        genre_id = st.id
+
+    with Session(engine) as s:
+        t0 = datetime(2026, 1, 1, 0, 0, 0)
+        play_now(s, genre_id, "vid", now=t0)
+        assert get_current(s, t0).phase == "playing"
+        assert get_current(s, t0 + timedelta(seconds=199)).phase == "playing"
+        assert get_current(s, t0 + timedelta(seconds=200)).phase == "gap"
+        started = get_current(s, t0 + timedelta(seconds=202))
+        assert started.phase == "playing"
+        assert started.offset_seconds == 0
+
+
+def test_now_endpoint_serves_gap_fields(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed_genre(s, "morning", default=True, duration=200)
+        track_id = s.exec(
+            select(TrackCache).where(TrackCache.youtube_video_id == "vid")
+        ).one().id
+        anchor = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
+            seconds=201
+        )
+        s.merge(
+            Setting(
+                key="broadcast_state",
+                value=json.dumps(
+                    {
+                        "genre_id": st.id,
+                        "track_ids": [track_id],
+                        "durations": [200],
+                        "index": 0,
+                        "started_at_utc": anchor.isoformat(),
+                    }
+                ),
+            )
+        )
+        s.commit()
+    body = _client(engine).get("/api/now").json()
+    assert body["phase"] == "gap"
+    assert body["track"]["youtube_video_id"] == "vid"
+    assert body["next_track"]["youtube_video_id"] == "vid"
+    assert 0 < body["seconds_until_start"] <= 2

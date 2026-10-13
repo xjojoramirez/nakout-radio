@@ -16,6 +16,7 @@ export function RadioPage() {
   const player = useYouTubePlayer("yt-player", state, refresh);
 
   const offline = state != null && (state.source === "none" || !state.track);
+  const gap = state?.phase === "gap";
   const track = player.track;
   const genreName = state?.genre?.name ?? null;
   const duration = track?.duration_seconds ?? 0;
@@ -33,10 +34,10 @@ export function RadioPage() {
         </div>
         <div className="onair">
           <span
-            className={player.playing ? "led on" : "led"}
+            className={player.playing || gap ? "led on" : "led"}
             aria-hidden="true"
           />
-          <span>{player.playing ? "On air" : "Standing by"}</span>
+          <span>{player.playing || gap ? "On air" : "Standing by"}</span>
           <span>{listeners} listening</span>
         </div>
       </header>
@@ -95,22 +96,24 @@ export function RadioPage() {
                   </div>
                 </div>
               </div>
-              <div>
-                <div className="np-bar">
-                  <div
-                    className="np-bar-fill"
-                    role="progressbar"
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={Math.round(pct)}
-                    style={{ width: `${pct}%` }}
-                  />
+              {!gap && (
+                <div>
+                  <div className="np-bar">
+                    <div
+                      className="np-bar-fill"
+                      role="progressbar"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={Math.round(pct)}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className="np-times">
+                    <span>{formatClock(player.progress)}</span>
+                    <span>{formatClock(duration)}</span>
+                  </div>
                 </div>
-                <div className="np-times">
-                  <span>{formatClock(player.progress)}</span>
-                  <span>{formatClock(duration)}</span>
-                </div>
-              </div>
+              )}
             </>
           )}
 

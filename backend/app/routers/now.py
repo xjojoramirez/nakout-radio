@@ -29,6 +29,11 @@ def build_now(session: Session, ts: datetime) -> NowOut:
         offset_seconds=state.offset_seconds,
         server_time=ts.replace(tzinfo=timezone.utc).isoformat(),
         source=state.source,
+        phase=state.phase,
+        next_track=(
+            TrackOut.model_validate(state.next_track) if state.next_track else None
+        ),
+        seconds_until_start=state.seconds_until_start,
     )
 
 

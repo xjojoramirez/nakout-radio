@@ -40,13 +40,16 @@ def advance(
     now: datetime,
     desired: Callable[[datetime], int | None],
     snapshot: Callable[[int], tuple[list[int], list[int]]],
+    gap_seconds: float = 0.0,
 ) -> BroadcastState:
     """Advance ``state`` forward through finished tracks.
 
     ``desired(at)`` returns the genre that should be live at time ``at``.
     ``snapshot(genre_id)`` returns that genre's ``(track_ids, durations)``.
-    Boundary times are evaluated at the boundary itself so the result is correct
-    even after a long gap with no requests. Does not mutate the input.
+    Each track occupies ``duration + gap_seconds``: the extra seconds are a
+    silent interval after the song, before the next one starts. Boundary times
+    are evaluated at the boundary itself so the result is correct even after a
+    long gap with no requests. Does not mutate the input.
     """
     state = replace(
         state,
@@ -59,7 +62,7 @@ def advance(
         state.index = 0
 
     if state.manual:
-        return _advance_manual(state, now)
+        return _advance_manual(state, now, gap_seconds)
 
     for _ in range(10000):
         if not state.track_ids:
@@ -80,7 +83,7 @@ def advance(
             continue
 
         duration = state.durations[state.index] or 1
-        end = state.started_at + timedelta(seconds=duration)
+        end = state.started_at + timedelta(seconds=duration + gap_seconds)
         if now < end:
             return state
 
@@ -99,12 +102,14 @@ def advance(
     return state
 
 
-def _advance_manual(state: BroadcastState, now: datetime) -> BroadcastState:
+def _advance_manual(
+    state: BroadcastState, now: datetime, gap_seconds: float
+) -> BroadcastState:
     for _ in range(10000):
         if not state.track_ids:
             return state
         duration = state.durations[state.index] or 1
-        end = state.started_at + timedelta(seconds=duration)
+        end = state.started_at + timedelta(seconds=duration + gap_seconds)
         if now < end:
             return state
         state.index += 1
@@ -123,6 +128,9 @@ class NowState(NamedTuple):
     track: TrackCache | None
     offset_seconds: int
     source: str
+    phase: str = "playing"
+    next_track: TrackCache | None = None
+    seconds_until_start: float | None = None
 
 
 def _resolve(session: Session, at_utc: datetime) -> tuple[int | None, bool]:
@@ -222,6 +230,7 @@ def _init(session: Session, now: datetime) -> BroadcastState:
 
 def get_current(session: Session, now: datetime | None = None) -> NowState:
     now = now or utcnow()
+    gap = get_settings().track_gap_seconds
     with _lock:
         state = _load(session)
         initialized = state is None
@@ -233,6 +242,7 @@ def get_current(session: Session, now: datetime | None = None) -> NowState:
             now,
             lambda at: _desired(session, at),
             lambda sid: _snapshot(session, sid),
+            gap,
         )
         if initialized or state != before:
             _save(session, state)
@@ -260,7 +270,31 @@ def get_current(session: Session, now: datetime | None = None) -> NowState:
         duration = state.durations[state.index] or 1
         offset = int((now - state.started_at).total_seconds())
         offset = max(0, min(offset, duration - 1))
-        return NowState(genre, track, offset, _source(session, state, now))
+        source = _source(session, state, now)
+        if now >= state.started_at + timedelta(seconds=duration):
+            end = state.started_at + timedelta(seconds=duration + gap)
+            following = advance(
+                state,
+                end,
+                lambda at: _desired(session, at),
+                lambda sid: _snapshot(session, sid),
+                gap,
+            )
+            next_track = None
+            if following.genre_id is not None and following.track_ids:
+                next_track = session.get(
+                    TrackCache, following.track_ids[following.index]
+                )
+            return NowState(
+                genre,
+                track,
+                offset,
+                source,
+                "gap",
+                next_track,
+                max(0.0, (end - now).total_seconds()),
+            )
+        return NowState(genre, track, offset, source)
 
 
 def _load_and_advance(session: Session, now: datetime) -> BroadcastState:
@@ -272,6 +306,7 @@ def _load_and_advance(session: Session, now: datetime) -> BroadcastState:
         now,
         lambda at: _desired(session, at),
         lambda sid: _snapshot(session, sid),
+        get_settings().track_gap_seconds,
     )
 
 

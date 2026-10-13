@@ -125,6 +125,8 @@ export function useYouTubePlayer(
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
   const currentVideoRef = useRef<string | null>(null);
+  const preloadedVideoRef = useRef<string | null>(null);
+  const startTimerRef = useRef<number | null>(null);
   const endedRef = useRef(false);
   const retryAttemptRef = useRef(0);
   const retryTimerRef = useRef<number | null>(null);
@@ -139,10 +141,31 @@ export function useYouTubePlayer(
     }
   }, []);
 
+  const preloadNext = useCallback((next: Track) => {
+    const player = playerRef.current;
+    if (!player || !isPlayerReady(player)) return;
+    try {
+      player.mute();
+      player.loadVideoById({
+        videoId: next.youtube_video_id,
+        startSeconds: 0,
+      });
+      player.pauseVideo();
+    } catch {
+      return;
+    }
+    preloadedVideoRef.current = next.youtube_video_id;
+  }, []);
+
   const reloadCurrent = useCallback(() => {
     const player = playerRef.current;
     const current = broadcastRef.current;
-    if (!player || !current?.track || !isPlayerReady(player)) return;
+    if (!player || !isPlayerReady(player)) return;
+    if (current?.phase === "gap" && current.nextTrack) {
+      preloadNext(current.nextTrack);
+      return;
+    }
+    if (!current?.track) return;
     try {
       player.loadVideoById({
         videoId: current.track.youtube_video_id,
@@ -152,7 +175,7 @@ export function useYouTubePlayer(
     } catch {
       // The iframe may still be initialising; the next attempt retries.
     }
-  }, []);
+  }, [preloadNext]);
 
   const scheduleRetry = useCallback(() => {
     if (retryTimerRef.current !== null) return;
@@ -170,6 +193,57 @@ export function useYouTubePlayer(
     clearRetry();
   }, [clearRetry]);
 
+  const clearStartTimer = useCallback(() => {
+    if (startTimerRef.current !== null) {
+      window.clearTimeout(startTimerRef.current);
+      startTimerRef.current = null;
+    }
+  }, []);
+
+  const startPreloaded = useCallback(
+    (videoId: string, target: number) => {
+      const player = playerRef.current;
+      if (!player || !isPlayerReady(player)) return;
+      preloadedVideoRef.current = null;
+      currentVideoRef.current = videoId;
+      endedRef.current = false;
+      resetRetry();
+      try {
+        player.seekTo(Math.max(0, target), true);
+        player.setVolume(volumeRef.current);
+        if (mutedRef.current || volumeRef.current === 0) player.mute();
+        else player.unMute();
+        player.playVideo();
+      } catch {
+        // The iframe may still be initialising; the next frame retries.
+      }
+    },
+    [resetRetry],
+  );
+
+  const scheduleGapStart = useCallback(
+    (broadcast: BroadcastState) => {
+      clearStartTimer();
+      if (!broadcast.nextTrack || broadcast.secondsUntilStart === null) return;
+      const boundaryAt =
+        broadcast.fetchedAt +
+        broadcast.rttMs / 2 +
+        Math.max(0, broadcast.secondsUntilStart) * 1000;
+      const delay = Math.max(0, boundaryAt - Date.now());
+      startTimerRef.current = window.setTimeout(() => {
+        startTimerRef.current = null;
+        const current = broadcastRef.current;
+        if (!current || current.phase !== "gap" || !current.nextTrack) return;
+        if (preloadedVideoRef.current !== current.nextTrack.youtube_video_id) {
+          return;
+        }
+        const position = Math.max(0, (Date.now() - boundaryAt) / 1000);
+        startPreloaded(current.nextTrack.youtube_video_id, position);
+      }, delay);
+    },
+    [clearStartTimer, startPreloaded],
+  );
+
   useEffect(() => {
     let cancelled = false;
     loadIframeApi().then(() => {
@@ -183,9 +257,12 @@ export function useYouTubePlayer(
   useEffect(() => {
     if (!apiReady || !hasTrack || playerRef.current || !window.YT) return;
     const current = broadcastRef.current;
-    if (!current?.track) return;
-    const initialId = current.track.youtube_video_id;
-    const start = targetFor(current);
+    if (!current) return;
+    const joinDuringGap = current.phase === "gap" && current.nextTrack !== null;
+    const initial = joinDuringGap ? current.nextTrack : current.track;
+    if (!initial) return;
+    const initialId = initial.youtube_video_id;
+    const start = joinDuringGap ? 0 : targetFor(current);
     const yt = window.YT;
     let fallbackTimer: number | null = null;
     const player = new yt.Player(containerId, {
@@ -204,6 +281,14 @@ export function useYouTubePlayer(
         onReady: () => {
           setReady(true);
           player.setVolume(volumeRef.current);
+          const live = broadcastRef.current;
+          if (live?.phase === "gap" && live.nextTrack) {
+            preloadedVideoRef.current = live.nextTrack.youtube_video_id;
+            player.mute();
+            player.pauseVideo();
+            scheduleGapStart(live);
+            return;
+          }
           if (mutedRef.current) {
             player.mute();
             player.playVideo();
@@ -237,9 +322,14 @@ export function useYouTubePlayer(
     });
     playerRef.current = player;
     currentVideoRef.current = initialId;
+    if (joinDuringGap) {
+      preloadedVideoRef.current = initialId;
+    }
     return () => {
       if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
       clearRetry();
+      clearStartTimer();
+      preloadedVideoRef.current = null;
       playerRef.current = null;
       currentVideoRef.current = null;
       try {
@@ -250,16 +340,43 @@ export function useYouTubePlayer(
       setReady(false);
       setPlaying(false);
     };
-  }, [apiReady, hasTrack, containerId, scheduleRetry, resetRetry, clearRetry]);
+  }, [
+    apiReady,
+    hasTrack,
+    containerId,
+    scheduleGapStart,
+    clearStartTimer,
+    scheduleRetry,
+    resetRetry,
+    clearRetry,
+  ]);
 
   useEffect(() => {
     const player = playerRef.current;
     if (!player || !broadcast?.track) return;
     if (!isPlayerReady(player)) return;
+    const yt = window.YT;
+
+    if (broadcast.phase === "gap") {
+      if (yt && player.getPlayerState() === yt.PlayerState.PLAYING) {
+        player.pauseVideo();
+      }
+      if (!broadcast.nextTrack) return;
+      if (preloadedVideoRef.current !== broadcast.nextTrack.youtube_video_id) {
+        preloadNext(broadcast.nextTrack);
+      }
+      scheduleGapStart(broadcast);
+      return;
+    }
+
+    clearStartTimer();
     const videoId = broadcast.track.youtube_video_id;
     const target = targetFor(broadcast);
-    const yt = window.YT;
     if (currentVideoRef.current !== videoId) {
+      if (preloadedVideoRef.current === videoId) {
+        startPreloaded(videoId, target);
+        return;
+      }
       currentVideoRef.current = videoId;
       endedRef.current = false;
       resetRetry();
@@ -274,7 +391,14 @@ export function useYouTubePlayer(
     } else if (state === yt.PlayerState.PLAYING && drift > DRIFT_THRESHOLD) {
       player.seekTo(target, true);
     }
-  }, [broadcast]);
+  }, [
+    broadcast,
+    clearStartTimer,
+    preloadNext,
+    scheduleGapStart,
+    startPreloaded,
+    resetRetry,
+  ]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -293,29 +417,31 @@ export function useYouTubePlayer(
       if (current?.track) {
         setProgress(player.getCurrentTime());
         const playerState = player.getPlayerState();
-        if (playerState === yt.PlayerState.PLAYING) {
-          lastResumeAtRef.current = 0;
-          const target = targetFor(current);
-          if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
-            player.seekTo(target, true);
-          }
-        } else if (
-          playerState === yt.PlayerState.PAUSED ||
-          playerState === yt.PlayerState.CUED
-        ) {
-          // Mobile OSes pause the iframe player when the page is suspended
-          // (screen lock, app switch). Resume at the live position so the
-          // listener rejoins the broadcast; throttled in case the browser
-          // keeps blocking playback.
-          const now = Date.now();
-          if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
-            lastResumeAtRef.current = now;
-            player.seekTo(targetFor(current), true);
-            player.playVideo();
+        if (current.phase !== "gap") {
+          if (playerState === yt.PlayerState.PLAYING) {
+            lastResumeAtRef.current = 0;
+            const target = targetFor(current);
+            if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
+              player.seekTo(target, true);
+            }
+          } else if (
+            playerState === yt.PlayerState.PAUSED ||
+            playerState === yt.PlayerState.CUED
+          ) {
+            // Mobile OSes pause the iframe player when the page is suspended
+            // (screen lock, app switch). Resume at the live position so the
+            // listener rejoins the broadcast; throttled in case the browser
+            // keeps blocking playback.
+            const now = Date.now();
+            if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
+              lastResumeAtRef.current = now;
+              player.seekTo(targetFor(current), true);
+              player.playVideo();
+            }
           }
         }
       }
-      if (endedRef.current) onEndedRef.current();
+      if (endedRef.current && current?.phase !== "gap") onEndedRef.current();
     }, 1000);
     return () => window.clearInterval(timer);
   }, []);

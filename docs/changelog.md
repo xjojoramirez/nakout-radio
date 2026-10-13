@@ -3,6 +3,39 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-13 — song interval: 2s gap between songs so everyone starts together (issue #7)
+
+Listeners on weak connections missed the first seconds of every song because
+the next video started loading only when it was already on air. The backend now
+inserts a station-wide silence gap (default 2s, `TRACK_GAP_SECONDS`) after every
+automatically-advanced song: the boundary is `started_at + duration + gap`.
+`/api/now` reports `phase: "gap"` with the just-finished `track`, the upcoming
+`next_track`, and `seconds_until_start`. Listeners preload the next video muted
+and paused during the gap and start it with a local timer at the exact boundary;
+admin SKIP / PLAY NOW / AUTO still start a track immediately.
+
+- `backend/app/config.py`, `backend/.env.example`: new `TRACK_GAP_SECONDS`
+  setting (float, default 2, 0–30; 0 disables the gap).
+- `backend/app/broadcast.py`: gap folded into `advance()`/`_advance_manual()`
+  boundaries; `get_current()` reports the gap phase and dry-runs the boundary
+  to expose the next track.
+- `backend/app/schemas.py`, `backend/app/routers/now.py`: `NowOut` gains
+  `phase`, `next_track`, `seconds_until_start`.
+- `frontend/src/types.ts`, `frontend/src/hooks/useBroadcast.ts`: gap fields
+  carried through poll + WebSocket frames.
+- `frontend/src/hooks/useYouTubePlayer.ts`: preload (mute + load + pause),
+  boundary-timed start, drift/resume gating during the gap, preloaded-video
+  reuse, gap-aware retry, mid-gap join.
+- `frontend/src/pages/RadioPage.tsx`: previous track stays visible during the
+  gap; progress bar and times hidden; header keeps "On air".
+- Design/plan: `docs/superpowers/specs/2026-10-13-song-interval-gap-design.md`,
+  `docs/superpowers/plans/2026-10-13-song-interval-gap.md`.
+- **Container restart required (backend + frontend):**
+  `docker compose up -d --build backend frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: `python -m pytest -q` — 235 passed; `npm test` — 249 passed in
+  28 files; `npm run typecheck` — clean.
+
 ## 2026-10-13 — docs: git/GitHub activity must use the xjojoramirez account
 
 - `AGENTS.md`: new "Git & GitHub accounts" section — all commits and
