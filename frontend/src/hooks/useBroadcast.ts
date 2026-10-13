@@ -16,6 +16,12 @@ export interface BroadcastState {
   fetchedAt: number;
   /** Approximate round-trip time in milliseconds (0 for pushed frames). */
   rttMs: number;
+  /** `"gap"` during the silent interval between songs. */
+  phase: "playing" | "gap";
+  /** The track that starts when the gap ends (null while playing). */
+  nextTrack: Track | null;
+  /** Seconds until `nextTrack` starts (null while playing). */
+  secondsUntilStart: number | null;
 }
 
 export function radioSocketUrl(protocol: string, host: string): string {
@@ -31,6 +37,9 @@ function toState(data: BroadcastNow, rttMs: number): BroadcastState {
     offset: data.offset_seconds,
     fetchedAt: Date.now(),
     rttMs,
+    phase: data.phase ?? "playing",
+    nextTrack: data.next_track ?? null,
+    secondsUntilStart: data.seconds_until_start ?? null,
   };
 }
 

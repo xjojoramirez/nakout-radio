@@ -18,6 +18,9 @@ function broadcast(overrides: Partial<BroadcastState> = {}): BroadcastState {
     offset: 0,
     fetchedAt: Date.now(),
     rttMs: 0,
+    phase: "playing",
+    nextTrack: null,
+    secondsUntilStart: null,
     ...overrides,
   };
 }

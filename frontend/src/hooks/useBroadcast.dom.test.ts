@@ -10,6 +10,9 @@ function nowResponse(overrides: Record<string, unknown> = {}) {
       offset_seconds: 0,
       server_time: "2026-01-01T00:00:00+00:00",
       source: "none",
+      phase: "playing",
+      next_track: null,
+      seconds_until_start: null,
       ...overrides,
     }),
     { status: 200 },
@@ -78,6 +81,39 @@ describe("useBroadcast", () => {
     await waitFor(() => expect(result.current.failed).toBe(true));
     expect(result.current.state).toBeNull();
   });
+
+  it("maps the gap fields from a poll", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        nowResponse({
+          source: "default",
+          track: {
+            youtube_video_id: "a",
+            title: "A",
+            artist: "",
+            thumbnail_url: "",
+            duration_seconds: 200,
+            position: 0,
+          },
+          phase: "gap",
+          next_track: {
+            youtube_video_id: "b",
+            title: "B",
+            artist: "",
+            thumbnail_url: "",
+            duration_seconds: 180,
+            position: 1,
+          },
+          seconds_until_start: 1.5,
+        }),
+      ),
+    );
+    const { result } = renderHook(() => useBroadcast());
+    await waitFor(() => expect(result.current.state?.phase).toBe("gap"));
+    expect(result.current.state?.nextTrack?.youtube_video_id).toBe("b");
+    expect(result.current.state?.secondsUntilStart).toBe(1.5);
+  });
 });
 
 class FakeWebSocket {
@@ -133,6 +169,43 @@ describe("useBroadcast (radio socket)", () => {
     );
     expect(result.current.state?.source).toBe("manual");
     expect(result.current.state?.rttMs).toBe(0);
+  });
+
+  it("maps the gap fields from a pushed frame", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(nowResponse()));
+    const { result } = renderHook(() => useBroadcast());
+    await waitFor(() => expect(FakeWebSocket.instances).toHaveLength(1));
+    act(() => {
+      FakeWebSocket.instances[0].onmessage?.({
+        data: JSON.stringify({
+          genre: null,
+          track: {
+            youtube_video_id: "a",
+            title: "A",
+            artist: "",
+            thumbnail_url: "",
+            duration_seconds: 200,
+            position: 0,
+          },
+          offset_seconds: 199,
+          server_time: "2026-01-01T00:00:00+00:00",
+          source: "default",
+          phase: "gap",
+          next_track: {
+            youtube_video_id: "b",
+            title: "B",
+            artist: "",
+            thumbnail_url: "",
+            duration_seconds: 180,
+            position: 1,
+          },
+          seconds_until_start: 2,
+        }),
+      });
+    });
+    await waitFor(() => expect(result.current.state?.phase).toBe("gap"));
+    expect(result.current.state?.nextTrack?.youtube_video_id).toBe("b");
+    expect(result.current.state?.secondsUntilStart).toBe(2);
   });
 
   it("ignores malformed socket frames", async () => {
