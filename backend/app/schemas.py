@@ -44,6 +44,9 @@ class NowOut(BaseModel):
     offset_seconds: int
     server_time: str
     source: str
+    phase: Literal["playing", "gap"] = "playing"
+    next_track: TrackOut | None = None
+    seconds_until_start: float | None = None
 
 
 class AdvanceIn(BaseModel):

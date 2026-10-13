@@ -143,7 +143,8 @@ def test_set_order_after_time_advances_preserves_current(tmp_path):
         set_order(s, st.id, ["c", "b", "a"], now=later)
         now_state = get_current(s, later)
         assert now_state.track.youtube_video_id == "b"
-        assert now_state.offset_seconds == 50
+        # Track a ends at 100s, the 2s gap runs to 102s, so b is at 48s.
+        assert now_state.offset_seconds == 48
 
 
 def test_set_order_when_current_track_removed_resets_offset(tmp_path):
