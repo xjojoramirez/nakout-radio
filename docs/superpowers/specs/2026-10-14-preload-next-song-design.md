@@ -54,7 +54,9 @@ Edge cases the peek already handles (via `advance`):
 - Manual mode (skip / play now): next = following queue index, wrapping.
 - Schedule genre change at the boundary: `desired(boundary)` resolves it.
 - Single-track genre: next = the **same** track (same video id) — the client
-  must key pre-roll on `(video id, boundary time)`, not video id alone.
+  keys the pre-roll on the video id; boundary re-estimates only re-time the
+  swap (so a fresh estimate never restarts the buffer), and the post-swap
+  reset re-arms the same id from 0 for the following boundary.
 
 ### Setting: `PRELOAD_LEAD_SECONDS`
 
@@ -90,8 +92,9 @@ Driven by the existing 1 s reconcile tick + broadcast effect:
    computed by the same `fetchedAt + rtt/2 + secondsUntilStart·1000` formula
    as `scheduleGapStart`): ensure the preload player has `nextTrack` loaded
    (`loadVideoById` from 0 otherwise), `mute()`, `playVideo()` — muted
-   playback is what builds the buffer. Tracking is keyed by
-   `(video id, boundaryAt)`.
+   playback is what builds the buffer. Tracking is keyed on the video id;
+   boundary re-estimates only re-time the swap (a fresh estimate never
+   restarts the buffer).
 2. **Swap** — a boundary timer (mirror of `scheduleGapStart`) fires at
    `boundaryAt`: if the preload player still holds the right video, seek to
    the live position (≈0; the region was just buffered), apply the user's

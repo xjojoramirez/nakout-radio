@@ -367,6 +367,7 @@ export function useYouTubePlayer(
             // Demoting the old player is best-effort.
           }
         }
+        onEndedRef.current();
       }, Math.max(0, boundaryAt - Date.now()));
     },
     [clearPreloadTimer, resetRetry],
@@ -376,6 +377,9 @@ export function useYouTubePlayer(
     (current: BroadcastState) => {
       if (current.phase !== "playing") return;
       if (!current.track || !current.nextTrack) return;
+      // A stale frame (or a pending load) must not arm: the reconcile effect
+      // owns the active player until it matches the broadcast again.
+      if (currentVideoRef.current !== current.track.youtube_video_id) return;
       if (current.preloadLead <= 0 || preloadFailedRef.current) return;
       if (current.secondsUntilStart === null) return;
       const boundaryAt =
@@ -383,19 +387,15 @@ export function useYouTubePlayer(
         current.rttMs / 2 +
         Math.max(0, current.secondsUntilStart) * 1000;
       if (Date.now() < boundaryAt - current.preloadLead * 1000) return;
+      if (Date.now() >= boundaryAt) return;
       const preload = ensurePreloadPlayer();
       if (!preload || !isPlayerReady(preload)) return;
       const nextId = current.nextTrack.youtube_video_id;
       try {
-        if (
-          preloadVideoRef.current !== nextId ||
-          preloadBoundaryRef.current !== boundaryAt
-        ) {
+        if (preloadVideoRef.current !== nextId) {
           preload.mute();
           preload.loadVideoById({ videoId: nextId, startSeconds: 0 });
           preload.playVideo();
-          preloadVideoRef.current = nextId;
-          preloadBoundaryRef.current = boundaryAt;
         } else if (
           window.YT &&
           preload.getPlayerState() !== window.YT.PlayerState.PLAYING
@@ -403,6 +403,8 @@ export function useYouTubePlayer(
           preload.mute();
           preload.playVideo();
         }
+        preloadVideoRef.current = nextId;
+        preloadBoundaryRef.current = boundaryAt;
       } catch {
         preloadFailedRef.current = true;
       }
@@ -616,25 +618,27 @@ export function useYouTubePlayer(
         const playerState = player.getPlayerState();
         if (current.phase !== "gap") {
           armPreloadRef.current(current);
-          if (playerState === yt.PlayerState.PLAYING) {
-            lastResumeAtRef.current = 0;
-            const target = targetFor(current);
-            if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
-              player.seekTo(target, true);
-            }
-          } else if (
-            playerState === yt.PlayerState.PAUSED ||
-            playerState === yt.PlayerState.CUED
-          ) {
-            // Mobile OSes pause the iframe player when the page is suspended
-            // (screen lock, app switch). Resume at the live position so the
-            // listener rejoins the broadcast; throttled in case the browser
-            // keeps blocking playback.
-            const now = Date.now();
-            if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
-              lastResumeAtRef.current = now;
-              player.seekTo(targetFor(current), true);
-              player.playVideo();
+          if (currentVideoRef.current === current.track.youtube_video_id) {
+            if (playerState === yt.PlayerState.PLAYING) {
+              lastResumeAtRef.current = 0;
+              const target = targetFor(current);
+              if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
+                player.seekTo(target, true);
+              }
+            } else if (
+              playerState === yt.PlayerState.PAUSED ||
+              playerState === yt.PlayerState.CUED
+            ) {
+              // Mobile OSes pause the iframe player when the page is suspended
+              // (screen lock, app switch). Resume at the live position so the
+              // listener rejoins the broadcast; throttled in case the browser
+              // keeps blocking playback.
+              const now = Date.now();
+              if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
+                lastResumeAtRef.current = now;
+                player.seekTo(targetFor(current), true);
+                player.playVideo();
+              }
             }
           }
         }

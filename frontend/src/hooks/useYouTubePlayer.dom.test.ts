@@ -1022,4 +1022,122 @@ describe("useYouTubePlayer", () => {
       });
     }).not.toThrow();
   });
+
+  it("requests a resync when the swap happens", async () => {
+    vi.useFakeTimers();
+    const onEnded = vi.fn();
+    renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: 25,
+          preloadLead: 20,
+        }),
+        onEnded,
+      ),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(25000); // arm + swap
+    });
+    expect(players.length).toBe(2);
+    expect(onEnded).toHaveBeenCalled();
+  });
+
+  it("does not re-arm or drift-seek after the boundary while the broadcast is stale", async () => {
+    vi.useFakeTimers();
+    renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: 25,
+          preloadLead: 20,
+        }),
+        vi.fn(),
+      ),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(25000); // arm + swap
+    });
+    expect(players.length).toBe(2);
+    players[0].loadVideoById.mockClear();
+    players[1].seekTo.mockClear();
+    act(() => {
+      vi.advanceTimersByTime(5000); // ticks over the stale broadcast
+    });
+    expect(players[0].loadVideoById).not.toHaveBeenCalled();
+    expect(players[1].seekTo).not.toHaveBeenCalled();
+  });
+
+  it("does not arm the pre-roll after the boundary has passed", async () => {
+    vi.useFakeTimers();
+    renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: -1,
+          preloadLead: 20,
+        }),
+        vi.fn(),
+      ),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+    expect(players.length).toBe(1);
+  });
+
+  it("keeps the pre-roll buffer across poll jitter", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      {
+        initialProps: {
+          b: broadcast({
+            nextTrack: nextTrack(),
+            secondsUntilStart: 25,
+            preloadLead: 20,
+          }),
+        },
+      },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(5000); // arm
+    });
+    expect(players.length).toBe(2);
+    expect(players[1].loadVideoById).toHaveBeenCalledTimes(1);
+    act(() => {
+      rerender({
+        b: broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: 19.5, // boundary estimate moved ~0.5 s
+          preloadLead: 20,
+          fetchedAt: Date.now(),
+        }),
+      });
+    });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[1].loadVideoById).toHaveBeenCalledTimes(1);
+  });
 });
