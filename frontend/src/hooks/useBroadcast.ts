@@ -22,6 +22,8 @@ export interface BroadcastState {
   nextTrack: Track | null;
   /** Seconds until `nextTrack` starts (null while playing). */
   secondsUntilStart: number | null;
+  /** Lead seconds for pre-rolling the next track (0 disables pre-roll). */
+  preloadLead: number;
 }
 
 export function radioSocketUrl(protocol: string, host: string): string {
@@ -40,6 +42,7 @@ function toState(data: BroadcastNow, rttMs: number): BroadcastState {
     phase: data.phase ?? "playing",
     nextTrack: data.next_track ?? null,
     secondsUntilStart: data.seconds_until_start ?? null,
+    preloadLead: data.preload_lead_seconds ?? 0,
   };
 }
 

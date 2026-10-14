@@ -114,6 +114,15 @@ describe("useBroadcast", () => {
     expect(result.current.state?.nextTrack?.youtube_video_id).toBe("b");
     expect(result.current.state?.secondsUntilStart).toBe(1.5);
   });
+
+  it("maps the preload lead from a poll", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(nowResponse({ preload_lead_seconds: 15 })),
+    );
+    const { result } = renderHook(() => useBroadcast());
+    await waitFor(() => expect(result.current.state?.preloadLead).toBe(15));
+  });
 });
 
 class FakeWebSocket {
