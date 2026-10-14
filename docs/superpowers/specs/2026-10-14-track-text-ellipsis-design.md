@@ -54,3 +54,17 @@ Base styles (no media query) so the fix applies to every viewport:
   verified in the built CSS bundle and by a manual browser check after
   deploy.
 - No regression to existing RadioPage tests expected.
+
+## Revision: coverage extended to every view (2026-10-14)
+
+Issue #5 applies to the studio views too, not just the radio hero. The same
+treatment was extended in `frontend/src/styles/vintage.css` to:
+
+- Studio now-card: the artist line (the `.np-artist` rule now also covers
+  `#panel-now .nowcard .np-artist`) and the "Genre: …" meta line.
+- Studio queue rows: `.queue-title`/`.queue-artist` truncate at every
+  viewport (previously mobile-only), plus `title` tooltips in
+  `NowPlayingPanel.tsx` for the now-card and queue, mirroring the radio hero.
+- Genre labels: radio kicker, deck label (`.dj strong`), radio schedule rows,
+  studio schedule slot names (`.srow .sm b`), genre cards (`.gtop`).
+- Playlist browser rows (`a.pid`) and schedule-timeline subtext (`.blk .bt`).

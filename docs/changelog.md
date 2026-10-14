@@ -3,23 +3,30 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
-## 2026-10-14 — radio page: long track text truncates with an ellipsis (issue #5)
+## 2026-10-14 — long track/genre text truncates with an ellipsis on the radio and studio pages (issue #5)
 
-Long track titles wrapped without a height cap and long artist names could
-overflow the now-playing hero on phones and desktop. The title now clamps to
-two lines and the artist to one, both with a trailing ellipsis, and the full
-text is exposed via `title` tooltips.
+Long track titles wrapped without a height cap, and long artist, genre, and
+playlist names could overflow or stretch their rows on phones and desktop —
+on the public radio page and in the studio. Track titles clamp to two lines;
+artist names, queue rows, playlist labels, the genre kicker/deck label,
+schedule rows, and timeline subtext truncate to one line, all with a trailing
+ellipsis and `title` tooltips wherever they carry track text.
 
 - `frontend/src/styles/vintage.css`: two-line clamp on `.np-title`; single-line
-  ellipsis on `.sleeve .np-artist`; `.sleeve > div` gets `min-width: 0`.
-- `frontend/src/pages/RadioPage.tsx`: `title` attributes on the hero title and
-  artist.
+  ellipsis on `.sleeve .np-artist` / `#panel-now .nowcard .np-artist`, the
+  `.queue-title`/`.queue-artist` rows (now at every viewport, not just mobile),
+  `.kicker`, `.dj strong`, `.sched li span:first-child`, `.srow .sm b`,
+  `.gtop b`/`.gtop .mono`, `a.pid`, `.blk .bt`, and
+  `#panel-now .nowcard .meta .mono`; `.sleeve > div` gets `min-width: 0`.
+- `frontend/src/pages/RadioPage.tsx`,
+  `frontend/src/components/admin/NowPlayingPanel.tsx`: `title` attributes on
+  the hero title/artist, the studio now-card, and the queue rows.
 - Design/plan: `docs/superpowers/specs/2026-10-14-track-text-ellipsis-design.md`,
   `docs/superpowers/plans/2026-10-14-track-text-ellipsis.md`.
 - **Container restart required (frontend):**
   `docker compose up -d --build frontend`, then hard-refresh the browser
   (Ctrl+Shift+R).
-- Verification: `npm test` — 250 passed in 28 files; `npm run typecheck` —
+- Verification: `npm test` — 251 passed in 28 files; `npm run typecheck` —
   clean; `npm run build` — bundle contains the clamp/ellipsis rules.
 
 ## 2026-10-13 — song interval: 2s gap between songs so everyone starts together (issue #7)
