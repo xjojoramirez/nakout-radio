@@ -1050,16 +1050,18 @@ describe("useYouTubePlayer", () => {
 
   it("does not re-arm or drift-seek after the boundary while the broadcast is stale", async () => {
     vi.useFakeTimers();
-    renderHook(() =>
-      useYouTubePlayer(
-        "yt-player",
-        broadcast({
-          nextTrack: nextTrack(),
-          secondsUntilStart: 25,
-          preloadLead: 20,
-        }),
-        vi.fn(),
-      ),
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      {
+        initialProps: {
+          b: broadcast({
+            nextTrack: nextTrack(),
+            secondsUntilStart: 25,
+            preloadLead: 20,
+          }),
+        },
+      },
     );
     await act(async () => {
       await Promise.resolve();
@@ -1070,11 +1072,23 @@ describe("useYouTubePlayer", () => {
     });
     expect(players.length).toBe(2);
     players[0].loadVideoById.mockClear();
+    players[1].loadVideoById.mockClear();
     players[1].seekTo.mockClear();
+    act(() => {
+      rerender({
+        b: broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: 25,
+          preloadLead: 20,
+          fetchedAt: Date.now(),
+        }),
+      });
+    });
     act(() => {
       vi.advanceTimersByTime(2000); // ticks over the stale broadcast
     });
     expect(players[0].loadVideoById).not.toHaveBeenCalled();
+    expect(players[1].loadVideoById).not.toHaveBeenCalled();
     expect(players[1].seekTo).not.toHaveBeenCalled();
   });
 
