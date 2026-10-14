@@ -1072,7 +1072,7 @@ describe("useYouTubePlayer", () => {
     players[0].loadVideoById.mockClear();
     players[1].seekTo.mockClear();
     act(() => {
-      vi.advanceTimersByTime(5000); // ticks over the stale broadcast
+      vi.advanceTimersByTime(2000); // ticks over the stale broadcast
     });
     expect(players[0].loadVideoById).not.toHaveBeenCalled();
     expect(players[1].seekTo).not.toHaveBeenCalled();
@@ -1354,5 +1354,48 @@ describe("useYouTubePlayer", () => {
       vi.advanceTimersByTime(16000); // reach the new boundary
     });
     expect(players[1].seekTo).toHaveBeenCalled();
+  });
+
+  it("applies a back-jump frame once the post-swap grace has passed", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      {
+        initialProps: {
+          b: broadcast({
+            nextTrack: nextTrack(),
+            secondsUntilStart: 25,
+            preloadLead: 20,
+          }),
+        },
+      },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(25000); // arm + swap (active is now "b")
+    });
+    expect(players.length).toBe(2);
+    players[1].loadVideoById.mockClear();
+    act(() => {
+      vi.advanceTimersByTime(4000); // beyond POST_SWAP_GRACE_MS
+    });
+    act(() => {
+      rerender({
+        b: broadcast({
+          track: { ...broadcast().track!, youtube_video_id: "a", title: "a" },
+          offset: 5,
+          nextTrack: nextTrack(), // "b" — the active video
+          fetchedAt: Date.now(),
+        }),
+      });
+    });
+    expect(players[1].loadVideoById).toHaveBeenCalledWith({
+      videoId: "a",
+      startSeconds: expect.any(Number),
+    });
   });
 });

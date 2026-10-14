@@ -7,6 +7,7 @@ const MUTED_KEY = "nakout.muted";
 const DRIFT_THRESHOLD = 3;
 const AUTOPLAY_FALLBACK_MS = 1500;
 const RESUME_THROTTLE_MS = 3000;
+const POST_SWAP_GRACE_MS = 3000;
 
 interface YTPlayer {
   loadVideoById: (opts: { videoId: string; startSeconds?: number }) => void;
@@ -139,6 +140,7 @@ export function useYouTubePlayer(
   const preloadTimerRef = useRef<number | null>(null);
   const preloadSwapAtRef = useRef<number | null>(null);
   const preloadSwapVideoRef = useRef<string | null>(null);
+  const lastSwapAtRef = useRef<number | null>(null);
 
   const hasTrack = broadcast?.track != null;
 
@@ -383,6 +385,7 @@ export function useYouTubePlayer(
         }
         // Ask the page to resync so the fresh broadcast (new current track)
         // replaces the stale frame within one round-trip.
+        lastSwapAtRef.current = Date.now();
         onEndedRef.current();
       }, Math.max(0, boundaryAt - Date.now()));
     },
@@ -511,6 +514,7 @@ export function useYouTubePlayer(
       preloadRef.current = null;
       preloadVideoRef.current = null;
       preloadFailedRef.current = false;
+      lastSwapAtRef.current = null;
       clearPreloadTimer();
       if (preload) {
         try {
@@ -550,6 +554,23 @@ export function useYouTubePlayer(
     if (!isPlayerReady(player)) return;
     const yt = window.YT;
 
+    // A frame that still announces the active video as "next" right after a
+    // swap predates the swap; ignore its stale track until the resync frame
+    // arrives. Bounded by POST_SWAP_GRACE_MS so a legitimate back-jump (the
+    // same shape) still applies once the window has passed.
+    const swappedRecently =
+      lastSwapAtRef.current !== null &&
+      Date.now() - lastSwapAtRef.current < POST_SWAP_GRACE_MS;
+    if (
+      broadcast.phase === "playing" &&
+      swappedRecently &&
+      broadcast.track != null &&
+      broadcast.track.youtube_video_id !== currentVideoRef.current &&
+      broadcast.nextTrack?.youtube_video_id === currentVideoRef.current
+    ) {
+      return;
+    }
+
     if (broadcast.phase === "gap") {
       if (yt && player.getPlayerState() === yt.PlayerState.PLAYING) {
         player.pauseVideo();
@@ -574,13 +595,6 @@ export function useYouTubePlayer(
         preloadNext(broadcast.nextTrack);
       }
       scheduleGapStart(broadcast);
-      return;
-    }
-
-    // A frame that still announces the active video as "next" predates the
-    // swap that promoted it; ignore its stale current track until the resync
-    // frame arrives (the pre-roll must not be undone by an old frame).
-    if (broadcast.nextTrack?.youtube_video_id === currentVideoRef.current) {
       return;
     }
 
