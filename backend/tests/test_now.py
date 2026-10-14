@@ -362,3 +362,11 @@ def test_now_reports_next_track_while_playing(tmp_path):
         later = get_current(s, t0 + timedelta(seconds=30))
         assert later.next_track.youtube_video_id == "second"
         assert later.seconds_until_start == 172
+
+
+def test_now_endpoint_reports_preload_lead(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed_genre(s, "morning", default=True)
+    body = _client(engine).get("/api/now").json()
+    assert body["preload_lead_seconds"] == 20.0

@@ -47,6 +47,7 @@ class NowOut(BaseModel):
     phase: Literal["playing", "gap"] = "playing"
     next_track: TrackOut | None = None
     seconds_until_start: float | None = None
+    preload_lead_seconds: float = 20.0
 
 
 class AdvanceIn(BaseModel):
