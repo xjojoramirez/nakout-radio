@@ -3,6 +3,25 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-14 — radio page: long track text truncates with an ellipsis (issue #5)
+
+Long track titles wrapped without a height cap and long artist names could
+overflow the now-playing hero on phones and desktop. The title now clamps to
+two lines and the artist to one, both with a trailing ellipsis, and the full
+text is exposed via `title` tooltips.
+
+- `frontend/src/styles/vintage.css`: two-line clamp on `.np-title`; single-line
+  ellipsis on `.sleeve .np-artist`; `.sleeve > div` gets `min-width: 0`.
+- `frontend/src/pages/RadioPage.tsx`: `title` attributes on the hero title and
+  artist.
+- Design/plan: `docs/superpowers/specs/2026-10-14-track-text-ellipsis-design.md`,
+  `docs/superpowers/plans/2026-10-14-track-text-ellipsis.md`.
+- **Container restart required (frontend):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `npm test` — 250 passed in 28 files; `npm run typecheck` —
+  clean; `npm run build` — bundle contains the clamp/ellipsis rules.
+
 ## 2026-10-13 — song interval: 2s gap between songs so everyone starts together (issue #7)
 
 Listeners on weak connections missed the first seconds of every song because
