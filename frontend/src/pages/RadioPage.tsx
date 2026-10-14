@@ -43,6 +43,7 @@ export function RadioPage() {
       </header>
 
       <div id="yt-player" className="hidden-player" />
+      <div id="yt-preload" className="hidden-player" />
 
       <main className="deck-grid">
         <section className="deck-side" aria-label="Turntable">
