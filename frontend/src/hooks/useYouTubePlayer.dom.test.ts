@@ -903,4 +903,48 @@ describe("useYouTubePlayer", () => {
     });
     expect(players[1].playVideo).toHaveBeenCalled();
   });
+
+  it("falls back to the gap preload when the pre-roll player errors", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      {
+        initialProps: {
+          b: broadcast({
+            nextTrack: nextTrack(),
+            secondsUntilStart: 25,
+            preloadLead: 20,
+          }),
+        },
+      },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(5000); // arm
+    });
+    expect(players.length).toBe(2);
+    act(() => {
+      players[1].opts.events.onError();
+    });
+    players[0].loadVideoById.mockClear();
+    act(() => {
+      rerender({
+        b: broadcast({
+          phase: "gap",
+          nextTrack: nextTrack(),
+          secondsUntilStart: 2,
+          preloadLead: 20,
+          fetchedAt: Date.now(),
+        }),
+      });
+    });
+    expect(players[0].loadVideoById).toHaveBeenCalledWith({
+      videoId: "b",
+      startSeconds: 0,
+    });
+  });
 });

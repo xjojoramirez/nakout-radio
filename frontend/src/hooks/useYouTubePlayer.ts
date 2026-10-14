@@ -254,6 +254,10 @@ export function useYouTubePlayer(
         playsinline: 1,
       },
       events: {
+        onError: () => {
+          preloadFailedRef.current = true;
+          resetPreload();
+        },
         onStateChange: (e: { data: number }) => {
           handleStateChange(player, e.data);
         },
@@ -261,7 +265,7 @@ export function useYouTubePlayer(
     });
     preloadRef.current = player;
     return player;
-  }, [handleStateChange]);
+  }, [handleStateChange, resetPreload]);
 
   const clearStartTimer = useCallback(() => {
     if (startTimerRef.current !== null) {
@@ -522,6 +526,7 @@ export function useYouTubePlayer(
       if (!broadcast.nextTrack) return;
       const nextId = broadcast.nextTrack.youtube_video_id;
       const preloadHealthy =
+        !preloadFailedRef.current &&
         preloadRef.current !== null &&
         isPlayerReady(preloadRef.current) &&
         preloadVideoRef.current === nextId;
