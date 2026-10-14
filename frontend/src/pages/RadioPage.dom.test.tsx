@@ -214,4 +214,27 @@ describe("RadioPage", () => {
     expect(screen.queryByText("3:20")).not.toBeInTheDocument();
     expect(screen.queryByText("next")).not.toBeInTheDocument();
   });
+
+  it("exposes the full track title and artist for truncated hero text", async () => {
+    const longTitle =
+      "Every Grain Of Sand (Live At The Warfield 1980 Remastered Deluxe Edition)";
+    const longArtist = "The Traveling Wilburys Tribute Ensemble Orchestra";
+    mocked.now.mockResolvedValue({
+      genre: {
+        id: 1,
+        name: "Morning",
+        slug: "morning",
+        is_default: true,
+        track_count: 1,
+      },
+      track: { ...track("long"), title: longTitle, artist: longArtist },
+      offset_seconds: 0,
+      server_time: "2026-01-01T00:00:00+00:00",
+      source: "schedule",
+    });
+    render(<RadioPage />);
+    const heading = await screen.findByRole("heading", { name: longTitle });
+    expect(heading).toHaveAttribute("title", longTitle);
+    expect(screen.getByText(longArtist)).toHaveAttribute("title", longArtist);
+  });
 });

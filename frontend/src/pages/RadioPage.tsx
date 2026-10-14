@@ -90,8 +90,16 @@ export function RadioPage() {
                   <div className="kicker">
                     {genreName ? `${genreName} · live now` : "Live now"}
                   </div>
-                  <h1 className="np-title">{track?.title ?? "Tune in"}</h1>
-                  <div className="np-artist">
+                  <h1
+                    className="np-title"
+                    title={track?.title ?? undefined}
+                  >
+                    {track?.title ?? "Tune in"}
+                  </h1>
+                  <div
+                    className="np-artist"
+                    title={track?.artist || undefined}
+                  >
                     {track?.artist || "Nakout Radio"}
                   </div>
                 </div>
