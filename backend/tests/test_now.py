@@ -64,8 +64,8 @@ def test_now_returns_track_offset_and_server_time(tmp_path):
     assert 0 <= body["offset_seconds"] < 200
     assert body["server_time"]
     assert body["phase"] == "playing"
-    assert body["next_track"] is None
-    assert body["seconds_until_start"] is None
+    assert body["next_track"]["youtube_video_id"] == "vid"  # one track, wraps
+    assert 201 < body["seconds_until_start"] <= 202  # 200 s + 2 s gap
 
 
 def test_now_off_air(tmp_path):
@@ -271,8 +271,8 @@ def test_now_reports_gap_between_songs(tmp_path):
         t0 = datetime(2026, 1, 1, 0, 0, 0)
         first = get_current(s, t0)
         assert first.phase == "playing"
-        assert first.next_track is None
-        assert first.seconds_until_start is None
+        assert first.next_track.youtube_video_id == "vid"  # wraps on one track
+        assert first.seconds_until_start == 202  # 200 s + 2 s gap
 
         during = get_current(s, t0 + timedelta(seconds=201))
         assert during.phase == "gap"
@@ -333,3 +333,32 @@ def test_now_endpoint_serves_gap_fields(tmp_path):
     assert body["track"]["youtube_video_id"] == "vid"
     assert body["next_track"]["youtube_video_id"] == "vid"
     assert 0 < body["seconds_until_start"] <= 2
+
+
+def test_now_reports_next_track_while_playing(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed_genre(s, "morning", default=True, video="first", duration=200)
+        pl = s.exec(select(Playlist).where(Playlist.genre_id == st.id)).one()
+        s.add(
+            TrackCache(
+                playlist_id=pl.id,
+                youtube_video_id="second",
+                title="T2",
+                artist="A",
+                position=1,
+                duration_seconds=120,
+            )
+        )
+        s.commit()
+    with Session(engine) as s:
+        t0 = datetime(2026, 1, 1, 0, 0, 0)
+        first = get_current(s, t0)
+        assert first.phase == "playing"
+        assert first.track.youtube_video_id == "first"
+        assert first.next_track.youtube_video_id == "second"
+        assert first.seconds_until_start == 202
+
+        later = get_current(s, t0 + timedelta(seconds=30))
+        assert later.next_track.youtube_video_id == "second"
+        assert later.seconds_until_start == 172
