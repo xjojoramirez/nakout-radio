@@ -520,7 +520,21 @@ export function useYouTubePlayer(
         player.pauseVideo();
       }
       if (!broadcast.nextTrack) return;
-      if (preloadedVideoRef.current !== broadcast.nextTrack.youtube_video_id) {
+      const nextId = broadcast.nextTrack.youtube_video_id;
+      const preloadHealthy =
+        preloadRef.current !== null &&
+        isPlayerReady(preloadRef.current) &&
+        preloadVideoRef.current === nextId;
+      if (preloadHealthy) {
+        clearStartTimer();
+        const boundaryAt =
+          broadcast.fetchedAt +
+          broadcast.rttMs / 2 +
+          Math.max(0, broadcast.secondsUntilStart ?? 0) * 1000;
+        scheduleSwap(nextId, boundaryAt);
+        return;
+      }
+      if (preloadedVideoRef.current !== nextId) {
         preloadNext(broadcast.nextTrack);
       }
       scheduleGapStart(broadcast);
@@ -554,6 +568,7 @@ export function useYouTubePlayer(
     clearStartTimer,
     preloadNext,
     scheduleGapStart,
+    scheduleSwap,
     startPreloaded,
     resetRetry,
   ]);

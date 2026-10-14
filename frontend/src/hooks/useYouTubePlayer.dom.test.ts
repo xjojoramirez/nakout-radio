@@ -861,4 +861,46 @@ describe("useYouTubePlayer", () => {
     });
     expect(result.current.playing).toBe(true);
   });
+
+  it("keeps the active player idle during a gap when the preload is healthy", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      {
+        initialProps: {
+          b: broadcast({
+            nextTrack: nextTrack(),
+            secondsUntilStart: 25,
+            preloadLead: 20,
+          }),
+        },
+      },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(5000); // arm
+    });
+    expect(players.length).toBe(2);
+    players[0].loadVideoById.mockClear();
+    act(() => {
+      rerender({
+        b: broadcast({
+          phase: "gap",
+          nextTrack: nextTrack(),
+          secondsUntilStart: 2,
+          preloadLead: 20,
+          fetchedAt: Date.now(),
+        }),
+      });
+    });
+    expect(players[0].loadVideoById).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(players[1].playVideo).toHaveBeenCalled();
+  });
 });
