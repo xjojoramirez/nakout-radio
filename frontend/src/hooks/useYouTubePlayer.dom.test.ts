@@ -798,4 +798,67 @@ describe("useYouTubePlayer", () => {
     });
     expect(players.length).toBe(1);
   });
+
+  it("swaps to the preloaded player at the boundary", async () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: 25,
+          preloadLead: 20,
+        }),
+        vi.fn(),
+      ),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      players[0].opts.events.onStateChange({ data: 1 }); // on air
+    });
+    act(() => {
+      vi.advanceTimersByTime(5000); // arm
+    });
+    expect(players.length).toBe(2);
+    act(() => {
+      vi.advanceTimersByTime(20000); // reach the boundary
+    });
+    expect(players[1].seekTo).toHaveBeenCalled();
+    expect(players[1].playVideo).toHaveBeenCalled();
+    expect(players[1].setVolume).toHaveBeenCalledWith(70);
+    expect(players[0].pauseVideo).toHaveBeenCalled();
+    expect(result.current.playing).toBe(true);
+  });
+
+  it("ignores state events from the demoted player after a swap", async () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: 25,
+          preloadLead: 20,
+        }),
+        vi.fn(),
+      ),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      players[0].opts.events.onStateChange({ data: 1 });
+    });
+    act(() => {
+      vi.advanceTimersByTime(25000); // arm + swap
+    });
+    act(() => {
+      players[0].opts.events.onStateChange({ data: 2 }); // late PAUSED
+    });
+    expect(result.current.playing).toBe(true);
+  });
 });

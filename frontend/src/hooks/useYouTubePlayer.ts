@@ -138,6 +138,7 @@ export function useYouTubePlayer(
   const preloadBoundaryRef = useRef<number | null>(null);
   const preloadFailedRef = useRef(false);
   const preloadTimerRef = useRef<number | null>(null);
+  const preloadSwapAtRef = useRef<number | null>(null);
 
   const hasTrack = broadcast?.track != null;
 
@@ -200,6 +201,24 @@ export function useYouTubePlayer(
     clearRetry();
   }, [clearRetry]);
 
+  const handleStateChange = useCallback(
+    (player: YTPlayer, data: number) => {
+      if (playerRef.current !== player) return;
+      const yt = window.YT;
+      const isPlaying = yt != null && data === yt.PlayerState.PLAYING;
+      setPlaying(isPlaying);
+      if (isPlaying) {
+        endedRef.current = false;
+        resetRetry();
+      }
+      if (yt != null && data === yt.PlayerState.ENDED) {
+        endedRef.current = true;
+        onEndedRef.current();
+      }
+    },
+    [resetRetry],
+  );
+
   const clearPreloadTimer = useCallback(() => {
     if (preloadTimerRef.current !== null) {
       window.clearTimeout(preloadTimerRef.current);
@@ -234,10 +253,15 @@ export function useYouTubePlayer(
         disablekb: 1,
         playsinline: 1,
       },
+      events: {
+        onStateChange: (e: { data: number }) => {
+          handleStateChange(player, e.data);
+        },
+      },
     });
     preloadRef.current = player;
     return player;
-  }, []);
+  }, [handleStateChange]);
 
   const clearStartTimer = useCallback(() => {
     if (startTimerRef.current !== null) {
@@ -290,6 +314,60 @@ export function useYouTubePlayer(
     [clearStartTimer, startPreloaded],
   );
 
+  const scheduleSwap = useCallback(
+    (nextId: string, boundaryAt: number) => {
+      // The 1 s tick re-arms on every frame inside the lead window. Never
+      // postpone a swap that is already armed: a rescheduled timer would be
+      // clamped one tick past the boundary, and boundary jitter must not push
+      // the swap later. A boundary that moved earlier (e.g. the gap announces
+      // a nearer start) replaces the pending timer.
+      if (
+        preloadTimerRef.current !== null &&
+        preloadSwapAtRef.current !== null &&
+        preloadSwapAtRef.current <= boundaryAt
+      ) {
+        return;
+      }
+      clearPreloadTimer();
+      preloadSwapAtRef.current = boundaryAt;
+      preloadTimerRef.current = window.setTimeout(() => {
+        preloadTimerRef.current = null;
+        preloadSwapAtRef.current = null;
+        const preload = preloadRef.current;
+        if (!preload || !isPlayerReady(preload)) return;
+        if (preloadVideoRef.current !== nextId) return;
+        const position = Math.max(0, (Date.now() - boundaryAt) / 1000);
+        const previous = playerRef.current;
+        try {
+          preload.seekTo(position, true);
+          preload.setVolume(volumeRef.current);
+          if (mutedRef.current || volumeRef.current === 0) preload.mute();
+          else preload.unMute();
+          preload.playVideo();
+        } catch {
+          return;
+        }
+        playerRef.current = preload;
+        preloadRef.current = previous;
+        preloadVideoRef.current = null;
+        preloadBoundaryRef.current = null;
+        preloadedVideoRef.current = null;
+        currentVideoRef.current = nextId;
+        endedRef.current = false;
+        resetRetry();
+        if (previous && isPlayerReady(previous)) {
+          try {
+            previous.pauseVideo();
+            previous.mute();
+          } catch {
+            // Demoting the old player is best-effort.
+          }
+        }
+      }, Math.max(0, boundaryAt - Date.now()));
+    },
+    [clearPreloadTimer, resetRetry],
+  );
+
   const maybeArmPreload = useCallback(
     (current: BroadcastState) => {
       if (current.phase !== "playing") return;
@@ -324,8 +402,9 @@ export function useYouTubePlayer(
       } catch {
         preloadFailedRef.current = true;
       }
+      scheduleSwap(nextId, boundaryAt);
     },
-    [ensurePreloadPlayer],
+    [ensurePreloadPlayer, scheduleSwap],
   );
 
   const armPreloadRef = useRef(maybeArmPreload);
@@ -393,16 +472,7 @@ export function useYouTubePlayer(
           }
         },
         onStateChange: (e: { data: number }) => {
-          const isPlaying = e.data === yt.PlayerState.PLAYING;
-          setPlaying(isPlaying);
-          if (isPlaying) {
-            endedRef.current = false;
-            resetRetry();
-          }
-          if (e.data === yt.PlayerState.ENDED) {
-            endedRef.current = true;
-            onEndedRef.current();
-          }
+          handleStateChange(player, e.data);
         },
         onError: () => scheduleRetry(),
       },
@@ -436,6 +506,7 @@ export function useYouTubePlayer(
     scheduleRetry,
     resetRetry,
     clearRetry,
+    handleStateChange,
   ]);
 
   useEffect(() => {
