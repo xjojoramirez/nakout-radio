@@ -1931,6 +1931,10 @@ a.pid:hover {
   align-items: center;
 }
 
+.sleeve > div {
+  min-width: 0;
+}
+
 .np-cover {
   width: 112px;
   aspect-ratio: 1;
@@ -1956,11 +1960,22 @@ a.pid:hover {
   font-weight: 800;
   text-wrap: balance;
   overflow-wrap: anywhere;
+  /* Long titles cap at two lines so the hero height stays stable. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .np-artist {
   color: var(--muted);
   font-size: 1rem;
+}
+
+.sleeve .np-artist {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .np-bar {
