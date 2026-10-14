@@ -991,4 +991,35 @@ describe("useYouTubePlayer", () => {
     });
     expect(players[1].playVideo).not.toHaveBeenCalled();
   });
+
+  it("destroys both players and clears timers on unmount", async () => {
+    vi.useFakeTimers();
+    const { unmount } = renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: 25,
+          preloadLead: 20,
+        }),
+        vi.fn(),
+      ),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(5000); // arm
+    });
+    expect(players.length).toBe(2);
+    unmount();
+    expect(players[0].destroy).toHaveBeenCalled();
+    expect(players[1].destroy).toHaveBeenCalled();
+    expect(() => {
+      act(() => {
+        vi.advanceTimersByTime(60000);
+      });
+    }).not.toThrow();
+  });
 });

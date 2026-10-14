@@ -490,6 +490,19 @@ export function useYouTubePlayer(
       if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
       clearRetry();
       clearStartTimer();
+      const preload = preloadRef.current;
+      preloadRef.current = null;
+      preloadVideoRef.current = null;
+      preloadBoundaryRef.current = null;
+      preloadFailedRef.current = false;
+      clearPreloadTimer();
+      if (preload) {
+        try {
+          preload.destroy();
+        } catch {
+          // The player may already have been torn down by the iframe API.
+        }
+      }
       preloadedVideoRef.current = null;
       playerRef.current = null;
       currentVideoRef.current = null;
@@ -510,6 +523,7 @@ export function useYouTubePlayer(
     scheduleRetry,
     resetRetry,
     clearRetry,
+    clearPreloadTimer,
     handleStateChange,
   ]);
 
