@@ -31,6 +31,8 @@ interface YTNamespace {
   };
 }
 
+const PRELOAD_CONTAINER_ID = "yt-preload";
+
 declare global {
   interface Window {
     YT?: YTNamespace;
@@ -131,6 +133,11 @@ export function useYouTubePlayer(
   const retryAttemptRef = useRef(0);
   const retryTimerRef = useRef<number | null>(null);
   const lastResumeAtRef = useRef(0);
+  const preloadRef = useRef<YTPlayer | null>(null);
+  const preloadVideoRef = useRef<string | null>(null);
+  const preloadBoundaryRef = useRef<number | null>(null);
+  const preloadFailedRef = useRef(false);
+  const preloadTimerRef = useRef<number | null>(null);
 
   const hasTrack = broadcast?.track != null;
 
@@ -193,6 +200,45 @@ export function useYouTubePlayer(
     clearRetry();
   }, [clearRetry]);
 
+  const clearPreloadTimer = useCallback(() => {
+    if (preloadTimerRef.current !== null) {
+      window.clearTimeout(preloadTimerRef.current);
+      preloadTimerRef.current = null;
+    }
+  }, []);
+
+  const resetPreload = useCallback(() => {
+    const preload = preloadRef.current;
+    if (preload && isPlayerReady(preload)) {
+      try {
+        preload.pauseVideo();
+      } catch {
+        // The iframe may still be initialising.
+      }
+    }
+    preloadVideoRef.current = null;
+    preloadBoundaryRef.current = null;
+  }, []);
+
+  const ensurePreloadPlayer = useCallback((): YTPlayer | null => {
+    if (preloadRef.current) return preloadRef.current;
+    const yt = window.YT;
+    if (!yt || !document.getElementById(PRELOAD_CONTAINER_ID)) return null;
+    const player = new yt.Player(PRELOAD_CONTAINER_ID, {
+      height: "1",
+      width: "1",
+      playerVars: {
+        autoplay: 1,
+        mute: 1,
+        controls: 0,
+        disablekb: 1,
+        playsinline: 1,
+      },
+    });
+    preloadRef.current = player;
+    return player;
+  }, []);
+
   const clearStartTimer = useCallback(() => {
     if (startTimerRef.current !== null) {
       window.clearTimeout(startTimerRef.current);
@@ -243,6 +289,47 @@ export function useYouTubePlayer(
     },
     [clearStartTimer, startPreloaded],
   );
+
+  const maybeArmPreload = useCallback(
+    (current: BroadcastState) => {
+      if (current.phase !== "playing") return;
+      if (!current.track || !current.nextTrack) return;
+      if (current.preloadLead <= 0 || preloadFailedRef.current) return;
+      if (current.secondsUntilStart === null) return;
+      const boundaryAt =
+        current.fetchedAt +
+        current.rttMs / 2 +
+        Math.max(0, current.secondsUntilStart) * 1000;
+      if (Date.now() < boundaryAt - current.preloadLead * 1000) return;
+      const preload = ensurePreloadPlayer();
+      if (!preload || !isPlayerReady(preload)) return;
+      const nextId = current.nextTrack.youtube_video_id;
+      try {
+        if (
+          preloadVideoRef.current !== nextId ||
+          preloadBoundaryRef.current !== boundaryAt
+        ) {
+          preload.mute();
+          preload.loadVideoById({ videoId: nextId, startSeconds: 0 });
+          preload.playVideo();
+          preloadVideoRef.current = nextId;
+          preloadBoundaryRef.current = boundaryAt;
+        } else if (
+          window.YT &&
+          preload.getPlayerState() !== window.YT.PlayerState.PLAYING
+        ) {
+          preload.mute();
+          preload.playVideo();
+        }
+      } catch {
+        preloadFailedRef.current = true;
+      }
+    },
+    [ensurePreloadPlayer],
+  );
+
+  const armPreloadRef = useRef(maybeArmPreload);
+  armPreloadRef.current = maybeArmPreload;
 
   useEffect(() => {
     let cancelled = false;
@@ -418,6 +505,7 @@ export function useYouTubePlayer(
         setProgress(player.getCurrentTime());
         const playerState = player.getPlayerState();
         if (current.phase !== "gap") {
+          armPreloadRef.current(current);
           if (playerState === yt.PlayerState.PLAYING) {
             lastResumeAtRef.current = 0;
             const target = targetFor(current);

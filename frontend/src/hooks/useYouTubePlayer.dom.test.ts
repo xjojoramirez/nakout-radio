@@ -21,6 +21,7 @@ function broadcast(overrides: Partial<BroadcastState> = {}): BroadcastState {
     phase: "playing",
     nextTrack: null,
     secondsUntilStart: null,
+    preloadLead: 0,
     ...overrides,
   };
 }
@@ -35,6 +36,11 @@ describe("useYouTubePlayer", () => {
   beforeEach(() => {
     window.localStorage.clear();
     players = [];
+    if (!document.getElementById("yt-preload")) {
+      const preloadEl = document.createElement("div");
+      preloadEl.id = "yt-preload";
+      document.body.appendChild(preloadEl);
+    }
     class FakePlayer {
       opts: any;
       loadVideoById = vi.fn();
@@ -737,5 +743,59 @@ describe("useYouTubePlayer", () => {
       vi.advanceTimersByTime(2000);
     });
     expect(players[0].playVideo).toHaveBeenCalledTimes(1);
+  });
+
+  it("pre-rolls the next track muted inside the lead window", async () => {
+    vi.useFakeTimers();
+    renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: 25,
+          preloadLead: 20,
+        }),
+        vi.fn(),
+      ),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    act(() => {
+      vi.advanceTimersByTime(5000); // crosses boundaryAt - 20 s
+    });
+    expect(players.length).toBe(2);
+    expect(players[1].loadVideoById).toHaveBeenCalledWith({
+      videoId: "b",
+      startSeconds: 0,
+    });
+    expect(players[1].mute).toHaveBeenCalled();
+    expect(players[1].playVideo).toHaveBeenCalled();
+    expect(players[0].loadVideoById).not.toHaveBeenCalled();
+  });
+
+  it("does not pre-roll when the lead is disabled", async () => {
+    vi.useFakeTimers();
+    renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: 5,
+          preloadLead: 0,
+        }),
+        vi.fn(),
+      ),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(30000);
+    });
+    expect(players.length).toBe(1);
   });
 });
