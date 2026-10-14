@@ -3,6 +3,39 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-14 — preload the next song ahead of the boundary (issue #6)
+
+Listeners on weak connections started every song cold: the only preload was
+the 2 s gap. The backend now reports `next_track` + `seconds_until_start`
+while a song is playing, and the player keeps a second, hidden YouTube player
+that pre-rolls the next track muted for `PRELOAD_LEAD_SECONDS` (default 20,
+0 disables); at the boundary the pre-rolled player is promoted with a warm
+buffer and the old one is demoted. Failures fall back to the existing gap
+preload; skips, admin actions, mid-gap joins, and unmount are handled, and a
+post-swap resync keeps the client in step with the server.
+
+- `backend/app/config.py`, `backend/.env.example`: new `PRELOAD_LEAD_SECONDS`
+  setting (float, default 20, 0–300; 0 disables).
+- `backend/app/broadcast.py`: `_peek_next()` extracted; `get_current()`
+  reports the next track and seconds-until-start while playing (and in the
+  snapshot-recovery path).
+- `backend/app/schemas.py`, `backend/app/routers/now.py`: `NowOut` gains
+  `preload_lead_seconds`.
+- `frontend/src/types.ts`, `frontend/src/hooks/useBroadcast.ts`: carry
+  `preloadLead` from poll + WebSocket frames.
+- `frontend/src/hooks/useYouTubePlayer.ts`: lazy preload player, muted
+  pre-roll in the lead window, boundary swap with role-aware state/error
+  handling, resync after the swap, gap/error fallbacks, cancellation on track
+  change, dual-player teardown.
+- `frontend/src/pages/RadioPage.tsx`: hidden `#yt-preload` container.
+- Design/plan: `docs/superpowers/specs/2026-10-14-preload-next-song-design.md`,
+  `docs/superpowers/plans/2026-10-14-preload-next-song.md`.
+- **Container restart required (backend + frontend):**
+  `docker compose up -d --build backend frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: `python -m pytest -q` — 242 passed; `npm test` — 271 passed in
+  28 files; `npm run typecheck` — clean; `npm run build` — succeeds.
+
 ## 2026-10-14 — long track/genre text truncates with an ellipsis on the radio and studio pages (issue #5)
 
 Long track titles wrapped without a height cap, and long artist, genre, and
