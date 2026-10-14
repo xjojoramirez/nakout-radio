@@ -229,14 +229,13 @@ def _init(session: Session, now: datetime) -> BroadcastState:
 
 
 def _peek_next(
-    session: Session, state: BroadcastState, now: datetime
+    session: Session, state: BroadcastState, now: datetime, gap: float
 ) -> tuple[TrackCache | None, float]:
     """The track that starts after the current one, and seconds until it starts.
 
     Evaluated at the current track's boundary (track end + gap), which also
     covers schedule genre changes and manual queues.
     """
-    gap = get_settings().track_gap_seconds
     duration = state.durations[state.index] or 1
     end = state.started_at + timedelta(seconds=duration + gap)
     following = advance(
@@ -290,17 +289,20 @@ def get_current(session: Session, now: datetime | None = None) -> NowState:
             genre = session.get(Genre, state.genre_id)
             if track is None or genre is None:
                 return NowState(None, None, 0, "none")
-            return NowState(genre, track, 0, _source(session, state, now))
+            next_track, until = _peek_next(session, state, now, gap)
+            return NowState(
+                genre, track, 0, _source(session, state, now), "playing",
+                next_track, until,
+            )
         duration = state.durations[state.index] or 1
         offset = int((now - state.started_at).total_seconds())
         offset = max(0, min(offset, duration - 1))
         source = _source(session, state, now)
+        next_track, until = _peek_next(session, state, now, gap)
         if now >= state.started_at + timedelta(seconds=duration):
-            next_track, until = _peek_next(session, state, now)
             return NowState(
                 genre, track, offset, source, "gap", next_track, until
             )
-        next_track, until = _peek_next(session, state, now)
         return NowState(
             genre, track, offset, source, "playing", next_track, until
         )
