@@ -398,6 +398,13 @@ body:has(.admin-page) {
   margin-top: 8px;
 }
 
+#panel-now .nowcard .meta .mono {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 #panel-now .nowcard .np-bar,
 #panel-now .nowcard .np-times {
   grid-column: 1 / -1;
@@ -854,6 +861,8 @@ a.back:hover {
   font: 500 0.68rem var(--font-mono);
   opacity: 0.75;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .blk.carry,
@@ -1027,6 +1036,14 @@ a.back:hover {
   gap: 10px;
   flex-wrap: wrap;
   min-width: 0;
+}
+
+.srow .sm b {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .srow .tr {
@@ -1289,10 +1306,23 @@ h2.sec {
   align-items: center;
 }
 
+.gtop > div {
+  min-width: 0;
+}
+
 .gtop b {
   font-size: 1.1rem;
   display: block;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gtop .mono {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gstats {
@@ -1516,7 +1546,11 @@ a.pid {
   color: var(--cream);
   font-weight: 800;
   text-decoration: none;
-  overflow-wrap: anywhere;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 a.pid.idonly {
@@ -1806,6 +1840,10 @@ a.pid:hover {
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: -0.01em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .knob-row {
@@ -1950,6 +1988,9 @@ a.pid:hover {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--amber);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .np-title {
@@ -1972,7 +2013,8 @@ a.pid:hover {
   font-size: 1rem;
 }
 
-.sleeve .np-artist {
+.sleeve .np-artist,
+#panel-now .nowcard .np-artist {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2065,7 +2107,15 @@ a.pid:hover {
   font-size: 0.95rem;
 }
 
+.sched li span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sched li span:last-child {
+  flex: none;
   font-family: var(--font-mono);
   font-size: 0.75rem;
   align-self: center;
@@ -2210,14 +2260,6 @@ a.pid:hover {
     text-align: center;
   }
 
-  .queue-title,
-  .queue-artist {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   .browse {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -2342,11 +2384,19 @@ a.pid:hover {
 
 .queue-title {
   font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .queue-artist {
   color: var(--muted);
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .badge {
