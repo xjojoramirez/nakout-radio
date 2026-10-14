@@ -947,4 +947,48 @@ describe("useYouTubePlayer", () => {
       startSeconds: 0,
     });
   });
+
+  it("cancels the pre-roll when the current track changes", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      {
+        initialProps: {
+          b: broadcast({
+            nextTrack: nextTrack(),
+            secondsUntilStart: 25,
+            preloadLead: 20,
+          }),
+        },
+      },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(5000); // arm
+    });
+    expect(players.length).toBe(2);
+    act(() => {
+      rerender({
+        b: broadcast({
+          track: { ...broadcast().track!, youtube_video_id: "c", title: "c" },
+          offset: 0,
+          fetchedAt: Date.now(),
+        }),
+      });
+    });
+    expect(players[1].pauseVideo).toHaveBeenCalled();
+    expect(players[0].loadVideoById).toHaveBeenCalledWith({
+      videoId: "c",
+      startSeconds: expect.any(Number),
+    });
+    players[1].playVideo.mockClear();
+    act(() => {
+      vi.advanceTimersByTime(25000); // the stale swap timer would have fired
+    });
+    expect(players[1].playVideo).not.toHaveBeenCalled();
+  });
 });

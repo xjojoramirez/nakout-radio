@@ -550,6 +550,9 @@ export function useYouTubePlayer(
     const videoId = broadcast.track.youtube_video_id;
     const target = targetFor(broadcast);
     if (currentVideoRef.current !== videoId) {
+      clearPreloadTimer();
+      resetPreload();
+      preloadFailedRef.current = false;
       if (preloadedVideoRef.current === videoId) {
         startPreloaded(videoId, target);
         return;
@@ -570,8 +573,10 @@ export function useYouTubePlayer(
     }
   }, [
     broadcast,
+    clearPreloadTimer,
     clearStartTimer,
     preloadNext,
+    resetPreload,
     scheduleGapStart,
     scheduleSwap,
     startPreloaded,
