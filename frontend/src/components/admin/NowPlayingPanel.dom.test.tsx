@@ -564,4 +564,43 @@ describe("NowPlayingPanel", () => {
     fireEvent.click(within(dialog).getByText("Play now"));
     await waitFor(() => expect(onError).toHaveBeenCalledWith("boom"));
   });
+
+  it("exposes full track text as tooltips on the nowcard and queue", async () => {
+    const longTitle =
+      "Every Grain Of Sand (Live At The Warfield 1980 Remastered Deluxe Edition)";
+    const longArtist = "The Traveling Wilburys Tribute Ensemble Orchestra";
+    const longTrack = { ...track("long", longTitle, 0), artist: longArtist };
+    mocked.now.mockResolvedValue({
+      genre: GENRE,
+      track: longTrack,
+      offset_seconds: 0,
+      server_time: "x",
+      source: "schedule",
+    });
+    mocked.genreTracks.mockResolvedValue([longTrack]);
+    const { container } = renderPanel();
+    const nowcard = await waitFor(() => {
+      const card = container.querySelector(".admin-np-col .nowcard");
+      expect(card).not.toBeNull();
+      return card as HTMLElement;
+    });
+    expect(nowcard.querySelector(".nowcard-info .np-title")).toHaveAttribute(
+      "title",
+      longTitle,
+    );
+    expect(nowcard.querySelector(".nowcard-info .np-artist")).toHaveAttribute(
+      "title",
+      longArtist,
+    );
+    const row = await waitFor(() => {
+      const el = container.querySelector(".queue-row");
+      expect(el).not.toBeNull();
+      return el as HTMLElement;
+    });
+    expect(row.querySelector(".queue-title")).toHaveAttribute("title", longTitle);
+    expect(row.querySelector(".queue-artist")).toHaveAttribute(
+      "title",
+      longArtist,
+    );
+  });
 });

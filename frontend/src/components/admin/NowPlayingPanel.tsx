@@ -272,8 +272,15 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
                 }}
               />
               <div className="nowcard-info">
-                <h3 className="np-title">{state.track.title}</h3>
-                <div className="np-artist">{state.track.artist}</div>
+                <h3 className="np-title" title={state.track.title}>
+                  {state.track.title}
+                </h3>
+                <div
+                  className="np-artist"
+                  title={state.track.artist || undefined}
+                >
+                  {state.track.artist}
+                </div>
                 <div className="meta">
                   <span className="mono">Genre: {state.genre.name}</span>
                   <span className={`badge source-${state.source}`}>
@@ -381,8 +388,12 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
                     {t.thumbnail_url && (
                       <img className="art small" src={t.thumbnail_url} alt="" />
                     )}
-                    <span className="queue-title">{t.title}</span>
-                    <span className="queue-artist">{t.artist}</span>
+                    <span className="queue-title" title={t.title}>
+                      {t.title}
+                    </span>
+                    <span className="queue-artist" title={t.artist || undefined}>
+                      {t.artist}
+                    </span>
                     <span className="queue-duration">
                       {formatDuration(t.duration_seconds)}
                     </span>
