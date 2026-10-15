@@ -7,6 +7,7 @@ const MUTED_KEY = "nakout.muted";
 const DRIFT_THRESHOLD = 3;
 const AUTOPLAY_FALLBACK_MS = 1500;
 const RESUME_THROTTLE_MS = 3000;
+const POST_SWAP_GRACE_MS = 3000;
 
 interface YTPlayer {
   loadVideoById: (opts: { videoId: string; startSeconds?: number }) => void;
@@ -30,6 +31,8 @@ interface YTNamespace {
     CUED: number;
   };
 }
+
+const PRELOAD_CONTAINER_ID = "yt-preload";
 
 declare global {
   interface Window {
@@ -131,6 +134,13 @@ export function useYouTubePlayer(
   const retryAttemptRef = useRef(0);
   const retryTimerRef = useRef<number | null>(null);
   const lastResumeAtRef = useRef(0);
+  const preloadRef = useRef<YTPlayer | null>(null);
+  const preloadVideoRef = useRef<string | null>(null);
+  const preloadFailedRef = useRef(false);
+  const preloadTimerRef = useRef<number | null>(null);
+  const preloadSwapAtRef = useRef<number | null>(null);
+  const preloadSwapVideoRef = useRef<string | null>(null);
+  const lastSwapAtRef = useRef<number | null>(null);
 
   const hasTrack = broadcast?.track != null;
 
@@ -193,6 +203,82 @@ export function useYouTubePlayer(
     clearRetry();
   }, [clearRetry]);
 
+  const handleStateChange = useCallback(
+    (player: YTPlayer, data: number) => {
+      if (playerRef.current !== player) return;
+      const yt = window.YT;
+      const isPlaying = yt != null && data === yt.PlayerState.PLAYING;
+      setPlaying(isPlaying);
+      if (isPlaying) {
+        endedRef.current = false;
+        resetRetry();
+      }
+      if (yt != null && data === yt.PlayerState.ENDED) {
+        endedRef.current = true;
+        onEndedRef.current();
+      }
+    },
+    [resetRetry],
+  );
+
+  const clearPreloadTimer = useCallback(() => {
+    if (preloadTimerRef.current !== null) {
+      window.clearTimeout(preloadTimerRef.current);
+      preloadTimerRef.current = null;
+    }
+    preloadSwapAtRef.current = null;
+    preloadSwapVideoRef.current = null;
+  }, []);
+
+  const resetPreload = useCallback(() => {
+    const preload = preloadRef.current;
+    if (preload && isPlayerReady(preload)) {
+      try {
+        preload.pauseVideo();
+      } catch {
+        // The iframe may still be initialising.
+      }
+    }
+    preloadVideoRef.current = null;
+  }, []);
+
+  const handleError = useCallback(
+    (player: YTPlayer) => {
+      if (playerRef.current === player) {
+        scheduleRetry();
+        return;
+      }
+      preloadFailedRef.current = true;
+      resetPreload();
+    },
+    [scheduleRetry, resetPreload],
+  );
+
+  const ensurePreloadPlayer = useCallback((): YTPlayer | null => {
+    if (preloadRef.current) return preloadRef.current;
+    const yt = window.YT;
+    if (!yt || !document.getElementById(PRELOAD_CONTAINER_ID)) return null;
+    const player = new yt.Player(PRELOAD_CONTAINER_ID, {
+      height: "1",
+      width: "1",
+      playerVars: {
+        autoplay: 1,
+        mute: 1,
+        controls: 0,
+        disablekb: 1,
+        playsinline: 1,
+      },
+      events: {
+        onError: () => handleError(player),
+        onStateChange: (e: { data: number }) => {
+          handleStateChange(player, e.data);
+        },
+      },
+    });
+    preloadRef.current = player;
+    return player;
+  }, [handleError, handleStateChange, resetPreload]);
+
   const clearStartTimer = useCallback(() => {
     if (startTimerRef.current !== null) {
       window.clearTimeout(startTimerRef.current);
@@ -243,6 +329,110 @@ export function useYouTubePlayer(
     },
     [clearStartTimer, startPreloaded],
   );
+
+  const scheduleSwap = useCallback(
+    (nextId: string, boundaryAt: number, maxSeconds: number) => {
+      // The 1 s tick re-arms on every frame inside the lead window. Keep a
+      // pending swap only when it is for the same video and would not be
+      // postponed: a different video or an earlier boundary replaces it.
+      if (
+        preloadTimerRef.current !== null &&
+        preloadSwapVideoRef.current === nextId &&
+        preloadSwapAtRef.current !== null &&
+        preloadSwapAtRef.current <= boundaryAt
+      ) {
+        return;
+      }
+      clearPreloadTimer();
+      preloadSwapVideoRef.current = nextId;
+      preloadSwapAtRef.current = boundaryAt;
+      preloadTimerRef.current = window.setTimeout(() => {
+        preloadTimerRef.current = null;
+        preloadSwapAtRef.current = null;
+        preloadSwapVideoRef.current = null;
+        const preload = preloadRef.current;
+        if (!preload || !isPlayerReady(preload)) return;
+        if (preloadVideoRef.current !== nextId) return;
+        const position = Math.min(
+          Math.max(0, (Date.now() - boundaryAt) / 1000),
+          Math.max(0, maxSeconds - 1),
+        );
+        const previous = playerRef.current;
+        try {
+          preload.seekTo(position, true);
+          preload.setVolume(volumeRef.current);
+          if (mutedRef.current || volumeRef.current === 0) preload.mute();
+          else preload.unMute();
+          preload.playVideo();
+        } catch {
+          return;
+        }
+        playerRef.current = preload;
+        preloadRef.current = previous;
+        preloadVideoRef.current = null;
+        preloadedVideoRef.current = null;
+        currentVideoRef.current = nextId;
+        endedRef.current = false;
+        resetRetry();
+        setPlaying(true);
+        if (previous && isPlayerReady(previous)) {
+          try {
+            previous.pauseVideo();
+            previous.mute();
+          } catch {
+            // Demoting the old player is best-effort.
+          }
+        }
+        // Ask the page to resync so the fresh broadcast (new current track)
+        // replaces the stale frame within one round-trip.
+        lastSwapAtRef.current = Date.now();
+        onEndedRef.current();
+      }, Math.max(0, boundaryAt - Date.now()));
+    },
+    [clearPreloadTimer, resetRetry],
+  );
+
+  const maybeArmPreload = useCallback(
+    (current: BroadcastState) => {
+      if (current.phase !== "playing") return;
+      if (!current.track || !current.nextTrack) return;
+      // A stale frame (or a pending load) must not arm: the reconcile effect
+      // owns the active player until it matches the broadcast again.
+      if (currentVideoRef.current !== current.track.youtube_video_id) return;
+      if (current.preloadLead <= 0 || preloadFailedRef.current) return;
+      if (current.secondsUntilStart === null) return;
+      const boundaryAt =
+        current.fetchedAt +
+        current.rttMs / 2 +
+        Math.max(0, current.secondsUntilStart) * 1000;
+      if (Date.now() < boundaryAt - current.preloadLead * 1000) return;
+      if (Date.now() >= boundaryAt) return;
+      const preload = ensurePreloadPlayer();
+      if (!preload || !isPlayerReady(preload)) return;
+      const nextId = current.nextTrack.youtube_video_id;
+      try {
+        if (preloadVideoRef.current !== nextId) {
+          preload.mute();
+          preload.loadVideoById({ videoId: nextId, startSeconds: 0 });
+          preload.playVideo();
+        } else if (
+          window.YT &&
+          preload.getPlayerState() !== window.YT.PlayerState.PLAYING
+        ) {
+          preload.mute();
+          preload.playVideo();
+        }
+        preloadVideoRef.current = nextId;
+      } catch {
+        preloadFailedRef.current = true;
+      }
+      scheduleSwap(nextId, boundaryAt, current.nextTrack.duration_seconds);
+    },
+    [ensurePreloadPlayer, scheduleSwap],
+  );
+
+  const armPreloadRef = useRef(maybeArmPreload);
+  armPreloadRef.current = maybeArmPreload;
 
   useEffect(() => {
     let cancelled = false;
@@ -306,18 +496,9 @@ export function useYouTubePlayer(
           }
         },
         onStateChange: (e: { data: number }) => {
-          const isPlaying = e.data === yt.PlayerState.PLAYING;
-          setPlaying(isPlaying);
-          if (isPlaying) {
-            endedRef.current = false;
-            resetRetry();
-          }
-          if (e.data === yt.PlayerState.ENDED) {
-            endedRef.current = true;
-            onEndedRef.current();
-          }
+          handleStateChange(player, e.data);
         },
-        onError: () => scheduleRetry(),
+        onError: () => handleError(player),
       },
     });
     playerRef.current = player;
@@ -329,6 +510,19 @@ export function useYouTubePlayer(
       if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
       clearRetry();
       clearStartTimer();
+      const preload = preloadRef.current;
+      preloadRef.current = null;
+      preloadVideoRef.current = null;
+      preloadFailedRef.current = false;
+      lastSwapAtRef.current = null;
+      clearPreloadTimer();
+      if (preload) {
+        try {
+          preload.destroy();
+        } catch {
+          // The player may already have been torn down by the iframe API.
+        }
+      }
       preloadedVideoRef.current = null;
       playerRef.current = null;
       currentVideoRef.current = null;
@@ -349,6 +543,9 @@ export function useYouTubePlayer(
     scheduleRetry,
     resetRetry,
     clearRetry,
+    clearPreloadTimer,
+    handleStateChange,
+    handleError,
   ]);
 
   useEffect(() => {
@@ -357,12 +554,44 @@ export function useYouTubePlayer(
     if (!isPlayerReady(player)) return;
     const yt = window.YT;
 
+    // A frame that still announces the active video as "next" right after a
+    // swap predates the swap; ignore its stale track until the resync frame
+    // arrives. Bounded by POST_SWAP_GRACE_MS so a legitimate back-jump (the
+    // same shape) still applies once the window has passed.
+    const swappedRecently =
+      lastSwapAtRef.current !== null &&
+      Date.now() - lastSwapAtRef.current < POST_SWAP_GRACE_MS;
+    if (
+      broadcast.phase === "playing" &&
+      swappedRecently &&
+      broadcast.track != null &&
+      broadcast.track.youtube_video_id !== currentVideoRef.current &&
+      broadcast.nextTrack?.youtube_video_id === currentVideoRef.current
+    ) {
+      return;
+    }
+
     if (broadcast.phase === "gap") {
       if (yt && player.getPlayerState() === yt.PlayerState.PLAYING) {
         player.pauseVideo();
       }
       if (!broadcast.nextTrack) return;
-      if (preloadedVideoRef.current !== broadcast.nextTrack.youtube_video_id) {
+      const nextId = broadcast.nextTrack.youtube_video_id;
+      const preloadHealthy =
+        !preloadFailedRef.current &&
+        preloadRef.current !== null &&
+        isPlayerReady(preloadRef.current) &&
+        preloadVideoRef.current === nextId;
+      if (preloadHealthy) {
+        clearStartTimer();
+        const boundaryAt =
+          broadcast.fetchedAt +
+          broadcast.rttMs / 2 +
+          Math.max(0, broadcast.secondsUntilStart ?? 0) * 1000;
+        scheduleSwap(nextId, boundaryAt, broadcast.nextTrack.duration_seconds);
+        return;
+      }
+      if (preloadedVideoRef.current !== nextId) {
         preloadNext(broadcast.nextTrack);
       }
       scheduleGapStart(broadcast);
@@ -373,6 +602,9 @@ export function useYouTubePlayer(
     const videoId = broadcast.track.youtube_video_id;
     const target = targetFor(broadcast);
     if (currentVideoRef.current !== videoId) {
+      clearPreloadTimer();
+      resetPreload();
+      preloadFailedRef.current = false;
       if (preloadedVideoRef.current === videoId) {
         startPreloaded(videoId, target);
         return;
@@ -393,9 +625,12 @@ export function useYouTubePlayer(
     }
   }, [
     broadcast,
+    clearPreloadTimer,
     clearStartTimer,
     preloadNext,
+    resetPreload,
     scheduleGapStart,
+    scheduleSwap,
     startPreloaded,
     resetRetry,
   ]);
@@ -418,25 +653,28 @@ export function useYouTubePlayer(
         setProgress(player.getCurrentTime());
         const playerState = player.getPlayerState();
         if (current.phase !== "gap") {
-          if (playerState === yt.PlayerState.PLAYING) {
-            lastResumeAtRef.current = 0;
-            const target = targetFor(current);
-            if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
-              player.seekTo(target, true);
-            }
-          } else if (
-            playerState === yt.PlayerState.PAUSED ||
-            playerState === yt.PlayerState.CUED
-          ) {
-            // Mobile OSes pause the iframe player when the page is suspended
-            // (screen lock, app switch). Resume at the live position so the
-            // listener rejoins the broadcast; throttled in case the browser
-            // keeps blocking playback.
-            const now = Date.now();
-            if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
-              lastResumeAtRef.current = now;
-              player.seekTo(targetFor(current), true);
-              player.playVideo();
+          armPreloadRef.current(current);
+          if (currentVideoRef.current === current.track.youtube_video_id) {
+            if (playerState === yt.PlayerState.PLAYING) {
+              lastResumeAtRef.current = 0;
+              const target = targetFor(current);
+              if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
+                player.seekTo(target, true);
+              }
+            } else if (
+              playerState === yt.PlayerState.PAUSED ||
+              playerState === yt.PlayerState.CUED
+            ) {
+              // Mobile OSes pause the iframe player when the page is suspended
+              // (screen lock, app switch). Resume at the live position so the
+              // listener rejoins the broadcast; throttled in case the browser
+              // keeps blocking playback.
+              const now = Date.now();
+              if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
+                lastResumeAtRef.current = now;
+                player.seekTo(targetFor(current), true);
+                player.playVideo();
+              }
             }
           }
         }

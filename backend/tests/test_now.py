@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, SQLModel, create_engine, delete, select
 
 from app.broadcast import _load, get_current, play_now
+from app.config import get_settings
 from app.db import get_session
 from app.main import create_app
 from app.models import Playlist, ScheduleSlot, Setting, Genre, TrackCache
@@ -64,8 +65,8 @@ def test_now_returns_track_offset_and_server_time(tmp_path):
     assert 0 <= body["offset_seconds"] < 200
     assert body["server_time"]
     assert body["phase"] == "playing"
-    assert body["next_track"] is None
-    assert body["seconds_until_start"] is None
+    assert body["next_track"]["youtube_video_id"] == "vid"  # one track, wraps
+    assert 201 < body["seconds_until_start"] <= 202  # 200 s + 2 s gap
 
 
 def test_now_off_air(tmp_path):
@@ -271,8 +272,8 @@ def test_now_reports_gap_between_songs(tmp_path):
         t0 = datetime(2026, 1, 1, 0, 0, 0)
         first = get_current(s, t0)
         assert first.phase == "playing"
-        assert first.next_track is None
-        assert first.seconds_until_start is None
+        assert first.next_track.youtube_video_id == "vid"  # wraps on one track
+        assert first.seconds_until_start == 202  # 200 s + 2 s gap
 
         during = get_current(s, t0 + timedelta(seconds=201))
         assert during.phase == "gap"
@@ -333,3 +334,95 @@ def test_now_endpoint_serves_gap_fields(tmp_path):
     assert body["track"]["youtube_video_id"] == "vid"
     assert body["next_track"]["youtube_video_id"] == "vid"
     assert 0 < body["seconds_until_start"] <= 2
+
+
+def test_now_reports_next_track_while_playing(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed_genre(s, "morning", default=True, video="first", duration=200)
+        pl = s.exec(select(Playlist).where(Playlist.genre_id == st.id)).one()
+        s.add(
+            TrackCache(
+                playlist_id=pl.id,
+                youtube_video_id="second",
+                title="T2",
+                artist="A",
+                position=1,
+                duration_seconds=120,
+            )
+        )
+        s.commit()
+    with Session(engine) as s:
+        t0 = datetime(2026, 1, 1, 0, 0, 0)
+        first = get_current(s, t0)
+        assert first.phase == "playing"
+        assert first.track.youtube_video_id == "first"
+        assert first.next_track.youtube_video_id == "second"
+        assert first.seconds_until_start == 202
+
+        later = get_current(s, t0 + timedelta(seconds=30))
+        assert later.next_track.youtube_video_id == "second"
+        assert later.seconds_until_start == 172
+
+
+def test_now_endpoint_reports_preload_lead(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed_genre(s, "morning", default=True)
+    body = _client(engine).get("/api/now").json()
+    assert body["preload_lead_seconds"] == get_settings().preload_lead_seconds
+
+
+def test_now_peeks_next_in_manual_queue(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed_genre(s, "morning", default=True, video="one", duration=100)
+        pl = s.exec(select(Playlist).where(Playlist.genre_id == st.id)).one()
+        s.add(
+            TrackCache(
+                playlist_id=pl.id,
+                youtube_video_id="two",
+                title="T2",
+                artist="A",
+                position=1,
+                duration_seconds=100,
+            )
+        )
+        s.commit()
+        genre_id = st.id
+    with Session(engine) as s:
+        t0 = datetime(2026, 1, 1, 0, 0, 0)
+        play_now(s, genre_id, "one", now=t0)
+        state = get_current(s, t0 + timedelta(seconds=10))
+        assert state.phase == "playing"
+        assert state.track.youtube_video_id == "one"
+        assert state.next_track.youtube_video_id == "two"
+        assert state.seconds_until_start == 92  # 100 s + 2 s gap - 10 s
+
+
+def test_now_peeks_across_a_schedule_flip(tmp_path):
+    engine = _engine(tmp_path)
+    every_day = [0, 1, 2, 3, 4, 5, 6]
+    with Session(engine) as s:
+        alpha = _seed_genre(s, "alpha", video="av", duration=100)
+        beta = _seed_genre(s, "beta", video="bv", duration=100)
+        s.add(
+            ScheduleSlot(genre_id=alpha.id, days_of_week=every_day, start_time="05:00")
+        )
+        s.add(
+            ScheduleSlot(genre_id=beta.id, days_of_week=every_day, start_time="06:00")
+        )
+        s.commit()
+    with Session(engine) as s:
+        # Mon 05:58:30 Manila = Sun 21:58:30 UTC; the track boundary (06:00:12
+        # Manila) crosses into beta, so the peek must resolve beta's track.
+        t0 = datetime(2026, 1, 4, 21, 58, 30)
+        state = get_current(s, t0)
+        assert state.genre.slug == "alpha"
+        assert state.track.youtube_video_id == "av"
+        assert state.next_track.youtube_video_id == "bv"
+        assert state.seconds_until_start == 102
+
+        later = get_current(s, t0 + timedelta(seconds=10))
+        assert later.next_track.youtube_video_id == "bv"
+        assert later.seconds_until_start == 92

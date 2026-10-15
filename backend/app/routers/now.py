@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
 from app.broadcast import get_current, utcnow
+from app.config import get_settings
 from app.db import get_session
 from app.routers.genres import tracks_for_genre
 from app.schemas import NowOut, GenreOut, TrackOut
@@ -34,6 +35,7 @@ def build_now(session: Session, ts: datetime) -> NowOut:
             TrackOut.model_validate(state.next_track) if state.next_track else None
         ),
         seconds_until_start=state.seconds_until_start,
+        preload_lead_seconds=get_settings().preload_lead_seconds,
     )
 
 

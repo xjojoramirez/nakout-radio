@@ -228,6 +228,29 @@ def _init(session: Session, now: datetime) -> BroadcastState:
     return BroadcastState(genre_id, ids, durations, 0, now)
 
 
+def _peek_next(
+    session: Session, state: BroadcastState, now: datetime, gap: float
+) -> tuple[TrackCache | None, float]:
+    """The track that starts after the current one, and seconds until it starts.
+
+    Evaluated at the current track's boundary (track end + gap), which also
+    covers schedule genre changes and manual queues.
+    """
+    duration = state.durations[state.index] or 1
+    end = state.started_at + timedelta(seconds=duration + gap)
+    following = advance(
+        state,
+        end,
+        lambda at: _desired(session, at),
+        lambda sid: _snapshot(session, sid),
+        gap,
+    )
+    next_track = None
+    if following.genre_id is not None and following.track_ids:
+        next_track = session.get(TrackCache, following.track_ids[following.index])
+    return next_track, max(0.0, (end - now).total_seconds())
+
+
 def get_current(session: Session, now: datetime | None = None) -> NowState:
     now = now or utcnow()
     gap = get_settings().track_gap_seconds
@@ -266,35 +289,23 @@ def get_current(session: Session, now: datetime | None = None) -> NowState:
             genre = session.get(Genre, state.genre_id)
             if track is None or genre is None:
                 return NowState(None, None, 0, "none")
-            return NowState(genre, track, 0, _source(session, state, now))
+            next_track, until = _peek_next(session, state, now, gap)
+            return NowState(
+                genre, track, 0, _source(session, state, now), "playing",
+                next_track, until,
+            )
         duration = state.durations[state.index] or 1
         offset = int((now - state.started_at).total_seconds())
         offset = max(0, min(offset, duration - 1))
         source = _source(session, state, now)
+        next_track, until = _peek_next(session, state, now, gap)
         if now >= state.started_at + timedelta(seconds=duration):
-            end = state.started_at + timedelta(seconds=duration + gap)
-            following = advance(
-                state,
-                end,
-                lambda at: _desired(session, at),
-                lambda sid: _snapshot(session, sid),
-                gap,
-            )
-            next_track = None
-            if following.genre_id is not None and following.track_ids:
-                next_track = session.get(
-                    TrackCache, following.track_ids[following.index]
-                )
             return NowState(
-                genre,
-                track,
-                offset,
-                source,
-                "gap",
-                next_track,
-                max(0.0, (end - now).total_seconds()),
+                genre, track, offset, source, "gap", next_track, until
             )
-        return NowState(genre, track, offset, source)
+        return NowState(
+            genre, track, offset, source, "playing", next_track, until
+        )
 
 
 def _load_and_advance(session: Session, now: datetime) -> BroadcastState:

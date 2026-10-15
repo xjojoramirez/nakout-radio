@@ -39,6 +39,7 @@ export interface BroadcastNow {
   phase: "playing" | "gap";
   next_track: Track | null;
   seconds_until_start: number | null;
+  preload_lead_seconds?: number;
 }
 
 export interface ChannelSource {

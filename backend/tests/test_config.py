@@ -43,3 +43,20 @@ def test_track_gap_rejects_out_of_range():
 def test_track_gap_accepts_zero_and_fraction():
     assert Settings(_env_file=None, track_gap_seconds=0).track_gap_seconds == 0
     assert Settings(_env_file=None, track_gap_seconds=1.5).track_gap_seconds == 1.5
+
+
+def test_preload_lead_default(monkeypatch):
+    monkeypatch.delenv("PRELOAD_LEAD_SECONDS", raising=False)
+    assert Settings(_env_file=None).preload_lead_seconds == 20.0
+
+
+def test_preload_lead_rejects_out_of_range():
+    with pytest.raises(Exception):
+        Settings(_env_file=None, preload_lead_seconds=-1)
+    with pytest.raises(Exception):
+        Settings(_env_file=None, preload_lead_seconds=301)
+
+
+def test_preload_lead_accepts_zero_and_fraction():
+    assert Settings(_env_file=None, preload_lead_seconds=0).preload_lead_seconds == 0
+    assert Settings(_env_file=None, preload_lead_seconds=12.5).preload_lead_seconds == 12.5

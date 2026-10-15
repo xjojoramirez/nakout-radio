@@ -237,4 +237,10 @@ describe("RadioPage", () => {
     expect(heading).toHaveAttribute("title", longTitle);
     expect(screen.getByText(longArtist)).toHaveAttribute("title", longArtist);
   });
+
+  it("renders the hidden preload player container", async () => {
+    const { container } = render(<RadioPage />);
+    await screen.findByText("live");
+    expect(container.querySelector("#yt-preload")).not.toBeNull();
+  });
 });
