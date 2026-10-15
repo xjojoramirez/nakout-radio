@@ -29,9 +29,7 @@ export function RadioPage() {
   return (
     <div className={offline ? "radio-page offline" : "radio-page"}>
       <header className="radio-top">
-        <div className="brand">
-          Nakout<span>.</span>Radio
-        </div>
+        <div className="brand">Nakout Radio</div>
         <div className="onair">
           <span
             className={player.playing || gap ? "led on" : "led"}
