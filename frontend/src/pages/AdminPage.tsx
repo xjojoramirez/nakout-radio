@@ -180,7 +180,7 @@ export function AdminPage() {
     <div className="admin admin-page">
       <header className="admin-top">
         <div className="brand">
-          Nakout<span>.</span>Radio <small>Admin</small>
+          Nakout Radio <small>Admin</small>
         </div>
         <div className="top-r">
           <a className="back" href="/">
