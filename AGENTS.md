@@ -22,10 +22,11 @@ Every time code or configuration is changed, add an entry to `docs/changelog.md`
 
 ## Runtime notes
 
-- The app is deployed via `docker-compose.yml` (services: `caddy` :8010,
-  `backend` :8011, `frontend` :8012). Images are built from Dockerfiles; source
-  is NOT bind-mounted, so code changes never take effect until the image is
-  rebuilt and the container recreated.
+- The app is deployed via `docker-compose.yml` (services: `caddy` on host
+  ports 80/443; `backend` :8011 and `frontend` :8012 are bound to loopback
+  only). Images are built from Dockerfiles; source is NOT bind-mounted, so
+  code changes never take effect until the image is rebuilt and the container
+  recreated.
 - The `frontend` image bakes the built `dist/` bundle in at build time.
 - After restarting the frontend, hard-refresh the browser (Ctrl+Shift+R).
 

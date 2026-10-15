@@ -3,6 +3,30 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-15 — docs: fix the Caddy ports in AGENTS.md; record review follow-ups
+
+The runtime note in `AGENTS.md` still listed `caddy` on host port `:8010`,
+but since 2026-10-08 Caddy publishes `80`/`443` (see the changelog entry
+below). Corrected, and clarified that `backend` (`:8011`) and `frontend`
+(`:8012`) are loopback-only. Also added `docs/follow-ups.md`, which records
+the recommended improvements from the 2026-10-15 project review, in priority
+order: a CI workflow running the existing pytest / npm test / typecheck /
+build commands, and enabling SQLite WAL + an explicit `busy_timeout` in
+`backend/app/db.py`; plus the lower-priority nits (unused genre/queue
+endpoints, `formatClock` duplication, a missing page-token loop guard in
+`fetch_playlist_items`, `useYouTubePlayer` complexity, and the `advance()`
+catch-up cost).
+
+- Files touched:
+  - `AGENTS.md`
+  - `docs/follow-ups.md` (new)
+  - `docs/changelog.md` (docs)
+- **Container restart required?** No — documentation only, nothing served
+  changes.
+- Verification: none (no code changed). The SQLite defaults quoted in
+  `docs/follow-ups.md` were checked against SQLAlchemy 2.0.36
+  (`journal_mode=delete`, `busy_timeout=5000`).
+
 ## 2026-10-14 — preload the next song ahead of the boundary (issue #6)
 
 Listeners on weak connections started every song cold: the only preload was
