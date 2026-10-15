@@ -3,6 +3,16 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-15 — fix: plain Nakout Radio brand on listener header (issue #15)
+
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — `frontend` only:
+  `docker compose up -d --build frontend`
+- Verification: `npx vitest run src/pages/RadioPage.dom.test.tsx` — 12/12 pass.
+
 ## 2026-10-15 — docs: fix the Caddy ports in AGENTS.md; record review follow-ups
 
 The runtime note in `AGENTS.md` still listed `caddy` on host port `:8010`,
