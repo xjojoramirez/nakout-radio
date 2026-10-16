@@ -6,6 +6,7 @@ from sqlmodel import Session, SQLModel, create_engine, delete
 from app.broadcast import (
     _load,
     _peek_next,
+    _run_seed,
     get_current,
     play_now,
     set_auto,
@@ -145,7 +146,15 @@ def test_order_applies_to_next_skip(tmp_path):
         assert get_current(s, NOW).track.youtube_video_id == "b"
 
 
-def test_set_order_after_time_advances_preserves_current(tmp_path):
+def test_set_order_after_time_advances_preserves_current(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    # The fixed timestamps below assume a 2s gap; pin it so an environment
+    # override of TRACK_GAP_SECONDS cannot shift the offset at t=150.
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 2.0}),
+    )
     engine = _engine(tmp_path)
     with Session(engine) as s:
         st = _seed(s, "chill", ["a", "b", "c"])
@@ -302,7 +311,7 @@ def test_peek_and_commit_use_the_same_seed_on_wrap(tmp_path, monkeypatch):
     )
     engine = _engine(tmp_path)
     with Session(engine) as s:
-        _seed(s, "chill", ["a", "b", "c"], default=True)
+        st = _seed(s, "chill", ["a", "b", "c"], default=True)
         set_auto(s, now=NOW)
         get_current(s, NOW + timedelta(seconds=200))
         state = _load(s)
@@ -314,9 +323,12 @@ def test_peek_and_commit_use_the_same_seed_on_wrap(tmp_path, monkeypatch):
         commit_seeds = list(seeds)
         assert peek_seeds == commit_seeds
         assert predicted.youtube_video_id == committed.track.youtube_video_id
+        assert commit_seeds == [_run_seed(st.id, NOW + timedelta(seconds=300))]
 
 
 def test_peek_and_commit_use_the_same_seed_on_genre_switch(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
     seeds = []
 
     def factory(seed):
@@ -324,6 +336,12 @@ def test_peek_and_commit_use_the_same_seed_on_genre_switch(tmp_path, monkeypatch
         return _SeedSensitiveRNG(seed)
 
     monkeypatch.setattr("app.broadcast._rng_factory", factory)
+    # The fixed timestamps below assume a 2s gap; pin it so an environment
+    # override of TRACK_GAP_SECONDS cannot shift the boundary at t=102.
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 2.0}),
+    )
     engine = _engine(tmp_path)
     with Session(engine) as s:
         one = _seed(s, "one", ["a1"], default=True)
@@ -345,3 +363,4 @@ def test_peek_and_commit_use_the_same_seed_on_genre_switch(tmp_path, monkeypatch
         commit_seeds = list(seeds)
         assert peek_seeds == commit_seeds
         assert predicted.youtube_video_id == committed.track.youtube_video_id
+        assert commit_seeds == [_run_seed(two.id, NOW + timedelta(seconds=102))]
