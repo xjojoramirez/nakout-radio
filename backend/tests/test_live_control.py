@@ -226,6 +226,20 @@ class _ReverseRNG:
         seq.reverse()
 
 
+class _SeedSensitiveRNG:
+    """Stub whose order depends on the seed it was constructed with."""
+
+    def __init__(self, seed):
+        self.seed = seed
+
+    def shuffle(self, seq):
+        if not seq:
+            return None
+        k = sum(ord(c) for c in self.seed) % len(seq)
+        seq[:] = seq[k:] + seq[:k]
+        return None
+
+
 def test_set_auto_randomizes_the_genre_run(tmp_path, monkeypatch):
     monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _ReverseRNG())
     engine = _engine(tmp_path)
@@ -269,4 +283,65 @@ def test_peek_matches_the_committed_wrap_reshuffle(tmp_path, monkeypatch):
         state = _load(s)
         predicted, _ = _peek_next(s, state, NOW + timedelta(seconds=200), 0.0)
         committed = get_current(s, NOW + timedelta(seconds=300))
+        assert predicted.youtube_video_id == committed.track.youtube_video_id
+
+
+def test_peek_and_commit_use_the_same_seed_on_wrap(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    seeds = []
+
+    def factory(seed):
+        seeds.append(seed)
+        return _SeedSensitiveRNG(seed)
+
+    monkeypatch.setattr("app.broadcast._rng_factory", factory)
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "chill", ["a", "b", "c"], default=True)
+        set_auto(s, now=NOW)
+        get_current(s, NOW + timedelta(seconds=200))
+        state = _load(s)
+        seeds.clear()
+        predicted, _ = _peek_next(s, state, NOW + timedelta(seconds=200), 0.0)
+        peek_seeds = list(seeds)
+        seeds.clear()
+        committed = get_current(s, NOW + timedelta(seconds=300))
+        commit_seeds = list(seeds)
+        assert peek_seeds == commit_seeds
+        assert predicted.youtube_video_id == committed.track.youtube_video_id
+
+
+def test_peek_and_commit_use_the_same_seed_on_genre_switch(tmp_path, monkeypatch):
+    seeds = []
+
+    def factory(seed):
+        seeds.append(seed)
+        return _SeedSensitiveRNG(seed)
+
+    monkeypatch.setattr("app.broadcast._rng_factory", factory)
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        one = _seed(s, "one", ["a1"], default=True)
+        two = _seed(s, "two", ["b1", "b2", "b3", "b4"])
+        switch_at = NOW + timedelta(seconds=100)
+        monkeypatch.setattr(
+            "app.broadcast._desired",
+            lambda session, at: two.id if at >= switch_at else one.id,
+        )
+        set_auto(s, now=NOW)
+        get_current(s, NOW)
+        state = _load(s)
+        seeds.clear()
+        # Default gap is 2s, so the single 100s track's boundary is at t=102.
+        predicted, _ = _peek_next(s, state, NOW, 2.0)
+        peek_seeds = list(seeds)
+        seeds.clear()
+        committed = get_current(s, NOW + timedelta(seconds=102))
+        commit_seeds = list(seeds)
+        assert peek_seeds == commit_seeds
         assert predicted.youtube_video_id == committed.track.youtube_video_id
