@@ -7,12 +7,14 @@ restart is required (see `AGENTS.md` for the restart commands).
 
 The broadcast replayed each genre's tracks in the same saved order every time
 the scheduler switched to it. Now, whenever an **automatic** genre run starts —
-initial start, Auto/resume, a scheduler genre-to-genre switch, or a loop wrap —
-the queue is shuffled for that run only. The shuffle is seeded from
-`(genre_id, run start time)`, so the listener's "up next" preload matches what
-actually plays. Nothing is persisted: the saved `genre_order:<id>` and the
-admin's manual arrangement are untouched, and manual transport (Play a track,
-Next/Prev, Shuffle/drag-reorder) stays deterministic.
+initial start, Auto/resume, a scheduler genre-to-genre switch, a loop wrap, or
+the recovery rebuild after a snapshot track disappears — the queue is shuffled
+for that run only. The shuffle is seeded from `(genre_id, run start time)`, so
+the listener's "up next" preload matches what actually plays. The saved
+`genre_order:<id>` and the admin's manual arrangement are untouched: the
+shuffled order lives only in the existing `broadcast_state` run record, and
+manual transport (Play a track, Next/Prev, Shuffle/drag-reorder) stays
+deterministic.
 
 - Files touched:
   - `backend/app/broadcast.py`
