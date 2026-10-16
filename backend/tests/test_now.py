@@ -54,6 +54,13 @@ def _seed_genre(session, slug, *, default=False, video="vid", duration=200):
     return st
 
 
+class _KeepOrderRNG:
+    """No-op RNG so tests unrelated to shuffling keep the saved order."""
+
+    def shuffle(self, seq):
+        return None
+
+
 def test_now_returns_track_offset_and_server_time(tmp_path):
     engine = _engine(tmp_path)
     with Session(engine) as s:
@@ -216,7 +223,8 @@ def test_load_discards_non_int_genre_id(tmp_path):
         assert _load(s) is None
 
 
-def test_now_recovers_when_snapshot_track_is_gone(tmp_path):
+def test_now_recovers_when_snapshot_track_is_gone(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
     engine = _engine(tmp_path)
     with Session(engine) as s:
         st = _seed_genre(s, "morning", default=True, video="old")
@@ -336,7 +344,8 @@ def test_now_endpoint_serves_gap_fields(tmp_path):
     assert 0 < body["seconds_until_start"] <= 2
 
 
-def test_now_reports_next_track_while_playing(tmp_path):
+def test_now_reports_next_track_while_playing(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
     engine = _engine(tmp_path)
     with Session(engine) as s:
         st = _seed_genre(s, "morning", default=True, video="first", duration=200)

@@ -283,6 +283,7 @@ def _init(session: Session, now: datetime) -> BroadcastState:
     if genre_id is None:
         return BroadcastState(None, [], [], 0, now)
     ids, durations = _snapshot(session, genre_id)
+    ids, durations = _auto_randomize(genre_id, now, ids, durations)
     return BroadcastState(genre_id, ids, durations, 0, now)
 
 
@@ -302,6 +303,7 @@ def _peek_next(
         lambda at: _desired(session, at),
         lambda sid: _snapshot(session, sid),
         gap,
+        randomize=_auto_randomize,
     )
     next_track = None
     if following.genre_id is not None and following.track_ids:
@@ -324,6 +326,7 @@ def get_current(session: Session, now: datetime | None = None) -> NowState:
             lambda at: _desired(session, at),
             lambda sid: _snapshot(session, sid),
             gap,
+            randomize=_auto_randomize,
         )
         if initialized or state != before:
             _save(session, state)
@@ -376,6 +379,7 @@ def _load_and_advance(session: Session, now: datetime) -> BroadcastState:
         lambda at: _desired(session, at),
         lambda sid: _snapshot(session, sid),
         get_settings().track_gap_seconds,
+        randomize=_auto_randomize,
     )
 
 
