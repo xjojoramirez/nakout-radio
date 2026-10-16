@@ -3,6 +3,27 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-16 — randomize the genre queue on automatic run start (issue #14)
+
+The broadcast replayed each genre's tracks in the same saved order every time
+the scheduler switched to it. Now, whenever an **automatic** genre run starts —
+initial start, Auto/resume, a scheduler genre-to-genre switch, or a loop wrap —
+the queue is shuffled for that run only. The shuffle is seeded from
+`(genre_id, run start time)`, so the listener's "up next" preload matches what
+actually plays. Nothing is persisted: the saved `genre_order:<id>` and the
+admin's manual arrangement are untouched, and manual transport (Play a track,
+Next/Prev, Shuffle/drag-reorder) stays deterministic.
+
+- Files touched:
+  - `backend/app/broadcast.py`
+  - `backend/tests/test_broadcast.py`
+  - `backend/tests/test_live_control.py`
+  - `backend/tests/test_now.py`
+  - `docs/changelog.md` (docs)
+- **Container restart required?** Yes — `backend` only:
+  `docker compose up -d --build backend`
+- Verification: `cd backend && python -m pytest -q` — 258 passed.
+
 ## 2026-10-15 — plain "Nakout Radio" brand, no dot (issue #15)
 
 The listener and admin headers rendered the brand as `Nakout<span>.</span>Radio`
