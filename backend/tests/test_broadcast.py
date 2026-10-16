@@ -1,6 +1,12 @@
 from datetime import datetime, timedelta
 
-from app.broadcast import BroadcastState, advance
+from app.broadcast import (
+    BroadcastState,
+    _auto_randomize,
+    _run_seed,
+    _shuffle_pairs,
+    advance,
+)
 
 
 def _state(genre_id, track_ids, durations, index, started_at):
@@ -276,3 +282,38 @@ def test_manual_advance_includes_gap():
     )
     assert after.index == 1
     assert after.started_at == START + timedelta(seconds=102)
+
+
+def test_shuffle_pairs_is_a_permutation_and_keeps_pairing():
+    ids = [10, 11, 12, 13]
+    durations = [1, 2, 3, 4]
+    out_ids, out_durations = _shuffle_pairs(ids, durations, "seed-a")
+    assert sorted(out_ids) == ids
+    assert dict(zip(out_ids, out_durations)) == dict(zip(ids, durations))
+
+
+def test_shuffle_pairs_is_deterministic_per_seed():
+    ids = [10, 11, 12, 13]
+    durations = [1, 2, 3, 4]
+    first = _shuffle_pairs(ids, durations, "seed-a")
+    again = _shuffle_pairs(ids, durations, "seed-a")
+    assert first == again
+
+
+def test_run_seed_changes_with_genre_and_time():
+    assert _run_seed(1, START) == "1:2026-01-01T00:00:00"
+    assert _run_seed(1, START) != _run_seed(2, START)
+    assert _run_seed(1, START) != _run_seed(1, START + timedelta(seconds=1))
+
+
+def test_auto_randomize_is_stable_for_the_same_run():
+    ids = [20, 21, 22, 23, 24, 25]
+    durations = [100] * 6
+    first = _auto_randomize(2, START, ids, durations)
+    again = _auto_randomize(2, START, ids, durations)
+    assert first == again
+
+
+def test_auto_randomize_is_a_noop_for_small_lists():
+    assert _auto_randomize(2, START, [10], [100]) == ([10], [100])
+    assert _auto_randomize(2, START, [], []) == ([], [])

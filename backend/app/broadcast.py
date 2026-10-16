@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
@@ -23,6 +24,42 @@ from app.scheduler import resolve_genre_id
 def utcnow() -> datetime:
     """Naive UTC, matching models._utcnow."""
     return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def _run_seed(genre_id: int | None, started_at: datetime) -> str:
+    """Stable seed for one automatic genre run.
+
+    Keyed on the genre and the run's start time so that ``_peek_next``, which
+    advances a *copy* of the state to the boundary, reproduces the same order
+    the committed run will play.
+    """
+    return f"{genre_id}:{started_at.isoformat()}"
+
+
+def _rng_factory(seed: str) -> random.Random:
+    """Indirection over the RNG so tests can inject a deterministic one."""
+    return random.Random(seed)
+
+
+def _shuffle_pairs(
+    ids: list[int], durations: list[int], seed: str
+) -> tuple[list[int], list[int]]:
+    """Fisher-Yates shuffle of ``(id, duration)`` pairs, kept in lockstep."""
+    pairs = list(zip(ids, durations))
+    _rng_factory(seed).shuffle(pairs)
+    return [p[0] for p in pairs], [p[1] for p in pairs]
+
+
+def _auto_randomize(
+    genre_id: int | None,
+    started_at: datetime,
+    ids: list[int],
+    durations: list[int],
+) -> tuple[list[int], list[int]]:
+    """Shuffle one automatic genre run's queue (no-op for < 2 tracks)."""
+    if len(ids) < 2:
+        return ids, durations
+    return _shuffle_pairs(ids, durations, _run_seed(genre_id, started_at))
 
 
 @dataclass
