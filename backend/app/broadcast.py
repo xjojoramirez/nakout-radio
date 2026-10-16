@@ -31,7 +31,9 @@ def _run_seed(genre_id: int | None, started_at: datetime) -> str:
 
     Keyed on the genre and the run's start time so that ``_peek_next``, which
     advances a *copy* of the state to the boundary, reproduces the same order
-    the committed run will play.
+    the committed run will play. Only needs to be stable within the running
+    process: the concrete order is persisted in ``broadcast_state``, so the
+    seed itself need not be reproducible across versions.
     """
     return f"{genre_id}:{started_at.isoformat()}"
 
@@ -45,6 +47,8 @@ def _shuffle_pairs(
     ids: list[int], durations: list[int], seed: str
 ) -> tuple[list[int], list[int]]:
     """Fisher-Yates shuffle of ``(id, duration)`` pairs, kept in lockstep."""
+    if len(ids) != len(durations):
+        raise ValueError("ids and durations must be the same length")
     pairs = list(zip(ids, durations))
     _rng_factory(seed).shuffle(pairs)
     return [p[0] for p in pairs], [p[1] for p in pairs]
@@ -58,7 +62,7 @@ def _auto_randomize(
 ) -> tuple[list[int], list[int]]:
     """Shuffle one automatic genre run's queue (no-op for < 2 tracks)."""
     if len(ids) < 2:
-        return ids, durations
+        return list(ids), list(durations)
     return _shuffle_pairs(ids, durations, _run_seed(genre_id, started_at))
 
 

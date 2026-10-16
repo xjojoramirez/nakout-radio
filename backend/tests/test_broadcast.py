@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+import pytest
+
 from app.broadcast import (
     BroadcastState,
     _auto_randomize,
@@ -288,6 +290,7 @@ def test_shuffle_pairs_is_a_permutation_and_keeps_pairing():
     ids = [10, 11, 12, 13]
     durations = [1, 2, 3, 4]
     out_ids, out_durations = _shuffle_pairs(ids, durations, "seed-a")
+    assert out_ids == [11, 13, 10, 12]
     assert sorted(out_ids) == ids
     assert dict(zip(out_ids, out_durations)) == dict(zip(ids, durations))
 
@@ -317,3 +320,8 @@ def test_auto_randomize_is_stable_for_the_same_run():
 def test_auto_randomize_is_a_noop_for_small_lists():
     assert _auto_randomize(2, START, [10], [100]) == ([10], [100])
     assert _auto_randomize(2, START, [], []) == ([], [])
+
+
+def test_shuffle_pairs_rejects_mismatched_lengths():
+    with pytest.raises(ValueError):
+        _shuffle_pairs([1, 2, 3], [10, 20], "seed-a")
