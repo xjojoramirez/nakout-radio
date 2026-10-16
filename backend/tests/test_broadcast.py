@@ -290,6 +290,8 @@ def test_shuffle_pairs_is_a_permutation_and_keeps_pairing():
     ids = [10, 11, 12, 13]
     durations = [1, 2, 3, 4]
     out_ids, out_durations = _shuffle_pairs(ids, durations, "seed-a")
+    # Pins determinism (not just "is a permutation"); tied to CPython's
+    # random.Random shuffle, which is stable for the Python version we pin.
     assert out_ids == [11, 13, 10, 12]
     assert sorted(out_ids) == ids
     assert dict(zip(out_ids, out_durations)) == dict(zip(ids, durations))
@@ -325,3 +327,8 @@ def test_auto_randomize_is_a_noop_for_small_lists():
 def test_shuffle_pairs_rejects_mismatched_lengths():
     with pytest.raises(ValueError):
         _shuffle_pairs([1, 2, 3], [10, 20], "seed-a")
+
+
+def test_auto_randomize_rejects_mismatched_lengths():
+    with pytest.raises(ValueError):
+        _auto_randomize(2, START, [1], [10, 20])

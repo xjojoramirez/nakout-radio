@@ -61,6 +61,8 @@ def _auto_randomize(
     durations: list[int],
 ) -> tuple[list[int], list[int]]:
     """Shuffle one automatic genre run's queue (no-op for < 2 tracks)."""
+    if len(ids) != len(durations):
+        raise ValueError("ids and durations must be the same length")
     if len(ids) < 2:
         return list(ids), list(durations)
     return _shuffle_pairs(ids, durations, _run_seed(genre_id, started_at))
