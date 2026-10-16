@@ -103,7 +103,10 @@ describe("AdminPage", () => {
     mocked.listGenres.mockResolvedValue([]);
     render(<AdminPage />);
     await login();
-    expect(screen.getByText(/Nakout/)).toBeInTheDocument();
+    const brand = document.querySelector(".admin-top .brand");
+    expect(brand).not.toBeNull();
+    expect(brand?.textContent).toBe("Nakout Radio Admin");
+    expect(brand?.querySelector("span")).toBeNull();
     expect(
       screen.getByRole("link", { name: /Back to radio/ }),
     ).toBeInTheDocument();

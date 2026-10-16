@@ -3,6 +3,25 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-15 — plain "Nakout Radio" brand, no dot (issue #15)
+
+The listener and admin headers rendered the brand as `Nakout<span>.</span>Radio`
+with an amber dot. Changed both to plain `Nakout Radio` text (admin keeps its
+`<small>Admin</small>` suffix). No CSS changes; the now-unused `.brand span`
+rule in `vintage.css` is left in place.
+
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `frontend/src/pages/AdminPage.dom.test.tsx`
+  - `docs/changelog.md` (docs)
+- **Container restart required?** Yes — `frontend` only:
+  `docker compose up -d --build frontend`
+- Verification: `npx vitest run` (both page test files pass);
+  `grep -r "Nakout<span>" frontend/src` returns nothing; `npx tsc --noEmit`
+  clean.
+
 ## 2026-10-15 — docs: fix the Caddy ports in AGENTS.md; record review follow-ups
 
 The runtime note in `AGENTS.md` still listed `caddy` on host port `:8010`,

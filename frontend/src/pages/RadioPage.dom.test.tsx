@@ -243,4 +243,12 @@ describe("RadioPage", () => {
     await screen.findByText("live");
     expect(container.querySelector("#yt-preload")).not.toBeNull();
   });
+
+  it("renders the brand as plain Nakout Radio (no dot)", () => {
+    render(<RadioPage />);
+    const brand = document.querySelector(".radio-top .brand");
+    expect(brand).not.toBeNull();
+    expect(brand?.textContent).toBe("Nakout Radio");
+    expect(brand?.querySelector("span")).toBeNull();
+  });
 });
