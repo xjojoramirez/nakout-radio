@@ -84,11 +84,20 @@ def advance(
     desired: Callable[[datetime], int | None],
     snapshot: Callable[[int], tuple[list[int], list[int]]],
     gap_seconds: float = 0.0,
+    randomize: (
+        Callable[
+            [int | None, datetime, list[int], list[int]],
+            tuple[list[int], list[int]],
+        ]
+        | None
+    ) = None,
 ) -> BroadcastState:
     """Advance ``state`` forward through finished tracks.
 
     ``desired(at)`` returns the genre that should be live at time ``at``.
     ``snapshot(genre_id)`` returns that genre's ``(track_ids, durations)``.
+    ``randomize(genre_id, started_at, ids, durations)``, when given, reshuffles
+    the queue each time it is (re)built, including genre switches and wraps.
     Each track occupies ``duration + gap_seconds``: the extra seconds are a
     silent interval after the song, before the next one starts. Boundary times
     are evaluated at the boundary itself so the result is correct even after a
@@ -104,6 +113,12 @@ def advance(
     elif not 0 <= state.index < len(state.track_ids):
         state.index = 0
 
+    def build(genre_id: int, started_at: datetime) -> tuple[list[int], list[int]]:
+        ids, durations = snapshot(genre_id)
+        if randomize is not None:
+            ids, durations = randomize(genre_id, started_at, ids, durations)
+        return ids, durations
+
     if state.manual:
         return _advance_manual(state, now, gap_seconds)
 
@@ -112,7 +127,7 @@ def advance(
             target = desired(now)
             if target is None:
                 return state
-            ids, durations = snapshot(target)
+            ids, durations = build(target, now)
             if not ids:
                 state.genre_id = target
                 state.track_ids = []
@@ -133,7 +148,7 @@ def advance(
         target = desired(end)
         if target is not None and target != state.genre_id:
             state.genre_id = target
-            state.track_ids, state.durations = snapshot(target)
+            state.track_ids, state.durations = build(target, end)
             state.index = 0
             state.started_at = end
         else:
@@ -141,7 +156,7 @@ def advance(
             state.started_at = end
             if state.index >= len(state.track_ids):
                 state.index = 0
-                state.track_ids, state.durations = snapshot(state.genre_id)
+                state.track_ids, state.durations = build(state.genre_id, end)
     return state
 
 
