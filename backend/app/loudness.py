@@ -294,8 +294,18 @@ def _backfill_worker() -> None:
     from app.db import engine
 
     try:
+        # Uvicorn leaves app loggers handler-less, so attach a plain one to
+        # make backfill progress visible in `docker compose logs`.
+        if not logger.handlers:
+            handler = logging.StreamHandler()
+            handler.setFormatter(
+                logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+            )
+            logger.addHandler(handler)
+            logger.setLevel(logging.INFO)
         factory = partial(Session, engine)
         resolved = 0
+        logger.info("loudness backfill started")
         with httpx.Client(
             timeout=10.0, headers={"User-Agent": USER_AGENT}
         ) as client:
@@ -305,8 +315,7 @@ def _backfill_worker() -> None:
                     break
                 resolved += processed
                 logger.info("loudness backfill: %d tracks resolved", resolved)
-        if resolved:
-            logger.info("loudness backfill finished: %d tracks resolved", resolved)
+        logger.info("loudness backfill finished: %d tracks resolved", resolved)
     except Exception:  # noqa: BLE001 - background best-effort
         logger.exception("loudness backfill aborted")
     finally:
