@@ -71,7 +71,8 @@ def offset_for_gain(gain_db: float | None) -> float:
         return 0.0
     settings = get_settings()
     offset = settings.loudness_target_db - gain_db
-    return max(-MAX_ATTENUATION_DB, min(settings.loudness_max_boost_db, offset))
+    offset = max(-MAX_ATTENUATION_DB, min(settings.loudness_max_boost_db, offset))
+    return round(offset, 1)
 
 
 _BRACKETED_RE = re.compile(r"\([^)]*\)|\[[^\]]*\]")
