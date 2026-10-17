@@ -54,18 +54,45 @@ def _shuffle_pairs(
     return [p[0] for p in pairs], [p[1] for p in pairs]
 
 
+def _avoid_immediate_repeat(
+    ids: list[int], durations: list[int], previous_id: int | None
+) -> tuple[list[int], list[int]]:
+    """Keep a wrapped pass from opening on the track that just finished.
+
+    Swaps the head with position 1 when it still holds ``previous_id``. The
+    target position is fixed — no extra randomness is drawn — so the result
+    stays a pure function of ``(genre_id, run start time, previous track)`` and
+    ``_peek_next`` reproduces the committed order. A one-track genre cannot
+    avoid the replay; nothing changes when the head is already fine.
+    """
+    if previous_id is None or len(ids) < 2 or ids[0] != previous_id:
+        return ids, durations
+    ids = list(ids)
+    durations = list(durations)
+    ids[0], ids[1] = ids[1], ids[0]
+    durations[0], durations[1] = durations[1], durations[0]
+    return ids, durations
+
+
 def _auto_randomize(
     genre_id: int | None,
     started_at: datetime,
     ids: list[int],
     durations: list[int],
+    previous_id: int | None = None,
 ) -> tuple[list[int], list[int]]:
-    """Shuffle one automatic genre run's queue (no-op for < 2 tracks)."""
+    """Shuffle one automatic genre run's queue (no-op for < 2 tracks).
+
+    ``previous_id`` is the track that just finished when the queue is rebuilt
+    mid-run (a wrap), or ``None`` for a fresh run; it is kept out of the first
+    slot so consecutive passes never replay it back-to-back.
+    """
     if len(ids) != len(durations):
         raise ValueError("ids and durations must be the same length")
     if len(ids) < 2:
         return list(ids), list(durations)
-    return _shuffle_pairs(ids, durations, _run_seed(genre_id, started_at))
+    ids, durations = _shuffle_pairs(ids, durations, _run_seed(genre_id, started_at))
+    return _avoid_immediate_repeat(ids, durations, previous_id)
 
 
 @dataclass
@@ -86,7 +113,7 @@ def advance(
     gap_seconds: float = 0.0,
     randomize: (
         Callable[
-            [int | None, datetime, list[int], list[int]],
+            [int | None, datetime, list[int], list[int], int | None],
             tuple[list[int], list[int]],
         ]
         | None
@@ -96,12 +123,14 @@ def advance(
 
     ``desired(at)`` returns the genre that should be live at time ``at``.
     ``snapshot(genre_id)`` returns that genre's ``(track_ids, durations)``.
-    ``randomize(genre_id, started_at, ids, durations)``, when given, reshuffles
-    the queue each time it is (re)built, including genre switches and wraps.
-    Each track occupies ``duration + gap_seconds``: the extra seconds are a
-    silent interval after the song, before the next one starts. Boundary times
-    are evaluated at the boundary itself so the result is correct even after a
-    long gap with no requests. Does not mutate the input.
+    ``randomize(genre_id, started_at, ids, durations, previous_id)``, when
+    given, reshuffles the queue each time it is (re)built, including genre
+    switches and wraps. ``previous_id`` is the track that just finished (or
+    ``None`` on the initial fill), so the hook can keep a wrapped pass from
+    replaying it. Each track occupies ``duration + gap_seconds``: the extra
+    seconds are a silent interval after the song, before the next one starts.
+    Boundary times are evaluated at the boundary itself so the result is
+    correct even after a long gap with no requests. Does not mutate the input.
     """
     state = replace(
         state,
@@ -113,10 +142,14 @@ def advance(
     elif not 0 <= state.index < len(state.track_ids):
         state.index = 0
 
-    def build(genre_id: int, started_at: datetime) -> tuple[list[int], list[int]]:
+    def build(
+        genre_id: int, started_at: datetime, previous_id: int | None
+    ) -> tuple[list[int], list[int]]:
         ids, durations = snapshot(genre_id)
         if randomize is not None:
-            ids, durations = randomize(genre_id, started_at, ids, durations)
+            ids, durations = randomize(
+                genre_id, started_at, ids, durations, previous_id
+            )
         return ids, durations
 
     if state.manual:
@@ -127,7 +160,7 @@ def advance(
             target = desired(now)
             if target is None:
                 return state
-            ids, durations = build(target, now)
+            ids, durations = build(target, now, None)
             if not ids:
                 state.genre_id = target
                 state.track_ids = []
@@ -145,10 +178,11 @@ def advance(
         if now < end:
             return state
 
+        finished_id = state.track_ids[state.index]
         target = desired(end)
         if target is not None and target != state.genre_id:
             state.genre_id = target
-            state.track_ids, state.durations = build(target, end)
+            state.track_ids, state.durations = build(target, end, finished_id)
             state.index = 0
             state.started_at = end
         else:
@@ -156,7 +190,9 @@ def advance(
             state.started_at = end
             if state.index >= len(state.track_ids):
                 state.index = 0
-                state.track_ids, state.durations = build(state.genre_id, end)
+                state.track_ids, state.durations = build(
+                    state.genre_id, end, finished_id
+                )
     return state
 
 
