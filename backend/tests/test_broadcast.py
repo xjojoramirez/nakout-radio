@@ -5,6 +5,7 @@ import pytest
 from app.broadcast import (
     BroadcastState,
     _auto_randomize,
+    _avoid_immediate_repeat,
     _run_seed,
     _shuffle_pairs,
     advance,
@@ -33,6 +34,13 @@ def _desired_at(mapping):
 
 
 START = datetime(2026, 1, 1, 0, 0, 0)
+
+
+class _ReverseRNG:
+    """Deterministic stand-in for random.Random used to pin thread order."""
+
+    def shuffle(self, seq):
+        seq.reverse()
 
 
 def test_mid_track_does_not_advance():
@@ -334,12 +342,53 @@ def test_auto_randomize_rejects_mismatched_lengths():
         _auto_randomize(2, START, [1], [10, 20])
 
 
+def test_avoid_immediate_repeat_swaps_a_replayed_head():
+    ids, durations = _avoid_immediate_repeat([10, 11, 12], [1, 2, 3], 10)
+    assert ids == [11, 10, 12]
+    assert durations == [2, 1, 3]
+
+    ids, durations = _avoid_immediate_repeat([10, 11], [1, 2], 10)
+    assert ids == [11, 10]
+    assert durations == [2, 1]
+
+
+def test_avoid_immediate_repeat_leaves_other_queues_alone():
+    assert _avoid_immediate_repeat([11, 10, 12], [1, 2, 3], 10) == (
+        [11, 10, 12],
+        [1, 2, 3],
+    )
+    assert _avoid_immediate_repeat([10, 11, 12], [1, 2, 3], None) == (
+        [10, 11, 12],
+        [1, 2, 3],
+    )
+    # A single-track genre cannot avoid replaying its only track.
+    assert _avoid_immediate_repeat([10], [1], 10) == ([10], [1])
+
+
+def test_auto_randomize_avoids_replaying_the_previous_track(monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _ReverseRNG())
+    ids, durations = _auto_randomize(
+        1, START, [10, 11, 12], [1, 2, 3], previous_id=12
+    )
+    # The reverse shuffle alone would open the new pass with 12 again.
+    assert ids == [11, 12, 10]
+    assert durations == [2, 3, 1]
+
+
+def test_auto_randomize_keeps_the_shuffle_when_no_repeat_would_happen(monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _ReverseRNG())
+    assert _auto_randomize(1, START, [10, 11, 12], [1, 2, 3], previous_id=10) == (
+        [12, 11, 10],
+        [3, 2, 1],
+    )
+
+
 def test_advance_randomizes_on_genre_switch():
     state = _state(1, [10], [100], 0, START)
     desired = _desired_at([(START, 1), (START + timedelta(seconds=50), 2)])
     table = {1: ([10], [100]), 2: ([20, 21, 22], [100, 100, 100])}
 
-    def randomize(genre_id, started_at, ids, durations):
+    def randomize(genre_id, started_at, ids, durations, previous_id):
         assert genre_id == 2
         return list(reversed(ids)), list(reversed(durations))
 
@@ -361,7 +410,7 @@ def test_advance_randomize_receives_the_boundary_start_time():
     table = {1: ([10], [100]), 2: ([20, 21], [100, 100])}
     seen = []
 
-    def randomize(genre_id, started_at, ids, durations):
+    def randomize(genre_id, started_at, ids, durations, previous_id):
         seen.append((genre_id, started_at))
         return ids, durations
 
@@ -379,8 +428,8 @@ def test_advance_randomizes_on_wrap():
     state = _state(1, [10, 11, 12], [100, 100, 100], 2, START + timedelta(seconds=200))
     seen = []
 
-    def randomize(genre_id, started_at, ids, durations):
-        seen.append((genre_id, started_at))
+    def randomize(genre_id, started_at, ids, durations, previous_id):
+        seen.append((genre_id, started_at, previous_id))
         return list(reversed(ids)), list(reversed(durations))
 
     result = advance(
@@ -392,7 +441,65 @@ def test_advance_randomizes_on_wrap():
     )
     assert result.index == 0
     assert result.track_ids == [12, 11, 10]
-    assert seen == [(1, START + timedelta(seconds=300))]
+    assert seen == [(1, START + timedelta(seconds=300), 12)]
+
+
+def test_advance_randomize_receives_the_finished_track_on_switch():
+    state = _state(1, [10], [100], 0, START)
+    desired = _desired_at([(START, 1), (START + timedelta(seconds=50), 2)])
+    table = {1: ([10], [100]), 2: ([20, 21], [100, 100])}
+    seen = []
+
+    def randomize(genre_id, started_at, ids, durations, previous_id):
+        seen.append(previous_id)
+        return ids, durations
+
+    advance(
+        state,
+        START + timedelta(seconds=120),
+        desired,
+        lambda sid: table[sid],
+        randomize=randomize,
+    )
+    assert seen == [10]
+
+
+def test_advance_randomize_receives_no_previous_on_first_fill():
+    state = _state(1, [], [], 0, START)
+    seen = []
+
+    def randomize(genre_id, started_at, ids, durations, previous_id):
+        seen.append(previous_id)
+        return ids, durations
+
+    result = advance(
+        state,
+        START + timedelta(hours=3),
+        lambda at: 1,
+        lambda sid: ([10, 11], [100, 100]),
+        randomize=randomize,
+    )
+    assert seen == [None]
+    assert result.track_ids == [10, 11]
+
+
+def test_advance_wrap_does_not_replay_the_finished_track(monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _ReverseRNG())
+    state = _state(1, [10, 11], [50, 100], 1, START + timedelta(seconds=50))
+    result = advance(
+        state,
+        START + timedelta(seconds=150),
+        lambda at: 1,
+        lambda sid: ([10, 11], [50, 100]),
+        randomize=_auto_randomize,
+    )
+    # Track 11 (the last of the pass) finishes; the reverse shuffle alone
+    # would open the next pass with it again.
+    assert result.track_ids[0] != 11
+    assert result.track_ids == [10, 11]
+    assert result.durations == [50, 100]
+    assert result.index == 0
+    assert result.started_at == START + timedelta(seconds=150)
 
 
 def test_manual_advance_never_randomizes():

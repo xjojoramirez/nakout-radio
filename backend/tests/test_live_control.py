@@ -295,6 +295,35 @@ def test_peek_matches_the_committed_wrap_reshuffle(tmp_path, monkeypatch):
         assert predicted.youtube_video_id == committed.track.youtube_video_id
 
 
+def test_peek_matches_the_committed_wrap_without_repeating(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "app.broadcast._rng_factory", lambda seed: _SeedSensitiveRNG(seed)
+    )
+    # The fixed timestamps below assume no inter-track gap; pin it to 0 so the
+    # wrap lands exactly at t=300 and the seeds stay the two pinned strings.
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "chill", ["a", "b", "c"], default=True)
+        set_auto(s, now=NOW)
+        # The initial seed rotates a,b,c to b,c,a; at t=200 the last track (a)
+        # is live. The wrap seed rotates the base order back to a,b,c, so the
+        # raw shuffle alone would replay a as the first track of the new pass.
+        at_last = get_current(s, NOW + timedelta(seconds=200))
+        assert at_last.track.youtube_video_id == "a"
+        state = _load(s)
+        predicted, _ = _peek_next(s, state, NOW + timedelta(seconds=200), 0.0)
+        committed = get_current(s, NOW + timedelta(seconds=300))
+        assert committed.track.youtube_video_id != "a"
+        assert committed.track.youtube_video_id == "b"
+        assert predicted.youtube_video_id == committed.track.youtube_video_id
+
+
 def test_peek_and_commit_use_the_same_seed_on_wrap(tmp_path, monkeypatch):
     from app.config import get_settings as _get_settings
 
