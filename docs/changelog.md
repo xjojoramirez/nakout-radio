@@ -3,6 +3,19 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-17 — PR bodies must end with a "Container restart" section (AGENTS.md)
+
+Every pull request now ends with a `Container restart` section stating the
+required rebuild(s) — e.g. `Yes — backend only: docker compose up -d --build
+backend` — or `No restart required` for docs/tests-only changes, mirroring the
+changelog entry. Documented in `AGENTS.md` so it applies to every session.
+
+- Files touched:
+  - `AGENTS.md` (docs)
+  - `docs/changelog.md` (docs)
+- **Container restart required?** No — documentation only.
+- Verification: docs-only change; no tests affected.
+
 ## 2026-10-16 — randomize the genre queue on automatic run start (issue #14)
 
 The broadcast replayed each genre's tracks in the same saved order every time

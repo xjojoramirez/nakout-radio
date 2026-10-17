@@ -42,3 +42,7 @@ account — never `jojoxprimary`:
 - `main` is protected by the repository ruleset `main-protection`
   (no force-pushes or deletion; changes land via pull requests) — push a
   branch and open a PR instead of committing to `main` directly.
+- PR bodies: every pull request must end with a `Container restart` section
+  stating the required rebuild(s) exactly as the changelog entry does, e.g.
+  `Yes — backend only: docker compose up -d --build backend`; docs/tests-only
+  PRs say `No restart required`.
