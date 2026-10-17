@@ -3,6 +3,53 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-17 — loudness normalization across tracks (issue #23)
+
+Tracks no longer jump in loudness between songs. Each track carries a loudness
+offset derived from Deezer's keyless metadata (`gain` — no audio is downloaded
+or analyzed; the browser cannot touch the YouTube iframe's audio) which is
+applied to the player volume, so a given fader position sounds roughly the
+same for every track. Backend: `trackcache` gains `gain_db`/`gain_checked_at`
+(re-syncs preserve them when title/artist are unchanged, reset them otherwise);
+a best-effort background backfill fills them after boot and after playlist
+syncs (~0.3 s per lookup; ~4 min once for the existing library; disable with
+`LOUDNESS_LOOKUP_ENABLED=false`); every track payload exposes
+`volume_offset_db = clamp(LOUDNESS_TARGET_DB − gain, −15, +LOUDNESS_MAX_BOOST_DB)`
+(defaults `-15` / `+6`, chosen so loud masters come down and quiet ones come
+up while the station averages a few dB quieter). Frontend: the listener
+applies `round(volume × 10^(offset/20))` (clamped 0–100) at every point the
+player volume is set, including preload promotion; tracks without metadata
+play exactly as before. Tuning is env-only: edit `LOUDNESS_TARGET_DB` /
+`LOUDNESS_MAX_BOOST_DB` in `backend/.env` and restart `backend` — no rebuild.
+
+- Files touched:
+  - `backend/app/loudness.py` (new), `backend/app/models.py`,
+    `backend/app/config.py`, `backend/app/schemas.py`, `backend/app/sync.py`,
+    `backend/app/main.py`, `backend/app/routers/admin.py`
+  - `backend/alembic/versions/f3a4b5c6d7e8_track_loudness.py` (new)
+  - `backend/.env.example`
+  - `backend/tests/test_loudness.py` (new), `backend/tests/test_models.py`,
+    `backend/tests/test_sync.py`, `backend/tests/test_now.py`,
+    `backend/tests/conftest.py`
+  - `frontend/src/utils/loudness.ts` (new),
+    `frontend/src/utils/loudness.unit.test.ts` (new),
+    `frontend/src/hooks/useYouTubePlayer.ts`, `frontend/src/types.ts`,
+    `frontend/src/hooks/useYouTubePlayer.dom.test.ts` (fixtures in
+    `RadioPage.dom.test.tsx`, `NowPlayingPanel.dom.test.tsx`,
+    `GenresPanel.dom.test.tsx`)
+  - `docs/superpowers/specs/2026-10-17-loudness-normalization-design.md` (new),
+    `docs/superpowers/plans/2026-10-17-loudness-normalization.md` (new),
+    `docs/changelog.md` (docs)
+- **Container restart required?** Yes — `backend` and `frontend`:
+  `docker compose up -d --build backend frontend` (hard-refresh the browser
+  afterwards; the loudness backfill starts in the background on backend boot).
+- Verification: `cd backend && python -m pytest -q` — 298 passed.
+  `cd frontend && npm run test` — 282 passed; `npm run typecheck`;
+  `npm run build`. Live sanity check from the backend container against the
+  real Deezer API: 4/4 known titles resolved (e.g. Led Zeppelin −14.3 →
+  −0.7 dB, Limp Bizkit −6.8 → −8.2 dB, Bread −16.4 → +1.4 dB) and a nonsense
+  title resolved to no correction.
+
 ## 2026-10-17 — no immediate repeat when a genre queue wraps (issue #20)
 
 On a loop wrap the queue was reshuffled with no exclusion for the track that
