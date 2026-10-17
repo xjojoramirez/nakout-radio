@@ -1,6 +1,14 @@
 from datetime import datetime, timedelta
 
-from app.broadcast import BroadcastState, advance
+import pytest
+
+from app.broadcast import (
+    BroadcastState,
+    _auto_randomize,
+    _run_seed,
+    _shuffle_pairs,
+    advance,
+)
 
 
 def _state(genre_id, track_ids, durations, index, started_at):
@@ -276,3 +284,137 @@ def test_manual_advance_includes_gap():
     )
     assert after.index == 1
     assert after.started_at == START + timedelta(seconds=102)
+
+
+def test_shuffle_pairs_is_a_permutation_and_keeps_pairing():
+    ids = [10, 11, 12, 13]
+    durations = [1, 2, 3, 4]
+    out_ids, out_durations = _shuffle_pairs(ids, durations, "seed-a")
+    # Pins determinism (not just "is a permutation"); tied to CPython's
+    # random.Random shuffle, which is stable for the Python version we pin.
+    assert out_ids == [11, 13, 10, 12]
+    assert sorted(out_ids) == ids
+    assert dict(zip(out_ids, out_durations)) == dict(zip(ids, durations))
+
+
+def test_shuffle_pairs_is_deterministic_per_seed():
+    ids = [10, 11, 12, 13]
+    durations = [1, 2, 3, 4]
+    first = _shuffle_pairs(ids, durations, "seed-a")
+    again = _shuffle_pairs(ids, durations, "seed-a")
+    assert first == again
+
+
+def test_run_seed_changes_with_genre_and_time():
+    assert _run_seed(1, START) == "1:2026-01-01T00:00:00"
+    assert _run_seed(1, START) != _run_seed(2, START)
+    assert _run_seed(1, START) != _run_seed(1, START + timedelta(seconds=1))
+
+
+def test_auto_randomize_is_stable_for_the_same_run():
+    ids = [20, 21, 22, 23, 24, 25]
+    durations = [100] * 6
+    first = _auto_randomize(2, START, ids, durations)
+    again = _auto_randomize(2, START, ids, durations)
+    assert first == again
+
+
+def test_auto_randomize_is_a_noop_for_small_lists():
+    assert _auto_randomize(2, START, [10], [100]) == ([10], [100])
+    assert _auto_randomize(2, START, [], []) == ([], [])
+
+
+def test_shuffle_pairs_rejects_mismatched_lengths():
+    with pytest.raises(ValueError):
+        _shuffle_pairs([1, 2, 3], [10, 20], "seed-a")
+
+
+def test_auto_randomize_rejects_mismatched_lengths():
+    with pytest.raises(ValueError):
+        _auto_randomize(2, START, [1], [10, 20])
+
+
+def test_advance_randomizes_on_genre_switch():
+    state = _state(1, [10], [100], 0, START)
+    desired = _desired_at([(START, 1), (START + timedelta(seconds=50), 2)])
+    table = {1: ([10], [100]), 2: ([20, 21, 22], [100, 100, 100])}
+
+    def randomize(genre_id, started_at, ids, durations):
+        assert genre_id == 2
+        return list(reversed(ids)), list(reversed(durations))
+
+    result = advance(
+        state,
+        START + timedelta(seconds=120),
+        desired,
+        lambda sid: table[sid],
+        randomize=randomize,
+    )
+    assert result.genre_id == 2
+    assert result.track_ids == [22, 21, 20]
+    assert result.index == 0
+
+
+def test_advance_randomize_receives_the_boundary_start_time():
+    state = _state(1, [10], [100], 0, START)
+    desired = _desired_at([(START, 1), (START + timedelta(seconds=50), 2)])
+    table = {1: ([10], [100]), 2: ([20, 21], [100, 100])}
+    seen = []
+
+    def randomize(genre_id, started_at, ids, durations):
+        seen.append((genre_id, started_at))
+        return ids, durations
+
+    advance(
+        state,
+        START + timedelta(seconds=120),
+        desired,
+        lambda sid: table[sid],
+        randomize=randomize,
+    )
+    assert seen == [(2, START + timedelta(seconds=100))]
+
+
+def test_advance_randomizes_on_wrap():
+    state = _state(1, [10, 11, 12], [100, 100, 100], 2, START + timedelta(seconds=200))
+    seen = []
+
+    def randomize(genre_id, started_at, ids, durations):
+        seen.append((genre_id, started_at))
+        return list(reversed(ids)), list(reversed(durations))
+
+    result = advance(
+        state,
+        START + timedelta(seconds=300),
+        lambda at: 1,
+        lambda sid: ([10, 11, 12], [100, 100, 100]),
+        randomize=randomize,
+    )
+    assert result.index == 0
+    assert result.track_ids == [12, 11, 10]
+    assert seen == [(1, START + timedelta(seconds=300))]
+
+
+def test_manual_advance_never_randomizes():
+    state = BroadcastState(
+        genre_id=1,
+        track_ids=[10, 11],
+        durations=[100, 100],
+        index=0,
+        started_at=START,
+        manual=True,
+    )
+    calls = []
+
+    def randomize(*args):
+        calls.append(args)
+        return args[2], args[3]
+
+    advance(
+        state,
+        START + timedelta(seconds=250),
+        lambda at: 1,
+        lambda sid: ([10, 11], [100, 100]),
+        randomize=randomize,
+    )
+    assert calls == []

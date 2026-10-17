@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
@@ -25,6 +26,48 @@ def utcnow() -> datetime:
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
+def _run_seed(genre_id: int | None, started_at: datetime) -> str:
+    """Stable seed for one automatic genre run.
+
+    Keyed on the genre and the run's start time so that ``_peek_next``, which
+    advances a *copy* of the state to the boundary, reproduces the same order
+    the committed run will play. Only needs to be stable within the running
+    process: the concrete order is persisted in ``broadcast_state``, so the
+    seed itself need not be reproducible across versions.
+    """
+    return f"{genre_id}:{started_at.isoformat()}"
+
+
+def _rng_factory(seed: str) -> random.Random:
+    """Indirection over the RNG so tests can inject a deterministic one."""
+    return random.Random(seed)
+
+
+def _shuffle_pairs(
+    ids: list[int], durations: list[int], seed: str
+) -> tuple[list[int], list[int]]:
+    """Fisher-Yates shuffle of ``(id, duration)`` pairs, kept in lockstep."""
+    if len(ids) != len(durations):
+        raise ValueError("ids and durations must be the same length")
+    pairs = list(zip(ids, durations))
+    _rng_factory(seed).shuffle(pairs)
+    return [p[0] for p in pairs], [p[1] for p in pairs]
+
+
+def _auto_randomize(
+    genre_id: int | None,
+    started_at: datetime,
+    ids: list[int],
+    durations: list[int],
+) -> tuple[list[int], list[int]]:
+    """Shuffle one automatic genre run's queue (no-op for < 2 tracks)."""
+    if len(ids) != len(durations):
+        raise ValueError("ids and durations must be the same length")
+    if len(ids) < 2:
+        return list(ids), list(durations)
+    return _shuffle_pairs(ids, durations, _run_seed(genre_id, started_at))
+
+
 @dataclass
 class BroadcastState:
     genre_id: int | None
@@ -41,11 +84,20 @@ def advance(
     desired: Callable[[datetime], int | None],
     snapshot: Callable[[int], tuple[list[int], list[int]]],
     gap_seconds: float = 0.0,
+    randomize: (
+        Callable[
+            [int | None, datetime, list[int], list[int]],
+            tuple[list[int], list[int]],
+        ]
+        | None
+    ) = None,
 ) -> BroadcastState:
     """Advance ``state`` forward through finished tracks.
 
     ``desired(at)`` returns the genre that should be live at time ``at``.
     ``snapshot(genre_id)`` returns that genre's ``(track_ids, durations)``.
+    ``randomize(genre_id, started_at, ids, durations)``, when given, reshuffles
+    the queue each time it is (re)built, including genre switches and wraps.
     Each track occupies ``duration + gap_seconds``: the extra seconds are a
     silent interval after the song, before the next one starts. Boundary times
     are evaluated at the boundary itself so the result is correct even after a
@@ -61,6 +113,12 @@ def advance(
     elif not 0 <= state.index < len(state.track_ids):
         state.index = 0
 
+    def build(genre_id: int, started_at: datetime) -> tuple[list[int], list[int]]:
+        ids, durations = snapshot(genre_id)
+        if randomize is not None:
+            ids, durations = randomize(genre_id, started_at, ids, durations)
+        return ids, durations
+
     if state.manual:
         return _advance_manual(state, now, gap_seconds)
 
@@ -69,7 +127,7 @@ def advance(
             target = desired(now)
             if target is None:
                 return state
-            ids, durations = snapshot(target)
+            ids, durations = build(target, now)
             if not ids:
                 state.genre_id = target
                 state.track_ids = []
@@ -90,7 +148,7 @@ def advance(
         target = desired(end)
         if target is not None and target != state.genre_id:
             state.genre_id = target
-            state.track_ids, state.durations = snapshot(target)
+            state.track_ids, state.durations = build(target, end)
             state.index = 0
             state.started_at = end
         else:
@@ -98,7 +156,7 @@ def advance(
             state.started_at = end
             if state.index >= len(state.track_ids):
                 state.index = 0
-                state.track_ids, state.durations = snapshot(state.genre_id)
+                state.track_ids, state.durations = build(state.genre_id, end)
     return state
 
 
@@ -225,6 +283,7 @@ def _init(session: Session, now: datetime) -> BroadcastState:
     if genre_id is None:
         return BroadcastState(None, [], [], 0, now)
     ids, durations = _snapshot(session, genre_id)
+    ids, durations = _auto_randomize(genre_id, now, ids, durations)
     return BroadcastState(genre_id, ids, durations, 0, now)
 
 
@@ -244,6 +303,7 @@ def _peek_next(
         lambda at: _desired(session, at),
         lambda sid: _snapshot(session, sid),
         gap,
+        randomize=_auto_randomize,
     )
     next_track = None
     if following.genre_id is not None and following.track_ids:
@@ -266,6 +326,7 @@ def get_current(session: Session, now: datetime | None = None) -> NowState:
             lambda at: _desired(session, at),
             lambda sid: _snapshot(session, sid),
             gap,
+            randomize=_auto_randomize,
         )
         if initialized or state != before:
             _save(session, state)
@@ -318,6 +379,7 @@ def _load_and_advance(session: Session, now: datetime) -> BroadcastState:
         lambda at: _desired(session, at),
         lambda sid: _snapshot(session, sid),
         get_settings().track_gap_seconds,
+        randomize=_auto_randomize,
     )
 
 

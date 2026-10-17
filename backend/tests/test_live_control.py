@@ -3,7 +3,17 @@ from datetime import datetime, timedelta
 import pytest
 from sqlmodel import Session, SQLModel, create_engine, delete
 
-from app.broadcast import get_current, play_now, set_auto, set_order, skip, stop
+from app.broadcast import (
+    _load,
+    _peek_next,
+    _run_seed,
+    get_current,
+    play_now,
+    set_auto,
+    set_order,
+    skip,
+    stop,
+)
 from app.models import Playlist, Genre, TrackCache
 
 
@@ -88,7 +98,8 @@ def test_skip_switches_to_requested_genre(tmp_path):
         assert now_state.track.youtube_video_id == "x"
 
 
-def test_skip_from_auto_moves_to_adjacent_track(tmp_path):
+def test_skip_from_auto_moves_to_adjacent_track(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
     engine = _engine(tmp_path)
     with Session(engine) as s:
         st = _seed(s, "chill", ["a", "b", "c"], default=True)
@@ -102,7 +113,8 @@ def test_skip_from_auto_moves_to_adjacent_track(tmp_path):
         assert get_current(s, NOW).track.youtube_video_id == "a"
 
 
-def test_set_auto_returns_to_schedule(tmp_path):
+def test_set_auto_returns_to_schedule(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
     engine = _engine(tmp_path)
     with Session(engine) as s:
         st = _seed(s, "chill", ["a", "b"], default=True)
@@ -134,7 +146,15 @@ def test_order_applies_to_next_skip(tmp_path):
         assert get_current(s, NOW).track.youtube_video_id == "b"
 
 
-def test_set_order_after_time_advances_preserves_current(tmp_path):
+def test_set_order_after_time_advances_preserves_current(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    # The fixed timestamps below assume a 2s gap; pin it so an environment
+    # override of TRACK_GAP_SECONDS cannot shift the offset at t=150.
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 2.0}),
+    )
     engine = _engine(tmp_path)
     with Session(engine) as s:
         st = _seed(s, "chill", ["a", "b", "c"])
@@ -176,7 +196,8 @@ def test_stop_goes_off_air_and_stays(tmp_path):
         assert get_current(s, later).source == "none"
 
 
-def test_stop_then_auto_resumes(tmp_path):
+def test_stop_then_auto_resumes(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
     engine = _engine(tmp_path)
     with Session(engine) as s:
         _seed(s, "chill", ["a", "b"], default=True)
@@ -198,3 +219,148 @@ def test_stop_then_play_resumes(tmp_path):
         now_state = get_current(s, NOW)
         assert now_state.source == "manual"
         assert now_state.track.youtube_video_id == "b"
+
+
+class _KeepOrderRNG:
+    """No-op RNG so tests unrelated to shuffling keep the saved order."""
+
+    def shuffle(self, seq):
+        return None
+
+
+class _ReverseRNG:
+    """Deterministic stand-in for random.Random used to pin thread order."""
+
+    def shuffle(self, seq):
+        seq.reverse()
+
+
+class _SeedSensitiveRNG:
+    """Stub whose order depends on the seed it was constructed with."""
+
+    def __init__(self, seed):
+        self.seed = seed
+
+    def shuffle(self, seq):
+        if not seq:
+            return None
+        k = sum(ord(c) for c in self.seed) % len(seq)
+        seq[:] = seq[k:] + seq[:k]
+        return None
+
+
+def test_set_auto_randomizes_the_genre_run(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _ReverseRNG())
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "chill", ["a", "b", "c"], default=True)
+        set_auto(s, now=NOW)
+        # seed order a,b,c reversed to c,b,a -> first track is c.
+        assert get_current(s, NOW).track.youtube_video_id == "c"
+
+
+def test_play_now_and_skip_are_not_randomized(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _ReverseRNG())
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed(s, "chill", ["a", "b", "c"])
+        play_now(s, st.id, "a", now=NOW)
+        assert get_current(s, NOW).track.youtube_video_id == "a"
+        skip(s, st.id, "next", now=NOW)
+        assert get_current(s, NOW).track.youtube_video_id == "b"
+
+
+def test_peek_matches_the_committed_wrap_reshuffle(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _ReverseRNG())
+    # The fixed timestamps below assume no inter-track gap; pin it to 0 so the
+    # last track's boundary lands exactly at t=300 (default gap is 2s, which
+    # would put the live track at t=200 at "b" and shift the boundary).
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "chill", ["a", "b", "c"], default=True)
+        set_auto(s, now=NOW)
+        # Order after the initial shuffle is c,b,a. At t=200 the last track (a)
+        # is live; its boundary (t=300) wraps and reshuffles to c,b,a again.
+        at_last = get_current(s, NOW + timedelta(seconds=200))
+        assert at_last.track.youtube_video_id == "a"
+        state = _load(s)
+        predicted, _ = _peek_next(s, state, NOW + timedelta(seconds=200), 0.0)
+        committed = get_current(s, NOW + timedelta(seconds=300))
+        assert predicted.youtube_video_id == committed.track.youtube_video_id
+
+
+def test_peek_and_commit_use_the_same_seed_on_wrap(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    seeds = []
+
+    def factory(seed):
+        seeds.append(seed)
+        return _SeedSensitiveRNG(seed)
+
+    monkeypatch.setattr("app.broadcast._rng_factory", factory)
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed(s, "chill", ["a", "b", "c"], default=True)
+        set_auto(s, now=NOW)
+        get_current(s, NOW + timedelta(seconds=200))
+        state = _load(s)
+        seeds.clear()
+        predicted, _ = _peek_next(s, state, NOW + timedelta(seconds=200), 0.0)
+        peek_seeds = list(seeds)
+        seeds.clear()
+        committed = get_current(s, NOW + timedelta(seconds=300))
+        commit_seeds = list(seeds)
+        assert peek_seeds == commit_seeds
+        assert predicted.youtube_video_id == committed.track.youtube_video_id
+        assert commit_seeds == [_run_seed(st.id, NOW + timedelta(seconds=300))]
+
+
+def test_peek_and_commit_use_the_same_seed_on_genre_switch(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    seeds = []
+
+    def factory(seed):
+        seeds.append(seed)
+        return _SeedSensitiveRNG(seed)
+
+    monkeypatch.setattr("app.broadcast._rng_factory", factory)
+    # The fixed timestamps below assume a 2s gap; pin it so an environment
+    # override of TRACK_GAP_SECONDS cannot shift the boundary at t=102.
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 2.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        one = _seed(s, "one", ["a1"], default=True)
+        two = _seed(s, "two", ["b1", "b2", "b3", "b4"])
+        switch_at = NOW + timedelta(seconds=100)
+        monkeypatch.setattr(
+            "app.broadcast._desired",
+            lambda session, at: two.id if at >= switch_at else one.id,
+        )
+        set_auto(s, now=NOW)
+        get_current(s, NOW)
+        state = _load(s)
+        seeds.clear()
+        # Default gap is 2s, so the single 100s track's boundary is at t=102.
+        predicted, _ = _peek_next(s, state, NOW, 2.0)
+        peek_seeds = list(seeds)
+        seeds.clear()
+        committed = get_current(s, NOW + timedelta(seconds=102))
+        commit_seeds = list(seeds)
+        assert peek_seeds == commit_seeds
+        assert predicted.youtube_video_id == committed.track.youtube_video_id
+        assert commit_seeds == [_run_seed(two.id, NOW + timedelta(seconds=102))]
