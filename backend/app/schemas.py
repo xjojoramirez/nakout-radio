@@ -13,6 +13,7 @@ class TrackOut(BaseModel):
     thumbnail_url: str
     duration_seconds: int
     position: int
+    volume_offset_db: float = 0.0
 
 
 class GenreOut(BaseModel):

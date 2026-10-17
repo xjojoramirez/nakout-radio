@@ -22,6 +22,7 @@ from app.auth import (
 from app.broadcast import play_now, set_auto, set_order, skip, stop, utcnow
 from app.config import get_settings
 from app.db import get_session
+from app.loudness import ensure_backfill
 from app.models import (
     Playlist,
     ScheduleSlot,
@@ -294,6 +295,8 @@ def create_playlist(
         synced = sync_playlist(session, playlist, _build_fetch())
     except httpx.HTTPError as exc:
         sync_error = _redact_secrets(exc)
+    if sync_error is None:
+        ensure_backfill()
     return {
         "id": playlist.id,
         "youtube_playlist_id": yt_id,
@@ -378,6 +381,7 @@ def refresh_playlist(
     except httpx.HTTPError as exc:
         logger.warning("YouTube refresh failed: %s", _redact_secrets(exc))
         raise HTTPException(status_code=502, detail="YouTube fetch failed") from exc
+    ensure_backfill()
     return {"id": playlist.id, "synced": synced}
 
 
@@ -391,6 +395,7 @@ def sync_all(session: Session = Depends(get_session)) -> dict:
             results.append({"id": pl.id, "synced": synced, "error": None})
         except httpx.HTTPError as exc:
             results.append({"id": pl.id, "synced": 0, "error": _redact_secrets(exc)})
+    ensure_backfill()
     return {"results": results}
 
 

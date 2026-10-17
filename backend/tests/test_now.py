@@ -69,6 +69,7 @@ def test_now_returns_track_offset_and_server_time(tmp_path):
     assert body["source"] == "default"
     assert body["genre"]["slug"] == "morning"
     assert body["track"]["youtube_video_id"] == "vid"
+    assert body["track"]["volume_offset_db"] == 0.0  # no loudness data
     assert 0 <= body["offset_seconds"] < 200
     assert body["server_time"]
     assert body["phase"] == "playing"
@@ -380,6 +381,19 @@ def test_now_endpoint_reports_preload_lead(tmp_path):
         _seed_genre(s, "morning", default=True)
     body = _client(engine).get("/api/now").json()
     assert body["preload_lead_seconds"] == get_settings().preload_lead_seconds
+
+
+def test_now_track_carries_the_loudness_offset(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed_genre(s, "morning", default=True, video="loud")
+        row = s.exec(select(TrackCache)).one()
+        row.gain_db = -7.0
+        s.add(row)
+        s.commit()
+    body = _client(engine).get("/api/now").json()
+    assert body["track"]["volume_offset_db"] == -8.0
+    assert body["next_track"]["volume_offset_db"] == -8.0  # one track, wraps
 
 
 def test_now_peeks_next_in_manual_queue(tmp_path):
