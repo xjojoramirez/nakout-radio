@@ -3,6 +3,28 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-17 — no immediate repeat when a genre queue wraps (issue #20)
+
+On a loop wrap the queue was reshuffled with no exclusion for the track that
+had just finished, so the new pass could open on the very same track — a 50%
+coin flip for a two-track genre. The wrap (and genre-switch) rebuild now
+passes the just-finished track id into the randomize hook, and
+`_auto_randomize` swaps it out of the first slot (with position 1) when the
+shuffle lands it there. No extra randomness is drawn — the swap target is
+fixed — so the queue stays a pure function of `(genre_id, run start time,
+previous track)` and the listener's "up next" preload (`_peek_next`) still
+matches the committed run. Manual transport is untouched; a one-track genre
+cannot avoid the repeat.
+
+- Files touched:
+  - `backend/app/broadcast.py`
+  - `backend/tests/test_broadcast.py`
+  - `backend/tests/test_live_control.py`
+  - `docs/changelog.md` (docs)
+- **Container restart required?** Yes — `backend` only:
+  `docker compose up -d --build backend`
+- Verification: `cd backend && python -m pytest -q` — 266 passed.
+
 ## 2026-10-17 — PR bodies must end with a "Container restart" section (AGENTS.md)
 
 Every pull request now ends with a `Container restart` section stating the
