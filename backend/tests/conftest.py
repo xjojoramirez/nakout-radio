@@ -9,6 +9,9 @@ os.environ.setdefault("COOKIE_SECURE", "false")
 # Tests that exercise the schedule assume Manila local time (UTC+8). Override
 # any ambient GENRE_TZ so the result does not depend on the developer's env.
 os.environ["GENRE_TZ"] = "Asia/Manila"
+# Loudness lookups must never hit the network from tests; the lookup code is
+# exercised directly with fake clients/transports instead.
+os.environ["LOUDNESS_LOOKUP_ENABLED"] = "false"
 
 
 @pytest.fixture

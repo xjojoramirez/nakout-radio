@@ -75,6 +75,17 @@ def test_track_cache_fetched_at_round_trip_is_naive(session):
     assert loaded.fetched_at.tzinfo is None
 
 
+def test_track_volume_offset_db_from_gain():
+    track = TrackCache(
+        playlist_id=1, youtube_video_id="v", title="t", artist="a"
+    )
+    assert track.volume_offset_db == 0.0
+    track.gain_db = -7.0
+    assert track.volume_offset_db == -8.0
+    track.gain_db = -19.3
+    assert track.volume_offset_db == pytest.approx(4.3)
+
+
 def test_duplicate_genre_slug_raises(session):
     session.add(Genre(name="One", slug="dup"))
     session.commit()

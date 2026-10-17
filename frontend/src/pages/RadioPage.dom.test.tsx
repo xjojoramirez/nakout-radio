@@ -24,6 +24,7 @@ function track(id: string): Track {
     thumbnail_url: "",
     duration_seconds: 200,
     position: 0,
+    volume_offset_db: 0,
   };
 }
 

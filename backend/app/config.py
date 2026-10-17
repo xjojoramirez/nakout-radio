@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     track_gap_seconds: float = 2.0
     preload_lead_seconds: float = 20.0
     cookie_secure: bool = True
+    loudness_target_db: float = -15.0
+    loudness_max_boost_db: float = 6.0
+    loudness_lookup_enabled: bool = True
 
     @field_validator("yt_api_key", "admin_password", "secret_key")
     @classmethod
@@ -47,6 +50,20 @@ class Settings(BaseSettings):
     def _valid_preload_lead(cls, v: float) -> float:
         if not 0 <= v <= 300:
             raise ValueError("preload_lead_seconds must be between 0 and 300")
+        return v
+
+    @field_validator("loudness_target_db")
+    @classmethod
+    def _valid_loudness_target(cls, v: float) -> float:
+        if not -60 <= v <= 0:
+            raise ValueError("loudness_target_db must be between -60 and 0")
+        return v
+
+    @field_validator("loudness_max_boost_db")
+    @classmethod
+    def _valid_loudness_boost(cls, v: float) -> float:
+        if not 0 <= v <= 24:
+            raise ValueError("loudness_max_boost_db must be between 0 and 24")
         return v
 
 

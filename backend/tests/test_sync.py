@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from sqlmodel import Session, SQLModel, create_engine, select
 
@@ -81,3 +83,62 @@ def test_sync_stores_duration():
         sync_playlist(s, pl, lambda _id: [TrackData("v1", "One", "Art", "u1", 0, 245)])
         row = s.exec(select(TrackCache)).one()
         assert row.duration_seconds == 245
+
+
+def _playlist(engine) -> None:
+    with Session(engine) as s:
+        st = Genre(name="A", slug="a")
+        s.add(st)
+        s.commit()
+        s.refresh(st)
+        pl = Playlist(genre_id=st.id, youtube_playlist_id="PL1")
+        s.add(pl)
+        s.commit()
+
+
+def test_sync_preserves_loudness_for_unchanged_tracks():
+    engine = _engine()
+    _playlist(engine)
+    fetched = lambda _id: [TrackData("v1", "One", "Art", "u1", 0)]  # noqa: E731
+    with Session(engine) as s:
+        pl = s.exec(select(Playlist)).one()
+        sync_playlist(s, pl, fetched)
+    checked_at = datetime(2026, 10, 17, 0, 0, 0)
+    with Session(engine) as s:
+        row = s.exec(select(TrackCache)).one()
+        row.gain_db = -9.0
+        row.gain_checked_at = checked_at
+        s.add(row)
+        s.commit()
+
+    with Session(engine) as s:
+        pl = s.exec(select(Playlist)).one()
+        sync_playlist(s, pl, fetched)
+    with Session(engine) as s:
+        row = s.exec(select(TrackCache)).one()
+        assert row.gain_db == -9.0
+        assert row.gain_checked_at == checked_at
+
+
+def test_sync_resets_loudness_when_title_changes():
+    engine = _engine()
+    _playlist(engine)
+    with Session(engine) as s:
+        pl = s.exec(select(Playlist)).one()
+        sync_playlist(s, pl, lambda _id: [TrackData("v1", "One", "Art", "u1", 0)])
+    with Session(engine) as s:
+        row = s.exec(select(TrackCache)).one()
+        row.gain_db = -9.0
+        row.gain_checked_at = datetime(2026, 10, 17, 0, 0, 0)
+        s.add(row)
+        s.commit()
+
+    with Session(engine) as s:
+        pl = s.exec(select(Playlist)).one()
+        sync_playlist(
+            s, pl, lambda _id: [TrackData("v1", "One (Remaster)", "Art", "u1", 0)]
+        )
+    with Session(engine) as s:
+        row = s.exec(select(TrackCache)).one()
+        assert row.gain_db is None
+        assert row.gain_checked_at is None

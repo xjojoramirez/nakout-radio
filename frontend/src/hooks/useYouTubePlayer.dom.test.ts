@@ -12,6 +12,7 @@ function broadcast(overrides: Partial<BroadcastState> = {}): BroadcastState {
       thumbnail_url: "",
       duration_seconds: 200,
       position: 0,
+      volume_offset_db: 0,
     },
     genre: null,
     source: "schedule",
@@ -1411,5 +1412,102 @@ describe("useYouTubePlayer", () => {
       videoId: "a",
       startSeconds: expect.any(Number),
     });
+  });
+
+  it("applies the track's loudness offset to the player volume", async () => {
+    renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          track: { ...broadcast().track!, volume_offset_db: -6.02 },
+        }),
+        vi.fn(),
+      ),
+    );
+    await waitFor(() => expect(players.length).toBe(1));
+    act(() => {
+      players[0].opts.events.onReady();
+    });
+    // Stored volume 70, attenuated by ~6.02 dB.
+    await waitFor(() => expect(players[0].setVolume).toHaveBeenCalledWith(35));
+  });
+
+  it("re-applies the loudness offset when the volume changes", async () => {
+    const { result } = renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          track: { ...broadcast().track!, volume_offset_db: -6.02 },
+        }),
+        vi.fn(),
+      ),
+    );
+    await waitFor(() => expect(players.length).toBe(1));
+    act(() => {
+      result.current.setVolume(50);
+    });
+    await waitFor(() => expect(players[0].setVolume).toHaveBeenCalledWith(25));
+  });
+
+  it("re-applies the volume when a correction arrives mid-track", async () => {
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      { initialProps: { b: broadcast() } },
+    );
+    await waitFor(() => expect(players.length).toBe(1));
+    rerender({
+      b: broadcast({
+        track: { ...broadcast().track!, volume_offset_db: -6.02 },
+      }),
+    });
+    await waitFor(() => expect(players[0].setVolume).toHaveBeenCalledWith(35));
+  });
+
+  it("clamps a boosted volume at the player ceiling", async () => {
+    const { result } = renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          track: { ...broadcast().track!, volume_offset_db: 6 },
+        }),
+        vi.fn(),
+      ),
+    );
+    await waitFor(() => expect(players.length).toBe(1));
+    act(() => {
+      result.current.setVolume(90);
+    });
+    await waitFor(() => expect(players[0].setVolume).toHaveBeenCalledWith(100));
+  });
+
+  it("promotes the preload with the next track's loudness offset", async () => {
+    vi.useFakeTimers();
+    renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          nextTrack: { ...nextTrack(), volume_offset_db: -6.02 },
+          secondsUntilStart: 25,
+          preloadLead: 20,
+        }),
+        vi.fn(),
+      ),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      players[0].opts.events.onStateChange({ data: 1 }); // on air
+    });
+    act(() => {
+      vi.advanceTimersByTime(5000); // arm
+    });
+    expect(players.length).toBe(2);
+    act(() => {
+      vi.advanceTimersByTime(20000); // reach the boundary
+    });
+    expect(players[1].setVolume).toHaveBeenCalledWith(35);
   });
 });

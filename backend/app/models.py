@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from sqlalchemy import Column, JSON
 from sqlmodel import Field, SQLModel
 
+from app.loudness import offset_for_gain
+
 
 def _utcnow() -> datetime:
     return datetime.now(timezone.utc).replace(tzinfo=None)
@@ -47,6 +49,13 @@ class TrackCache(SQLModel, table=True):
     duration_seconds: int = 0
     position: int = 0
     fetched_at: datetime = Field(default_factory=_utcnow)
+    gain_db: float | None = Field(default=None)
+    gain_checked_at: datetime | None = Field(default=None)
+
+    @property
+    def volume_offset_db(self) -> float:
+        """Volume correction in dB derived from the track's loudness data."""
+        return offset_for_gain(self.gain_db)
 
 
 class ScheduleSlot(SQLModel, table=True):
