@@ -294,11 +294,18 @@ def _backfill_worker() -> None:
 
     try:
         factory = partial(Session, engine)
+        resolved = 0
         with httpx.Client(
             timeout=10.0, headers={"User-Agent": USER_AGENT}
         ) as client:
-            while enrich_pending(factory, client) > 0:
-                pass
+            while True:
+                processed = enrich_pending(factory, client)
+                if processed <= 0:
+                    break
+                resolved += processed
+                logger.info("loudness backfill: %d tracks resolved", resolved)
+        if resolved:
+            logger.info("loudness backfill finished: %d tracks resolved", resolved)
     except Exception:  # noqa: BLE001 - background best-effort
         logger.exception("loudness backfill aborted")
     finally:
