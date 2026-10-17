@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track } from "../types";
+import { applyVolumeOffset } from "../utils/loudness";
 import type { BroadcastState } from "./useBroadcast";
 
 const VOLUME_KEY = "nakout.volume";
@@ -94,6 +95,24 @@ function targetFor(broadcast: BroadcastState, now = Date.now()): number {
   return duration > 0 ? Math.min(target, duration - 1) : target;
 }
 
+/**
+ * Loudness offset for the video a player is on: the broadcast's current or
+ * upcoming track, or 0 when unknown (no data → no correction).
+ */
+function trackOffset(
+  broadcast: BroadcastState | null,
+  videoId: string | null,
+): number {
+  if (!broadcast || !videoId) return 0;
+  if (broadcast.track?.youtube_video_id === videoId) {
+    return broadcast.track.volume_offset_db ?? 0;
+  }
+  if (broadcast.nextTrack?.youtube_video_id === videoId) {
+    return broadcast.nextTrack.volume_offset_db ?? 0;
+  }
+  return 0;
+}
+
 export interface PlayerControls {
   ready: boolean;
   playing: boolean;
@@ -127,6 +146,16 @@ export function useYouTubePlayer(
   volumeRef.current = volume;
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
+
+  /** User volume adjusted by the loudness offset of the video in question. */
+  const volumeForVideo = useCallback(
+    (videoId: string | null) =>
+      applyVolumeOffset(
+        volumeRef.current,
+        trackOffset(broadcastRef.current, videoId),
+      ),
+    [],
+  );
   const currentVideoRef = useRef<string | null>(null);
   const preloadedVideoRef = useRef<string | null>(null);
   const startTimerRef = useRef<number | null>(null);
@@ -296,7 +325,7 @@ export function useYouTubePlayer(
       resetRetry();
       try {
         player.seekTo(Math.max(0, target), true);
-        player.setVolume(volumeRef.current);
+        player.setVolume(volumeForVideo(videoId));
         if (mutedRef.current || volumeRef.current === 0) player.mute();
         else player.unMute();
         player.playVideo();
@@ -304,7 +333,7 @@ export function useYouTubePlayer(
         // The iframe may still be initialising; the next frame retries.
       }
     },
-    [resetRetry],
+    [resetRetry, volumeForVideo],
   );
 
   const scheduleGapStart = useCallback(
@@ -360,7 +389,7 @@ export function useYouTubePlayer(
         const previous = playerRef.current;
         try {
           preload.seekTo(position, true);
-          preload.setVolume(volumeRef.current);
+          preload.setVolume(volumeForVideo(nextId));
           if (mutedRef.current || volumeRef.current === 0) preload.mute();
           else preload.unMute();
           preload.playVideo();
@@ -389,7 +418,7 @@ export function useYouTubePlayer(
         onEndedRef.current();
       }, Math.max(0, boundaryAt - Date.now()));
     },
-    [clearPreloadTimer, resetRetry],
+    [clearPreloadTimer, resetRetry, volumeForVideo],
   );
 
   const maybeArmPreload = useCallback(
@@ -470,7 +499,7 @@ export function useYouTubePlayer(
       events: {
         onReady: () => {
           setReady(true);
-          player.setVolume(volumeRef.current);
+          player.setVolume(volumeForVideo(initialId));
           const live = broadcastRef.current;
           if (live?.phase === "gap" && live.nextTrack) {
             preloadedVideoRef.current = live.nextTrack.youtube_video_id;
@@ -546,6 +575,7 @@ export function useYouTubePlayer(
     clearPreloadTimer,
     handleStateChange,
     handleError,
+    volumeForVideo,
   ]);
 
   useEffect(() => {
@@ -638,10 +668,20 @@ export function useYouTubePlayer(
   useEffect(() => {
     const player = playerRef.current;
     if (!isPlayerReady(player)) return;
-    player.setVolume(volume);
+    player.setVolume(volumeForVideo(currentVideoRef.current));
     if (muted || volume === 0) player.mute();
     else player.unMute();
-  }, [volume, muted, ready, hasTrack]);
+  }, [
+    volume,
+    muted,
+    ready,
+    hasTrack,
+    volumeForVideo,
+    // Re-apply when the live track (or its loudness offset) changes, so a
+    // correction that lands mid-track still takes effect.
+    broadcast?.track?.youtube_video_id,
+    broadcast?.track?.volume_offset_db,
+  ]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {

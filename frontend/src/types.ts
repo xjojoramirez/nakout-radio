@@ -5,6 +5,8 @@ export interface Track {
   thumbnail_url: string;
   duration_seconds: number;
   position: number;
+  /** Loudness correction in dB applied to the player volume (0 = none). */
+  volume_offset_db: number;
 }
 
 export interface Genre {

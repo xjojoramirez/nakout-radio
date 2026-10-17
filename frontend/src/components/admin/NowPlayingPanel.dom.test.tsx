@@ -54,6 +54,7 @@ const track = (id: string, title: string, position: number): Track => ({
   thumbnail_url: "",
   duration_seconds: 200,
   position,
+  volume_offset_db: 0,
 });
 
 const TRACK_A = track("a", "Alpha", 0);

@@ -59,6 +59,7 @@ const trackFixture: Track[] = [
     thumbnail_url: "",
     duration_seconds: 180,
     position: 0,
+    volume_offset_db: 0,
   },
   {
     youtube_video_id: "v2",
@@ -67,6 +68,7 @@ const trackFixture: Track[] = [
     thumbnail_url: "",
     duration_seconds: 200,
     position: 1,
+    volume_offset_db: 0,
   },
 ];
 
