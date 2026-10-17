@@ -90,6 +90,13 @@ def test_pick_candidate_artistless_requires_exact_title():
     assert pick_candidate(items, "Shivers", "") is not None
 
 
+def test_pick_candidate_strips_candidate_suffixes():
+    # Live false negative from the runtime smoke test: the DB title is plain
+    # "Rollin'" while Deezer reports "Rollin' (Air Raid Vehicle)".
+    items = [_item("Rollin' (Air Raid Vehicle)", "Limp Bizkit")]
+    assert pick_candidate(items, "Rollin'", "Limp Bizkit") is not None
+
+
 def test_pick_candidate_survives_junk():
     assert pick_candidate([], "Song", "Artist") is None
     assert pick_candidate([{"nope": 1}], "Song", "Artist") is None

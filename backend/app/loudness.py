@@ -109,6 +109,13 @@ def _key(text: str) -> str:
     return _KEY_RE.sub("", (text or "").lower())
 
 
+def _clean_candidate_title(title: str) -> str:
+    """Candidate titles carry suffixes like ``(Air Raid Vehicle)``; strip them
+    before comparing so containment stays meaningful."""
+    text = _BRACKETED_RE.sub(" ", title or "")
+    return _TRAILING_NOISE_RE.sub("", text).strip(" -|")
+
+
 def _key_ratio(a: str, b: str) -> float:
     """1.0 for equal keys, containment scaled by length, 0 otherwise."""
     ka, kb = _key(a), _key(b)
@@ -138,7 +145,7 @@ def pick_candidate(items: list[dict], title: str, artist: str) -> dict | None:
         if not isinstance(item, dict):
             continue
         candidate_artist = (item.get("artist") or {}).get("name") or ""
-        candidate_title = item.get("title") or ""
+        candidate_title = _clean_candidate_title(item.get("title") or "")
         title_ratio = _key_ratio(title_query, candidate_title)
         if title_ratio < MIN_MATCH_RATIO:
             continue
