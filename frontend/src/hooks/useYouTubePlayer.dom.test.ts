@@ -1510,4 +1510,150 @@ describe("useYouTubePlayer", () => {
     });
     expect(players[1].setVolume).toHaveBeenCalledWith(35);
   });
+
+  it("reloads instead of seeking when the track ran out while the page was frozen", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1_000_000);
+    renderHook(() => useYouTubePlayer("yt-player", broadcast(), vi.fn()));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    players[0].getCurrentTime.mockReturnValue(195);
+    players[0].getPlayerState.mockReturnValue(2); // PAUSED by the OS on lock
+    act(() => {
+      vi.setSystemTime(Date.now() + 200_000); // track ran out while frozen
+    });
+    players[0].loadVideoById.mockClear();
+    players[0].seekTo.mockClear();
+    players[0].playVideo.mockClear();
+    // The live target is now past the track's runtime; the tick must
+    // reload at the live position — a seek would land beyond the video.
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].seekTo).not.toHaveBeenCalled();
+    expect(players[0].loadVideoById).toHaveBeenCalledWith({
+      videoId: "a",
+      startSeconds: expect.any(Number),
+    });
+    expect(players[0].playVideo).toHaveBeenCalled();
+  });
+
+  it("promotes the passed boundary's preload when the page becomes visible", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(2_000_000);
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      {
+        initialProps: {
+          b: broadcast({
+            track: { ...broadcast().track!, duration_seconds: 200 },
+            nextTrack: nextTrack(),
+            secondsUntilStart: 25,
+            preloadLead: 20,
+          }),
+        },
+      },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(5000); // arm the pre-roll
+    });
+    expect(players.length).toBe(2);
+    act(() => {
+      vi.setSystemTime(Date.now() + 30_000); // boundary passed while hidden
+    });
+    // The frame refreshed while the page was hidden: the gap is on and
+    // the preloaded player is still idling muted.
+    rerender({
+      b: broadcast({
+        phase: "gap",
+        track: { ...broadcast().track!, duration_seconds: 200 },
+        nextTrack: nextTrack(),
+        offset: 205,
+        secondsUntilStart: -5,
+        preloadLead: 20,
+        fetchedAt: Date.now(),
+      }),
+    });
+    players[1].seekTo.mockClear();
+    players[1].playVideo.mockClear();
+    players[0].pauseVideo.mockClear();
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(players[1].seekTo).toHaveBeenCalledWith(expect.any(Number), true);
+    expect(players[1].playVideo).toHaveBeenCalled();
+    expect(players[0].pauseVideo).toHaveBeenCalled();
+  });
+
+  it("requests a fresh broadcast when the page becomes visible", async () => {
+    vi.useFakeTimers();
+    const onEnded = vi.fn();
+    renderHook(() => useYouTubePlayer("yt-player", broadcast(), onEnded));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(onEnded).toHaveBeenCalledTimes(1); // the hook's refresh callback
+  });
+
+  it("catches up past an ended track on the next tick", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(3_000_000);
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      {
+        initialProps: {
+          b: broadcast({
+            track: { ...broadcast().track!, duration_seconds: 10 },
+          }),
+        },
+      },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    players[0].getCurrentTime.mockReturnValue(10);
+    act(() => {
+      players[0].opts.events.onStateChange({ data: 8 }); // ENDED
+    });
+    act(() => {
+      vi.setSystemTime(Date.now() + 20_000);
+    });
+    players[0].loadVideoById.mockClear();
+    rerender({
+      b: broadcast({
+        track: nextTrack(),
+        offset: 6,
+        fetchedAt: Date.now(),
+      }),
+    });
+    act(() => {
+      vi.advanceTimersByTime(1000); // one reconcile tick
+    });
+    expect(players[0].loadVideoById).toHaveBeenCalledWith({
+      videoId: "b",
+      startSeconds: expect.any(Number),
+    });
+    expect(players[0].playVideo).toHaveBeenCalled();
+  });
 });
