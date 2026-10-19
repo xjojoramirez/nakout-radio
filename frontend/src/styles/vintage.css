@@ -1699,7 +1699,12 @@ a.pid:hover {
   position: absolute;
   inset: 31%;
   border-radius: 50%;
-  background-size: cover;
+  /* YouTube hqdefault thumbnails are 4:3 (480x360) with the 16:9 frame
+     letterboxed (45px black bars top/bottom) and often a square cover baked
+     into the middle. Scaling by 16/9 (480/270) crops to the frame's central
+     square, so the round label is filled edge to edge with cover art instead
+     of showing the square thumbnail and its bars. */
+  background-size: 177.78% auto;
   background-position: center;
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.5);
 }
