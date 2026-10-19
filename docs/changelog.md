@@ -3,6 +3,35 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-19 — vinyl label shows round album art, not the square thumbnail (issue #27)
+
+The record label was clipped to a circle, but the art inside it still read
+as a square: `track.thumbnail_url` is YouTube's `hqdefault.jpg` — a 480x360
+(4:3) rendition in which YouTube letterboxes the 16:9 frame (45px black
+bars top/bottom), and album-art videos often bake their own square cover
+into that frame. With `background-size: cover` the bars stayed visible at
+the top/bottom of the label and the embedded square cover stayed visible in
+the middle. Fixed with one declaration in `.record .label`:
+`background-size: 177.78% auto` (= 480/270, the frame's 16/9 content ratio)
+with `background-position: center`, which crops to the 16:9 frame's central
+square so the round label is filled edge to edge. For full-bleed
+thumbnails this is the standard center-square crop; the sleeve cover, the
+admin nowcard and the deck markup are unchanged.
+
+- Files touched:
+  - `frontend/src/styles/vintage.css`
+  - `docs/superpowers/specs/2026-10-19-vinyl-round-label-27-design.md`
+    (new)
+  - `docs/changelog.md` (docs)
+- **Container restart required?** Yes — `frontend` only:
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `cd frontend && npm test` — 286 passed in 29 files;
+  `npm run typecheck`; `npm run build`. Live check against the rebuilt
+  container (headless Edge zoomed capture of the label: real `hqdefault`
+  art now fills the circle, no bars or square edges; desktop 1280x900 and
+  phone 390x844 views).
+
 ## 2026-10-19 — mobile playback: track transitions survive screen lock / inactive page (issue #25)
 
 Listener playback used to stall when a phone was locked or the page went
