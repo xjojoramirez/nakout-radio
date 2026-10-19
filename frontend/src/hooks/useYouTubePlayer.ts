@@ -315,8 +315,57 @@ export function useYouTubePlayer(
     }
   }, []);
 
+  const performSwap = useCallback(
+    (videoId: string, position: number) => {
+      const preload = preloadRef.current;
+      if (!preload || !isPlayerReady(preload)) return;
+      if (preloadVideoRef.current !== videoId) return;
+      const previous = playerRef.current;
+      try {
+        preload.seekTo(Math.max(0, position), true);
+        preload.setVolume(volumeForVideo(videoId));
+        if (mutedRef.current || volumeRef.current === 0) preload.mute();
+        else preload.unMute();
+        preload.playVideo();
+      } catch {
+        return;
+      }
+      playerRef.current = preload;
+      preloadRef.current = previous;
+      preloadVideoRef.current = null;
+      preloadedVideoRef.current = null;
+      currentVideoRef.current = videoId;
+      endedRef.current = false;
+      resetRetry();
+      setPlaying(true);
+      if (previous && isPlayerReady(previous)) {
+        try {
+          previous.pauseVideo();
+          previous.mute();
+        } catch {
+          // Demoting the old player is best-effort.
+        }
+      }
+      // Ask the page to resync so the fresh broadcast (new current track)
+      // replaces the stale frame within one round-trip.
+      lastSwapAtRef.current = Date.now();
+      onEndedRef.current();
+    },
+    [resetRetry, volumeForVideo],
+  );
+
   const startPreloaded = useCallback(
     (videoId: string, target: number) => {
+      // When the active player is still on the previous video but the
+      // pre-roll player already holds the next one (the page was frozen
+      // over the boundary), promote it directly.
+      if (
+        preloadVideoRef.current === videoId &&
+        currentVideoRef.current !== videoId
+      ) {
+        performSwap(videoId, target);
+        return;
+      }
       const player = playerRef.current;
       if (!player || !isPlayerReady(player)) return;
       preloadedVideoRef.current = null;
@@ -333,7 +382,7 @@ export function useYouTubePlayer(
         // The iframe may still be initialising; the next frame retries.
       }
     },
-    [resetRetry, volumeForVideo],
+    [performSwap, resetRetry, volumeForVideo],
   );
 
   const scheduleGapStart = useCallback(
@@ -379,46 +428,14 @@ export function useYouTubePlayer(
         preloadTimerRef.current = null;
         preloadSwapAtRef.current = null;
         preloadSwapVideoRef.current = null;
-        const preload = preloadRef.current;
-        if (!preload || !isPlayerReady(preload)) return;
-        if (preloadVideoRef.current !== nextId) return;
         const position = Math.min(
           Math.max(0, (Date.now() - boundaryAt) / 1000),
           Math.max(0, maxSeconds - 1),
         );
-        const previous = playerRef.current;
-        try {
-          preload.seekTo(position, true);
-          preload.setVolume(volumeForVideo(nextId));
-          if (mutedRef.current || volumeRef.current === 0) preload.mute();
-          else preload.unMute();
-          preload.playVideo();
-        } catch {
-          return;
-        }
-        playerRef.current = preload;
-        preloadRef.current = previous;
-        preloadVideoRef.current = null;
-        preloadedVideoRef.current = null;
-        currentVideoRef.current = nextId;
-        endedRef.current = false;
-        resetRetry();
-        setPlaying(true);
-        if (previous && isPlayerReady(previous)) {
-          try {
-            previous.pauseVideo();
-            previous.mute();
-          } catch {
-            // Demoting the old player is best-effort.
-          }
-        }
-        // Ask the page to resync so the fresh broadcast (new current track)
-        // replaces the stale frame within one round-trip.
-        lastSwapAtRef.current = Date.now();
-        onEndedRef.current();
+        performSwap(nextId, position);
       }, Math.max(0, boundaryAt - Date.now()));
     },
-    [clearPreloadTimer, resetRetry, volumeForVideo],
+    [clearPreloadTimer, performSwap],
   );
 
   const maybeArmPreload = useCallback(
@@ -462,6 +479,174 @@ export function useYouTubePlayer(
 
   const armPreloadRef = useRef(maybeArmPreload);
   armPreloadRef.current = maybeArmPreload;
+
+  /**
+   * Reconcile the active player with a broadcast frame. Shared by the
+   * reactive effect and the visibility recovery path so both apply the
+   * same rules. `forceLive` skips the post-swap grace window, which is
+   * only relevant for live frames that predate a just-completed swap.
+   */
+  const applyBroadcast = useCallback(
+    (current: BroadcastState, forceLive = false) => {
+      const player = playerRef.current;
+      if (!player || !current.track) return;
+      if (!isPlayerReady(player)) return;
+      const yt = window.YT;
+
+      // A frame that still announces the active video as "next" right after
+      // a swap predates the swap; ignore its stale track until the resync
+      // frame arrives. Bounded by POST_SWAP_GRACE_MS so a legitimate
+      // back-jump (the same shape) still applies once the window has passed.
+      const swappedRecently =
+        lastSwapAtRef.current !== null &&
+        Date.now() - lastSwapAtRef.current < POST_SWAP_GRACE_MS;
+      if (
+        !forceLive &&
+        swappedRecently &&
+        current.phase === "playing" &&
+        current.track != null &&
+        current.track.youtube_video_id !== currentVideoRef.current &&
+        current.nextTrack?.youtube_video_id === currentVideoRef.current
+      ) {
+        return;
+      }
+
+      if (current.phase === "gap") {
+        if (yt && player.getPlayerState() === yt.PlayerState.PLAYING) {
+          player.pauseVideo();
+        }
+        if (!current.nextTrack) return;
+        const nextId = current.nextTrack.youtube_video_id;
+        const preloadHealthy =
+          !preloadFailedRef.current &&
+          preloadRef.current !== null &&
+          isPlayerReady(preloadRef.current) &&
+          preloadVideoRef.current === nextId;
+        if (preloadHealthy) {
+          clearStartTimer();
+          const boundaryAt =
+            current.fetchedAt +
+            current.rttMs / 2 +
+            Math.max(0, current.secondsUntilStart ?? 0) * 1000;
+          scheduleSwap(nextId, boundaryAt, current.nextTrack.duration_seconds);
+          return;
+        }
+        if (preloadedVideoRef.current !== nextId) {
+          preloadNext(current.nextTrack);
+        }
+        scheduleGapStart(current);
+        return;
+      }
+
+      clearStartTimer();
+      const videoId = current.track.youtube_video_id;
+      const target = targetFor(current);
+      if (currentVideoRef.current !== videoId) {
+        clearPreloadTimer();
+        resetPreload();
+        preloadFailedRef.current = false;
+        if (preloadedVideoRef.current === videoId) {
+          startPreloaded(videoId, target);
+          return;
+        }
+        currentVideoRef.current = videoId;
+        endedRef.current = false;
+        resetRetry();
+        player.loadVideoById({ videoId, startSeconds: target });
+        player.playVideo();
+        return;
+      }
+      if (!yt) return;
+      const state = player.getPlayerState();
+      const drift = Math.abs(player.getCurrentTime() - target);
+      if (state === yt.PlayerState.ENDED && drift > DRIFT_THRESHOLD) {
+        player.loadVideoById({ videoId, startSeconds: target });
+        player.playVideo();
+      } else if (state === yt.PlayerState.PLAYING && drift > DRIFT_THRESHOLD) {
+        player.seekTo(target, true);
+      }
+    },
+    [
+      clearPreloadTimer,
+      clearStartTimer,
+      preloadNext,
+      resetPreload,
+      resetRetry,
+      scheduleGapStart,
+      scheduleSwap,
+      startPreloaded,
+    ],
+  );
+  const applyBroadcastRef = useRef(applyBroadcast);
+  applyBroadcastRef.current = applyBroadcast;
+
+  /**
+   * Recovery for mobile suspensions: while the page is hidden the OS
+   * freezes the swap/gap timers, so a track boundary can pass without the
+   * transition firing. On return to the foreground, drop the stale
+   * pre-roll when it no longer matches the broadcast, promote a healthy
+   * preload whose boundary has passed, and refresh immediately instead of
+   * waiting for the next poll.
+   */
+  const onVisibilityRecover = useCallback(() => {
+    const current = broadcastRef.current;
+    const player = playerRef.current;
+    if (!current || !player || !isPlayerReady(player)) return;
+    const stale = currentVideoRef.current !== current.track?.youtube_video_id;
+    if (!stale) {
+      // Stale swap/gap timers must not fire after recovery: a promotion or
+      // the reconcile path owns the transition from here.
+      clearPreloadTimer();
+      clearStartTimer();
+      const nextId = current.nextTrack?.youtube_video_id ?? null;
+      // The pre-roll player is the source of truth for what it holds: it
+      // keeps playing (muted) while the page is hidden even when the
+      // reconcile path has already cleared the bookkeeping refs.
+      const preloadHoldsNext =
+        nextId !== null &&
+        (nextId === preloadedVideoRef.current ||
+          preloadVideoRef.current === nextId);
+      // The boundary passed while the page was off screen: the live
+      // position now runs past the current track's runtime (or the frame
+      // already flags the gap). Promote the healthy pre-roll at the live
+      // position instead of reloading a track that has run out.
+      const liveTargetNow = targetFor(current);
+      const trackRanOut =
+        current.track != null &&
+        current.track.duration_seconds > 0 &&
+        liveTargetNow >= current.track.duration_seconds - 1;
+      if (preloadHoldsNext && (current.phase === "gap" || trackRanOut)) {
+        const boundaryAt =
+          current.fetchedAt +
+          current.rttMs / 2 +
+          Math.max(0, current.secondsUntilStart ?? 0) * 1000;
+        startPreloaded(
+          nextId,
+          Math.min(
+            Math.max(0, (Date.now() - boundaryAt) / 1000),
+            Math.max(0, (current.nextTrack?.duration_seconds ?? 0) - 1),
+          ),
+        );
+        applyBroadcastRef.current(current, true);
+        onEndedRef.current();
+        return;
+      }
+    }
+    applyBroadcastRef.current(current, true);
+    onEndedRef.current();
+  }, [clearPreloadTimer, clearStartTimer, startPreloaded]);
+  const recoverRef = useRef(onVisibilityRecover);
+  recoverRef.current = onVisibilityRecover;
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") return;
+      recoverRef.current();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -579,91 +764,8 @@ export function useYouTubePlayer(
   ]);
 
   useEffect(() => {
-    const player = playerRef.current;
-    if (!player || !broadcast?.track) return;
-    if (!isPlayerReady(player)) return;
-    const yt = window.YT;
-
-    // A frame that still announces the active video as "next" right after a
-    // swap predates the swap; ignore its stale track until the resync frame
-    // arrives. Bounded by POST_SWAP_GRACE_MS so a legitimate back-jump (the
-    // same shape) still applies once the window has passed.
-    const swappedRecently =
-      lastSwapAtRef.current !== null &&
-      Date.now() - lastSwapAtRef.current < POST_SWAP_GRACE_MS;
-    if (
-      broadcast.phase === "playing" &&
-      swappedRecently &&
-      broadcast.track != null &&
-      broadcast.track.youtube_video_id !== currentVideoRef.current &&
-      broadcast.nextTrack?.youtube_video_id === currentVideoRef.current
-    ) {
-      return;
-    }
-
-    if (broadcast.phase === "gap") {
-      if (yt && player.getPlayerState() === yt.PlayerState.PLAYING) {
-        player.pauseVideo();
-      }
-      if (!broadcast.nextTrack) return;
-      const nextId = broadcast.nextTrack.youtube_video_id;
-      const preloadHealthy =
-        !preloadFailedRef.current &&
-        preloadRef.current !== null &&
-        isPlayerReady(preloadRef.current) &&
-        preloadVideoRef.current === nextId;
-      if (preloadHealthy) {
-        clearStartTimer();
-        const boundaryAt =
-          broadcast.fetchedAt +
-          broadcast.rttMs / 2 +
-          Math.max(0, broadcast.secondsUntilStart ?? 0) * 1000;
-        scheduleSwap(nextId, boundaryAt, broadcast.nextTrack.duration_seconds);
-        return;
-      }
-      if (preloadedVideoRef.current !== nextId) {
-        preloadNext(broadcast.nextTrack);
-      }
-      scheduleGapStart(broadcast);
-      return;
-    }
-
-    clearStartTimer();
-    const videoId = broadcast.track.youtube_video_id;
-    const target = targetFor(broadcast);
-    if (currentVideoRef.current !== videoId) {
-      clearPreloadTimer();
-      resetPreload();
-      preloadFailedRef.current = false;
-      if (preloadedVideoRef.current === videoId) {
-        startPreloaded(videoId, target);
-        return;
-      }
-      currentVideoRef.current = videoId;
-      endedRef.current = false;
-      resetRetry();
-      player.loadVideoById({ videoId, startSeconds: target });
-      return;
-    }
-    if (!yt) return;
-    const state = player.getPlayerState();
-    const drift = Math.abs(player.getCurrentTime() - target);
-    if (state === yt.PlayerState.ENDED && drift > DRIFT_THRESHOLD) {
-      player.loadVideoById({ videoId, startSeconds: target });
-    } else if (state === yt.PlayerState.PLAYING && drift > DRIFT_THRESHOLD) {
-      player.seekTo(target, true);
-    }
-  }, [
-    broadcast,
-    clearPreloadTimer,
-    clearStartTimer,
-    preloadNext,
-    resetPreload,
-    scheduleGapStart,
-    scheduleSwap,
-    startPreloaded,
-    resetRetry,
-  ]);
+    if (broadcast) applyBroadcast(broadcast);
+  }, [broadcast, applyBroadcast]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -712,10 +814,27 @@ export function useYouTubePlayer(
               const now = Date.now();
               if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
                 lastResumeAtRef.current = now;
-                player.seekTo(targetFor(current), true);
-                player.playVideo();
+                const target = targetFor(current);
+                const duration = current.track.duration_seconds;
+                if (duration > 0 && target >= duration - 1) {
+                  // The track ran out while the page was frozen: the live
+                  // target is at/past the runtime, so a seek would land in
+                  // a dead buffer. Reload at the live position instead.
+                  player.loadVideoById({
+                    videoId: current.track.youtube_video_id,
+                    startSeconds: target,
+                  });
+                  player.playVideo();
+                } else {
+                  player.seekTo(target, true);
+                  player.playVideo();
+                }
               }
             }
+          } else if (playerState === yt.PlayerState.ENDED) {
+            // A just-arrived frame already points at a different track:
+            // advance instead of leaving the ended player idle.
+            applyBroadcastRef.current(current);
           }
         }
       }

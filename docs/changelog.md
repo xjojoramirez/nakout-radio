@@ -3,6 +3,49 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-19 — mobile playback: track transitions survive screen lock / inactive page (issue #25)
+
+Listener playback used to stall when a phone was locked or the page went
+inactive: the current song finished but the next one never started until
+the phone was unlocked. Root cause is a regression introduced by the
+song-gap (#7) and next-song pre-roll (#6) work: the transition moved from
+the old event-driven path (the `ENDED` event reloading the same iframe)
+to wall-clock timers — `scheduleSwap` / `scheduleGapStart` `setTimeout`s —
+and mobile browsers freeze or heavily throttle those timers while the
+page is inactive. The swap never fired, the 1 s tick was frozen too, and
+nothing caught the missed boundary.
+
+- `frontend/src/hooks/useYouTubePlayer.ts`:
+  - extracted `performSwap` (the swap/demotion sequence) out of
+    `scheduleSwap` so the boundary timer and the recovery path promote
+    the pre-roll through the exact same code;
+  - `startPreloaded` now promotes the pre-roll player directly when it
+    already holds the next video while the active player is still on the
+    previous one (the frozen-boundary case);
+  - extracted the broadcast reconcile body into `applyBroadcast`
+    (shared by the reactive effect and recovery, with a `forceLive` flag
+    that skips the post-swap grace window on wake-up);
+  - new `visibilitychange` recovery: on becoming visible it drops stale
+    swap/gap timers, refreshes the broadcast immediately (instead of
+    waiting for the throttled poll), promotes a healthy pre-roll whose
+    boundary passed while hidden, and reconciles the active player;
+  - the 1 s tick now reloads at the live position instead of seeking
+    when the live target runs past the track's runtime (a seek would
+    land in a dead buffer), and advances an `ENDED` player when the
+    frame already points at the next track.
+- `frontend/src/hooks/useYouTubePlayer.dom.test.ts`: four new tests —
+  frozen-swap recovery on wake-up, preload promotion on
+  `visibilitychange`, immediate broadcast refresh, and the
+  reload-vs-seek guard.
+- `docs/superpowers/specs/2026-10-19-mobile-background-transition-25-design.md`
+  (new): regression analysis and fix design.
+- **Container restart required (frontend):**
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `cd frontend && npm test` — 286 passed in 29 files (was
+  282; +4 new tests); `npm run typecheck`; `npm run build`. Backend
+  untouched.
+
 ## 2026-10-17 — loudness normalization across tracks (issue #23)
 
 Tracks no longer jump in loudness between songs. Each track carries a loudness
