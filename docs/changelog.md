@@ -3,6 +3,27 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-20 — terminate TLS for `www.nakout.com` and redirect to the apex
+
+`https://www.nakout.com/` failed with `tlsv1 alert internal error`: Caddy only
+had a site block for `{$DOMAIN}`, so it had no certificate for the `www`
+hostname and rejected the handshake. The `www` name already resolves (CNAME to
+the apex) and `Strict-Transport-Security` includes `includeSubDomains`, so
+browsers had no HTTP fallback either. Added a `www.{$DOMAIN}` site block that
+308-redirects every request to `https://{$DOMAIN}{uri}`; Caddy obtains a
+certificate for `www.nakout.com` automatically and preserves the path/query.
+
+- Files touched:
+  - `Caddyfile`
+  - `docs/changelog.md` (docs)
+- **Container restart required?** Yes — `caddy` only:
+  `docker compose up -d caddy`.
+- Verification: validated with the official Caddy 2 container:
+  `docker run --rm -e DOMAIN=nakout.com -v "$PWD:/work:ro" -w /work caddy:2-alpine caddy validate --config Caddyfile --adapter caddyfile`
+  — `Valid configuration`. Post-deploy, `curl -sSI https://www.nakout.com/`
+  must return `308` with `location: https://nakout.com/`, and
+  `curl -sSI https://nakout.com/` must still return `200`.
+
 ## 2026-10-19 — vinyl label shows round album art, not the square thumbnail (issue #27)
 
 The record label was clipped to a circle, but the art inside it still read
