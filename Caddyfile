@@ -24,3 +24,10 @@
 		reverse_proxy frontend:80
 	}
 }
+
+# The www hostname resolves (CNAME to the apex) and HSTS includes
+# subdomains, so Caddy must terminate TLS for it and redirect to the
+# canonical apex origin instead of failing the handshake.
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} 308
+}
