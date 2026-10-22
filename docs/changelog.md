@@ -3,6 +3,51 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-22 — automatic genre runs remember what aired and avoid heavy repeats
+
+Automatic genre runs now keep a per-genre rotation history keyed by YouTube
+video id, so playlist re-syncs do not erase it. When a genre starts an
+automatic run, it estimates how many songs fit before the next scheduled
+genre change and budgets about 10% of that window from the previous automatic
+airing. Those repeats are spread through the block; the rest of the window
+comes from tracks that have waited longer (never played or older runs). A
+short block gets fewer forced repeats, and a long block continues with fresh
+tracks, so the repeat percentage only goes down. After a full pass repeats are
+unavoidable, and the pass is reshuffled.
+
+Manual controls remain deliberate overrides: Shuffle, drag-reorder, Play now,
+Next and Prev do not feed the rotation history, and the next automatic run
+returns to the guard. Duplicate YouTube videos in one genre now appear once.
+Tiny genres still repeat when there is nothing else to play.
+
+The budget is tunable with `ROTATION_REPEAT_PERCENT` (default `10`); blocks
+shorter than `ROTATION_MIN_WINDOW` (default `5`) do not force a repeat, and
+`ROTATION_FALLBACK_WINDOW` (default `20`) is used when the schedule has no
+upcoming genre change.
+
+- Files touched:
+  - `backend/app/models.py`
+  - `backend/app/config.py`
+  - `backend/app/rotation.py` (new)
+  - `backend/app/scheduler.py`
+  - `backend/app/broadcast.py`
+  - `backend/app/routers/admin.py`
+  - `backend/app/routers/genres.py`
+  - `backend/alembic/versions/a7b8c9d0e1f2_track_play_rotation.py` (new)
+  - `backend/.env.example`
+  - `backend/tests/test_rotation.py` (new)
+  - `backend/tests/test_live_control.py`
+  - `backend/tests/test_scheduler.py`
+  - `backend/tests/test_admin.py`
+  - `backend/tests/test_genres.py`
+  - `docs/changelog.md` (docs)
+- **Container restart required?** Yes — `backend` only:
+  `docker compose up -d --build backend`
+- Verification: `cd backend && python -m pytest -q` — 337 passed. The
+  migration chain was checked on a fresh SQLite database with
+  `alembic upgrade head`; the `trackplay` table and head revision were
+  created.
+
 ## 2026-10-22 — studio queue shows and controls the live play order
 
 The Studio Now Playing queue showed the *saved* order while the broadcast

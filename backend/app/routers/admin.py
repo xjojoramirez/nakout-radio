@@ -37,6 +37,7 @@ from app.models import (
     Setting,
     Genre,
     TrackCache,
+    TrackPlay,
     GENRE_PALETTE,
 )
 from app.routers.genres import ordered_tracks_for_genre
@@ -274,6 +275,7 @@ def delete_genre(genre_id: int, session: Session = Depends(get_session)) -> dict
         session.exec(delete(TrackCache).where(TrackCache.playlist_id.in_(playlist_ids)))
     session.exec(delete(Playlist).where(Playlist.genre_id == genre_id))
     session.exec(delete(ScheduleSlot).where(ScheduleSlot.genre_id == genre_id))
+    session.exec(delete(TrackPlay).where(TrackPlay.genre_id == genre_id))
     order_key = session.get(Setting, f"genre_order:{genre_id}")
     if order_key is not None:
         session.delete(order_key)

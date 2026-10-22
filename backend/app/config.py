@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     loudness_target_db: float = -15.0
     loudness_max_boost_db: float = 6.0
     loudness_lookup_enabled: bool = True
+    rotation_repeat_percent: int = 10
+    rotation_min_window: int = 5
+    rotation_fallback_window: int = 20
 
     @field_validator("yt_api_key", "admin_password", "secret_key")
     @classmethod
@@ -64,6 +67,20 @@ class Settings(BaseSettings):
     def _valid_loudness_boost(cls, v: float) -> float:
         if not 0 <= v <= 24:
             raise ValueError("loudness_max_boost_db must be between 0 and 24")
+        return v
+
+    @field_validator("rotation_repeat_percent")
+    @classmethod
+    def _valid_rotation_percent(cls, v: int) -> int:
+        if not 0 <= v <= 50:
+            raise ValueError("rotation_repeat_percent must be between 0 and 50")
+        return v
+
+    @field_validator("rotation_min_window", "rotation_fallback_window")
+    @classmethod
+    def _valid_rotation_window(cls, v: int) -> int:
+        if not 1 <= v <= 500:
+            raise ValueError("rotation window sizes must be between 1 and 500")
         return v
 
 

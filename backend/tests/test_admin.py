@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import httpx
 import pytest
 from fastapi.testclient import TestClient
@@ -5,7 +7,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.db import get_session
 from app.main import create_app
-from app.models import Playlist, ScheduleSlot, Genre, TrackCache
+from app.models import Playlist, ScheduleSlot, Genre, TrackCache, TrackPlay
 from app.youtube import TrackData
 
 
@@ -133,12 +135,21 @@ def test_delete_genre_removes_children(tmp_path):
         s.add(
             ScheduleSlot(genre_id=sid, days_of_week=[0], start_time="06:00")
         )
+        s.add(
+            TrackPlay(
+                genre_id=sid,
+                video_id="v",
+                last_played_at=datetime(2026, 1, 1),
+                last_run_started_at=datetime(2026, 1, 1),
+            )
+        )
         s.commit()
     assert client.delete(f"/api/studio/genres/{sid}").status_code == 200
     with Session(engine) as s:
         assert s.exec(select(Playlist)).all() == []
         assert s.exec(select(TrackCache)).all() == []
         assert s.exec(select(ScheduleSlot)).all() == []
+        assert s.exec(select(TrackPlay)).all() == []
         assert s.exec(select(Genre)).all() == []
 
 
