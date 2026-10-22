@@ -1,7 +1,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from app.scheduler import resolve_genre_id
+from app.scheduler import next_genre_change, resolve_genre_id
 
 TZ = ZoneInfo("Asia/Manila")
 
@@ -47,3 +47,43 @@ def test_most_recent_day_wins():
     slots = [(1, [0], "08:00"), (2, [2], "08:00")]
     assert resolve_genre_id(slots, _dt(2026, 1, 7, 9), default_id=9) == 2  # Wed
     assert resolve_genre_id(slots, _dt(2026, 1, 6, 9), default_id=9) == 1  # Tue
+
+
+def test_next_genre_change_skips_the_same_genre():
+    slots = [(1, [0], "06:00"), (1, [0], "12:00"), (2, [0], "18:00")]
+    assert next_genre_change(slots, _dt(2026, 1, 5, 8), 1, 9) == _dt(
+        2026, 1, 5, 18
+    )
+
+
+def test_next_genre_change_returns_the_first_different_slot():
+    slots = [(1, [0], "06:00"), (2, [0], "12:00"), (3, [0], "18:00")]
+    assert next_genre_change(slots, _dt(2026, 1, 5, 8), 1, 9) == _dt(
+        2026, 1, 5, 12
+    )
+
+
+def test_next_genre_change_handles_no_slots():
+    assert next_genre_change([], _dt(2026, 1, 5, 8), 1, 9) is None
+
+
+def test_next_genre_change_returns_none_when_the_genre_never_changes():
+    slots = [(1, [0, 1, 2, 3, 4, 5, 6], "06:00")]
+    assert next_genre_change(slots, _dt(2026, 1, 5, 8), 1, 9) is None
+
+
+def test_next_genre_change_from_the_default_genre():
+    slots = [(1, [0], "09:00")]
+    assert next_genre_change(slots, _dt(2026, 1, 5, 8), 9, 9) == _dt(
+        2026, 1, 5, 9
+    )
+
+
+def test_next_genre_change_wraps_to_next_week():
+    slots = [(1, [0], "06:00"), (2, [0], "08:00")]
+    assert next_genre_change(slots, _dt(2026, 1, 5, 7), 1, 9) == _dt(
+        2026, 1, 5, 8
+    )
+    assert next_genre_change(slots, _dt(2026, 1, 5, 9), 2, 9) == _dt(
+        2026, 1, 12, 6
+    )

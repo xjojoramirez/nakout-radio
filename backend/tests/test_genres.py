@@ -3,7 +3,7 @@ from sqlmodel import Session, SQLModel, create_engine, delete, select
 from app.db import get_session
 from app.main import create_app
 from app.models import Playlist, ScheduleSlot, Setting, Genre, TrackCache
-from app.routers.genres import ordered_tracks_for_genre
+from app.routers.genres import ordered_tracks_for_genre, tracks_for_genre
 
 
 def _seed(session: Session) -> None:
@@ -64,6 +64,55 @@ def test_genre_detail_returns_single_track_and_cursor(tmp_path):
     assert body["track"]["youtube_video_id"] == "vid1"
     assert isinstance(body["cursor"], str) and body["cursor"]
     assert "tracks" not in body
+
+
+def test_tracks_for_genre_keeps_each_video_once(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        genre = Genre(name="Rock", slug="rock")
+        s.add(genre)
+        s.commit()
+        s.refresh(genre)
+        first = Playlist(genre_id=genre.id, youtube_playlist_id="PL1")
+        second = Playlist(genre_id=genre.id, youtube_playlist_id="PL2")
+        s.add(first)
+        s.add(second)
+        s.commit()
+        s.refresh(first)
+        s.refresh(second)
+        s.add(
+            TrackCache(
+                playlist_id=first.id,
+                youtube_video_id="shared",
+                title="Shared",
+                artist="A",
+                position=0,
+            )
+        )
+        s.add(
+            TrackCache(
+                playlist_id=first.id,
+                youtube_video_id="only-first",
+                title="Only first",
+                artist="A",
+                position=1,
+            )
+        )
+        s.add(
+            TrackCache(
+                playlist_id=second.id,
+                youtube_video_id="shared",
+                title="Shared",
+                artist="A",
+                position=0,
+            )
+        )
+        s.commit()
+        tracks = tracks_for_genre(s, genre.id)
+        assert [track.youtube_video_id for track in tracks] == [
+            "shared",
+            "only-first",
+        ]
 
 
 def _engine(tmp_path):

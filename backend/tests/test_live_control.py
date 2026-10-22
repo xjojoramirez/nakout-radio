@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
 
 import pytest
-from sqlmodel import Session, SQLModel, create_engine, delete
+from sqlmodel import Session, SQLModel, create_engine, delete, select
 
 from app.broadcast import (
+    BroadcastState,
     _load,
     _peek_next,
     _run_seed,
+    _save,
     get_current,
     live_queue,
     play_now,
@@ -15,7 +17,7 @@ from app.broadcast import (
     skip,
     stop,
 )
-from app.models import Playlist, Genre, TrackCache
+from app.models import Playlist, Genre, TrackCache, TrackPlay
 
 
 def _engine(tmp_path):
@@ -208,7 +210,9 @@ def test_stop_then_auto_resumes(tmp_path, monkeypatch):
         set_auto(s, now=NOW)
         now_state = get_current(s, NOW)
         assert now_state.source == "default"
-        assert now_state.track.youtube_video_id == "a"
+        # The first automatic run aired "a"; the resumed run starts fresh with
+        # "b" and puts "a" at the tail of its queue.
+        assert now_state.track.youtube_video_id == "b"
 
 
 def test_stop_then_play_resumes(tmp_path):
@@ -460,3 +464,212 @@ def test_live_queue_falls_back_to_the_saved_order_when_off_air(tmp_path):
             "x",
             "y",
         ]
+
+
+def _plays(session):
+    return session.exec(
+        select(TrackPlay).order_by(TrackPlay.last_played_at)
+    ).all()
+
+
+def test_auto_run_records_the_starting_track(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "chill", ["a", "b"], default=True)
+        set_auto(s, now=NOW)
+        rows = _plays(s)
+        assert len(rows) == 1
+        assert rows[0].video_id == "a"
+        assert rows[0].last_run_started_at == NOW
+        assert rows[0].play_count == 1
+
+
+def test_auto_advance_records_each_new_track(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "chill", ["a", "b", "c"], default=True)
+        set_auto(s, now=NOW)
+        assert get_current(s, NOW + timedelta(seconds=100)).track.youtube_video_id == "b"
+        rows = _plays(s)
+        assert [row.video_id for row in rows] == ["a", "b"]
+        assert {row.last_run_started_at for row in rows} == {NOW}
+
+
+def test_genre_switch_records_the_new_genre(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        one = _seed(s, "one", ["a1"], default=True)
+        two = _seed(s, "two", ["b1", "b2"])
+        switch_at = NOW + timedelta(seconds=100)
+        monkeypatch.setattr(
+            "app.broadcast._desired",
+            lambda session, at: two.id if at >= switch_at else one.id,
+        )
+        set_auto(s, now=NOW)
+        current = get_current(s, switch_at)
+        assert current.track.youtube_video_id == "b1"
+        rows = {
+            row.genre_id: row for row in _plays(s)
+        }
+        assert rows[two.id].video_id == "b1"
+        assert rows[two.id].last_run_started_at == switch_at
+        assert rows[one.id].last_run_started_at == NOW
+
+
+def test_wrap_records_the_new_pass_start(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "chill", ["a", "b", "c"], default=True)
+        set_auto(s, now=NOW)
+        assert get_current(s, NOW + timedelta(seconds=300)).track.youtube_video_id == "a"
+        rows = {row.video_id: row for row in _plays(s)}
+        assert rows["a"].play_count == 2
+        assert rows["a"].last_run_started_at == NOW + timedelta(seconds=300)
+        assert rows["b"].last_run_started_at == NOW
+        assert rows["c"].last_run_started_at == NOW
+
+
+def test_peek_does_not_record_plays(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "chill", ["a", "b"], default=True)
+        set_auto(s, now=NOW)
+        state = _load(s)
+        assert state is not None
+        _peek_next(s, state, NOW, 0.0)
+        assert [row.video_id for row in _plays(s)] == ["a"]
+
+
+def test_manual_play_and_skip_do_not_feed_history(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed(s, "chill", ["a", "b", "c"], default=True)
+        play_now(s, st.id, "b", now=NOW)
+        skip(s, st.id, "next", now=NOW)
+        assert _plays(s) == []
+        set_auto(s, now=NOW)
+        rows = _plays(s)
+        assert [row.video_id for row in rows] == ["a"]
+
+
+def test_manual_shuffle_override_is_not_reordered(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed(s, "chill", ["a", "b", "c"], default=True)
+        set_auto(s, now=NOW)
+        assert get_current(s, NOW + timedelta(seconds=100)).track.youtube_video_id == "b"
+        set_order(s, st.id, ["b", "a", "c"], now=NOW + timedelta(seconds=100))
+        # The manual order is followed even though "a" just aired.
+        assert (
+            get_current(s, NOW + timedelta(seconds=200)).track.youtube_video_id
+            == "a"
+        )
+
+
+def test_legacy_auto_state_seeds_its_played_prefix(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed(s, "chill", ["a", "b", "c"], default=True)
+        tracks = s.exec(select(TrackCache).order_by(TrackCache.id)).all()
+        _save(
+            s,
+            BroadcastState(
+                st.id,
+                [track.id for track in tracks],
+                [100, 100, 100],
+                1,
+                NOW + timedelta(seconds=100),
+                run_started_at=None,
+            ),
+        )
+        assert get_current(s, NOW + timedelta(seconds=150)).track.youtube_video_id == "b"
+        rows = {row.video_id: row for row in _plays(s)}
+        assert set(rows) == {"a", "b"}
+        assert {row.last_run_started_at for row in rows.values()} == {NOW}
+
+
+def test_legacy_manual_state_does_not_seed_history(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed(s, "chill", ["a", "b", "c"])
+        play_now(s, st.id, "b", now=NOW)
+        assert get_current(s, NOW + timedelta(seconds=150)).track.youtube_video_id == "c"
+        assert _plays(s) == []
+
+
+def test_next_auto_run_keeps_previous_airing_to_about_ten_percent(
+    tmp_path, monkeypatch
+):
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed(
+            s,
+            "chill",
+            [f"a{index}" for index in range(30)],
+            default=True,
+        )
+        set_auto(s, now=NOW)
+        # Four tracks aired: a0, a1, a2, a3.
+        assert get_current(s, NOW + timedelta(seconds=300)).track.youtube_video_id == "a3"
+        set_auto(s, now=NOW + timedelta(seconds=300))
+        queue = live_queue(s, st.id, NOW + timedelta(seconds=300))
+        videos = [s.get(TrackCache, track_id).youtube_video_id for track_id in queue.track_ids]
+        assert videos[0] == "a4"
+        assert videos[6] == "a0"
+        assert videos[13] == "a1"
+        window = videos[:20]
+        assert [video for video in window if video in {"a0", "a1", "a2", "a3"}] == [
+            "a0",
+            "a1",
+        ]
+        assert videos[-2:] == ["a2", "a3"]

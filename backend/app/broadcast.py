@@ -13,6 +13,14 @@ from sqlmodel import Session, select
 
 from app.config import get_settings
 from app.models import ScheduleSlot, Setting, Genre, TrackCache
+from app.rotation import (
+    RotationEntry,
+    build_rotation_order,
+    estimate_window_tracks,
+    genre_has_history,
+    record_play,
+    rotation_entries,
+)
 from app.routers.genres import (
     ordered_tracks_for_genre,
     save_order,
@@ -80,19 +88,73 @@ def _auto_randomize(
     ids: list[int],
     durations: list[int],
     previous_id: int | None = None,
+    *,
+    entries: list[RotationEntry] | None = None,
+    window_tracks: int | None = None,
 ) -> tuple[list[int], list[int]]:
-    """Shuffle one automatic genre run's queue (no-op for < 2 tracks).
+    """Build one automatic genre run's queue.
 
-    ``previous_id`` is the track that just finished when the queue is rebuilt
-    mid-run (a wrap), or ``None`` for a fresh run; it is kept out of the first
-    slot so consecutive passes never replay it back-to-back.
+    Without rotation ``entries`` this keeps the original pure shuffle, which
+    the unit tests and any caller without session access still use. With
+    entries it applies the repeat guard: the previous automatic airing's songs
+    are budgeted into the first part of the queue, while older songs come
+    first. ``previous_id`` is the track that just finished, when the queue is
+    rebuilt mid-run (a wrap); it is kept out of the first slot.
     """
     if len(ids) != len(durations):
         raise ValueError("ids and durations must be the same length")
     if len(ids) < 2:
         return list(ids), list(durations)
-    ids, durations = _shuffle_pairs(ids, durations, _run_seed(genre_id, started_at))
-    return _avoid_immediate_repeat(ids, durations, previous_id)
+    if not entries:
+        ids, durations = _shuffle_pairs(
+            ids, durations, _run_seed(genre_id, started_at)
+        )
+        return _avoid_immediate_repeat(ids, durations, previous_id)
+    settings = get_settings()
+    result = build_rotation_order(
+        entries,
+        seed=_run_seed(genre_id, started_at),
+        window_tracks=(
+            window_tracks
+            if window_tracks is not None
+            else min(len(ids), settings.rotation_fallback_window)
+        ),
+        repeat_fraction=settings.rotation_repeat_percent / 100.0,
+        min_window=settings.rotation_min_window,
+        rng_factory=_rng_factory,
+    )
+    return _avoid_immediate_repeat(
+        result.track_ids, result.durations, previous_id
+    )
+
+
+def _rotation_randomize(session: Session):
+    """A ``randomize`` hook that reads the genre's rotation history."""
+
+    def randomize(
+        genre_id: int | None,
+        started_at: datetime,
+        ids: list[int],
+        durations: list[int],
+        previous_id: int | None,
+    ) -> tuple[list[int], list[int]]:
+        if not ids or genre_id is None:
+            return [], []
+        entries = rotation_entries(session, genre_id, ids, durations)
+        window = estimate_window_tracks(
+            session, genre_id, started_at, durations
+        )
+        return _auto_randomize(
+            genre_id,
+            started_at,
+            ids,
+            durations,
+            previous_id,
+            entries=entries,
+            window_tracks=window,
+        )
+
+    return randomize
 
 
 @dataclass
@@ -103,6 +165,7 @@ class BroadcastState:
     index: int
     started_at: datetime
     manual: bool = False
+    run_started_at: datetime | None = None
 
 
 class QueueState(NamedTuple):
@@ -111,6 +174,20 @@ class QueueState(NamedTuple):
     index: int
     live: bool
     manual: bool
+
+
+StartHook = Callable[[int, int, datetime, datetime], None]
+
+
+def _notify_start(
+    on_start: StartHook | None,
+    genre_id: int | None,
+    track_id: int,
+    played_at: datetime,
+    run_started_at: datetime | None,
+) -> None:
+    if on_start is not None and genre_id is not None:
+        on_start(genre_id, track_id, played_at, run_started_at or played_at)
 
 
 def advance(
@@ -126,6 +203,7 @@ def advance(
         ]
         | None
     ) = None,
+    on_start: StartHook | None = None,
 ) -> BroadcastState:
     """Advance ``state`` forward through finished tracks.
 
@@ -135,10 +213,12 @@ def advance(
     given, reshuffles the queue each time it is (re)built, including genre
     switches and wraps. ``previous_id`` is the track that just finished (or
     ``None`` on the initial fill), so the hook can keep a wrapped pass from
-    replaying it. Each track occupies ``duration + gap_seconds``: the extra
-    seconds are a silent interval after the song, before the next one starts.
-    Boundary times are evaluated at the boundary itself so the result is
-    correct even after a long gap with no requests. Does not mutate the input.
+    replaying it. ``on_start`` is called for every automatic track that starts;
+    manual states ignore it because manual playback is an explicit override.
+    Each track occupies ``duration + gap_seconds``: the extra seconds are a
+    silent interval after the song, before the next one starts. Boundary times
+    are evaluated at the boundary itself so the result is correct even after a
+    long gap with no requests. Does not mutate the input.
     """
     state = replace(
         state,
@@ -179,6 +259,8 @@ def advance(
             state.durations = durations
             state.index = 0
             state.started_at = now
+            state.run_started_at = now
+            _notify_start(on_start, target, ids[0], now, now)
             continue
 
         duration = state.durations[state.index] or 1
@@ -193,13 +275,27 @@ def advance(
             state.track_ids, state.durations = build(target, end, finished_id)
             state.index = 0
             state.started_at = end
+            state.run_started_at = end
+            if state.track_ids:
+                _notify_start(on_start, target, state.track_ids[0], end, end)
         else:
+            run_start = state.run_started_at
             state.index += 1
             state.started_at = end
             if state.index >= len(state.track_ids):
                 state.index = 0
                 state.track_ids, state.durations = build(
                     state.genre_id, end, finished_id
+                )
+                state.run_started_at = end
+                run_start = end
+            if state.track_ids:
+                _notify_start(
+                    on_start,
+                    state.genre_id,
+                    state.track_ids[state.index],
+                    end,
+                    run_start or end,
                 )
     return state
 
@@ -291,10 +387,20 @@ def _load(session: Session) -> BroadcastState | None:
         index = int(data["index"])
         started_at = datetime.fromisoformat(data["started_at_utc"])
         manual = bool(data.get("manual", False))
+        raw_run_start = data.get("run_started_at_utc")
+        run_started_at = (
+            datetime.fromisoformat(raw_run_start)
+            if raw_run_start
+            else None
+        )
     except (KeyError, TypeError, ValueError, AttributeError):
         return None
     if started_at.tzinfo is not None:
         started_at = started_at.astimezone(timezone.utc).replace(tzinfo=None)
+    if run_started_at is not None and run_started_at.tzinfo is not None:
+        run_started_at = run_started_at.astimezone(timezone.utc).replace(
+            tzinfo=None
+        )
     if len(track_ids) != len(durations):
         return None
     return BroadcastState(
@@ -304,6 +410,7 @@ def _load(session: Session) -> BroadcastState | None:
         index=index,
         started_at=started_at,
         manual=manual,
+        run_started_at=run_started_at,
     )
 
 
@@ -316,6 +423,11 @@ def _save(session: Session, state: BroadcastState) -> None:
             "index": state.index,
             "started_at_utc": state.started_at.isoformat(),
             "manual": state.manual,
+            "run_started_at_utc": (
+                state.run_started_at.isoformat()
+                if state.run_started_at is not None
+                else None
+            ),
         }
     )
     session.merge(Setting(key=STATE_KEY, value=payload))
@@ -325,10 +437,128 @@ def _save(session: Session, state: BroadcastState) -> None:
 def _init(session: Session, now: datetime) -> BroadcastState:
     genre_id = _desired(session, now)
     if genre_id is None:
-        return BroadcastState(None, [], [], 0, now)
+        return BroadcastState(None, [], [], 0, now, run_started_at=now)
     ids, durations = _snapshot(session, genre_id)
-    ids, durations = _auto_randomize(genre_id, now, ids, durations)
-    return BroadcastState(genre_id, ids, durations, 0, now)
+    ids, durations = _rotation_randomize(session)(
+        genre_id, now, ids, durations, None
+    )
+    return BroadcastState(
+        genre_id, ids, durations, 0, now, run_started_at=now
+    )
+
+
+def _normalize_run_start(
+    state: BroadcastState, gap: float
+) -> BroadcastState:
+    """Give legacy states a run start without changing their current track."""
+    if state.run_started_at is not None:
+        return state
+    if state.genre_id is None or not state.track_ids:
+        state.run_started_at = state.started_at
+        return state
+    if state.manual:
+        state.run_started_at = state.started_at
+        return state
+    index = max(0, min(state.index, len(state.durations) - 1))
+    offset = sum((state.durations[i] or 1) + gap for i in range(index))
+    state.run_started_at = state.started_at - timedelta(seconds=offset)
+    return state
+
+
+def _record_current(session: Session, state: BroadcastState) -> None:
+    """Record the first track of a freshly built automatic run."""
+    if state.manual or state.genre_id is None or not state.track_ids:
+        return
+    track = session.get(TrackCache, state.track_ids[state.index])
+    if track is None:
+        return
+    record_play(
+        session,
+        state.genre_id,
+        track.youtube_video_id,
+        state.started_at,
+        state.run_started_at or state.started_at,
+    )
+
+
+def _record_start(session: Session) -> StartHook:
+    def on_start(
+        genre_id: int,
+        track_id: int,
+        played_at: datetime,
+        run_started_at: datetime,
+    ) -> None:
+        track = session.get(TrackCache, track_id)
+        if track is not None:
+            record_play(
+                session,
+                genre_id,
+                track.youtube_video_id,
+                played_at,
+                run_started_at,
+            )
+
+    return on_start
+
+
+def _seed_history_for_state(
+    session: Session, state: BroadcastState
+) -> bool:
+    """One-time seed for an automatic run that predates the rotation table.
+
+    The saved state tells us which tracks of the current pass have already
+    started; their starts are reconstructed from the durations. Manual states
+    are left alone because manual playback does not feed the guard.
+    """
+    if state.manual or state.genre_id is None or not state.track_ids:
+        return False
+    if genre_has_history(session, state.genre_id):
+        return False
+    gap = get_settings().track_gap_seconds
+    state = _normalize_run_start(state, gap)
+    run_start = state.run_started_at or state.started_at
+    last_index = max(0, min(state.index, len(state.track_ids) - 1))
+    played_at = run_start
+    for index in range(last_index + 1):
+        track = session.get(TrackCache, state.track_ids[index])
+        if track is not None:
+            at = state.started_at if index == state.index else played_at
+            record_play(
+                session,
+                state.genre_id,
+                track.youtube_video_id,
+                at,
+                run_start,
+            )
+        played_at += timedelta(
+            seconds=(state.durations[index] or 1) + gap
+        )
+    return True
+
+
+def _advance_and_record(
+    session: Session, state: BroadcastState | None, now: datetime
+) -> tuple[BroadcastState, bool, BroadcastState, bool]:
+    initialized = state is None
+    gap = get_settings().track_gap_seconds
+    if state is None:
+        state = _init(session, now)
+        _record_current(session, state)
+        seeded = False
+    else:
+        state = _normalize_run_start(state, gap)
+        seeded = _seed_history_for_state(session, state)
+    before = state
+    state = advance(
+        state,
+        now,
+        lambda at: _desired(session, at),
+        lambda sid: _snapshot(session, sid),
+        gap,
+        randomize=_rotation_randomize(session),
+        on_start=_record_start(session),
+    )
+    return state, initialized, before, seeded
 
 
 def _peek_next(
@@ -347,7 +577,7 @@ def _peek_next(
         lambda at: _desired(session, at),
         lambda sid: _snapshot(session, sid),
         gap,
-        randomize=_auto_randomize,
+        randomize=_rotation_randomize(session),
     )
     next_track = None
     if following.genre_id is not None and following.track_ids:
@@ -358,23 +588,14 @@ def _peek_next(
 def _advance_run(session: Session, now: datetime) -> BroadcastState:
     """Load (or initialize) the on-air run and advance it to ``now``.
 
-    Saves the run when it was just created or when it moved, matching the
-    lazy-advance behaviour of :func:`get_current`.
+    Saves the run when it was just created, when it moved, or when a one-time
+    rotation seed was written, matching the lazy-advance behaviour of
+    :func:`get_current`.
     """
-    state = _load(session)
-    initialized = state is None
-    if state is None:
-        state = _init(session, now)
-    before = state
-    state = advance(
-        state,
-        now,
-        lambda at: _desired(session, at),
-        lambda sid: _snapshot(session, sid),
-        get_settings().track_gap_seconds,
-        randomize=_auto_randomize,
+    state, initialized, before, seeded = _advance_and_record(
+        session, _load(session), now
     )
-    if initialized or state != before:
+    if initialized or seeded or state != before:
         _save(session, state)
     return state
 
@@ -417,10 +638,17 @@ def get_current(session: Session, now: datetime | None = None) -> NowState:
             if state.manual and state.genre_id is not None:
                 ids, durations = _snapshot(session, state.genre_id)
                 state = BroadcastState(
-                    state.genre_id, ids, durations, 0, now, True
+                    state.genre_id,
+                    ids,
+                    durations,
+                    0,
+                    now,
+                    True,
+                    state.run_started_at or now,
                 )
             else:
                 state = _init(session, now)
+                _record_current(session, state)
             _save(session, state)
             if state.genre_id is None or not state.track_ids:
                 return NowState(None, None, 0, "none")
@@ -447,25 +675,23 @@ def get_current(session: Session, now: datetime | None = None) -> NowState:
         )
 
 
-def _load_and_advance(session: Session, now: datetime) -> BroadcastState:
-    state = _load(session)
-    if state is None:
-        state = _init(session, now)
-    return advance(
-        state,
-        now,
-        lambda at: _desired(session, at),
-        lambda sid: _snapshot(session, sid),
-        get_settings().track_gap_seconds,
-        randomize=_auto_randomize,
-    )
-
-
 def _build_manual(
-    session: Session, genre_id: int, index: int, now: datetime
+    session: Session,
+    genre_id: int,
+    index: int,
+    now: datetime,
+    run_started_at: datetime | None = None,
 ) -> BroadcastState:
     ids, durations = _snapshot(session, genre_id)
-    return BroadcastState(genre_id, ids, durations, index, now, True)
+    return BroadcastState(
+        genre_id,
+        ids,
+        durations,
+        index,
+        now,
+        True,
+        run_started_at or now,
+    )
 
 
 def play_now(
@@ -480,7 +706,12 @@ def play_now(
         )
         if index is None:
             raise ValueError("track not found")
-        _save(session, _build_manual(session, genre_id, index, now))
+        _save(
+            session,
+            _build_manual(
+                session, genre_id, index, now, run_started_at=now
+            ),
+        )
 
 
 def skip(
@@ -488,19 +719,25 @@ def skip(
 ) -> None:
     now = now or utcnow()
     with _lock:
-        state = _load_and_advance(session, now)
+        state = _advance_run(session, now)
         if state.genre_id != genre_id or not state.track_ids:
             tracks = ordered_tracks_for_genre(session, genre_id)
             if not tracks:
                 raise ValueError("genre has no tracks")
             index = 0 if direction == "next" else len(tracks) - 1
-            _save(session, _build_manual(session, genre_id, index, now))
+            _save(
+                session,
+                _build_manual(
+                    session, genre_id, index, now, run_started_at=now
+                ),
+            )
             return
         total = len(state.track_ids)
         delta = 1 if direction == "next" else -1
         state.manual = True
         state.index = (state.index + delta) % total
         state.started_at = now
+        state.run_started_at = state.run_started_at or now
         _save(session, state)
 
 
@@ -508,6 +745,7 @@ def set_auto(session: Session, now: datetime | None = None) -> None:
     now = now or utcnow()
     with _lock:
         state = _init(session, now)
+        _record_current(session, state)
         _save(session, state)
 
 
@@ -520,7 +758,10 @@ def stop(session: Session, now: datetime | None = None) -> None:
     """
     now = now or utcnow()
     with _lock:
-        _save(session, BroadcastState(None, [], [], 0, now, True))
+        _save(
+            session,
+            BroadcastState(None, [], [], 0, now, True, run_started_at=now),
+        )
 
 
 def set_order(
@@ -541,22 +782,31 @@ def set_order(
         save_order(session, genre_id, video_ids)
         if _load(session) is None:
             return
-        state = _load_and_advance(session, now)
+        state = _advance_run(session, now)
         if state.genre_id != genre_id or not state.track_ids:
             return
         current_id = state.track_ids[state.index]
         ids, durations = _snapshot(session, genre_id)
         if not ids:
             return
-        if current_id in ids:
-            new_index = ids.index(current_id)
-            started_at = state.started_at
-        else:
+        replaced = current_id not in ids
+        if replaced:
             new_index = 0
             started_at = now
-        _save(
-            session,
-            BroadcastState(
-                genre_id, ids, durations, new_index, started_at, state.manual
-            ),
+        else:
+            new_index = ids.index(current_id)
+            started_at = state.started_at
+        new_state = BroadcastState(
+            genre_id,
+            ids,
+            durations,
+            new_index,
+            started_at,
+            state.manual,
+            state.run_started_at or started_at,
         )
+        if replaced and not new_state.manual:
+            # Removing the on-air row starts the new head immediately. It is
+            # still an automatic airing, so it belongs in the rotation memory.
+            _record_current(session, new_state)
+        _save(session, new_state)

@@ -44,7 +44,16 @@ def tracks_for_genre(session: Session, genre_id: int) -> list[TrackCache]:
         .where(TrackCache.playlist_id.in_(playlist_ids))
         .order_by(TrackCache.playlist_id, TrackCache.position, TrackCache.id)
     ).all()
-    return list(rows)
+    # The same video can live in more than one playlist feeding a genre. A
+    # queue should contain each song once, so keep the first cached row.
+    tracks: list[TrackCache] = []
+    seen: set[str] = set()
+    for row in rows:
+        if row.youtube_video_id in seen:
+            continue
+        seen.add(row.youtube_video_id)
+        tracks.append(row)
+    return tracks
 
 
 def ordered_tracks_for_genre(session: Session, genre_id: int) -> list[TrackCache]:

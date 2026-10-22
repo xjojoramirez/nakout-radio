@@ -65,6 +65,21 @@ class ScheduleSlot(SQLModel, table=True):
     start_time: str
 
 
+class TrackPlay(SQLModel, table=True):
+    """The last automatic airing of a track within a genre.
+
+    Keyed by video id rather than ``TrackCache.id`` because playlist syncs
+    delete and recreate the cached rows. Manual overrides are deliberately not
+    recorded: the rotation guard only describes automatic schedule playback.
+    """
+
+    genre_id: int = Field(foreign_key="genre.id", primary_key=True)
+    video_id: str = Field(primary_key=True)
+    last_played_at: datetime
+    last_run_started_at: datetime
+    play_count: int = 0
+
+
 class Setting(SQLModel, table=True):
     key: str = Field(primary_key=True)
     value: str = ""
