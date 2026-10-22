@@ -44,6 +44,17 @@ export interface BroadcastNow {
   preload_lead_seconds?: number;
 }
 
+export interface QueueState {
+  /** Tracks in the order the broadcast will play them. */
+  tracks: Track[];
+  /** Index of the on-air track, or -1 when the genre is not playing. */
+  index: number;
+  /** True when this genre is the one currently on air. */
+  live: boolean;
+  /** True when the operator has taken manual control of playback. */
+  manual: boolean;
+}
+
 export interface ChannelSource {
   channel_id: string | null;
   title: string | null;

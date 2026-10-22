@@ -19,7 +19,15 @@ from app.auth import (
     revoke_session,
     verify_password,
 )
-from app.broadcast import play_now, set_auto, set_order, skip, stop, utcnow
+from app.broadcast import (
+    live_queue,
+    play_now,
+    set_auto,
+    set_order,
+    skip,
+    stop,
+    utcnow,
+)
 from app.config import get_settings
 from app.db import get_session
 from app.loudness import ensure_backfill
@@ -42,6 +50,7 @@ from app.schemas import (
     PlayIn,
     PlaylistIn,
     PlaylistOut,
+    QueueOut,
     SlotIn,
     SlotOut,
     SlotUpdate,
@@ -593,6 +602,34 @@ def genre_tracks(
         TrackOut.model_validate(t)
         for t in ordered_tracks_for_genre(session, genre_id)
     ]
+
+
+@router.get(
+    "/genres/{genre_id}/queue",
+    response_model=QueueOut,
+    dependencies=[Depends(require_admin)],
+)
+def genre_queue(
+    genre_id: int, session: Session = Depends(get_session)
+) -> QueueOut:
+    if session.get(Genre, genre_id) is None:
+        raise HTTPException(status_code=404, detail="genre not found")
+    queue = live_queue(session, genre_id)
+    tracks: list[TrackOut] = []
+    index = -1
+    for position, track_id in enumerate(queue.track_ids):
+        track = session.get(TrackCache, track_id)
+        if track is None:
+            continue
+        if position == queue.index:
+            index = len(tracks)
+        tracks.append(TrackOut.model_validate(track))
+    return QueueOut(
+        tracks=tracks,
+        index=index,
+        live=queue.live,
+        manual=queue.manual,
+    )
 
 
 @router.post("/playback/play", dependencies=[Depends(require_admin)])

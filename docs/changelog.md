@@ -3,6 +3,42 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-22 — studio queue shows and controls the live play order
+
+The Studio Now Playing queue showed the *saved* order while the broadcast
+played an ephemeral shuffled copy, so the "On air" row jumped around and the
+next song never matched the row below it. The queue now reads the live run
+order (`GET /api/studio/genres/{id}/queue`) and labels it "Play order"; a
+genre that is not on air shows its "Saved order" instead.
+
+Shuffle and drag-reorder now apply to the live run as well as the saved order:
+`set_order` rebuilds the automatic queue in radio too (previously it only did
+so for manual playback), keeping the on-air track current at its new index
+with its elapsed time intact. Shuffle pins the on-air track first and
+randomizes the rest, so the next song is always the row below the current one.
+Automatic re-shuffling at the end of each pass is unchanged, as is the
+saved-order persistence.
+
+- Files touched:
+  - `backend/app/broadcast.py`
+  - `backend/app/routers/admin.py`
+  - `backend/app/schemas.py`
+  - `backend/tests/test_admin.py`
+  - `backend/tests/test_live_control.py`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/components/admin/NowPlayingPanel.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `frontend/src/types.ts`
+  - `frontend/src/api/client.test.ts`
+  - `frontend/src/components/admin/NowPlayingPanel.dom.test.tsx`
+  - `frontend/src/pages/AdminPage.dom.test.tsx`
+  - `docs/changelog.md` (docs)
+- **Container restart required?** Yes — `backend` and `frontend`:
+  `docker compose up -d --build backend frontend` (hard-refresh the browser
+  afterwards).
+- Verification: `cd backend && python -m pytest -q` — 305 passed.
+  `cd frontend && npm test` — 289 passed; `npm run typecheck`; `npm run build`.
+
 ## 2026-10-20 — terminate TLS for `www.nakout.com` and redirect to the apex
 
 `https://www.nakout.com/` failed with `tlsv1 alert internal error`: Caddy only

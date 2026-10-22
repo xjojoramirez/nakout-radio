@@ -105,6 +105,14 @@ class BroadcastState:
     manual: bool = False
 
 
+class QueueState(NamedTuple):
+    genre_id: int
+    track_ids: list[int]
+    index: int
+    live: bool
+    manual: bool
+
+
 def advance(
     state: BroadcastState,
     now: datetime,
@@ -347,25 +355,59 @@ def _peek_next(
     return next_track, max(0.0, (end - now).total_seconds())
 
 
+def _advance_run(session: Session, now: datetime) -> BroadcastState:
+    """Load (or initialize) the on-air run and advance it to ``now``.
+
+    Saves the run when it was just created or when it moved, matching the
+    lazy-advance behaviour of :func:`get_current`.
+    """
+    state = _load(session)
+    initialized = state is None
+    if state is None:
+        state = _init(session, now)
+    before = state
+    state = advance(
+        state,
+        now,
+        lambda at: _desired(session, at),
+        lambda sid: _snapshot(session, sid),
+        get_settings().track_gap_seconds,
+        randomize=_auto_randomize,
+    )
+    if initialized or state != before:
+        _save(session, state)
+    return state
+
+
+def live_queue(
+    session: Session, genre_id: int, now: datetime | None = None
+) -> QueueState:
+    """The queue the studio should display for ``genre_id``.
+
+    The on-air genre returns its live (possibly shuffled) order and index; any
+    other genre returns the saved order with ``index == -1`` and ``live``
+    false, because it is not currently playing.
+    """
+    now = now or utcnow()
+    with _lock:
+        state = _advance_run(session, now)
+        if state.genre_id == genre_id and state.track_ids:
+            return QueueState(
+                genre_id,
+                list(state.track_ids),
+                state.index,
+                True,
+                state.manual,
+            )
+        ids, _ = _snapshot(session, genre_id)
+        return QueueState(genre_id, ids, -1, False, False)
+
+
 def get_current(session: Session, now: datetime | None = None) -> NowState:
     now = now or utcnow()
     gap = get_settings().track_gap_seconds
     with _lock:
-        state = _load(session)
-        initialized = state is None
-        if state is None:
-            state = _init(session, now)
-        before = state
-        state = advance(
-            state,
-            now,
-            lambda at: _desired(session, at),
-            lambda sid: _snapshot(session, sid),
-            gap,
-            randomize=_auto_randomize,
-        )
-        if initialized or state != before:
-            _save(session, state)
+        state = _advance_run(session, now)
 
         if state.genre_id is None or not state.track_ids:
             return NowState(None, None, 0, "none")
@@ -487,27 +529,34 @@ def set_order(
     video_ids: list[str],
     now: datetime | None = None,
 ) -> None:
+    """Replace a genre's saved order and apply it to the live run.
+
+    The current track keeps playing at its new index with its elapsed time
+    preserved; when it is no longer in the queue, playback restarts at the
+    head. Applies to automatic and manual runs alike, so what the studio
+    shows is what plays next.
+    """
     now = now or utcnow()
     with _lock:
         save_order(session, genre_id, video_ids)
-        state = _load_and_advance(session, now)
-        if not state.manual or state.genre_id != genre_id:
+        if _load(session) is None:
             return
-        current_id = state.track_ids[state.index] if state.track_ids else None
+        state = _load_and_advance(session, now)
+        if state.genre_id != genre_id or not state.track_ids:
+            return
+        current_id = state.track_ids[state.index]
         ids, durations = _snapshot(session, genre_id)
         if not ids:
             return
-        started_at = state.started_at
-        if current_id is not None:
-            try:
-                new_index = ids.index(current_id)
-            except ValueError:
-                new_index = 0
-                started_at = now
+        if current_id in ids:
+            new_index = ids.index(current_id)
+            started_at = state.started_at
         else:
             new_index = 0
             started_at = now
         _save(
             session,
-            BroadcastState(genre_id, ids, durations, new_index, started_at, True),
+            BroadcastState(
+                genre_id, ids, durations, new_index, started_at, state.manual
+            ),
         )
