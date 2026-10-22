@@ -6,6 +6,7 @@ import type {
   CurrentGenre,
   Genre,
   GenreDetail,
+  QueueState,
   ScheduleSlot,
   ScheduleToday,
   SlotToday,
@@ -68,6 +69,8 @@ export const api = {
   session: () => request<{ status: string }>("/studio/session"),
   genreTracks: (genreId: number) =>
     request<Track[]>(`/studio/genres/${genreId}/tracks`),
+  genreQueue: (genreId: number) =>
+    request<QueueState>(`/studio/genres/${genreId}/queue`),
   play: (genreId: number, youtubeVideoId: string) =>
     request<{ status: string }>("/studio/playback/play", {
       method: "POST",

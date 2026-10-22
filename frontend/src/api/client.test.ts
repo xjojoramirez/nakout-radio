@@ -179,6 +179,20 @@ describe("api client", () => {
     expect(spy.mock.calls[0][0]).toBe("/api/studio/genres/3/tracks");
   });
 
+  it("GETs a genre's live queue", async () => {
+    const spy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ tracks: [], index: -1, live: false, manual: false }),
+          { status: 200 },
+        ),
+      );
+    const queue = await api.genreQueue(3);
+    expect(spy.mock.calls[0][0]).toBe("/api/studio/genres/3/queue");
+    expect(queue.live).toBe(false);
+  });
+
   it("createGenre omits colour when not supplied", async () => {
     const spy = vi
       .spyOn(globalThis, "fetch")

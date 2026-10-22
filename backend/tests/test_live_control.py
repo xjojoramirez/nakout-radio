@@ -8,6 +8,7 @@ from app.broadcast import (
     _peek_next,
     _run_seed,
     get_current,
+    live_queue,
     play_now,
     set_auto,
     set_order,
@@ -393,3 +394,69 @@ def test_peek_and_commit_use_the_same_seed_on_genre_switch(tmp_path, monkeypatch
         assert peek_seeds == commit_seeds
         assert predicted.youtube_video_id == committed.track.youtube_video_id
         assert commit_seeds == [_run_seed(two.id, NOW + timedelta(seconds=102))]
+
+
+def test_set_order_rebuilds_an_auto_run_in_the_new_order(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed(s, "chill", ["a", "b", "c"], default=True)
+        set_auto(s, now=NOW)
+        assert get_current(s, NOW).track.youtube_video_id == "a"
+
+        later = NOW + timedelta(seconds=40)
+        set_order(s, st.id, ["b", "a", "c"], now=later)
+
+        now_state = get_current(s, later)
+        assert now_state.track.youtube_video_id == "a"
+        assert now_state.offset_seconds == 40
+        assert now_state.source == "default"
+        # The next track is the row after the current one in the saved queue.
+        assert (
+            get_current(s, NOW + timedelta(seconds=100)).track.youtube_video_id
+            == "c"
+        )
+
+
+def test_live_queue_reports_the_live_order_and_index(tmp_path, monkeypatch):
+    from app.config import get_settings as _get_settings
+
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRNG())
+    monkeypatch.setattr(
+        "app.broadcast.get_settings",
+        lambda: _get_settings().model_copy(update={"track_gap_seconds": 0.0}),
+    )
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        st = _seed(s, "chill", ["a", "b", "c"], default=True)
+        set_auto(s, now=NOW)
+        queue = live_queue(s, st.id, NOW + timedelta(seconds=150))
+        assert queue.live is True
+        assert queue.manual is False
+        assert queue.index == 1
+        assert [s.get(TrackCache, i).youtube_video_id for i in queue.track_ids] == [
+            "a",
+            "b",
+            "c",
+        ]
+
+
+def test_live_queue_falls_back_to_the_saved_order_when_off_air(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        _seed(s, "one", ["a"], default=True)
+        two = _seed(s, "two", ["x", "y"])
+        set_auto(s, now=NOW)
+        queue = live_queue(s, two.id, NOW)
+        assert queue.live is False
+        assert queue.index == -1
+        assert [s.get(TrackCache, i).youtube_video_id for i in queue.track_ids] == [
+            "x",
+            "y",
+        ]

@@ -165,6 +165,13 @@ class OrderIn(BaseModel):
     video_ids: list[str]
 
 
+class QueueOut(BaseModel):
+    tracks: list[TrackOut]
+    index: int = -1
+    live: bool = False
+    manual: bool = False
+
+
 class SlotTodayOut(BaseModel):
     id: int
     genre_id: int

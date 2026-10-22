@@ -37,6 +37,7 @@ vi.mock("../api/client", async () => {
       refreshPlaylist: vi.fn(),
       deletePlaylist: vi.fn(),
       genreTracks: vi.fn(),
+      genreQueue: vi.fn(),
       play: vi.fn(),
       playbackNext: vi.fn(),
       playbackPrev: vi.fn(),
@@ -54,6 +55,12 @@ beforeEach(() => {
   mocked.listChannelPlaylists.mockResolvedValue([]);
   mocked.listPlaylists.mockResolvedValue([]);
   mocked.genreTracks.mockResolvedValue([]);
+  mocked.genreQueue.mockResolvedValue({
+    tracks: [],
+    index: -1,
+    live: false,
+    manual: false,
+  });
   mocked.listSlots.mockResolvedValue([]);
   mocked.scheduleNow.mockResolvedValue({
     genre: null,

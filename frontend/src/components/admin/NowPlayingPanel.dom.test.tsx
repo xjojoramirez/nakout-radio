@@ -25,7 +25,7 @@ vi.mock("../../api/client", async () => {
     api: {
       now: vi.fn(),
       syncAll: vi.fn(),
-      genreTracks: vi.fn(),
+      genreQueue: vi.fn(),
       play: vi.fn(),
       playbackNext: vi.fn(),
       playbackPrev: vi.fn(),
@@ -59,9 +59,15 @@ const track = (id: string, title: string, position: number): Track => ({
 
 const TRACK_A = track("a", "Alpha", 0);
 const TRACK_B = track("b", "Beta", 1);
+const TRACK_C = track("c", "Gamma", 2);
 
 beforeEach(() => {
-  mocked.genreTracks.mockResolvedValue([TRACK_A, TRACK_B]);
+  mocked.genreQueue.mockResolvedValue({
+    tracks: [TRACK_A, TRACK_B],
+    index: 0,
+    live: true,
+    manual: false,
+  });
 });
 
 afterEach(() => {
@@ -227,8 +233,13 @@ describe("NowPlayingPanel", () => {
     mocked.playbackNext.mockResolvedValue({ status: "ok" });
     mocked.playbackPrev.mockResolvedValue({ status: "ok" });
     renderPanel();
+    await screen.findAllByText("Play");
+    const before = mocked.genreQueue.mock.calls.length;
     fireEvent.click(await screen.findByText("Next"));
     await waitFor(() => expect(mocked.playbackNext).toHaveBeenCalledWith(1));
+    await waitFor(() =>
+      expect(mocked.genreQueue.mock.calls.length).toBeGreaterThan(before),
+    );
     fireEvent.click(screen.getByText("Prev"));
     await waitFor(() => expect(mocked.playbackPrev).toHaveBeenCalledWith(1));
   });
@@ -303,7 +314,58 @@ describe("NowPlayingPanel", () => {
     expect(await screen.findByText("Auto")).toBeDisabled();
   });
 
-  it("shuffles and saves the new order", async () => {
+  it("renders the live queue order and labels it as the play order", async () => {
+    mocked.genreQueue.mockResolvedValue({
+      tracks: [TRACK_B, TRACK_A],
+      index: 0,
+      live: true,
+      manual: false,
+    });
+    mocked.now.mockResolvedValue({
+      genre: GENRE,
+      track: TRACK_B,
+      offset_seconds: 0,
+      server_time: "x",
+      source: "schedule",
+    });
+    const { container } = renderPanel();
+    await screen.findByText("Play order");
+    expect(
+      Array.from(container.querySelectorAll(".queue-title")).map(
+        (el) => el.textContent,
+      ),
+    ).toEqual(["Beta", "Alpha"]);
+    expect(container.querySelector(".queue-row.current")).toHaveTextContent(
+      "Beta",
+    );
+  });
+
+  it("shows the saved order when the genre is off air", async () => {
+    mocked.genreQueue.mockResolvedValue({
+      tracks: [TRACK_A, TRACK_B],
+      index: -1,
+      live: false,
+      manual: false,
+    });
+    mocked.now.mockResolvedValue({
+      genre: null,
+      track: null,
+      offset_seconds: 0,
+      server_time: "x",
+      source: "none",
+    });
+    renderPanel();
+    expect(await screen.findByText("Saved order")).toBeInTheDocument();
+    expect(screen.queryByText("On air")).not.toBeInTheDocument();
+  });
+
+  it("shuffles the upcoming songs and keeps the on-air track first", async () => {
+    mocked.genreQueue.mockResolvedValue({
+      tracks: [TRACK_B, TRACK_A, TRACK_C],
+      index: 1,
+      live: true,
+      manual: false,
+    });
     mocked.now.mockResolvedValue({
       genre: GENRE,
       track: TRACK_A,
@@ -316,7 +378,7 @@ describe("NowPlayingPanel", () => {
     renderPanel();
     fireEvent.click(await screen.findByText("Shuffle"));
     await waitFor(() =>
-      expect(mocked.setGenreOrder).toHaveBeenCalledWith(1, ["b", "a"]),
+      expect(mocked.setGenreOrder).toHaveBeenCalledWith(1, ["a", "c", "b"]),
     );
   });
 
@@ -361,10 +423,10 @@ describe("NowPlayingPanel", () => {
     mocked.syncAll.mockResolvedValue({ results: [] });
     renderPanel();
     await screen.findAllByText("Play");
-    expect(mocked.genreTracks).toHaveBeenCalledTimes(1);
+    const before = mocked.genreQueue.mock.calls.length;
     fireEvent.click(screen.getByText("Sync all playlists"));
     await waitFor(() =>
-      expect(mocked.genreTracks).toHaveBeenCalledTimes(2),
+      expect(mocked.genreQueue.mock.calls.length).toBeGreaterThan(before),
     );
   });
 
@@ -435,7 +497,7 @@ describe("NowPlayingPanel", () => {
     );
   });
 
-  it("refetches tracks when the genre changes", async () => {
+  it("refetches the queue when the genre changes", async () => {
     const GENRE_2: Genre = {
       id: 2,
       name: "Jazz",
@@ -453,11 +515,11 @@ describe("NowPlayingPanel", () => {
     });
     renderPanel([GENRE, GENRE_2]);
     await screen.findAllByText("Play");
-    expect(mocked.genreTracks).toHaveBeenCalledWith(1);
+    expect(mocked.genreQueue).toHaveBeenCalledWith(1);
     fireEvent.change(screen.getByLabelText("Genre to control"), {
       target: { value: "2" },
     });
-    await waitFor(() => expect(mocked.genreTracks).toHaveBeenCalledWith(2));
+    await waitFor(() => expect(mocked.genreQueue).toHaveBeenCalledWith(2));
   });
 
   it("selects the currently playing genre on load", async () => {
@@ -478,7 +540,7 @@ describe("NowPlayingPanel", () => {
     });
     renderPanel([GENRE, GENRE_2]);
     await waitFor(() =>
-      expect(mocked.genreTracks).toHaveBeenLastCalledWith(2),
+      expect(mocked.genreQueue).toHaveBeenLastCalledWith(2),
     );
     expect(screen.getByLabelText("Genre to control")).toHaveValue("2");
   });
@@ -578,7 +640,12 @@ describe("NowPlayingPanel", () => {
       server_time: "x",
       source: "schedule",
     });
-    mocked.genreTracks.mockResolvedValue([longTrack]);
+    mocked.genreQueue.mockResolvedValue({
+      tracks: [longTrack],
+      index: 0,
+      live: true,
+      manual: false,
+    });
     const { container } = renderPanel();
     const nowcard = await waitFor(() => {
       const card = container.querySelector(".admin-np-col .nowcard");

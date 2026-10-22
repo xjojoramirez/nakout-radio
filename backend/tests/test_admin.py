@@ -1186,6 +1186,54 @@ def test_genre_tracks_returns_ordered_list(tmp_path):
     assert [t["youtube_video_id"] for t in body] == ["c", "a", "b"]
 
 
+class _KeepOrderRng:
+    """No-op RNG so the queue assertions can pin the saved order."""
+
+    def shuffle(self, seq):
+        return None
+
+
+def test_genre_queue_endpoint_returns_the_live_order(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRng())
+    client, engine = _client(tmp_path)
+    sid = _seed_genre_with_tracks(engine)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    assert client.post("/api/studio/playback/auto").status_code == 200
+    body = client.get(f"/api/studio/genres/{sid}/queue").json()
+    assert body["live"] is True
+    assert body["manual"] is False
+    assert body["index"] == 0
+    assert [t["youtube_video_id"] for t in body["tracks"]] == ["a", "b", "c"]
+
+
+def test_genre_queue_endpoint_requires_auth(tmp_path):
+    client, engine = _client(tmp_path)
+    sid = _seed_genre_with_tracks(engine)
+    assert client.get(f"/api/studio/genres/{sid}/queue").status_code == 401
+
+
+def test_genre_queue_endpoint_unknown_genre(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    assert client.get("/api/studio/genres/999/queue").status_code == 404
+
+
+def test_order_endpoint_rebuilds_the_live_queue(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.broadcast._rng_factory", lambda seed: _KeepOrderRng())
+    client, engine = _client(tmp_path)
+    sid = _seed_genre_with_tracks(engine)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    assert client.post("/api/studio/playback/auto").status_code == 200
+    resp = client.put(
+        f"/api/studio/genres/{sid}/order", json={"video_ids": ["b", "c", "a"]}
+    )
+    assert resp.status_code == 200
+    body = client.get(f"/api/studio/genres/{sid}/queue").json()
+    assert [t["youtube_video_id"] for t in body["tracks"]] == ["b", "c", "a"]
+    assert body["index"] == 2  # "a" is still on air, now last in the queue
+    assert client.get("/api/now").json()["track"]["youtube_video_id"] == "a"
+
+
 def test_play_and_auto_endpoints(tmp_path):
     client, engine = _client(tmp_path)
     sid = _seed_genre_with_tracks(engine)

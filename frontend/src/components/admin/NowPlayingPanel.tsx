@@ -31,6 +31,8 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
   const { state, failed, refresh } = useBroadcast();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [tracks, setTracks] = useState<Track[]>([]);
+  const [queueLive, setQueueLive] = useState(false);
+  const [queueIndex, setQueueIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [reload, setReload] = useState(0);
@@ -62,18 +64,34 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
     }
   }, [selectedId, knownLiveId, genres]);
 
+  const liveTrackId =
+    state?.genre?.id === selectedId
+      ? (state?.track?.youtube_video_id ?? null)
+      : null;
+  const loadedGenreRef = useRef<number | null>(null);
+
   useEffect(() => {
     if (selectedId === null) {
       setTracks([]);
+      setQueueLive(false);
+      setQueueIndex(-1);
       return;
+    }
+    if (loadedGenreRef.current !== selectedId) {
+      loadedGenreRef.current = selectedId;
+      setTracks([]);
+      setQueueLive(false);
+      setQueueIndex(-1);
     }
     let active = true;
     setLoading(true);
-    setTracks([]);
     api
-      .genreTracks(selectedId)
-      .then((rows) => {
-        if (active) setTracks(rows);
+      .genreQueue(selectedId)
+      .then((queue) => {
+        if (!active) return;
+        setTracks(queue.tracks);
+        setQueueLive(queue.live);
+        setQueueIndex(queue.index);
       })
       .catch((err) => {
         if (active) onErrorRef.current(messageFor(err));
@@ -84,15 +102,14 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
     return () => {
       active = false;
     };
-  }, [selectedId, reload]);
+  }, [selectedId, reload, liveTrackId]);
 
-  const currentVideoId =
-    state?.genre?.id === selectedId
-      ? (state?.track?.youtube_video_id ?? null)
-      : null;
-  const currentIndex = currentVideoId
+  const currentVideoId = liveTrackId;
+  const matchedIndex = currentVideoId
     ? tracks.findIndex((t) => t.youtube_video_id === currentVideoId)
     : -1;
+  const currentIndex =
+    matchedIndex >= 0 ? matchedIndex : queueLive ? queueIndex : -1;
   const livePct =
     state?.track && state.track.duration_seconds > 0
       ? Math.min(
@@ -143,6 +160,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
         selectedId,
         next.map((t) => t.youtube_video_id),
       );
+      setReload((n) => n + 1);
       refresh();
     } catch (err) {
       setTracks(previous);
@@ -150,10 +168,24 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
     }
   };
 
+  const shuffleQueue = () => {
+    if (selectedId === null || tracks.length < 2) return;
+    const current = state?.genre?.id === selectedId ? state.track : null;
+    const currentPosition = current
+      ? tracks.findIndex(
+          (t) => t.youtube_video_id === current.youtube_video_id,
+        )
+      : -1;
+    const rest = tracks.filter((_, i) => i !== currentPosition);
+    const next = current ? [current, ...shuffle(rest)] : shuffle(tracks);
+    void saveOrder(next);
+  };
+
   const playNow = async (genreId: number, track: Track) => {
     try {
       await api.play(genreId, track.youtube_video_id);
       onNotice(`Now playing "${track.title}".`);
+      setReload((n) => n + 1);
       refresh();
     } catch (err) {
       onError(messageFor(err));
@@ -175,6 +207,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
       await (direction === "next"
         ? api.playbackNext(selectedId)
         : api.playbackPrev(selectedId));
+      setReload((n) => n + 1);
       refresh();
     } catch (err) {
       onError(messageFor(err));
@@ -185,6 +218,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
     try {
       await api.playbackAuto();
       onNotice("Returned to the schedule.");
+      setReload((n) => n + 1);
       refresh();
     } catch (err) {
       onError(messageFor(err));
@@ -195,6 +229,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
     try {
       await api.playbackStop();
       onNotice("Stopped playback.");
+      setReload((n) => n + 1);
       refresh();
     } catch (err) {
       onError(messageFor(err));
@@ -349,18 +384,25 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
           </div>
 
           <div className="queue-head">
-            <h3>Queue</h3>
+            <h3>
+              Queue
+              {tracks.length > 0 && (
+                <span className={`queue-mode ${queueLive ? "live" : "saved"}`}>
+                  {queueLive ? "Play order" : "Saved order"}
+                </span>
+              )}
+            </h3>
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => saveOrder(shuffle(tracks))}
+              onClick={shuffleQueue}
               disabled={tracks.length < 2}
             >
               Shuffle
             </button>
           </div>
 
-          {loading ? (
+          {loading && tracks.length === 0 ? (
             <p className="muted">Loading…</p>
           ) : (
             <ol className="queue-list" ref={queueRef}>
