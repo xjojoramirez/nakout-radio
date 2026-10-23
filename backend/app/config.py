@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     rotation_min_window: int = 5
     rotation_fallback_window: int = 20
     changelog_path: str = str(
-        Path(__file__).resolve().parents[2] / "docs" / "changelog.md"
+        Path(__file__).resolve().parents[2] / "docs" / "studio" / "changelog.md"
     )
 
     @field_validator("yt_api_key", "admin_password", "secret_key")

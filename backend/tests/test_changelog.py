@@ -1,3 +1,4 @@
+from pathlib import Path
 from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
@@ -83,6 +84,28 @@ def test_handles_windows_line_endings():
 
     assert entries[0].date == "2026-10-23"
     assert entries[0].summary.startswith("On a phone")
+
+
+def test_curated_studio_feed_has_no_internal_technical_markers():
+    feed = (
+        Path(__file__).resolve().parents[2]
+        / "docs"
+        / "studio"
+        / "changelog.md"
+    ).read_text(encoding="utf-8").lower()
+
+    for marker in (
+        "docker",
+        "caddy",
+        "tls",
+        "sqlite",
+        "migration",
+        "issue #",
+        "/app/",
+        "http://",
+        "https://",
+    ):
+        assert marker not in feed
 
 
 def _client(tmp_path):

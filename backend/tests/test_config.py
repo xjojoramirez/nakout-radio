@@ -10,6 +10,12 @@ def test_settings_defaults():
     assert s.database_url.startswith("sqlite")
 
 
+def test_changelog_path_points_at_the_curated_studio_feed():
+    path = Settings(_env_file=None).changelog_path.replace("\\", "/")
+
+    assert path.endswith("docs/studio/changelog.md")
+
+
 def test_missing_secret_raises(monkeypatch):
     monkeypatch.delenv("SECRET_KEY", raising=False)
     monkeypatch.delenv("ADMIN_PASSWORD", raising=False)

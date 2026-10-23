@@ -6,10 +6,11 @@ restart is required (see `AGENTS.md` for the restart commands).
 ## 2026-10-23 — studio changelog dialog shows the latest changes
 
 The Studio header now has a **Changelog** button. It opens a dialog with the
-eight newest entries from `docs/changelog.md`, showing each entry's date,
-title, and first-paragraph summary. The button is only available after login,
-the endpoint that serves it requires an admin session, and the public radio
-page is unchanged.
+eight newest entries from a curated `docs/studio/changelog.md` feed, showing
+each entry's date, title, and first-paragraph summary. The full
+`docs/changelog.md` stays internal and is not exposed through the API. The
+button is only available after login, the endpoint requires an admin session,
+and the public radio page is unchanged.
 
 - Files touched:
   - `backend/app/changelog.py` (new)
@@ -17,6 +18,7 @@ page is unchanged.
   - `backend/app/schemas.py`
   - `backend/app/routers/admin.py`
   - `backend/tests/test_changelog.py` (new)
+  - `backend/tests/test_config.py`
   - `frontend/src/api/client.ts`
   - `frontend/src/api/client.test.ts`
   - `frontend/src/components/admin/ChangelogDialog.tsx` (new)
@@ -26,17 +28,19 @@ page is unchanged.
   - `frontend/src/styles/vintage.css`
   - `frontend/src/types.ts`
   - `docker-compose.yml`
+  - `docs/studio/changelog.md` (new)
   - `docs/changelog.md` (this entry)
 - **Container restart required?** Yes — `backend` and `frontend`:
   `docker compose up -d --build backend frontend` (hard-refresh the browser
-  afterwards). The backend reads `docs/changelog.md` through a read-only
-  mount.
-- Verification: `cd backend && .venv\Scripts\python.exe -m pytest -q` — 351
+  afterwards). The backend mounts only `docs/studio` read-only and reads the
+  curated feed.
+- Verification: `cd backend && .venv\Scripts\python.exe -m pytest -q` — 353
   passed; `cd frontend && npm test` — 308 passed in 30 files;
   `npm run typecheck` and `npm run build` — clean. A TestClient smoke test
-  against a migrated temporary database returned the three newest entries
-  from the real `docs/changelog.md`; `docker compose config` — valid (using
-  temporary local env values).
+  against a migrated temporary database returned the newest entries from the
+  curated studio feed; `docker compose config` — valid (using temporary local
+  env values). A guard test keeps infrastructure terms and file paths out of
+  the curated feed.
 
 ## 2026-10-23 — stay paused in the background instead of taking another app's audio focus
 
