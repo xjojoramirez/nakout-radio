@@ -3,6 +3,21 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-23 - make the studio Changelog button a plain header link
+
+The Changelog control now matches the **Back to radio** link: plain muted text
+without the pill border or background, while keeping the history icon and the
+existing dialog behaviour.
+
+- Files touched:
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - `frontend` only:
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `cd frontend && npm test` - 315 passed in 31 files;
+  `npm run typecheck` and `npm run build` - clean.
+
 ## 2026-10-23 - use the reference VU meter on the homepage and studio
 
 The shared VU meter now renders the twelve reference levels (41% to 97%, then

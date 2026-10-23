@@ -566,22 +566,18 @@ a.back:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 16px;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
+  padding: 0;
+  border: 0;
   background: transparent;
-  color: var(--cream);
+  color: var(--muted);
   font-family: var(--font-body);
   font-size: 0.9rem;
-  font-weight: 800;
-  transition: color 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+  font-weight: 400;
+  transition: color 0.15s ease;
 }
 
 .changelog-btn:hover {
   color: var(--cream);
-  border-color: var(--amber);
-  background: transparent;
-  filter: brightness(1.15);
 }
 
 .changelog-btn svg {
@@ -2621,10 +2617,6 @@ a.pid:hover {
   .top-r .back,
   .changelog-btn {
     white-space: nowrap;
-  }
-
-  .changelog-btn {
-    padding: 8px 6px;
   }
 
   .changelog-card {
