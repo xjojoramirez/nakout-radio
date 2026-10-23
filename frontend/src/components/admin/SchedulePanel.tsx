@@ -18,8 +18,26 @@ const DAY_FULL = [
   "Saturday",
   "Sunday",
 ];
-/** Reference pill order: Sunday first, then the week. */
-const PILL_ORDER = [6, 0, 1, 2, 3, 4, 5];
+/** Reference day order: Monday first, then the week. */
+const WEEK_ORDER = [0, 1, 2, 3, 4, 5, 6];
+const TICK_HOURS = Array.from({ length: 9 }, (_, i) => i * 3);
+const TIME_BLOCKS = [
+  { label: "Overnight", from: 0, to: 360 },
+  { label: "Morning", from: 360, to: 720 },
+  { label: "Afternoon", from: 720, to: 1080 },
+  { label: "Evening", from: 1080, to: 1440 },
+];
+const VIEWS = [
+  { id: "week", label: "Week" },
+  { id: "day", label: "Day" },
+  { id: "list", label: "By genre" },
+] as const;
+type ScheduleView = (typeof VIEWS)[number]["id"];
+type Seg = ReturnType<typeof buildSegs>[number];
+
+function hourLabel(hour: number): string {
+  return `${hour % 12 || 12} ${hour % 24 >= 12 ? "PM" : "AM"}`;
+}
 
 interface Props {
   genres: Genre[];
@@ -94,6 +112,9 @@ export function SchedulePanel({
   const [onAir, setOnAir] = useState<CurrentGenre | null>(null);
 
   const [selDay, setSelDay] = useState(appToday);
+  const [view, setView] = useState<ScheduleView>("week");
+  const [filterGenres, setFilterGenres] = useState<number[]>([]);
+  const [closedGenres, setClosedGenres] = useState<Record<number, boolean>>({});
   const [formOpen, setFormOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [formGenre, setFormGenre] = useState<number | null>(null);
@@ -162,8 +183,20 @@ export function SchedulePanel({
   const todayIdx = appToday();
   const nowMinutes = localNowMinutes();
 
+  const passes = (genreId: number) =>
+    filterGenres.length === 0 || filterGenres.includes(genreId);
+
+  const toggleFilter = (genreId: number) => {
+    setFilterGenres((prev) =>
+      prev.includes(genreId)
+        ? prev.filter((id) => id !== genreId)
+        : [...prev, genreId],
+    );
+  };
+
   const pickDay = (day: number) => {
     setSelDay(day);
+    setView("day");
     if (formOpen && editId === null) setFormDays([day]);
   };
 
@@ -173,12 +206,16 @@ export function SchedulePanel({
     setFormError("");
   };
 
-  const openAdd = (minute: number | null) => {
+  const openAdd = (
+    minute: number | null,
+    day = selDay,
+    genreId: number | null = intentGenre,
+  ) => {
     setFormOpen(true);
     setEditId(null);
-    setFormGenre(intentGenre);
-    setFormDays([selDay]);
-    setFormTime(toHM(minute ?? freeStart(selDay, slots)));
+    setFormGenre(genreId);
+    setFormDays([day]);
+    setFormTime(toHM(minute ?? freeStart(day, slots)));
     setFormError("");
   };
 
@@ -236,6 +273,29 @@ export function SchedulePanel({
 
   const segs = buildSegs(slots, selDay);
   const hasSlot = segs.some((s) => s.kind === "slot");
+  const visibleSegs = segs.filter(
+    (s) => s.kind === "gap" || !s.slot || passes(s.slot.genre_id),
+  );
+  const daySlots = slotsForDay(slots, selDay);
+  const visibleDaySlots = daySlots.filter((s) => passes(s.genre_id));
+
+  const airtime = useMemo(() => {
+    const byGenre = new Map<number, number>();
+    for (const day of WEEK_ORDER) {
+      for (const seg of buildSegs(slots, day)) {
+        if (!seg.slot) continue;
+        byGenre.set(
+          seg.slot.genre_id,
+          (byGenre.get(seg.slot.genre_id) ?? 0) + (seg.to - seg.from),
+        );
+      }
+    }
+    return byGenre;
+  }, [slots]);
+  const airtimeTotal = Array.from(airtime.values()).reduce(
+    (sum, value) => sum + value,
+    0,
+  );
 
   const liveGenre = onAir?.genre ?? null;
   const liveColour = liveGenre?.color || "var(--amber)";
@@ -271,16 +331,536 @@ export function SchedulePanel({
       ? (genres.find((g) => g.id === formGenre)?.name ?? "")
       : "";
 
+  const dimmedGenres = new Set(
+    genres.filter((g) => !passes(g.id)).map((g) => g.id),
+  );
+
+  const renderAgendaRow = (seg: Seg, i: number) => {
+    if (seg.kind === "slot") {
+      const s = seg.slot as ScheduleSlot;
+      return (
+        <div
+          key={s.id}
+          className="srow"
+          style={
+            {
+              "--gc": colours.get(s.genre_id) ?? "var(--amber)",
+            } as CSSProperties
+          }
+        >
+          <div className="sm">
+            <span className="tr">
+              {twelveHour(seg.from)} to {twelveHour(seg.to)}
+            </span>
+            <b>{s.genre_name}</b>
+            <span className="chip">{fmtMin(seg.to - seg.from)}</span>
+            <span className="mono">{formatDays(s.days_of_week)}</span>
+          </div>
+          <div className="sa">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => openEdit(s.id)}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger btn-sm"
+              onClick={() => setPendingDelete(s)}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      );
+    }
+    if (seg.kind === "carry") {
+      const s = seg.slot as ScheduleSlot;
+      return (
+        <div key={`carry-${i}`} className="srow dim">
+          <div className="sm">
+            <span className="tr">
+              {twelveHour(seg.from)} to {twelveHour(seg.to)}
+            </span>
+            <span>
+              <i
+                className="dot"
+                style={
+                  {
+                    "--gc": colours.get(s.genre_id) ?? "var(--amber)",
+                  } as CSSProperties
+                }
+                aria-hidden="true"
+              />{" "}
+              {s.genre_name} continues from {DAY_FULL[seg.fromDay]}
+            </span>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div key={`gap-${i}`} className="srow dim">
+        <div className="sm">
+          <span className="tr">
+            {twelveHour(seg.from)} to {twelveHour(seg.to)}
+          </span>
+          <span>Nothing scheduled</span>
+        </div>
+        <div className="sa">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => openAdd(seg.from)}
+          >
+            Add slot
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDayBody = () => (
+    <>
+      <div className="dayrow">
+        <div className="dayseg" role="group" aria-label="Day of the week">
+          {WEEK_ORDER.map((d) => (
+            <button
+              key={d}
+              type="button"
+              className="pill"
+              aria-label={DAY_LABELS[d]}
+              aria-pressed={d === selDay}
+              onClick={() => pickDay(d)}
+            >
+              {DAY_LABELS[d]}
+              <span className="count">{slotsForDay(slots, d).length}</span>
+              {d === todayIdx && (
+                <i className="tdot" title="Today" aria-hidden="true" />
+              )}
+            </button>
+          ))}
+        </div>
+        <span className="hint">Pick a day to open its agenda.</span>
+      </div>
+
+      <div className="card">
+        <ScheduleTimeline
+          day={selDay}
+          slots={slots}
+          colours={colours}
+          nowMinutes={selDay === todayIdx ? nowMinutes : null}
+          onOpenSlot={openEdit}
+          onOpenNew={(minute) => openAdd(minute)}
+          dimmedGenres={dimmedGenres}
+        />
+        <p className="hint">
+          Click an empty spot on the timeline to add a slot at that time.
+        </p>
+      </div>
+
+      {!hasSlot && (
+        <div className="empty">
+          No slots start on {DAY_FULL[selDay]} yet.{" "}
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => openAdd(360)}
+          >
+            Add the first slot
+          </button>
+        </div>
+      )}
+      {hasSlot && visibleDaySlots.length === 0 && (
+        <div className="empty">
+          None of the selected genres start on {DAY_FULL[selDay]}.{" "}
+          <button
+            type="button"
+            className="btn-link"
+            onClick={() => setFilterGenres([])}
+          >
+            Show all genres
+          </button>
+        </div>
+      )}
+
+      <div className="daylist">
+        {TIME_BLOCKS.map((block) => {
+          const items = visibleSegs.filter(
+            (s) => s.from >= block.from && s.from < block.to,
+          );
+          if (!items.length) return null;
+          const count = items.filter((s) => s.kind === "slot").length;
+          return (
+            <div className="dp" key={block.label}>
+              <div className="dph">
+                <span>
+                  {block.label} · {twelveHour(block.from)} to{" "}
+                  {twelveHour(block.to)}
+                </span>
+                <span>
+                  {count
+                    ? `${count} ${count === 1 ? "slot" : "slots"}`
+                    : "carried over"}
+                </span>
+              </div>
+              {items.map(renderAgendaRow)}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+
+  const renderWeekBody = () => (
+    <div className="card">
+      <div className="tlscroll">
+        <div className="wk">
+          <div className="wkrow">
+            <span />
+            <div className="ticks" aria-hidden="true">
+              {TICK_HOURS.map((h) => (
+                <span
+                  key={h}
+                  className={h === 0 ? "f" : h === 24 ? "l" : ""}
+                  style={{ left: `${(h / 24) * 100}%` }}
+                >
+                  {hourLabel(h)}
+                </span>
+              ))}
+            </div>
+          </div>
+          {WEEK_ORDER.map((day) => {
+            const daySegs = buildSegs(slots, day);
+            const dayCount = slotsForDay(slots, day).length;
+            return (
+              <div
+                key={day}
+                className={day === todayIdx ? "wkrow today" : "wkrow"}
+              >
+                <button
+                  type="button"
+                  className="wkday"
+                  aria-label={`Open ${DAY_FULL[day]}`}
+                  onClick={() => {
+                    setSelDay(day);
+                    setView("day");
+                  }}
+                >
+                  {DAY_LABELS[day]}
+                  <small>{dayCount}</small>
+                </button>
+                <div
+                  className="wkbar"
+                  role="group"
+                  aria-label={`${DAY_FULL[day]} timeline`}
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    if (!rect.width) return;
+                    const raw = ((e.clientX - rect.left) / rect.width) * 1440;
+                    const minute = Math.round(raw / 30) * 30;
+                    setSelDay(day);
+                    openAdd(
+                      Math.min(1410, Math.max(0, minute)),
+                      day,
+                    );
+                  }}
+                >
+                  {daySegs.map((seg, i) => {
+                    const style: CSSProperties & { "--gc"?: string } = {
+                      left: `${(seg.from / 1440) * 100}%`,
+                      width: `${((seg.to - seg.from) / 1440) * 100}%`,
+                    };
+                    if (seg.kind === "gap") {
+                      return (
+                        <div
+                          key={`gap-${day}-${i}`}
+                          className="blk none"
+                          style={style}
+                        >
+                          <span className="bn">Nothing scheduled</span>
+                        </div>
+                      );
+                    }
+                    const s = seg.slot as ScheduleSlot;
+                    style["--gc"] = colours.get(s.genre_id) ?? "var(--amber)";
+                    if (seg.kind === "slot") {
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          className={
+                            passes(s.genre_id) ? "blk" : "blk dim"
+                          }
+                          style={style}
+                          title={`${s.genre_name} · ${twelveHour(seg.from)} to ${twelveHour(seg.to)}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEdit(s.id);
+                          }}
+                        >
+                          <span className="bn">{s.genre_name}</span>
+                        </button>
+                      );
+                    }
+                    return (
+                      <div
+                        key={`carry-${day}-${i}`}
+                        className={
+                          passes(s.genre_id) ? "blk carry" : "blk carry dim"
+                        }
+                        style={style}
+                        title={`${s.genre_name} continues from ${DAY_FULL[seg.fromDay]}`}
+                      >
+                        <span className="bn">{s.genre_name}</span>
+                      </div>
+                    );
+                  })}
+                  {day === todayIdx && (
+                    <i
+                      className="nowl"
+                      style={{ left: `${(nowMinutes / 1440) * 100}%` }}
+                    />
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <p className="hint">
+        Click a block to edit it, empty space to add a slot, or a day name to
+        open that day. The number beside a day is how many slots start on it.
+      </p>
+    </div>
+  );
+
+  const renderListBody = () => {
+    const shareGenres = genres.filter((g) => (airtime.get(g.id) ?? 0) > 0);
+    const groups = genres.filter((g) => passes(g.id));
+    return (
+      <>
+        <div className="card">
+          <div className="head">
+            <span className="lab">Airtime per week</span>
+            <div className="head-actions">
+              <button
+                type="button"
+                className="btn-link"
+                onClick={() => {
+                  const next: Record<number, boolean> = {};
+                  for (const g of genres) next[g.id] = false;
+                  setClosedGenres(next);
+                }}
+              >
+                Expand all
+              </button>
+              <button
+                type="button"
+                className="btn-link"
+                onClick={() => {
+                  const next: Record<number, boolean> = {};
+                  for (const g of genres) next[g.id] = true;
+                  setClosedGenres(next);
+                }}
+              >
+                Collapse all
+              </button>
+            </div>
+          </div>
+          <div className="share" aria-hidden="true">
+            {shareGenres.map((g) => (
+              <i
+                key={g.id}
+                style={
+                  {
+                    "--gc": g.color || "var(--amber)",
+                    width: `${((airtime.get(g.id) ?? 0) / (airtimeTotal || 1)) * 100}%`,
+                  } as CSSProperties
+                }
+                title={`${g.name} · ${fmtMin(airtime.get(g.id) ?? 0)} a week`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="groups">
+          {groups.map((g) => {
+            const genreSlots = slots
+              .filter((s) => s.genre_id === g.id)
+              .sort(
+                (a, b) =>
+                  minutesOf(a.start_time) - minutesOf(b.start_time),
+              );
+            const closed = Boolean(closedGenres[g.id]);
+            const weekly = airtime.get(g.id) ?? 0;
+            return (
+              <section
+                key={g.id}
+                className="group"
+                style={
+                  {
+                    "--gc": g.color || "var(--amber)",
+                  } as CSSProperties
+                }
+              >
+                <div className="ghead">
+                  <i className="dot big" aria-hidden="true" />
+                  <b>{g.name}</b>
+                  <span className="mono">
+                    {genreSlots.length}{" "}
+                    {genreSlots.length === 1 ? "slot" : "slots"} ·{" "}
+                    {weekly ? `${fmtMin(weekly)} a week` : "no airtime"}
+                  </span>
+                  <span className="sp" />
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => openAdd(null, todayIdx, g.id)}
+                  >
+                    Add slot
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    aria-expanded={!closed}
+                    onClick={() =>
+                      setClosedGenres((prev) => ({
+                        ...prev,
+                        [g.id]: !prev[g.id],
+                      }))
+                    }
+                  >
+                    {closed ? "Show" : "Hide"}
+                  </button>
+                </div>
+                {!closed &&
+                  (genreSlots.length ? (
+                    genreSlots.map((s) => (
+                      <div className="prow" key={s.id}>
+                        <div className="pm">
+                          <span className="tr">
+                            {twelveHour(minutesOf(s.start_time))}
+                          </span>
+                          <b>{formatDays(s.days_of_week)}</b>
+                        </div>
+                        <div className="act">
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => openEdit(s.id)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            onClick={() => setPendingDelete(s)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="gempty">Not scheduled yet.</div>
+                  ))}
+              </section>
+            );
+          })}
+        </div>
+      </>
+    );
+  };
+
+  const toolbar = (
+    <div className="toolbar">
+      <div className="seg" role="group" aria-label="Schedule view">
+        {VIEWS.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            aria-pressed={view === v.id}
+            onClick={() => setView(v.id)}
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
+      <div className="fchips" role="group" aria-label="Filter by genre">
+        {genres.map((g) => {
+          const count = slots.filter((s) => s.genre_id === g.id).length;
+          return (
+            <button
+              key={g.id}
+              type="button"
+              role="checkbox"
+              aria-checked={filterGenres.includes(g.id)}
+              className="gchip sm"
+              style={{ "--gc": g.color || "var(--amber)" } as CSSProperties}
+              onClick={() => toggleFilter(g.id)}
+            >
+              <i className="dot" aria-hidden="true" />
+              {g.name}
+              <span className="count">{count}</span>
+            </button>
+          );
+        })}
+        {filterGenres.length > 0 && (
+          <button
+            type="button"
+            className="btn-link"
+            onClick={() => setFilterGenres([])}
+          >
+            Show all
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  const body =
+    slots.length === 0 && view !== "day" ? (
+      <div className="empty">
+        No slots yet. Add one to start the automatic schedule.
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => openAdd(360)}
+        >
+          Add the first slot
+        </button>
+      </div>
+    ) : view === "week" ? (
+      renderWeekBody()
+    ) : view === "list" ? (
+      renderListBody()
+    ) : (
+      renderDayBody()
+    );
+
   return (
     <section className="admin-panel" aria-label="Schedule">
-      <div>
-        <h2 className="sec">Schedule</h2>
-        <p className="sub">
-          Each slot starts a genre, and it plays until the next slot begins.{" "}
-          {tzLabel && (
-            <span className="mono">Times are shown in {tzLabel}.</span>
-          )}
-        </p>
+      <div className="head">
+        <div>
+          <h2 className="sec">Schedule</h2>
+          <p className="sub">
+            Each slot starts a genre, and it plays until the next slot begins.{" "}
+            {tzLabel && (
+              <span className="mono">Times are shown in {tzLabel}.</span>
+            )}
+          </p>
+        </div>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => {
+            if (formOpen && editId === null) closeForm();
+            else openAdd(null);
+          }}
+        >
+          {formOpen && editId === null ? "Close" : "+ Add slot"}
+        </button>
       </div>
 
       <div className="card onair">
@@ -313,54 +893,11 @@ export function SchedulePanel({
         )}
       </div>
 
-      <div className="head">
-        <div className="dayseg" role="group" aria-label="Day of the week">
-          {PILL_ORDER.map((d) => (
-            <button
-              key={d}
-              type="button"
-              className="pill"
-              aria-pressed={d === selDay}
-              onClick={() => pickDay(d)}
-            >
-              {DAY_LABELS[d]}
-              {d === todayIdx && (
-                <i className="tdot" title="Today" aria-hidden="true" />
-              )}
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => {
-            if (formOpen && editId === null) closeForm();
-            else openAdd(null);
-          }}
-        >
-          {formOpen && editId === null ? "Close" : "+ Add slot"}
-        </button>
-      </div>
-
       {slotsError && (
         <p className="error banner" role="alert">
           {slotsError}
         </p>
       )}
-
-      <div className="card">
-        <ScheduleTimeline
-          day={selDay}
-          slots={slots}
-          colours={colours}
-          nowMinutes={selDay === todayIdx ? nowMinutes : null}
-          onOpenSlot={openEdit}
-          onOpenNew={(minute) => openAdd(minute)}
-        />
-        <p className="hint">
-          Click an empty spot on the timeline to add a slot at that time.
-        </p>
-      </div>
 
       {formOpen && (
         <form
@@ -418,7 +955,7 @@ export function SchedulePanel({
               </button>
             </div>
             <div className="dayrow">
-              {PILL_ORDER.map((d) => (
+              {WEEK_ORDER.map((d) => (
                 <button
                   key={d}
                   type="button"
@@ -475,100 +1012,9 @@ export function SchedulePanel({
         </form>
       )}
 
-      <div className="daylist">
-        {!hasSlot && (
-          <div className="empty">
-            No slots start on {DAY_FULL[selDay]} yet.{" "}
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => openAdd(360)}
-            >
-              Add the first slot
-            </button>
-          </div>
-        )}
-        {segs.map((seg, i) => {
-          if (seg.kind === "slot") {
-            const s = seg.slot as ScheduleSlot;
-            return (
-              <div
-                key={s.id}
-                className="srow"
-                style={{ "--gc": colours.get(s.genre_id) ?? "var(--amber)" } as CSSProperties}
-              >
-                <div className="sm">
-                  <span className="tr">
-                    {twelveHour(seg.from)} to {twelveHour(seg.to)}
-                  </span>
-                  <b>{s.genre_name}</b>
-                  <span className="chip">{fmtMin(seg.to - seg.from)}</span>
-                  <span className="mono">{formatDays(s.days_of_week)}</span>
-                </div>
-                <div className="sa">
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => openEdit(s.id)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-danger btn-sm"
-                    onClick={() => setPendingDelete(s)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            );
-          }
-          if (seg.kind === "carry") {
-            const s = seg.slot as ScheduleSlot;
-            return (
-              <div key={`carry-${i}`} className="srow dim">
-                <div className="sm">
-                  <span className="tr">
-                    {twelveHour(seg.from)} to {twelveHour(seg.to)}
-                  </span>
-                  <span>
-                    <i
-                      className="dot"
-                      style={
-                        {
-                          "--gc": colours.get(s.genre_id) ?? "var(--amber)",
-                        } as CSSProperties
-                      }
-                      aria-hidden="true"
-                    />{" "}
-                    {s.genre_name} continues from {DAY_FULL[seg.fromDay]}
-                  </span>
-                </div>
-              </div>
-            );
-          }
-          return (
-            <div key={`gap-${i}`} className="srow dim">
-              <div className="sm">
-                <span className="tr">
-                  {twelveHour(seg.from)} to {twelveHour(seg.to)}
-                </span>
-                <span>Nothing scheduled</span>
-              </div>
-              <div className="sa">
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => openAdd(seg.from)}
-                >
-                  Add slot
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {toolbar}
+
+      {body}
 
       {pendingDelete && (
         <ConfirmDialog

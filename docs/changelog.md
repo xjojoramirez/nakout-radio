@@ -3,6 +3,38 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-23 - restyle the studio to the Nakout Admin 2 design
+
+The `/studio` page now follows `dev reference/design/nakoutstudio2/Nakout
+Admin 2.html`: a flat dark page shell instead of a rounded admin card, amber
+pill tabs, pill buttons, wood-surface cards, mono section labels, the reference
+now-playing deck/queue layout, and the new Schedule Week / Day / By genre
+views with genre filters, per-week airtime and grouped day agendas.
+
+- `frontend/src/pages/AdminPage.tsx`: reference `Nakout.Radio` brand mark.
+- `frontend/src/components/admin/NowPlayingPanel.tsx`: mono section heading,
+  generated cover fallback in queue rows and the reference queue/meta layout.
+- `frontend/src/components/admin/GenresPanel.tsx`: reference Name / Short code /
+  Colour labels.
+- `frontend/src/components/admin/PlaylistsPanel.tsx`: visible "Which genre does
+  it belong to?" prompt above the genre chips.
+- `frontend/src/components/admin/SchedulePanel.tsx`: Week / Day / By genre
+  views, genre filter chips, grouped day agenda and weekly airtime summary.
+- `frontend/src/components/admin/ScheduleTimeline.tsx`: dims blocks that the
+  schedule genre filter has hidden.
+- `frontend/src/styles/vintage.css`: studio shell, tabs, buttons, inputs,
+  cards, queue rows, toasts, modal, genre/playlist surfaces and schedule-scale
+  components aligned with `Nakout Admin 2.html`.
+- `frontend/src/components/admin/SchedulePanel.dom.test.tsx` and
+  `frontend/src/pages/AdminPage.dom.test.tsx`: updated for the new default
+  Week view and added coverage for the week overview, filters and by-genre
+  list.
+- **Container restart required?** Yes - `frontend` only:
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `cd frontend && npm test` - 302 passed in 29 files (29
+  suites); `npm run typecheck` and `npm run build` - clean.
+
 ## 2026-10-23 — stay paused in the background instead of taking another app's audio focus
 
 On a phone, a tuned-in listener who switched to another app and started a

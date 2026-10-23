@@ -369,6 +369,7 @@ export function PlaylistsPanel({
               />
             </label>
             <div className={hint.className}>{hint.text}</div>
+            <div className="lab">Which genre does it belong to?</div>
             <GenreChipRadio
               label="Genre"
               genres={genres}

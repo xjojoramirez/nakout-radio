@@ -88,7 +88,7 @@ function renderPanel(
   const onError = overrides.onError ?? vi.fn();
   const onCountChange = overrides.onCountChange ?? vi.fn();
   const onIntentConsumed = overrides.onIntentConsumed ?? vi.fn();
-  render(
+  const { container } = render(
     <SchedulePanel
       genres={overrides.genres ?? genres}
       onNotice={onNotice}
@@ -98,10 +98,20 @@ function renderPanel(
       onIntentConsumed={onIntentConsumed}
     />,
   );
-  return { onNotice, onError, onCountChange, onIntentConsumed };
+  return { onNotice, onError, onCountChange, onIntentConsumed, container };
+}
+
+function openDayView() {
+  fireEvent.click(
+    within(screen.getByRole("group", { name: "Schedule view" })).getByRole(
+      "button",
+      { name: "Day" },
+    ),
+  );
 }
 
 async function openMonDay() {
+  openDayView();
   const group = screen.getByRole("group", { name: "Day of the week" });
   fireEvent.click(within(group).getByRole("button", { name: "Mon" }));
   await screen.findByRole("button", { name: /Emo Night/ });
@@ -141,17 +151,19 @@ describe("SchedulePanel", () => {
     expect(screen.queryByText(/On air:/)).not.toBeInTheDocument();
   });
 
-  it("orders day pills Sun-first with a today dot", async () => {
+  it("orders day pills Monday-first with slot counts and a today dot", async () => {
     renderPanel();
     await screen.findByText(/On air:/);
+    openDayView();
     const group = screen.getByRole("group", { name: "Day of the week" });
     const pills = within(group).getAllByRole("button");
     expect(pills).toHaveLength(7);
-    expect(pills[0].textContent).toBe("Sun");
-    expect(pills[1].textContent).toBe("Mon");
-    expect(pills[6].textContent).toBe("Sat");
-    const todayPill = pills.find((p) =>
-      p.textContent?.startsWith(SHORT[browserToday]),
+    expect(pills[0].textContent).toContain("Mon");
+    expect(pills[1].textContent).toContain("Tue");
+    expect(pills[6].textContent).toContain("Sun");
+    expect(pills[0].querySelector(".count")?.textContent).toBe("2");
+    const todayPill = pills.find(
+      (p) => p.getAttribute("aria-label") === SHORT[browserToday],
     );
     expect(todayPill?.querySelector(".tdot")).not.toBeNull();
     expect(
@@ -162,6 +174,12 @@ describe("SchedulePanel", () => {
   it("renders the timeline for the selected day and swaps with the pills", async () => {
     renderPanel();
     await screen.findByText(/On air:/);
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Schedule view" })).getByRole(
+        "button",
+        { name: "Day" },
+      ),
+    );
     expect(screen.getByLabelText(/Timeline for /)).toBeInTheDocument();
     fireEvent.click(
       within(
@@ -188,6 +206,63 @@ describe("SchedulePanel", () => {
     expect(
       screen.queryByRole("button", { name: /Emo Night/ }),
     ).not.toBeInTheDocument();
+  });
+
+  it("renders the week overview by default and opens a day from it", async () => {
+    renderPanel();
+    await screen.findByText(/On air:/);
+    expect(
+      screen.getByRole("group", { name: "Monday timeline" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Timeline for /)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open Monday" }));
+    expect(
+      await screen.findByLabelText("Timeline for Monday"),
+    ).toBeInTheDocument();
+  });
+
+  it("filters the week overview by genre", async () => {
+    const { container } = renderPanel();
+    await screen.findByText(/On air:/);
+    const filters = screen.getByRole("group", { name: "Filter by genre" });
+    fireEvent.click(within(filters).getByRole("checkbox", { name: /NU Metal/ }));
+    expect(
+      within(filters).getByRole("checkbox", { name: /NU Metal/ }),
+    ).toHaveAttribute("aria-checked", "true");
+    expect(container.querySelectorAll(".wkbar .blk.dim").length).toBeGreaterThan(
+      0,
+    );
+  });
+
+  it("lists slots by genre with weekly airtime", async () => {
+    const { container } = renderPanel();
+    await screen.findByText(/On air:/);
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Schedule view" })).getByRole(
+        "button",
+        { name: "By genre" },
+      ),
+    );
+    expect(screen.getByText("Airtime per week")).toBeInTheDocument();
+    const groups = container.querySelectorAll(".groups .group");
+    expect(groups).toHaveLength(2);
+    expect(within(groups[0] as HTMLElement).getByText(/a week/)).toBeInTheDocument();
+  });
+
+  it("narrows the by-genre list to the selected filters", async () => {
+    const { container } = renderPanel();
+    await screen.findByText(/On air:/);
+    const filters = screen.getByRole("group", { name: "Filter by genre" });
+    fireEvent.click(within(filters).getByRole("checkbox", { name: /NU Metal/ }));
+    fireEvent.click(
+      within(screen.getByRole("group", { name: "Schedule view" })).getByRole(
+        "button",
+        { name: "By genre" },
+      ),
+    );
+    const groups = container.querySelectorAll(".groups .group");
+    expect(groups).toHaveLength(1);
+    expect(groups[0].textContent).toContain("NU Metal");
   });
 
   it("clicking a timeline block opens the prefilled edit form", async () => {
@@ -466,6 +541,7 @@ describe("SchedulePanel", () => {
       onError={vi.fn()}
     />);
     await screen.findByText(/On air:/);
+    openDayView();
     fireEvent.click(
       within(
         screen.getByRole("group", { name: "Day of the week" }),
@@ -482,6 +558,7 @@ describe("SchedulePanel", () => {
     mocked.listSlots.mockResolvedValue([]);
     renderPanel();
     await screen.findByText(/On air:/);
+    openDayView();
     fireEvent.click(
       within(
         screen.getByRole("group", { name: "Day of the week" }),
@@ -526,6 +603,7 @@ describe("SchedulePanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
     const form = await screen.findByTestId("slot-form");
     fireEvent.click(within(form).getByRole("button", { name: "Weekends" }));
+    openDayView();
     fireEvent.click(
       within(
         screen.getByRole("group", { name: "Day of the week" }),
@@ -547,6 +625,7 @@ describe("SchedulePanel", () => {
       <SchedulePanel genres={genres} onNotice={vi.fn()} onError={vi.fn()} />,
     );
     await screen.findByText(/On air:/);
+    openDayView();
     fireEvent.click(
       within(
         screen.getByRole("group", { name: "Day of the week" }),

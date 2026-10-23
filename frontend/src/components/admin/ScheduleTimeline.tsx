@@ -76,6 +76,8 @@ interface Props {
   nowMinutes: number | null;
   onOpenSlot: (id: number) => void;
   onOpenNew: (minute: number) => void;
+  /** Genres hidden by the studio filter; blocks stay in place but dim. */
+  dimmedGenres?: Set<number>;
 }
 
 export function ScheduleTimeline({
@@ -85,6 +87,7 @@ export function ScheduleTimeline({
   nowMinutes,
   onOpenSlot,
   onOpenNew,
+  dimmedGenres,
 }: Props) {
   const segs = buildSegs(slots, day);
 
@@ -113,7 +116,7 @@ export function ScheduleTimeline({
                 <button
                   key={s.id}
                   type="button"
-                  className="blk"
+                  className={`blk${dimmedGenres?.has(s.genre_id) ? " dim" : ""}`}
                   title={`${s.genre_name} · ${twelveHour(seg.from)} to ${twelveHour(seg.to)}`}
                   style={
                     {
@@ -134,7 +137,7 @@ export function ScheduleTimeline({
               return (
                 <div
                   key={`carry-${i}`}
-                  className="blk carry"
+                  className={`blk carry${dimmedGenres?.has(s.genre_id) ? " dim" : ""}`}
                   title={`Continues from ${DAY_FULL[seg.fromDay]}`}
                   style={
                     {

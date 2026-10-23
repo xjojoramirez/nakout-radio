@@ -167,10 +167,10 @@ export function GenresPanel({
         <h3 className="ttl">New genre</h3>
         <div className="gf-grid">
           <label className="field">
-            Genre name
+            Name
             <input
               aria-label="Genre name"
-              placeholder="Name"
+              placeholder="e.g. Sunday Acoustic"
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
@@ -179,12 +179,12 @@ export function GenresPanel({
             />
           </label>
           <label className="field">
-            Genre slug
+            Short code
             <span className="pre">
               <span>/</span>
               <input
                 aria-label="Genre slug"
-                placeholder="Slug"
+                placeholder="sundayacoustic"
                 value={slug}
                 onChange={(e) => {
                   setSlug(e.target.value);
@@ -194,6 +194,7 @@ export function GenresPanel({
             </span>
           </label>
         </div>
+        <div className="lab">Colour</div>
         <PaletteSwatches label="Genre colour" value={color} onChange={setColor} />
         <div>
           <button
@@ -223,10 +224,10 @@ export function GenresPanel({
               >
                 <div className="gedit">
                   <label className="field">
-                    Genre name
+                    Name
                     <input
                       aria-label="Edit genre name"
-                      placeholder="Name"
+                      placeholder="e.g. Sunday Acoustic"
                       value={draft.name}
                       onChange={(e) =>
                         setDraft((prev) => ({ ...prev, name: e.target.value }))
@@ -234,12 +235,12 @@ export function GenresPanel({
                     />
                   </label>
                   <label className="field">
-                    Genre slug
+                    Short code
                     <span className="pre">
                       <span>/</span>
                       <input
                         aria-label="Edit genre slug"
-                        placeholder="Slug"
+                        placeholder="sundayacoustic"
                         value={draft.slug}
                         onChange={(e) =>
                           setDraft((prev) => ({ ...prev, slug: e.target.value }))
@@ -261,6 +262,7 @@ export function GenresPanel({
                     />
                     Default
                   </label>
+                  <div className="lab">Colour</div>
                   <PaletteSwatches
                     label="Genre colour"
                     value={draft.color}
