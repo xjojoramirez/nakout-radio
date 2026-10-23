@@ -43,6 +43,7 @@ vi.mock("../api/client", async () => {
       playbackPrev: vi.fn(),
       playbackAuto: vi.fn(),
       setGenreOrder: vi.fn(),
+      changelog: vi.fn(),
     },
   };
 });
@@ -121,11 +122,43 @@ describe("AdminPage", () => {
     await login();
     const brand = document.querySelector(".admin-top .brand");
     expect(brand).not.toBeNull();
-    expect(brand?.textContent).toBe("Nakout.Radio Admin");
-    expect(brand?.querySelector("span")).not.toBeNull();
+    expect(brand?.textContent).toBe("Nakout Radio Studio");
+    expect(brand?.querySelector("span")).toBeNull();
     expect(
       screen.getByRole("link", { name: /Back to radio/ }),
     ).toBeInTheDocument();
+  });
+
+  it("does not show the changelog on the login screen", async () => {
+    render(<AdminPage />);
+
+    await screen.findByPlaceholderText("Password");
+
+    expect(
+      screen.queryByRole("button", { name: "Changelog" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("opens the changelog from the studio header", async () => {
+    mocked.login.mockResolvedValue({ status: "ok" });
+    mocked.listGenres.mockResolvedValue([]);
+    mocked.changelog.mockResolvedValue([
+      {
+        date: "2026-10-23",
+        title: "Studio changelog",
+        summary: "The latest changes are now in the studio.",
+      },
+    ]);
+    render(<AdminPage />);
+    await login();
+
+    fireEvent.click(screen.getByRole("button", { name: "Changelog" }));
+
+    expect(
+      await screen.findByRole("dialog", { name: "Changelog" }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("Studio changelog")).toBeInTheDocument();
+    expect(mocked.changelog).toHaveBeenCalledTimes(1);
   });
 
   it("restores the session on mount after a refresh", async () => {

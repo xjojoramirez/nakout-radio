@@ -183,3 +183,9 @@ class ScheduleTodayOut(BaseModel):
     current_id: int | None = None
     slots: list[SlotTodayOut] = []
     carry: SlotTodayOut | None = None
+
+
+class ChangelogEntryOut(BaseModel):
+    date: str
+    title: str
+    summary: str

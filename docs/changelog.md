@@ -11,7 +11,12 @@ pill tabs, pill buttons, wood-surface cards, mono section labels, the reference
 now-playing deck/queue layout, and the new Schedule Week / Day / By genre
 views with genre filters, per-week airtime and grouped day agendas.
 
-- `frontend/src/pages/AdminPage.tsx`: reference `Nakout.Radio` brand mark.
+The header keeps the plain **Nakout Radio** wordmark with a **Studio** label,
+and the Changelog button (history icon) is restored on the right of the header.
+
+- `frontend/src/pages/AdminPage.tsx`: plain "Nakout Radio" brand with a
+  "Studio" label, and the restored Changelog header button/dialog.
+- `frontend/src/components/admin/Tabs.tsx`: studio section label.
 - `frontend/src/components/admin/NowPlayingPanel.tsx`: mono section heading,
   generated cover fallback in queue rows and the reference queue/meta layout.
 - `frontend/src/components/admin/GenresPanel.tsx`: reference Name / Short code /
@@ -22,18 +27,80 @@ views with genre filters, per-week airtime and grouped day agendas.
   views, genre filter chips, grouped day agenda and weekly airtime summary.
 - `frontend/src/components/admin/ScheduleTimeline.tsx`: dims blocks that the
   schedule genre filter has hidden.
+- `frontend/src/components/admin/ChangelogDialog.tsx` (merged from the studio
+  changelog branch): the Changelog dialog.
 - `frontend/src/styles/vintage.css`: studio shell, tabs, buttons, inputs,
-  cards, queue rows, toasts, modal, genre/playlist surfaces and schedule-scale
-  components aligned with `Nakout Admin 2.html`.
+  cards, queue rows, toasts, modal, changelog dialog, genre/playlist surfaces
+  and schedule-scale components aligned with `Nakout Admin 2.html`.
 - `frontend/src/components/admin/SchedulePanel.dom.test.tsx` and
   `frontend/src/pages/AdminPage.dom.test.tsx`: updated for the new default
-  Week view and added coverage for the week overview, filters and by-genre
-  list.
-- **Container restart required?** Yes - `frontend` only:
-  `docker compose up -d --build frontend`, then hard-refresh the browser
-  (Ctrl+Shift+R).
-- Verification: `cd frontend && npm test` - 302 passed in 29 files (29
-  suites); `npm run typecheck` and `npm run build` - clean.
+  Week view and added coverage for the week overview, filters, by-genre list,
+  brand and changelog header.
+- **Container restart required?** Yes - backend and frontend changed:
+  `docker compose up -d --build backend frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: `cd backend && .venv\Scripts\python.exe -m pytest -q` - 355
+  passed; `cd frontend && npm test` - 313 passed in 30 files;
+  `npm run typecheck` and `npm run build` - clean.
+## 2026-10-23 — studio changelog shows the ten newest updates
+
+The studio changelog now defaults to 10 curated entries instead of 8. The
+curated feed has two more user-facing notes, and the API and front-end
+defaults now match.
+
+- Files touched:
+  - `backend/app/changelog.py`
+  - `backend/app/routers/admin.py`
+  - `backend/tests/test_changelog.py`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/api/client.test.ts`
+  - `docs/studio/changelog.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes — `backend` and `frontend`:
+  `docker compose up -d --build backend frontend` (hard-refresh the browser
+  afterwards).
+- Verification: `cd backend && .venv\Scripts\python.exe -m pytest -q` — 355
+  passed; `cd frontend && npm test` — 309 passed in 30 files;
+  `npm run typecheck` and `npm run build` — clean.
+
+## 2026-10-23 — studio changelog dialog shows the latest changes
+
+The Studio header now has a **Changelog** button. It opens a dialog with the
+ten newest entries from a curated `docs/studio/changelog.md` feed, showing
+each entry's date, title, and first-paragraph summary. The full
+`docs/changelog.md` stays internal and is not exposed through the API. The
+button is only available after login, the endpoint requires an admin session,
+and the public radio page is unchanged.
+
+- Files touched:
+  - `backend/app/changelog.py` (new)
+  - `backend/app/config.py`
+  - `backend/app/schemas.py`
+  - `backend/app/routers/admin.py`
+  - `backend/tests/test_changelog.py` (new)
+  - `backend/tests/test_config.py`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/api/client.test.ts`
+  - `frontend/src/components/admin/ChangelogDialog.tsx` (new)
+  - `frontend/src/components/admin/ChangelogDialog.dom.test.tsx` (new)
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/pages/AdminPage.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `frontend/src/types.ts`
+  - `docker-compose.yml`
+  - `docs/studio/changelog.md` (new)
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes — `backend` and `frontend`:
+  `docker compose up -d --build backend frontend` (hard-refresh the browser
+  afterwards). The backend mounts only `docs/studio` read-only and reads the
+  curated feed.
+- Verification: `cd backend && .venv\Scripts\python.exe -m pytest -q` — 353
+  passed; `cd frontend && npm test` — 308 passed in 30 files;
+  `npm run typecheck` and `npm run build` — clean. A TestClient smoke test
+  against a migrated temporary database returned the newest entries from the
+  curated studio feed; `docker compose config` — valid (using temporary local
+  env values). A guard test keeps infrastructure terms and file paths out of
+  the curated feed.
 
 ## 2026-10-23 — stay paused in the background instead of taking another app's audio focus
 
