@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 
@@ -78,6 +79,61 @@ def test_today_current_null_before_first_start(tmp_path, monkeypatch):
     assert len(body["slots"]) == 2
 
 
+@pytest.mark.parametrize("hour, minute", [(0, 0), (0, 30), (4, 59)])
+def test_today_keeps_overnight_slot_current_after_midnight(
+    tmp_path, monkeypatch, hour, minute
+):
+    client, _ = _client(tmp_path)
+    _setup(client)
+    night = client.get("/api/genres").json()[-1]["id"]
+    night_slot = client.post(
+        "/api/studio/slots",
+        json={
+            "genre_id": night,
+            "days_of_week": [0, 1, 2, 3, 4, 5, 6],
+            "start_time": "22:00",
+        },
+    ).json()["id"]
+
+    class Frozen(datetime):
+        @classmethod
+        def now(cls, tz=None):  # type: ignore[override]
+            return cls(2026, 1, 5, hour, minute, tzinfo=tz)  # Monday
+
+    monkeypatch.setattr("app.routers.schedule.datetime", Frozen)
+    body = client.get("/api/schedule/today").json()
+    assert body["current_id"] == night_slot
+    assert body["carry"] is None
+
+
+def test_today_carries_a_previous_day_slot_into_today(tmp_path, monkeypatch):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    night = client.post(
+        "/api/studio/genres", json={"name": "Night", "slug": "night"}
+    ).json()["id"]
+    night_slot = client.post(
+        "/api/studio/slots",
+        json={"genre_id": night, "days_of_week": [6], "start_time": "22:00"},
+    ).json()["id"]
+
+    class Frozen(datetime):
+        @classmethod
+        def now(cls, tz=None):  # type: ignore[override]
+            return cls(2026, 1, 5, 0, 30, tzinfo=tz)  # Monday
+
+    monkeypatch.setattr("app.routers.schedule.datetime", Frozen)
+    body = client.get("/api/schedule/today").json()
+    assert body["current_id"] == night_slot
+    assert body["slots"] == []
+    assert body["carry"] == {
+        "id": night_slot,
+        "genre_id": night,
+        "genre_name": "Night",
+        "start_time": "22:00",
+    }
+
+
 def test_today_excludes_other_weekday_slots(tmp_path, monkeypatch):
     client, _ = _client(tmp_path)
     _setup(client)
@@ -102,4 +158,4 @@ def test_today_excludes_other_weekday_slots(tmp_path, monkeypatch):
 def test_today_empty_without_slots(tmp_path):
     client, _ = _client(tmp_path)
     body = client.get("/api/schedule/today").json()
-    assert body == {"current_id": None, "slots": []}
+    assert body == {"current_id": None, "slots": [], "carry": None}
