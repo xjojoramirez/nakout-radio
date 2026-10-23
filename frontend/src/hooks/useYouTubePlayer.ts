@@ -89,6 +89,26 @@ function isPlayerReady(player: YTPlayer | null): player is YTPlayer {
   );
 }
 
+/** True while the page is backgrounded (app switch, screen lock, other tab). */
+function isPageHidden(): boolean {
+  return document.visibilityState !== "visible";
+}
+
+/**
+ * A hidden page whose player is paused/cued has most likely lost the
+ * phone's audio focus to another app (the listener opened a video, etc.).
+ * Starting playback from here would take focus back and stop that app.
+ */
+function pausedWhileHidden(player: YTPlayer | null): boolean {
+  if (document.visibilityState === "visible" || !isPlayerReady(player)) {
+    return false;
+  }
+  const yt = window.YT;
+  if (!yt) return false;
+  const state = player.getPlayerState();
+  return state === yt.PlayerState.PAUSED || state === yt.PlayerState.CUED;
+}
+
 function targetFor(broadcast: BroadcastState, now = Date.now()): number {
   const duration = broadcast.track?.duration_seconds ?? 0;
   const target = liveTarget(broadcast, now);
@@ -163,6 +183,7 @@ export function useYouTubePlayer(
   const retryAttemptRef = useRef(0);
   const retryTimerRef = useRef<number | null>(null);
   const lastResumeAtRef = useRef(0);
+  const backgroundInterruptedRef = useRef(false);
   const preloadRef = useRef<YTPlayer | null>(null);
   const preloadVideoRef = useRef<string | null>(null);
   const preloadFailedRef = useRef(false);
@@ -200,6 +221,8 @@ export function useYouTubePlayer(
     const player = playerRef.current;
     const current = broadcastRef.current;
     if (!player || !isPlayerReady(player)) return;
+    // A retry must not take audio focus back from another app while hidden.
+    if (isPageHidden() && backgroundInterruptedRef.current) return;
     if (current?.phase === "gap" && current.nextTrack) {
       preloadNext(current.nextTrack);
       return;
@@ -240,7 +263,17 @@ export function useYouTubePlayer(
       setPlaying(isPlaying);
       if (isPlaying) {
         endedRef.current = false;
+        backgroundInterruptedRef.current = false;
         resetRetry();
+      } else if (
+        yt != null &&
+        (data === yt.PlayerState.PAUSED || data === yt.PlayerState.CUED) &&
+        isPageHidden() &&
+        broadcastRef.current?.phase !== "gap"
+      ) {
+        // A background pause is the OS handing audio focus to another app.
+        // Remember it right away so a boundary cannot restart playback.
+        backgroundInterruptedRef.current = true;
       }
       if (yt != null && data === yt.PlayerState.ENDED) {
         endedRef.current = true;
@@ -321,6 +354,17 @@ export function useYouTubePlayer(
       if (!preload || !isPlayerReady(preload)) return;
       if (preloadVideoRef.current !== videoId) return;
       const previous = playerRef.current;
+      // While hidden, a paused active player means another app owns the
+      // audio focus. Unmuting the pre-roll would take it back and stop that
+      // app; keep it muted and let visibility recovery promote it instead.
+      if (
+        isPageHidden() &&
+        (backgroundInterruptedRef.current ||
+          (broadcastRef.current?.phase !== "gap" &&
+            pausedWhileHidden(previous)))
+      ) {
+        return;
+      }
       try {
         preload.seekTo(Math.max(0, position), true);
         preload.setVolume(volumeForVideo(videoId));
@@ -368,6 +412,14 @@ export function useYouTubePlayer(
       }
       const player = playerRef.current;
       if (!player || !isPlayerReady(player)) return;
+      if (
+        isPageHidden() &&
+        (backgroundInterruptedRef.current ||
+          (broadcastRef.current?.phase !== "gap" &&
+            pausedWhileHidden(player)))
+      ) {
+        return;
+      }
       preloadedVideoRef.current = null;
       currentVideoRef.current = videoId;
       endedRef.current = false;
@@ -542,6 +594,15 @@ export function useYouTubePlayer(
       const videoId = current.track.youtube_video_id;
       const target = targetFor(current);
       if (currentVideoRef.current !== videoId) {
+        // Do not start the new live track from the background when the
+        // player was paused by another app's audio focus; recovery runs on
+        // visibilitychange. Keep the muted pre-roll intact for that.
+        if (
+          isPageHidden() &&
+          (backgroundInterruptedRef.current || pausedWhileHidden(player))
+        ) {
+          return;
+        }
         clearPreloadTimer();
         resetPreload();
         preloadFailedRef.current = false;
@@ -640,7 +701,10 @@ export function useYouTubePlayer(
 
   useEffect(() => {
     const onVisibilityChange = () => {
-      if (document.visibilityState === "hidden") return;
+      if (document.visibilityState !== "visible") return;
+      // The listener is back: any audio-focus interruption is over and
+      // playback may resume/promote again.
+      backgroundInterruptedRef.current = false;
       recoverRef.current();
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
@@ -799,6 +863,7 @@ export function useYouTubePlayer(
           if (currentVideoRef.current === current.track.youtube_video_id) {
             if (playerState === yt.PlayerState.PLAYING) {
               lastResumeAtRef.current = 0;
+              backgroundInterruptedRef.current = false;
               const target = targetFor(current);
               if (Math.abs(player.getCurrentTime() - target) > DRIFT_THRESHOLD) {
                 player.seekTo(target, true);
@@ -807,27 +872,35 @@ export function useYouTubePlayer(
               playerState === yt.PlayerState.PAUSED ||
               playerState === yt.PlayerState.CUED
             ) {
-              // Mobile OSes pause the iframe player when the page is suspended
-              // (screen lock, app switch). Resume at the live position so the
-              // listener rejoins the broadcast; throttled in case the browser
-              // keeps blocking playback.
-              const now = Date.now();
-              if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
-                lastResumeAtRef.current = now;
-                const target = targetFor(current);
-                const duration = current.track.duration_seconds;
-                if (duration > 0 && target >= duration - 1) {
-                  // The track ran out while the page was frozen: the live
-                  // target is at/past the runtime, so a seek would land in
-                  // a dead buffer. Reload at the live position instead.
-                  player.loadVideoById({
-                    videoId: current.track.youtube_video_id,
-                    startSeconds: target,
-                  });
-                  player.playVideo();
-                } else {
-                  player.seekTo(target, true);
-                  player.playVideo();
+              if (isPageHidden()) {
+                // The phone pauses the iframe when another app takes audio
+                // focus (e.g. a video the listener opened). Calling play()
+                // from the background would take focus back and stop that
+                // app, so stay paused and resume on return instead.
+                backgroundInterruptedRef.current = true;
+              } else {
+                // Mobile OSes pause the iframe player when the page is
+                // suspended (screen lock, app switch). Resume at the live
+                // position so the listener rejoins the broadcast; throttled
+                // in case the browser keeps blocking playback.
+                const now = Date.now();
+                if (now - lastResumeAtRef.current >= RESUME_THROTTLE_MS) {
+                  lastResumeAtRef.current = now;
+                  const target = targetFor(current);
+                  const duration = current.track.duration_seconds;
+                  if (duration > 0 && target >= duration - 1) {
+                    // The track ran out while the page was frozen: the live
+                    // target is at/past the runtime, so a seek would land in
+                    // a dead buffer. Reload at the live position instead.
+                    player.loadVideoById({
+                      videoId: current.track.youtube_video_id,
+                      startSeconds: target,
+                    });
+                    player.playVideo();
+                  } else {
+                    player.seekTo(target, true);
+                    player.playVideo();
+                  }
                 }
               }
             }
