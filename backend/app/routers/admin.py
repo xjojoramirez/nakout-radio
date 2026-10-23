@@ -224,7 +224,7 @@ def session_status() -> dict[str, str]:
     dependencies=[Depends(require_admin)],
     response_model=list[ChangelogEntryOut],
 )
-def changelog(limit: int = Query(8, ge=1, le=50)) -> list[ChangelogEntryOut]:
+def changelog(limit: int = Query(10, ge=1, le=50)) -> list[ChangelogEntryOut]:
     path = Path(get_settings().changelog_path)
     try:
         entries = load_changelog(path, limit)

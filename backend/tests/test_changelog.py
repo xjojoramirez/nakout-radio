@@ -9,6 +9,13 @@ from app.db import get_session
 from app.main import create_app
 from app.routers import admin
 
+def _many_entries(count: int = 12) -> str:
+    return "\n\n".join(
+        f"## 2026-01-{day:02d} — Entry {day}\n\nSummary {day}."
+        for day in range(1, count + 1)
+    )
+
+
 SAMPLE = """# Changelog
 
 Intro paragraph that must be ignored.
@@ -46,6 +53,14 @@ def test_respects_limit():
 
     assert len(entries) == 1
     assert entries[0].date == "2026-10-23"
+
+
+def test_default_limit_is_ten():
+    entries = parse_changelog(_many_entries())
+
+    assert len(entries) == 10
+    assert entries[0].title == "Entry 1"
+    assert entries[-1].title == "Entry 10"
 
 
 def test_skips_malformed_headings_and_keeps_entries_without_a_summary():
@@ -165,6 +180,25 @@ def test_changelog_returns_entries(tmp_path, monkeypatch):
             ),
         }
     ]
+
+
+def test_changelog_defaults_to_ten_entries(tmp_path, monkeypatch):
+    client, _ = _client(tmp_path)
+    _login(client)
+    changelog = tmp_path / "changelog.md"
+    changelog.write_text(_many_entries(), encoding="utf-8")
+    monkeypatch.setattr(
+        admin,
+        "get_settings",
+        lambda: SimpleNamespace(
+            secret_key="test-secret", changelog_path=str(changelog)
+        ),
+    )
+
+    resp = client.get("/api/studio/changelog")
+
+    assert resp.status_code == 200
+    assert len(resp.json()) == 10
 
 
 def test_changelog_returns_503_when_file_is_missing(tmp_path, monkeypatch):

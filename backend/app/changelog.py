@@ -10,7 +10,7 @@ _BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
 _ITALIC_RE = re.compile(r"(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)")
 _BULLET_RE = re.compile(r"^(?:[-*+]|\d+\.)\s+")
 
-DEFAULT_LIMIT = 8
+DEFAULT_LIMIT = 10
 
 
 @dataclass(frozen=True)

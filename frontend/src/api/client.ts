@@ -68,7 +68,7 @@ export const api = {
     }),
   logout: () => request<{ status: string }>("/studio/logout", { method: "POST" }),
   session: () => request<{ status: string }>("/studio/session"),
-  changelog: (limit = 8) =>
+  changelog: (limit = 10) =>
     request<ChangelogEntry[]>(`/studio/changelog?limit=${limit}`),
   genreTracks: (genreId: number) =>
     request<Track[]>(`/studio/genres/${genreId}/tracks`),

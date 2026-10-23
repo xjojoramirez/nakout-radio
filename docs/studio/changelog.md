@@ -35,3 +35,11 @@ The record label now shows round album art without square edges.
 ## 2026-10-19 — Playback survives screen lock
 
 Phones keep playing through track changes when the screen locks or the page goes inactive.
+
+## 2026-10-17 — Consistent volume across tracks
+
+Tracks are normalized to a consistent volume.
+
+## 2026-10-17 — No immediate repeat when a genre queue wraps
+
+A genre queue no longer starts over with the same track when it wraps.

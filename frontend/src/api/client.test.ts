@@ -120,6 +120,16 @@ describe("api client", () => {
     expect(result).toEqual([]);
   });
 
+  it("defaults the studio changelog to ten entries", async () => {
+    const spy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(JSON.stringify([]), { status: 200 }));
+
+    await api.changelog();
+
+    expect(spy.mock.calls[0][0]).toBe("/api/studio/changelog?limit=10");
+  });
+
   it("GETs the live broadcast", async () => {
     const spy = vi
       .spyOn(globalThis, "fetch")
