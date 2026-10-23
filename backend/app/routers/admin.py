@@ -3,9 +3,10 @@ import logging
 import re
 from collections.abc import Callable
 from datetime import datetime, timezone
+from pathlib import Path
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func
 from sqlmodel import Session, col, delete, select, update
@@ -28,6 +29,7 @@ from app.broadcast import (
     stop,
     utcnow,
 )
+from app.changelog import load_changelog
 from app.config import get_settings
 from app.db import get_session
 from app.loudness import ensure_backfill
@@ -47,6 +49,7 @@ from app.schemas import (
     ChannelIn,
     ChannelOut,
     ChannelPlaylistOut,
+    ChangelogEntryOut,
     OrderIn,
     PlayIn,
     PlaylistIn,
@@ -214,6 +217,30 @@ def logout(
 @router.get("/session", dependencies=[Depends(require_admin)])
 def session_status() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@router.get(
+    "/changelog",
+    dependencies=[Depends(require_admin)],
+    response_model=list[ChangelogEntryOut],
+)
+def changelog(limit: int = Query(8, ge=1, le=50)) -> list[ChangelogEntryOut]:
+    path = Path(get_settings().changelog_path)
+    try:
+        entries = load_changelog(path, limit)
+    except (OSError, UnicodeError) as exc:
+        logger.warning("changelog unavailable: %s", exc)
+        raise HTTPException(
+            status_code=503, detail="Changelog unavailable"
+        ) from exc
+    return [
+        ChangelogEntryOut(
+            date=entry.date,
+            title=entry.title,
+            summary=entry.summary,
+        )
+        for entry in entries
+    ]
 
 
 @router.post("/genres", status_code=201, dependencies=[Depends(require_admin)])

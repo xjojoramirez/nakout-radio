@@ -68,6 +68,12 @@ export interface ChannelPlaylist {
   already_added: boolean;
 }
 
+export interface ChangelogEntry {
+  date: string;
+  title: string;
+  summary: string;
+}
+
 export interface AddedPlaylist {
   id: number;
   genre_id: number;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../api/client";
+import { ChangelogDialog } from "../components/admin/ChangelogDialog";
 import { NowPlayingPanel } from "../components/admin/NowPlayingPanel";
 import { PlaylistsPanel } from "../components/admin/PlaylistsPanel";
 import { SchedulePanel } from "../components/admin/SchedulePanel";
@@ -25,6 +26,7 @@ export function AdminPage() {
   );
   const [genres, setGenres] = useState<Genre[]>([]);
   const [tab, setTab] = useState("now");
+  const [changelogOpen, setChangelogOpen] = useState(false);
   const [playlistCount, setPlaylistCount] = useState<number | null>(null);
   const [slotCount, setSlotCount] = useState<number | null>(null);
   const [playlistIntent, setPlaylistIntent] = useState<number | null>(null);
@@ -93,6 +95,7 @@ export function AdminPage() {
     }
     setPhase("login");
     setGenres([]);
+    setChangelogOpen(false);
     setPassword("");
     setError("");
     setNotice(null);
@@ -183,6 +186,31 @@ export function AdminPage() {
           Nakout Radio <small>Admin</small>
         </div>
         <div className="top-r">
+          <button
+            type="button"
+            className="changelog-btn"
+            aria-haspopup="dialog"
+            aria-expanded={changelogOpen}
+            aria-controls="changelog-dialog"
+            onClick={() => setChangelogOpen(true)}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            Changelog
+          </button>
           <a className="back" href="/">
             &larr; Back to radio
           </a>
@@ -257,6 +285,10 @@ export function AdminPage() {
           </>
         )}
       </div>
+
+      {changelogOpen && (
+        <ChangelogDialog onClose={() => setChangelogOpen(false)} />
+      )}
     </div>
   );
 }

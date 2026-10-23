@@ -44,8 +44,10 @@ services:
     env_file: ./backend/.env
     volumes:
       - radio_data:/data
+      - ./docs:/app/docs:ro
     environment:
       DATABASE_URL: sqlite:////data/radio.db
+      CHANGELOG_PATH: /app/docs/changelog.md
     healthcheck:
       test:
         [
