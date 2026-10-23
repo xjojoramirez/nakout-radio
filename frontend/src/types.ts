@@ -96,4 +96,6 @@ export interface SlotToday {
 export interface ScheduleToday {
   current_id: number | null;
   slots: SlotToday[];
+  /** Previous-day slot still running when nothing has started today. */
+  carry?: SlotToday | null;
 }

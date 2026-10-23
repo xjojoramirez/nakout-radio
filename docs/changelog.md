@@ -3,6 +3,33 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-23 — keep the live genre highlighted after midnight
+
+The homepage "Today's schedule" lost its current-slot indicator at midnight
+because the server only looked at slots that had already started *today*. The
+schedule endpoint now falls back to the latest slot from an earlier weekday, so
+an overnight show stays current until the first slot of the new day begins.
+
+When that carried-over slot is not also scheduled today (e.g. a Sunday-only
+show that runs into Monday), the response includes it as `carry` and the
+homepage prepends it to the list with the correct wrapped range, keeping the
+highlight visible instead of silently pointing at a row that is not rendered.
+
+- Files touched:
+  - `backend/app/routers/schedule.py`
+  - `backend/app/schemas.py`
+  - `backend/tests/test_schedule_today.py`
+  - `frontend/src/types.ts`
+  - `frontend/src/utils/deck.ts`
+  - `frontend/src/utils/deck.unit.test.ts`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes — both services changed:
+  `docker compose up -d --build backend frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: `cd backend && .venv\Scripts\python.exe -m pytest -q` — 341
+  passed; `cd frontend && npm run test` — 291 passed;
+  `npm run typecheck` and `npm run build` — clean.
+
 ## 2026-10-22 — automatic genre runs remember what aired and avoid heavy repeats
 
 Automatic genre runs now keep a per-genre rotation history keyed by YouTube

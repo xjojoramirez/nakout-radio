@@ -33,10 +33,22 @@ export function todayScheduleRows(
 ): ScheduleRow[] {
   if (!today) return [];
   const times = today.slots.map((s) => s.start_time);
-  return today.slots.map((slot, index) => ({
+  const rows = today.slots.map((slot, index) => ({
     id: slot.id,
     name: slot.genre_name,
     range: slotRange(times, index),
     isNow: today.current_id === slot.id,
   }));
+  if (today.carry) {
+    const first = times[0];
+    rows.unshift({
+      id: today.carry.id,
+      name: today.carry.genre_name,
+      range: first
+        ? `${hourLabel(today.carry.start_time)} – ${hourLabel(first)}`
+        : hourLabel(today.carry.start_time),
+      isNow: today.current_id === today.carry.id,
+    });
+  }
+  return rows;
 }

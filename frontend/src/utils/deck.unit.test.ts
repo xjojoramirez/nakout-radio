@@ -49,6 +49,39 @@ describe("deck formatting helpers", () => {
     ]);
   });
 
+  it("prepends a carry-over slot that is still playing", () => {
+    const rows = todayScheduleRows({
+      current_id: 9,
+      slots: [today.slots[0]],
+      carry: {
+        id: 9,
+        genre_id: 3,
+        genre_name: "Night",
+        start_time: "22:00",
+      },
+    });
+    expect(rows).toEqual([
+      { id: 9, name: "Night", range: "10 pm – 5 am", isNow: true },
+      { id: 1, name: "Morning", range: "5 am", isNow: false },
+    ]);
+  });
+
+  it("renders a lone carry-over slot without a range", () => {
+    const rows = todayScheduleRows({
+      current_id: 9,
+      slots: [],
+      carry: {
+        id: 9,
+        genre_id: 3,
+        genre_name: "Night",
+        start_time: "22:00",
+      },
+    });
+    expect(rows).toEqual([
+      { id: 9, name: "Night", range: "10 pm", isNow: true },
+    ]);
+  });
+
   it("returns no rows before data arrives", () => {
     expect(todayScheduleRows(null)).toEqual([]);
   });
