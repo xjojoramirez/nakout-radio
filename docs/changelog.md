@@ -3,6 +3,66 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-23 — studio changelog shows the ten newest updates
+
+The studio changelog now defaults to 10 curated entries instead of 8. The
+curated feed has two more user-facing notes, and the API and front-end
+defaults now match.
+
+- Files touched:
+  - `backend/app/changelog.py`
+  - `backend/app/routers/admin.py`
+  - `backend/tests/test_changelog.py`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/api/client.test.ts`
+  - `docs/studio/changelog.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes — `backend` and `frontend`:
+  `docker compose up -d --build backend frontend` (hard-refresh the browser
+  afterwards).
+- Verification: `cd backend && .venv\Scripts\python.exe -m pytest -q` — 355
+  passed; `cd frontend && npm test` — 309 passed in 30 files;
+  `npm run typecheck` and `npm run build` — clean.
+
+## 2026-10-23 — studio changelog dialog shows the latest changes
+
+The Studio header now has a **Changelog** button. It opens a dialog with the
+ten newest entries from a curated `docs/studio/changelog.md` feed, showing
+each entry's date, title, and first-paragraph summary. The full
+`docs/changelog.md` stays internal and is not exposed through the API. The
+button is only available after login, the endpoint requires an admin session,
+and the public radio page is unchanged.
+
+- Files touched:
+  - `backend/app/changelog.py` (new)
+  - `backend/app/config.py`
+  - `backend/app/schemas.py`
+  - `backend/app/routers/admin.py`
+  - `backend/tests/test_changelog.py` (new)
+  - `backend/tests/test_config.py`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/api/client.test.ts`
+  - `frontend/src/components/admin/ChangelogDialog.tsx` (new)
+  - `frontend/src/components/admin/ChangelogDialog.dom.test.tsx` (new)
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/pages/AdminPage.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `frontend/src/types.ts`
+  - `docker-compose.yml`
+  - `docs/studio/changelog.md` (new)
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes — `backend` and `frontend`:
+  `docker compose up -d --build backend frontend` (hard-refresh the browser
+  afterwards). The backend mounts only `docs/studio` read-only and reads the
+  curated feed.
+- Verification: `cd backend && .venv\Scripts\python.exe -m pytest -q` — 353
+  passed; `cd frontend && npm test` — 308 passed in 30 files;
+  `npm run typecheck` and `npm run build` — clean. A TestClient smoke test
+  against a migrated temporary database returned the newest entries from the
+  curated studio feed; `docker compose config` — valid (using temporary local
+  env values). A guard test keeps infrastructure terms and file paths out of
+  the curated feed.
+
 ## 2026-10-23 — stay paused in the background instead of taking another app's audio focus
 
 On a phone, a tuned-in listener who switched to another app and started a
