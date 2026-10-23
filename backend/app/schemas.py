@@ -182,3 +182,4 @@ class SlotTodayOut(BaseModel):
 class ScheduleTodayOut(BaseModel):
     current_id: int | None = None
     slots: list[SlotTodayOut] = []
+    carry: SlotTodayOut | None = None
