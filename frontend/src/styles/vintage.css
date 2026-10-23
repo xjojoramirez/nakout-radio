@@ -2835,6 +2835,7 @@ a.pid:hover {
   max-height: 360px;
   overflow-y: auto;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   align-content: start;
 }
@@ -2857,6 +2858,7 @@ a.pid:hover {
   background: var(--wood);
   border: 0;
   cursor: grab;
+  min-width: 0;
 }
 
 .queue-row:hover {
