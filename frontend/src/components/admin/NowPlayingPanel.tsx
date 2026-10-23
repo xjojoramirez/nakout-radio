@@ -271,7 +271,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
               <small>On the decks</small>
               <strong>{state?.genre?.name ?? "Station"}</strong>
             </div>
-            <VUMeter playing={Boolean(state?.track)} seed={1} />
+            <VUMeter playing={Boolean(state?.track)} />
           </div>
         </div>
 

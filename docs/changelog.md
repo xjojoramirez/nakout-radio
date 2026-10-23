@@ -3,6 +3,25 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-23 - use the reference VU meter on the homepage and studio
+
+The shared VU meter now renders the twelve reference levels (41% to 97%, then
+44% to 58%) on both the homepage mixer and the Studio now-playing deck, with
+the same thin six-pixel bars. The bars rest at 6% when playback is stopped.
+
+- Files touched:
+  - `frontend/src/components/VUMeter.tsx`
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/components/admin/NowPlayingPanel.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `frontend/src/components/VUMeter.dom.test.tsx`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - `frontend` only:
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `cd frontend && npm test` - 315 passed in 31 files;
+  `npm run typecheck` and `npm run build` - clean.
+
 ## 2026-10-23 - restyle the studio to the Nakout Admin 2 design
 
 The `/studio` page now follows `dev reference/design/nakoutstudio2/Nakout

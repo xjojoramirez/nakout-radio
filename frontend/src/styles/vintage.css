@@ -389,19 +389,6 @@ body:has(.admin-page) {
   background: var(--wood);
 }
 
-#panel-now .mixer .vu-meter {
-  height: 38px;
-  padding: 0;
-  border: 0;
-  background: none;
-  gap: 4px;
-  justify-content: center;
-}
-
-#panel-now .mixer .vu-bar {
-  flex: 0 0 6px;
-}
-
 .admin-deck .np-title {
   font-size: clamp(1.2rem, 2vw, 1.6rem);
   margin: 6px 0 4px;
@@ -2244,7 +2231,16 @@ a.pid:hover {
 }
 
 .mixer .vu-meter {
-  height: 44px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  background: none;
+  gap: 4px;
+  justify-content: center;
+}
+
+.mixer .vu-bar {
+  flex: 0 0 6px;
 }
 
 .dj {
