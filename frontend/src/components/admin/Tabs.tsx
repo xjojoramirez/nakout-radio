@@ -12,7 +12,7 @@ interface Props {
 
 export function Tabs({ tabs, active, onChange }: Props) {
   return (
-    <nav className="admin-tabs" role="tablist" aria-label="Admin sections">
+    <nav className="admin-tabs" role="tablist" aria-label="Studio sections">
       {tabs.map((t) => (
         <button
           key={t.id}

@@ -54,7 +54,7 @@ export function RadioPage() {
               <small>On the decks</small>
               <strong>{genreName ?? "Nakout Radio"}</strong>
             </div>
-            <VUMeter playing={player.playing} seed={0} />
+            <VUMeter playing={player.playing} />
             <div className="knob-row">
               <VolumeKnob
                 label="Volume"

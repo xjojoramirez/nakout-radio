@@ -151,7 +151,7 @@ export function AdminPage() {
             login();
           }}
         >
-          <h1>Admin</h1>
+          <h1>Studio</h1>
           <p className="hint">Sign in to manage genres and playlists.</p>
           <label className="field">
             Password
@@ -183,7 +183,7 @@ export function AdminPage() {
     <div className="admin admin-page">
       <header className="admin-top">
         <div className="brand">
-          Nakout Radio <small>Admin</small>
+          Nakout Radio <small>Studio</small>
         </div>
         <div className="top-r">
           <button

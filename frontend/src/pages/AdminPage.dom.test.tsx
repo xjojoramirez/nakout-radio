@@ -93,6 +93,15 @@ async function login() {
   await screen.findByRole("tab", { name: /^Genres/ });
 }
 
+function openScheduleDayView() {
+  fireEvent.click(
+    within(screen.getByRole("group", { name: "Schedule view" })).getByRole(
+      "button",
+      { name: "Day" },
+    ),
+  );
+}
+
 describe("AdminPage", () => {
   it("shows the tabs after a successful login", async () => {
     mocked.login.mockResolvedValue({ status: "ok" });
@@ -113,7 +122,7 @@ describe("AdminPage", () => {
     await login();
     const brand = document.querySelector(".admin-top .brand");
     expect(brand).not.toBeNull();
-    expect(brand?.textContent).toBe("Nakout Radio Admin");
+    expect(brand?.textContent).toBe("Nakout Radio Studio");
     expect(brand?.querySelector("span")).toBeNull();
     expect(
       screen.getByRole("link", { name: /Back to radio/ }),
@@ -186,10 +195,10 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Genres/ }));
-    fireEvent.change(screen.getByPlaceholderText("Name"), {
+    fireEvent.change(screen.getByPlaceholderText("e.g. Sunday Acoustic"), {
       target: { value: "Chill" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Slug"), {
+    fireEvent.change(screen.getByPlaceholderText("sundayacoustic"), {
       target: { value: "chill" },
     });
     fireEvent.click(screen.getByText("Add genre"));
@@ -537,6 +546,7 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
+    openScheduleDayView();
     fireEvent.click(await screen.findByRole("button", { name: "Mon" }));
     const row = (await screen.findByText("6:00 AM to Midnight")).closest(
       ".srow",
@@ -565,6 +575,7 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
+    openScheduleDayView();
     fireEvent.click(await screen.findByText("Edit"));
     const form = await screen.findByTestId("slot-form");
     expect(screen.getByText("Edit slot")).toBeInTheDocument();
@@ -600,6 +611,7 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
+    openScheduleDayView();
     fireEvent.click(await screen.findByText("Delete"));
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByText("Delete"));

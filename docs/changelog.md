@@ -3,6 +3,79 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-23 - make the studio Changelog button a plain header link
+
+The Changelog control now matches the **Back to radio** link: plain muted text
+without the pill border or background, while keeping the history icon and the
+existing dialog behaviour.
+
+- Files touched:
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - `frontend` only:
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `cd frontend && npm test` - 315 passed in 31 files;
+  `npm run typecheck` and `npm run build` - clean.
+
+## 2026-10-23 - use the reference VU meter on the homepage and studio
+
+The shared VU meter now renders the twelve reference levels (41% to 97%, then
+44% to 58%) on both the homepage mixer and the Studio now-playing deck, with
+the same thin six-pixel bars. The bars rest at 6% when playback is stopped.
+
+- Files touched:
+  - `frontend/src/components/VUMeter.tsx`
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/components/admin/NowPlayingPanel.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `frontend/src/components/VUMeter.dom.test.tsx`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - `frontend` only:
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `cd frontend && npm test` - 315 passed in 31 files;
+  `npm run typecheck` and `npm run build` - clean.
+
+## 2026-10-23 - restyle the studio to the Nakout Admin 2 design
+
+The `/studio` page now follows `dev reference/design/nakoutstudio2/Nakout
+Admin 2.html`: a flat dark page shell instead of a rounded admin card, amber
+pill tabs, pill buttons, wood-surface cards, mono section labels, the reference
+now-playing deck/queue layout, and the new Schedule Week / Day / By genre
+views with genre filters, per-week airtime and grouped day agendas.
+
+The header keeps the plain **Nakout Radio** wordmark with a **Studio** label,
+and the Changelog button (history icon) is restored on the right of the header.
+
+- `frontend/src/pages/AdminPage.tsx`: plain "Nakout Radio" brand with a
+  "Studio" label, and the restored Changelog header button/dialog.
+- `frontend/src/components/admin/Tabs.tsx`: studio section label.
+- `frontend/src/components/admin/NowPlayingPanel.tsx`: mono section heading,
+  generated cover fallback in queue rows and the reference queue/meta layout.
+- `frontend/src/components/admin/GenresPanel.tsx`: reference Name / Short code /
+  Colour labels.
+- `frontend/src/components/admin/PlaylistsPanel.tsx`: visible "Which genre does
+  it belong to?" prompt above the genre chips.
+- `frontend/src/components/admin/SchedulePanel.tsx`: Week / Day / By genre
+  views, genre filter chips, grouped day agenda and weekly airtime summary.
+- `frontend/src/components/admin/ScheduleTimeline.tsx`: dims blocks that the
+  schedule genre filter has hidden.
+- `frontend/src/components/admin/ChangelogDialog.tsx` (merged from the studio
+  changelog branch): the Changelog dialog.
+- `frontend/src/styles/vintage.css`: studio shell, tabs, buttons, inputs,
+  cards, queue rows, toasts, modal, changelog dialog, genre/playlist surfaces
+  and schedule-scale components aligned with `Nakout Admin 2.html`.
+- `frontend/src/components/admin/SchedulePanel.dom.test.tsx` and
+  `frontend/src/pages/AdminPage.dom.test.tsx`: updated for the new default
+  Week view and added coverage for the week overview, filters, by-genre list,
+  brand and changelog header.
+- **Container restart required?** Yes - backend and frontend changed:
+  `docker compose up -d --build backend frontend`, then hard-refresh the
+  browser (Ctrl+Shift+R).
+- Verification: `cd backend && .venv\Scripts\python.exe -m pytest -q` - 355
+  passed; `cd frontend && npm test` - 313 passed in 30 files;
+  `npm run typecheck` and `npm run build` - clean.
 ## 2026-10-23 — studio changelog shows the ten newest updates
 
 The studio changelog now defaults to 10 curated entries instead of 8. The

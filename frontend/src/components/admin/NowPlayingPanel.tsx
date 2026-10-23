@@ -256,7 +256,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
   return (
     <section className="admin-panel np-panel" aria-label="Now playing">
       <div className="panel-head">
-        <h2>Now playing</h2>
+        <h2 className="sec">Now playing</h2>
         {syncButton}
       </div>
 
@@ -271,7 +271,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
               <small>On the decks</small>
               <strong>{state?.genre?.name ?? "Station"}</strong>
             </div>
-            <VUMeter playing={Boolean(state?.track)} seed={1} />
+            <VUMeter playing={Boolean(state?.track)} />
           </div>
         </div>
 
@@ -404,6 +404,8 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
 
           {loading && tracks.length === 0 ? (
             <p className="muted">Loading…</p>
+          ) : tracks.length === 0 ? (
+            <div className="empty">No tracks in this genre yet.</div>
           ) : (
             <ol className="queue-list" ref={queueRef}>
               {tracks.map((t, i) => {
@@ -427,14 +429,25 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
                     <span className="drag-handle" aria-hidden="true">
                       ⋮⋮
                     </span>
-                    {t.thumbnail_url && (
+                    {t.thumbnail_url ? (
                       <img className="art small" src={t.thumbnail_url} alt="" />
+                    ) : (
+                      <span
+                        className="queue-art"
+                        aria-hidden="true"
+                        style={{ backgroundImage: cssCover(t.title) }}
+                      />
                     )}
-                    <span className="queue-title" title={t.title}>
-                      {t.title}
-                    </span>
-                    <span className="queue-artist" title={t.artist || undefined}>
-                      {t.artist}
+                    <span className="queue-meta">
+                      <span className="queue-title" title={t.title}>
+                        {t.title}
+                      </span>
+                      <span
+                        className="queue-artist"
+                        title={t.artist || undefined}
+                      >
+                        {t.artist}
+                      </span>
                     </span>
                     <span className="queue-duration">
                       {formatDuration(t.duration_seconds)}
