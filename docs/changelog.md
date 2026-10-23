@@ -3,6 +3,34 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-23 — stay paused in the background instead of taking another app's audio focus
+
+On a phone, a tuned-in listener who switched to another app and started a
+video had that video stop when Nakout took the audio focus back. The 1 s
+reconcile tick treated every `PAUSED`/`CUED` iframe as a temporary OS
+suspension and called `playVideo()` (throttled to every 3 s) even while the
+page was hidden. A track boundary could do the same by promoting and
+unmuting the pre-roll in the background.
+
+- `frontend/src/hooks/useYouTubePlayer.ts`:
+  - the 1 s tick only auto-resumes while the page is visible;
+  - a hidden pause is remembered as an audio-focus interruption, and no
+    background path (tick retry, broadcast track change, pre-roll swap or
+    gap start) starts audible playback while it is in effect; the muted
+    pre-roll is kept intact for recovery;
+  - `visibilitychange` → visible clears the interruption and resumes or
+    promotes the live position as before.
+- `frontend/src/hooks/useYouTubePlayer.dom.test.ts`: seven new tests —
+  hidden pause is not resumed, the visible return resumes, a boundary does
+  not promote the pre-roll, a gap start is not fired, a new live track is
+  not started in the background, and an observed interruption (from the
+  tick or the player's pause event) survives the track ending.
+- **Container restart required?** Yes — `frontend` only:
+  `docker compose up -d --build frontend`, then hard-refresh the browser
+  (Ctrl+Shift+R).
+- Verification: `cd frontend && npm test` — 298 passed in 29 files (+7 new
+  tests); `npm run typecheck`; `npm run build` — clean.
+
 ## 2026-10-23 — keep the live genre highlighted after midnight
 
 The homepage "Today's schedule" lost its current-slot indicator at midnight

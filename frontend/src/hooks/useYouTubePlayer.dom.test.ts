@@ -31,6 +31,14 @@ function nextTrack() {
   return { ...broadcast().track!, youtube_video_id: "b", title: "b" };
 }
 
+/** jsdom keeps `document.visibilityState` on the prototype; shadow it. */
+function setVisibility(state: DocumentVisibilityState) {
+  Object.defineProperty(document, "visibilityState", {
+    configurable: true,
+    get: () => state,
+  });
+}
+
 describe("useYouTubePlayer", () => {
   let players: any[];
 
@@ -67,6 +75,7 @@ describe("useYouTubePlayer", () => {
 
   afterEach(() => {
     delete (window as unknown as { YT?: unknown }).YT;
+    Reflect.deleteProperty(document, "visibilityState");
     vi.useRealTimers();
   });
 
@@ -350,6 +359,217 @@ describe("useYouTubePlayer", () => {
       vi.advanceTimersByTime(1000);
     });
     expect(players[0].playVideo).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not resume a player paused by another app while the page is hidden", async () => {
+    vi.useFakeTimers();
+    renderHook(() =>
+      useYouTubePlayer("yt-player", broadcast({ offset: 10 }), vi.fn()),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    players[0].getPlayerState.mockReturnValue(2); // paused by another app
+    players[0].getCurrentTime.mockReturnValue(5);
+    players[0].seekTo.mockClear();
+    players[0].playVideo.mockClear();
+    setVisibility("hidden");
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    // Resuming from the background would take audio focus back and stop
+    // whatever the listener opened in the other app.
+    expect(players[0].seekTo).not.toHaveBeenCalled();
+    expect(players[0].playVideo).not.toHaveBeenCalled();
+  });
+
+  it("resumes once the page is visible again after a background pause", async () => {
+    vi.useFakeTimers();
+    renderHook(() =>
+      useYouTubePlayer("yt-player", broadcast({ offset: 10 }), vi.fn()),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    players[0].getPlayerState.mockReturnValue(2);
+    players[0].getCurrentTime.mockReturnValue(5);
+    setVisibility("hidden");
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(players[0].playVideo).not.toHaveBeenCalled();
+    setVisibility("visible");
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(players[0].seekTo).toHaveBeenCalledWith(expect.any(Number), true);
+    expect(players[0].playVideo).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the pre-roll muted when the page is hidden and lost audio focus", async () => {
+    vi.useFakeTimers();
+    renderHook(() =>
+      useYouTubePlayer(
+        "yt-player",
+        broadcast({
+          nextTrack: nextTrack(),
+          secondsUntilStart: 25,
+          preloadLead: 20,
+        }),
+        vi.fn(),
+      ),
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      players[0].opts.events.onStateChange({ data: 1 }); // playing
+    });
+    act(() => {
+      vi.advanceTimersByTime(5000); // arm the pre-roll
+    });
+    expect(players.length).toBe(2);
+    players[1].playVideo.mockClear();
+    players[1].seekTo.mockClear();
+    players[0].pauseVideo.mockClear();
+    setVisibility("hidden");
+    players[0].getPlayerState.mockReturnValue(2); // another app took focus
+    act(() => {
+      vi.advanceTimersByTime(20000); // reach the boundary
+    });
+    // Do not promote/unmute the next track from the background.
+    expect(players[1].seekTo).not.toHaveBeenCalled();
+    expect(players[1].playVideo).not.toHaveBeenCalled();
+    expect(players[0].pauseVideo).not.toHaveBeenCalled();
+  });
+
+  it("does not start a gap's next track in the background after a focus loss", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      { initialProps: { b: broadcast({ offset: 0 }) } },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    setVisibility("hidden");
+    players[0].getPlayerState.mockReturnValue(2);
+    act(() => {
+      vi.advanceTimersByTime(1000); // tick records the interruption
+    });
+    // The track ends into a gap while the other app still has focus.
+    rerender({
+      b: broadcast({
+        phase: "gap",
+        nextTrack: nextTrack(),
+        secondsUntilStart: 2,
+        fetchedAt: Date.now(),
+      }),
+    });
+    players[0].playVideo.mockClear();
+    players[0].seekTo.mockClear();
+    act(() => {
+      vi.advanceTimersByTime(2000); // gap boundary
+    });
+    expect(players[0].playVideo).not.toHaveBeenCalled();
+    expect(players[0].seekTo).not.toHaveBeenCalled();
+  });
+
+  it("does not start the next live track in the background after losing focus", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      { initialProps: { b: broadcast() } },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    setVisibility("hidden");
+    players[0].getPlayerState.mockReturnValue(2);
+    players[0].loadVideoById.mockClear();
+    players[0].playVideo.mockClear();
+    rerender({
+      b: broadcast({ track: nextTrack(), offset: 0, fetchedAt: Date.now() }),
+    });
+    expect(players[0].loadVideoById).not.toHaveBeenCalled();
+    expect(players[0].playVideo).not.toHaveBeenCalled();
+
+    setVisibility("visible");
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(players[0].loadVideoById).toHaveBeenCalledWith({
+      videoId: "b",
+      startSeconds: expect.any(Number),
+    });
+    expect(players[0].playVideo).toHaveBeenCalled();
+  });
+
+  it("stays quiet in the background at a boundary after an observed focus loss", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      { initialProps: { b: broadcast() } },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    setVisibility("hidden");
+    players[0].getPlayerState.mockReturnValue(2);
+    act(() => {
+      vi.advanceTimersByTime(1000); // tick observes the pause
+    });
+    players[0].getPlayerState.mockReturnValue(8); // then the track ends
+    players[0].loadVideoById.mockClear();
+    players[0].playVideo.mockClear();
+    rerender({
+      b: broadcast({ track: nextTrack(), offset: 0, fetchedAt: Date.now() }),
+    });
+    expect(players[0].loadVideoById).not.toHaveBeenCalled();
+    expect(players[0].playVideo).not.toHaveBeenCalled();
+  });
+
+  it("remembers a background pause event before the next tick", async () => {
+    vi.useFakeTimers();
+    const { rerender } = renderHook(
+      ({ b }: { b: BroadcastState }) =>
+        useYouTubePlayer("yt-player", b, vi.fn()),
+      { initialProps: { b: broadcast() } },
+    );
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(players.length).toBe(1);
+    setVisibility("hidden");
+    act(() => {
+      players[0].opts.events.onStateChange({ data: 2 }); // OS pause event
+    });
+    players[0].getPlayerState.mockReturnValue(8); // ends before the next tick
+    players[0].loadVideoById.mockClear();
+    players[0].playVideo.mockClear();
+    rerender({
+      b: broadcast({ track: nextTrack(), offset: 0, fetchedAt: Date.now() }),
+    });
+    expect(players[0].loadVideoById).not.toHaveBeenCalled();
+    expect(players[0].playVideo).not.toHaveBeenCalled();
   });
 
   it("does not interfere while the player is buffering", async () => {
