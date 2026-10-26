@@ -76,6 +76,11 @@ WIKITABLE = """
 |US ''Billboard'' Hot 100<ref name="musicvf.com"/>
 | style="text-align:center;"|1
 |-
+|South Africa (Springbok Radio)
+|align="center"|6
+|-
+|{{Single chart|Ireland2|5|song=Torn Between Two Lovers}}
+|-
 |UK Singles ([[Official Charts Company|OCC]])
 | style="text-align:center;"|7
 |}
@@ -488,12 +493,23 @@ def test_parse_charts_reads_plain_wikitables():
     assert ("UK Singles (OCC)", 7) in pairs
     assert ("Argentina (CAPIF)", 8) in pairs
     assert ("Austria (Ö3)", 4) in pairs
+    assert ("Ireland (IRMA)", 5) in pairs
     assert ("Billboard Hot 100", 6) not in pairs
+
+    south_africa = next(
+        entry for entry in charts if entry.chart_name.startswith("South Africa")
+    )
+    assert south_africa.country == "ZA"
 
     hot = next(entry for entry in charts if entry.chart_name == "Billboard Hot 100")
     assert hot.country == "US"
     assert hot.year == 1984
     assert hot.source_url == PAGE_URL
+
+    austria = next(
+        entry for entry in charts if entry.chart_name == "Austria (Ö3)"
+    )
+    assert austria.year == 1984
 
 
 def test_parse_charts_ignores_live_version_chart_tables():
@@ -512,12 +528,14 @@ def test_parse_charts_ignores_live_version_chart_tables():
 |UK Singles (OCC)
 |26
 |}
+{{single chart|Switzerland|36|artist=Van Halen}}
 """
 
     pairs = _chart_pairs(parse_charts(wikitext))
 
     assert ("Billboard Hot 100", 1) in pairs
     assert ("UK Singles (OCC)", 26) not in pairs
+    assert ("Switzerland (Schweizer Hitparade)", 36) not in pairs
 
 
 def test_parse_charts_ignores_tables_outside_chart_sections():

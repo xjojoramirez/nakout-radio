@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-26 - chart templates inside tables
+
+The new reviewer caught a missing Ireland placement for "Torn Between Two
+Lovers": the template was written inside a table cell
+(`|{{single chart|Ireland2|5|...}}`), and the table branch treated the whole
+line as a cell instead of parsing the template. Chart templates are now read
+before table rows, so both `{{single chart}}` and `|{{single chart}}` work.
+Live-version, remix, cover-version and re-recording headings are excluded for
+templates as well as tables, and South African chart rows now carry `ZA`.
+Template rows inside a table also inherit the header's `Chart (1984)` year, and
+`Billboardrocksongs` maps to its current name, Hot Rock & Alternative Songs.
+
+- Files touched:
+  - `backend/app/enrichment/wikipedia.py`
+  - `backend/tests/test_story.py`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - backend only:
+  `docker compose up -d --build backend`. Existing chart rows need a re-parse.
+- Verification: 428 backend tests passed. Real probe: "Torn Between Two
+  Lovers" now returns 15 placements, including Ireland (IRMA) #5 and South
+  Africa (Springbok Radio) #6 with country `ZA`; Jump's template rows now
+  carry 1984, leaving only the two 2020-2023 placements undated.
+
 ## 2026-10-26 - track details reviewer agent
 
 Added a project subagent for auditing liner notes:

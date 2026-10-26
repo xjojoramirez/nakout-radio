@@ -45,7 +45,8 @@ _BAD_PAGE_RE = re.compile(
 _LIST_PAGE_RE = re.compile(r"^(?:list of|discography)", re.I)
 _BAD_CHART_SECTION_RE = re.compile(
     r"decade[- ]end|all[- ]time|year[- ]end|year end|"
-    r"certification|sales|awards?|accolades?",
+    r"certification|sales|awards?|accolades?|"
+    r"live[- ](?:version|performance)|remix|cover version|re-recording",
     re.I,
 )
 
@@ -87,6 +88,10 @@ _CHART_LABELS: dict[str, tuple[str, str]] = {
     "billboarddanceclubplay": ("Billboard Dance Club Songs", "US"),
     "billboarddanceairplay": ("Billboard Dance/Mix Show Airplay", "US"),
     "billboardmainstreamrock": ("Billboard Mainstream Rock", "US"),
+    "billboardrocksongs": (
+        "Billboard Hot Rock & Alternative Songs",
+        "US",
+    ),
     "billboarddigitalsongs": ("Billboard Digital Song Sales", "US"),
     "billboardalternativesongs": ("Billboard Alternative Songs", "US"),
     "billboardglobal200": ("Billboard Global 200", ""),
@@ -104,6 +109,8 @@ _CHART_LABELS: dict[str, tuple[str, str]] = {
     "uksinglesbyname": ("UK Singles (OCC)", "GB"),
     "ukrandb": ("UK R&B (OCC)", "GB"),
     "scotland": ("Scotland (OCC)", "GB"),
+    "south africa": ("South Africa (Springbok Radio)", "ZA"),
+    "southafrica": ("South Africa (Springbok Radio)", "ZA"),
     "ireland": ("Ireland (IRMA)", "IE"),
     "ireland2": ("Ireland (IRMA)", "IE"),
     "ireland4": ("Ireland (IRMA)", "IE"),
@@ -498,6 +505,7 @@ _TABLE_COUNTRY: tuple[tuple[str, str, bool], ...] = (
     (r"^Poland\b", "PL", False),
     (r"^Portugal\b", "PT", False),
     (r"^Scotland\b", "GB", False),
+    (r"^South Africa\b", "ZA", False),
     (r"^Argentina\b", "AR", False),
     (r"^Peru\b", "PE", False),
     (r"^Paraguay\b", "PY", False),
@@ -631,6 +639,38 @@ def parse_charts(wikitext: str, source_url: str = "") -> list[ChartData]:
             row = []
             continue
 
+        # A template can be the whole row or sit inside a table cell
+        # (``|{{single chart|Ireland2|5|...}}``). Parse it before the table
+        # branch so both shapes work. Tables outside a chart section (a live
+        # version, personnel) are skipped.
+        if (not in_table or table_allowed) and not any(
+            _BAD_CHART_SECTION_RE.search(name) for _, name in headings
+        ):
+            match = _SINGLE_CHART_RE.search(line)
+            if match is not None:
+                parts = [part.strip() for part in match.group(1).split("|")]
+                if len(parts) >= 2:
+                    peak = _int(parts[1])
+                    if peak is not None and 1 <= peak <= 200:
+                        name, country = _chart_label(parts[0])
+                        year = None
+                        for part in parts[2:]:
+                            if "=" not in part:
+                                continue
+                            key, value = part.split("=", 1)
+                            if key.strip().casefold() not in {"date", "year"}:
+                                continue
+                            head = re.search(r"(\d{4})", value)
+                            if head and 1900 <= int(head.group(1)) <= 2100:
+                                year = int(head.group(1))
+                                break
+                        if year is None and in_table:
+                            # ``{{single chart}}`` rows often sit inside a
+                            # table whose header carries the year.
+                            year = table_year
+                        add(name, country, peak, year)
+                continue
+
         if in_table:
             if not table_allowed:
                 continue
@@ -647,40 +687,9 @@ def parse_charts(wikitext: str, source_url: str = "") -> list[ChartData]:
             if line.startswith("|"):
                 row.extend(_split_cells(line[1:]))
                 continue
-            if line.startswith("{{"):
-                # A template chart row inside the table; parsed below.
-                pass
-            else:
-                if line.strip() and row:
-                    row[-1] += " " + line.strip()
-                continue
-
-        if any(_BAD_CHART_SECTION_RE.search(name) for _, name in headings):
+            if line.strip() and row:
+                row[-1] += " " + line.strip()
             continue
-        match = _SINGLE_CHART_RE.search(line)
-        if match is None:
-            continue
-
-        parts = [part.strip() for part in match.group(1).split("|")]
-        if len(parts) < 2:
-            continue
-        peak = _int(parts[1])
-        if peak is None or not 1 <= peak <= 200:
-            continue
-        name, country = _chart_label(parts[0])
-        year = None
-        for part in parts[2:]:
-            if "=" not in part:
-                continue
-            key, value = part.split("=", 1)
-            if key.strip().casefold() not in {"date", "year"}:
-                continue
-            head = re.search(r"(\d{4})", value)
-            if head and 1900 <= int(head.group(1)) <= 2100:
-                year = int(head.group(1))
-                break
-
-        add(name, country, peak, year)
 
     if in_table and table_allowed:
         flush_row()
