@@ -81,9 +81,9 @@ def test_track_volume_offset_db_from_gain():
     )
     assert track.volume_offset_db == 0.0
     track.gain_db = -7.0
-    assert track.volume_offset_db == -8.0
-    track.gain_db = -19.3
-    assert track.volume_offset_db == pytest.approx(4.3)
+    assert track.volume_offset_db == -2.0
+    track.gain_db = -13.0
+    assert track.volume_offset_db == pytest.approx(4.0)
 
 
 def test_duplicate_genre_slug_raises(session):

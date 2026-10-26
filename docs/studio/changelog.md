@@ -4,6 +4,10 @@ Short, user-facing notes for the Studio Changelog dialog. Keep this file free
 of file paths, infrastructure details, issue numbers, and deployment commands.
 Newest first.
 
+## 2026-10-26 — Louder at full volume
+
+Tracks now reach full loudness at the top of the volume control instead of being held back.
+
 ## 2026-10-23 — Studio notes are now concise
 
 The studio changelog now shows short, user-facing updates instead of technical release notes.

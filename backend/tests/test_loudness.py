@@ -21,13 +21,18 @@ from app.models import Genre, Playlist, TrackCache
 # --- offset math -----------------------------------------------------------
 
 
-def test_offset_for_gain_states_and_caps():
+def test_offset_for_gain_states_and_caps(monkeypatch):
+    monkeypatch.setattr(
+        loudness,
+        "get_settings",
+        lambda: SimpleNamespace(loudness_target_db=-9.0, loudness_max_boost_db=6.0),
+    )
     assert offset_for_gain(None) == 0.0
-    assert offset_for_gain(-15.0) == 0.0
-    assert offset_for_gain(-7.0) == -8.0
-    assert offset_for_gain(-19.3) == pytest.approx(4.3)
-    assert offset_for_gain(-30.0) == 6.0  # boost cap
-    assert offset_for_gain(5.0) == -15.0  # attenuation cap
+    assert offset_for_gain(-9.0) == 0.0
+    assert offset_for_gain(-7.0) == -2.0
+    assert offset_for_gain(-11.4) == pytest.approx(2.4)
+    assert offset_for_gain(-19.3) == 6.0  # boost cap
+    assert offset_for_gain(12.0) == -15.0  # attenuation cap
 
 
 # --- query cleaning --------------------------------------------------------
