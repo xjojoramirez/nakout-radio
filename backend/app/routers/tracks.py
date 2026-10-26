@@ -71,7 +71,12 @@ def enrich_studio_track(
     if track_details.track_row(session, video_id) is None:
         raise HTTPException(status_code=404, detail="track not found")
     outcome = enrichment.enrich_track(session, video_id, force=True)
-    if not outcome.committed and outcome.errors:
+    story = enrichment.enrich_story(session, video_id, force=True)
+    if (
+        not outcome.committed
+        and not story.committed
+        and (outcome.errors or story.errors)
+    ):
         raise HTTPException(
             status_code=502,
             detail="metadata providers are unavailable, try again later",

@@ -182,6 +182,8 @@ export interface StudioTrackDetail extends TrackDetail {
   needs_review: boolean;
   enriched_at: string | null;
   enrich_error: string | null;
+  story_at: string | null;
+  story_error: string | null;
   created_at: string | null;
   updated_at: string | null;
   status: "empty" | "auto" | "curated";
@@ -200,6 +202,7 @@ export interface TrackLibraryItem {
   completeness: number;
   genres: string[];
   needs_review: boolean;
+  has_story: boolean;
 }
 
 export interface TrackLibraryPage {
@@ -215,6 +218,8 @@ export interface EnrichmentStatus {
   enriched: number;
   failed: number;
   remaining: number;
+  stories: number;
+  stories_failed: number;
 }
 
 export type TrackDetailInput = Omit<
@@ -228,6 +233,8 @@ export type TrackDetailInput = Omit<
   | "needs_review"
   | "enriched_at"
   | "enrich_error"
+  | "story_at"
+  | "story_error"
   | "created_at"
   | "updated_at"
   | "status"

@@ -116,7 +116,7 @@ def status_for(row: TrackDetail | None, chart_total: int = 0) -> str:
         return "empty"
     if row.locked_fields:
         return "curated"
-    if row.enriched_at is not None:
+    if row.enriched_at is not None or row.story_at is not None:
         return "auto"
     return "curated" if has_content(row, chart_total) else "empty"
 
@@ -230,6 +230,8 @@ def admin_detail(session: Session, video_id: str) -> TrackDetailOut | None:
             "needs_review": row.needs_review if row else False,
             "enriched_at": row.enriched_at if row else None,
             "enrich_error": row.enrich_error if row else None,
+            "story_at": row.story_at if row else None,
+            "story_error": row.story_error if row else None,
             "created_at": row.created_at if row else None,
             "updated_at": row.updated_at if row else None,
             "status": status_for(row, chart_total),
@@ -267,6 +269,11 @@ def save_detail(
                 youtube_video_id=video_id, **entry.model_dump()
             )
         )
+    # The charts in this payload are now curated; a later fetch must not
+    # replace them, even when the editor saved with protection off.
+    sources = dict(row.sources or {})
+    if sources.pop("charts", None) is not None:
+        row.sources = sources
     session.commit()
     session.refresh(row)
     return admin_detail(session, video_id)
@@ -345,6 +352,7 @@ def library_page(
                 status=item_status,
                 completeness=completeness_for(row, chart_total),
                 needs_review=bool(row.needs_review) if row else False,
+                has_story=bool(row and (row.summary or row.story)),
                 genres=sorted(genres.get(video_id, set())),
             )
         )

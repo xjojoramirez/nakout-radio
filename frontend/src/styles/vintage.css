@@ -3764,6 +3764,15 @@ a.pid:hover {
   text-transform: uppercase;
 }
 
+.lib-story {
+  margin-left: 6px;
+  color: var(--ok);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .track-editor-actions {
   display: flex;
   align-items: center;

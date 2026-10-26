@@ -43,6 +43,7 @@ function item(overrides: Partial<TrackLibraryItem> = {}): TrackLibraryItem {
     completeness: 3,
     genres: ["Jazz"],
     needs_review: false,
+    has_story: false,
     ...overrides,
   };
 }
@@ -97,6 +98,8 @@ function detail(
     needs_review: false,
     enriched_at: null,
     enrich_error: null,
+    story_at: null,
+    story_error: null,
     created_at: null,
     updated_at: null,
     status: "curated",
@@ -129,6 +132,8 @@ beforeEach(() => {
     enriched: 0,
     failed: 0,
     remaining: 1,
+    stories: 0,
+    stories_failed: 0,
   });
 });
 
@@ -266,6 +271,8 @@ describe("TrackLibraryPanel", () => {
         enriched: 0,
         failed: 0,
         remaining: 1,
+        stories: 0,
+        stories_failed: 0,
       })
       .mockResolvedValue({
         running: false,
@@ -273,6 +280,8 @@ describe("TrackLibraryPanel", () => {
         enriched: 1,
         failed: 0,
         remaining: 0,
+        stories: 1,
+        stories_failed: 0,
       });
     const { onNotice } = renderPanel();
     await screen.findByText("Blue in Green");
@@ -284,7 +293,9 @@ describe("TrackLibraryPanel", () => {
 
     await waitFor(() => expect(mocked.enrichMissing).toHaveBeenCalled());
     await waitFor(() =>
-      expect(onNotice).toHaveBeenCalledWith("Enriched 1 of 1 tracks"),
+      expect(onNotice).toHaveBeenCalledWith(
+        "Enriched 1 of 1 tracks · 1 story checked",
+      ),
     );
     expect(mocked.listTracks).toHaveBeenCalledTimes(2);
   });
@@ -296,6 +307,8 @@ describe("TrackLibraryPanel", () => {
       enriched: 1,
       failed: 0,
       remaining: 0,
+      stories: 1,
+      stories_failed: 0,
     });
     renderPanel();
 
@@ -311,12 +324,38 @@ describe("TrackLibraryPanel", () => {
       enriched: 0,
       failed: 1,
       remaining: 0,
+      stories: 1,
+      stories_failed: 0,
     });
     renderPanel();
 
     expect(
       await screen.findByRole("button", { name: "Retry failed (1)" }),
     ).toBeEnabled();
+  });
+
+  it("keeps enriching while stories are still pending", async () => {
+    mocked.enrichmentStatus.mockResolvedValue({
+      running: false,
+      total: 1,
+      enriched: 1,
+      failed: 0,
+      remaining: 0,
+      stories: 0,
+      stories_failed: 0,
+    });
+    renderPanel();
+
+    expect(
+      await screen.findByRole("button", { name: "Enrich missing (1)" }),
+    ).toBeEnabled();
+  });
+
+  it("marks tracks that have a story", async () => {
+    mocked.listTracks.mockResolvedValue(page([item({ has_story: true })]));
+    renderPanel();
+
+    expect(await screen.findByText("story")).toBeInTheDocument();
   });
 
   it("flags fuzzy auto-matches for review", async () => {

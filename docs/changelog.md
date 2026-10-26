@@ -3,6 +3,75 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-26 - Wikipedia stories and chart history
+
+Tracks now get real liner-note prose and a chart history. A new Wikipedia
+provider searches the article for the song, keeps the lead paragraph as the
+`summary` and the background / writing / composition sections as the `story`
+(capped at a readable length, nested headings stripped), and records the
+article URL as a `Wikipedia` link.
+
+Matching is deliberately conservative: album, EP and list pages are rejected,
+the artist must appear in the article lead as a whole word (so a band called
+"Release" no longer matches the word "released" in an Alicia Keys article),
+and fuzzy title matches are still marked `needs_review`.
+
+Charts are parsed from the article's `{{single chart}}` templates. Only
+weekly charts count: year-end, decade-end, all-time, certification and sales
+sections are skipped. Duplicate placements keep the best peak, chart ids are
+mapped to readable names and countries (Billboard fallback included), entries
+link to the article, and a track keeps at most 40. Missing chart data is a
+normal empty state, not an error.
+
+A `story_at` marker (plus `story_error`) mirrors `enriched_at`, so the bulk
+worker can backfill stories for already-enriched tracks once. It runs after
+the details pass at boot, after playlist syncs and from the Studio. A manual
+"Fetch details" fetches both facts and the story. Locked summary/story/links
+survive; a forced fetch only replaces auto-sourced prose. Auto charts are
+replaced only when they were auto-sourced, and saving charts in the Studio
+adopts them (the auto marker is dropped), so manual chart edits are never
+overwritten.
+
+The Library now shows detail and story progress (`390/390 details ·
+214/390 stories`), a `story` badge per track, and the retry button counts both
+kinds of failure. The editor's Metadata panel shows when the story was checked
+and any story error.
+
+- Files touched:
+  - `backend/app/enrichment/wikipedia.py`
+  - `backend/app/enrichment/pipeline.py`
+  - `backend/app/enrichment/__init__.py`
+  - `backend/app/matching.py` (`normalize_key` / `key_ratio` shared helpers)
+  - `backend/app/models.py` (`story_at`, `story_error`, lockable `charts`)
+  - `backend/app/schemas.py`
+  - `backend/app/track_details.py`
+  - `backend/app/routers/tracks.py`
+  - `backend/alembic/versions/d8e9f0a1b2c3_track_story.py`
+  - `backend/tests/test_story.py`
+  - `backend/tests/test_enrichment.py`
+  - `frontend/src/types.ts`
+  - `frontend/src/components/admin/TrackLibraryPanel.tsx`
+  - `frontend/src/components/admin/TrackDetailEditor.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `README.md`
+  - `docs/changelog.md` (this entry)
+  - `docs/studio/changelog.md`
+- **Container restart required?** Yes - both:
+  `docker compose up -d --build backend frontend`. The backend migration adds
+  `trackdetail.story_at` / `story_error` on boot. The worker then starts the
+  story backfill in the background (roughly 3-4 s per track).
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 420 passed.
+  - `cd frontend && npm test -- --run` - 351 passed (34 files).
+  - `npm run typecheck` - clean; `npm run build` - successful.
+  - `alembic upgrade head` on a throwaway SQLite database - reached
+    `d8e9f0a1b2c3` with both new columns.
+  - Real Wikipedia probe: Poison "Every Rose Has Its Thorn" 11 charts,
+    AC/DC "Thunderstruck" 18 charts, Mary MacGregor "Torn Between Two
+    Lovers" 12 charts; OPM tracks with no article are missed cleanly; the
+    generic-artist false positive is rejected.
+
 ## 2026-10-26 - automatic track detail enrichment (Deezer + MusicBrainz)
 
 Track details now fill themselves in. Deezer is the primary source: album,

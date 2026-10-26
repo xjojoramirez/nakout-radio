@@ -45,8 +45,13 @@ def clean_query(title: str, artist: str) -> tuple[str, str]:
     return cleaned_title, cleaned_artist
 
 
-def _key(text: str) -> str:
+def normalize_key(text: str) -> str:
+    """Lowercase letters/digits only, for lenient title and artist matching."""
     return _KEY_RE.sub("", (text or "").lower())
+
+
+def _key(text: str) -> str:
+    return normalize_key(text)
 
 
 def _clean_candidate_title(title: str) -> str:
@@ -56,7 +61,7 @@ def _clean_candidate_title(title: str) -> str:
     return _TRAILING_NOISE_RE.sub("", text).strip(" -|")
 
 
-def _key_ratio(a: str, b: str) -> float:
+def key_ratio(a: str, b: str) -> float:
     """1.0 for equal keys, containment scaled by length, 0 otherwise."""
     ka, kb = _key(a), _key(b)
     if not ka or not kb:
@@ -66,6 +71,10 @@ def _key_ratio(a: str, b: str) -> float:
     if ka in kb or kb in ka:
         return min(len(ka), len(kb)) / max(len(ka), len(kb))
     return 0.0
+
+
+def _key_ratio(a: str, b: str) -> float:
+    return key_ratio(a, b)
 
 
 def pick_candidate(items: list[dict], title: str, artist: str) -> dict | None:

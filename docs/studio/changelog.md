@@ -4,6 +4,10 @@ Short, user-facing notes for the Studio Changelog dialog. Keep this file free
 of file paths, infrastructure details, issue numbers, and deployment commands.
 Newest first.
 
+## 2026-10-26 — The story behind the song
+
+Liner notes now include the story: where the song came from, how it was written and recorded, plus its chart history (Billboard and charts around the world). Tracks with a story get a **story** badge in the Library. If Wikipedia has nothing, the card says so instead of showing an empty page.
+
 ## 2026-10-26 — Details fill themselves in
 
 The Studio can now fetch album facts, credits and cover art automatically from Deezer and MusicBrainz. Press **Enrich missing** in the Library, or let the station do it after a restart. Your own edits are protected, and fuzzy matches are marked **review**.

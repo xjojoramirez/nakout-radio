@@ -429,6 +429,8 @@ class TrackDetailOut(TrackDetailBase):
     needs_review: bool = False
     enriched_at: datetime | None = None
     enrich_error: str | None = None
+    story_at: datetime | None = None
+    story_error: str | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
     status: Literal["empty", "auto", "curated"] = "empty"
@@ -446,6 +448,7 @@ class TrackLibraryItem(BaseModel):
     status: Literal["empty", "auto", "curated"] = "empty"
     completeness: int = 0
     needs_review: bool = False
+    has_story: bool = False
     genres: list[str] = Field(default_factory=list)
 
 
@@ -462,3 +465,5 @@ class EnrichmentStatusOut(BaseModel):
     enriched: int = 0
     failed: int = 0
     remaining: int = 0
+    stories: int = 0
+    stories_failed: int = 0

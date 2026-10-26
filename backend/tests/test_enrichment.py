@@ -730,6 +730,7 @@ def test_studio_can_fetch_details_for_one_track(tmp_path, monkeypatch):
     client, _ = _api_client(tmp_path)
     monkeypatch.setattr(pipeline, "lookup_deezer", lambda *_: _data())
     monkeypatch.setattr(pipeline, "lookup_musicbrainz", lambda *_: None)
+    monkeypatch.setattr(pipeline, "lookup_wikipedia", lambda *_: None)
 
     resp = client.post("/api/studio/tracks/v1/enrich")
 
@@ -759,6 +760,7 @@ def test_studio_enrich_reports_provider_outages(tmp_path, monkeypatch):
 
     monkeypatch.setattr(pipeline, "lookup_deezer", fail)
     monkeypatch.setattr(pipeline, "lookup_musicbrainz", fail)
+    monkeypatch.setattr(pipeline, "lookup_wikipedia", fail)
 
     resp = client.post("/api/studio/tracks/v1/enrich")
 
@@ -773,6 +775,8 @@ def test_enrichment_status_counts(tmp_path):
         "enriched": 0,
         "failed": 0,
         "remaining": 1,
+        "stories": 0,
+        "stories_failed": 0,
     }
     with Session(engine) as session:
         session.add(

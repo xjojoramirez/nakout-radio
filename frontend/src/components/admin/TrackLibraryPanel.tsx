@@ -114,7 +114,10 @@ export function TrackLibraryPanel({
           setPolling(false);
           setReload((current) => current + 1);
           noticeRef.current(
-            `Enriched ${status.enriched} of ${status.total} tracks`,
+            `Enriched ${status.enriched} of ${status.total} tracks · ` +
+              `${status.stories} ${
+                status.stories === 1 ? "story" : "stories"
+              } checked`,
           );
         }
       } catch {
@@ -156,9 +159,23 @@ export function TrackLibraryPanel({
   const end = Math.min(total, (page + 1) * LIMIT);
   const busy =
     polling || startingEnrichment || Boolean(enrichStatus?.running);
+  const storyRemaining = enrichStatus
+    ? Math.max(
+        0,
+        enrichStatus.total -
+          enrichStatus.stories -
+          enrichStatus.stories_failed,
+      )
+    : 0;
+  const pending = (enrichStatus?.remaining ?? 0) + storyRemaining;
+  const failedCount =
+    (enrichStatus?.failed ?? 0) + (enrichStatus?.stories_failed ?? 0);
+  const checked = enrichStatus
+    ? enrichStatus.enriched + enrichStatus.stories
+    : 0;
   const progressPct =
     enrichStatus && enrichStatus.total > 0
-      ? Math.round((enrichStatus.enriched / enrichStatus.total) * 100)
+      ? Math.round((checked / (enrichStatus.total * 2)) * 100)
       : 0;
 
   return (
@@ -177,18 +194,15 @@ export function TrackLibraryPanel({
             <button
               type="button"
               className="btn btn-primary btn-sm"
-              disabled={
-                busy ||
-                (enrichStatus.remaining === 0 && enrichStatus.failed === 0)
-              }
+              disabled={busy || (pending === 0 && failedCount === 0)}
               onClick={startEnrichment}
             >
               {busy
                 ? "Enriching…"
-                : enrichStatus.remaining > 0
-                  ? `Enrich missing (${enrichStatus.remaining})`
-                  : enrichStatus.failed > 0
-                    ? `Retry failed (${enrichStatus.failed})`
+                : pending > 0
+                  ? `Enrich missing (${pending})`
+                  : failedCount > 0
+                    ? `Retry failed (${failedCount})`
                     : "All tracks checked"}
             </button>
           </div>
@@ -208,10 +222,9 @@ export function TrackLibraryPanel({
             <span style={{ width: `${progressPct}%` }} />
           </div>
           <small>
-            {enrichStatus.enriched}/{enrichStatus.total} checked
-            {enrichStatus.failed > 0
-              ? ` · ${enrichStatus.failed} failed`
-              : ""}
+            {enrichStatus.enriched}/{enrichStatus.total} details ·{" "}
+            {enrichStatus.stories}/{enrichStatus.total} stories
+            {failedCount > 0 ? ` · ${failedCount} failed` : ""}
           </small>
         </div>
       )}
@@ -265,6 +278,9 @@ export function TrackLibraryPanel({
                       <strong>{item.title}</strong>
                       <small>
                         {item.artist || "Unknown artist"}
+                        {item.has_story && (
+                          <span className="lib-story">story</span>
+                        )}
                         {item.needs_review && (
                           <span className="lib-review">review</span>
                         )}

@@ -50,12 +50,13 @@ Backend (`backend/.env`):
 | `DATABASE_URL` | SQLite path |
 | `FRONTEND_ORIGIN` | Allowed CORS origin |
 | `CACHE_TTL_MINUTES` | Reserved for future automatic cache refresh; not yet used |
-| `ENRICHMENT_ENABLED` | Automatic Deezer/MusicBrainz track details (default `true`) |
+| `ENRICHMENT_ENABLED` | Automatic track details, stories and charts (default `true`) |
 | `COOKIE_SECURE` | `true` in production (HTTPS); `false` for local http dev |
 
 > Track details are enriched in the background: albums, release years, labels,
-> credits and covers come from Deezer, with MusicBrainz filling gaps. Both are
-> keyless public APIs.
+> credits and covers come from Deezer, with MusicBrainz filling gaps. Wikipedia
+> supplies the liner-note story and chart history. All three are keyless public
+> APIs.
 
 Root (`.env`):
 

@@ -28,6 +28,7 @@ const LOCKABLE_FIELDS = [
   "moods",
   "credits",
   "links",
+  "charts",
 ] as const;
 
 const CHART_SUGGESTIONS = [
@@ -965,8 +966,10 @@ export function TrackDetailEditor({
 
             {detail &&
               (detail.enriched_at ||
+                detail.story_at ||
                 detail.needs_review ||
                 detail.enrich_error ||
+                detail.story_error ||
                 Object.keys(detail.sources).length > 0) && (
                 <fieldset className="track-editor-section">
                   <legend>Metadata</legend>
@@ -982,11 +985,18 @@ export function TrackDetailEditor({
                           detail.enriched_at,
                         ).toLocaleDateString()}`
                       : "Not fetched yet"}
+                    {detail.story_at &&
+                      ` · Story checked ${new Date(
+                        detail.story_at,
+                      ).toLocaleDateString()}`}
                     {detail.metadata_sources.length > 0 &&
                       ` · ${detail.metadata_sources.join(" · ")}`}
                   </p>
                   {detail.enrich_error && (
                     <p className="te-warning">{detail.enrich_error}</p>
+                  )}
+                  {detail.story_error && (
+                    <p className="te-warning">{detail.story_error}</p>
                   )}
                   {Object.keys(detail.sources).length > 0 && (
                     <ul className="te-sources">

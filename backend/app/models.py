@@ -103,6 +103,7 @@ LOCKABLE_FIELDS: tuple[str, ...] = (
     "moods",
     "credits",
     "links",
+    "charts",
 )
 
 
@@ -146,6 +147,8 @@ class TrackDetail(SQLModel, table=True):
     locked_fields: list[str] = Field(default_factory=list, sa_column=Column(JSON))
     enriched_at: datetime | None = None
     enrich_error: str | None = None
+    story_at: datetime | None = None
+    story_error: str | None = None
     needs_review: bool = False
     created_at: datetime = Field(default_factory=_utcnow)
     updated_at: datetime = Field(default_factory=_utcnow)
