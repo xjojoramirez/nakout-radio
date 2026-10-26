@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import type { TrackDetail, TrackDetailStatus } from "../../types";
 
 type TabId = "story" | "details" | "charts";
@@ -29,13 +29,48 @@ function wikipediaLink(detail: TrackDetail) {
   );
 }
 
-function StoryPanel({ detail }: { detail: TrackDetail }) {
-  const source = wikipediaLink(detail);
-  const hasStory = Boolean(
+function hasStory(detail: TrackDetail): boolean {
+  return Boolean(
     detail.summary || detail.story || detail.dj_note || detail.lyric_snippet,
   );
+}
 
-  if (!hasStory) {
+function hasFacts(detail: TrackDetail): boolean {
+  return Boolean(
+    detail.album ||
+      detail.album_artist ||
+      detail.release_date ||
+      detail.release_year ||
+      detail.label ||
+      detail.catalog_number ||
+      detail.isrc ||
+      detail.track_number ||
+      detail.disc_number ||
+      detail.genres.length ||
+      detail.bpm ||
+      detail.musical_key ||
+      detail.country ||
+      detail.language ||
+      detail.credits.length ||
+      detail.moods.length ||
+      detail.links.length ||
+      detail.similar.some((track) => track.title),
+  );
+}
+
+/** Auto-filled tracks have facts but no story yet, so open on Details. */
+function preferredTab(detail: TrackDetail): TabId {
+  if (hasStory(detail)) return "story";
+  if (hasFacts(detail)) return "details";
+  if (detail.charts.length > 0) return "charts";
+  return "story";
+}
+
+function StoryPanel({ detail }: { detail: TrackDetail }) {
+  const source = wikipediaLink(detail);
+  const hasContent = hasStory(detail);
+
+  if (!hasContent) {
     return <p className="liner-empty">No story for this track yet.</p>;
   }
 
@@ -245,6 +280,14 @@ export function LinerNotes({ detail, status, onRetry }: Props) {
   const baseId = useId();
   const [tab, setTab] = useState<TabId>("story");
   const tabRefs = useRef<Partial<Record<TabId, HTMLButtonElement | null>>>({});
+  const lastVideoId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!detail) return;
+    if (lastVideoId.current === detail.youtube_video_id) return;
+    lastVideoId.current = detail.youtube_video_id;
+    setTab(preferredTab(detail));
+  }, [detail]);
 
   if (status === "idle") return null;
 

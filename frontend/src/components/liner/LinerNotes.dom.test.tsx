@@ -163,6 +163,21 @@ describe("LinerNotes", () => {
     );
   });
 
+  it("defaults to details when a track has facts but no story", () => {
+    render(
+      <LinerNotes
+        status="ready"
+        detail={detail({ summary: null, story: null, dj_note: null })}
+      />,
+    );
+
+    expect(screen.getByRole("tab", { name: "Details" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByText("Kind of Blue")).toBeInTheDocument();
+  });
+
   it("shows friendly empty states for sparse details", () => {
     render(
       <LinerNotes
@@ -176,6 +191,7 @@ describe("LinerNotes", () => {
       />,
     );
 
+    fireEvent.click(screen.getByRole("tab", { name: "Story" }));
     expect(screen.getByText("No story for this track yet.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("tab", { name: "Charts" }));
     expect(screen.getByText("No chart history yet.")).toBeInTheDocument();

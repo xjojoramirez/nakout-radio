@@ -67,7 +67,7 @@ The listener Details tab now credits the metadata providers.
   `docker compose logs -f backend` and the Studio Library progress.
 - Verification:
   - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 400 passed.
-  - `cd frontend && npm test -- --run` - 348 passed (34 files).
+  - `cd frontend && npm test -- --run` - 349 passed (34 files).
   - `npm run typecheck` - clean.
   - `npm run build` - successful.
   - Real Deezer smoke lookup on "Stairway to Heaven" - 12 fields applied,
