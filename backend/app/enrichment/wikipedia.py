@@ -28,7 +28,9 @@ PROVIDER = "wikipedia"
 # MediaWiki has no hard request budget, but the API is shared infrastructure.
 PAUSE_S = 0.8
 SUMMARY_LIMIT = 900
-STORY_LIMIT = 2400
+STORY_LIMIT = 900
+STORY_FIRST_LIMIT = 600
+STORY_SECOND_LIMIT = 300
 MAX_CHARTS = 40
 MIN_MATCH_RATIO = 0.6
 
@@ -378,6 +380,27 @@ def _top_sections(text: str) -> tuple[str, list[tuple[str, str]]]:
     return "\n".join(intro).strip(), sections
 
 
+def shorten_story(text: str, limit: int = STORY_LIMIT) -> str:
+    """Keep whole sentences from the top of a section, within ``limit``.
+
+    The opening of a Background/Composition section carries the origin story;
+    cutting there is more readable than a hard character truncation and never
+    stops mid-word.
+    """
+    text = " ".join((text or "").split())
+    if not text:
+        return ""
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    picked: list[str] = []
+    total = 0
+    for sentence in sentences:
+        if picked and total + len(sentence) > limit:
+            break
+        picked.append(sentence)
+        total += len(sentence) + 1
+    return " ".join(picked).strip()
+
+
 def _story_for(sections: list[tuple[str, str]]) -> str:
     lowered = [(title.casefold(), body) for title, body in sections]
 
@@ -421,7 +444,13 @@ def _story_for(sections: list[tuple[str, str]]) -> str:
 
     if not chosen:
         return ""
-    return _truncate("\n\n".join(chosen), STORY_LIMIT)
+    if len(chosen) == 1:
+        return shorten_story(chosen[0], STORY_LIMIT)
+    parts = [
+        shorten_story(chosen[0], STORY_FIRST_LIMIT),
+        shorten_story(chosen[1], STORY_SECOND_LIMIT),
+    ]
+    return "\n\n".join(part for part in parts if part)
 
 
 def _chart_label(chart_id: str) -> tuple[str, str]:

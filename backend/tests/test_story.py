@@ -177,12 +177,32 @@ def test_lookup_maps_summary_story_and_charts():
     assert "References" not in data.story
     assert "===" not in data.story
     assert "sketched in one afternoon" in data.story
+    assert "\n\n" in data.story
     assert [(entry.chart_name, entry.peak) for entry in data.charts] == [
         ("Billboard Hot 100", 3),
         ("UK Singles (OCC)", 12),
     ]
     uk = next(entry for entry in data.charts if entry.country == "GB")
     assert uk.year == 1959
+
+
+def test_story_keeps_whole_sentences_within_the_limit():
+    sentence = "The song was written in a small studio in 1959."
+    long_section = " ".join([sentence] * 40)
+    extract = (
+        '"Blue in Green" is a jazz ballad by Miles Davis.\n\n'
+        f"== Background ==\n{long_section}\n"
+    )
+
+    data = lookup_wikipedia(
+        "Blue in Green", "Miles Davis", _client(extract=extract),
+        sleep=lambda _: None,
+    )
+
+    assert data is not None
+    assert len(data.story) <= 950
+    assert data.story.endswith(".")
+    assert "..." not in data.story
 
 
 def test_lookup_rejects_a_page_that_does_not_mention_the_artist():
