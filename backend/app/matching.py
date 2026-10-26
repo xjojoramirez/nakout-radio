@@ -47,7 +47,8 @@ def clean_query(title: str, artist: str) -> tuple[str, str]:
 
 def normalize_key(text: str) -> str:
     """Lowercase letters/digits only, for lenient title and artist matching."""
-    return _KEY_RE.sub("", (text or "").lower())
+    text = (text or "").replace("&", " and ")
+    return _KEY_RE.sub("", text.lower())
 
 
 def _key(text: str) -> str:

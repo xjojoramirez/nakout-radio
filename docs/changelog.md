@@ -14,7 +14,10 @@ article URL as a `Wikipedia` link.
 Matching is deliberately conservative: album, EP and list pages are rejected,
 the artist must appear in the article lead as a whole word (so a band called
 "Release" no longer matches the word "released" in an Alicia Keys article),
-and fuzzy title matches are still marked `needs_review`.
+and fuzzy title matches are still marked `needs_review`. Leading parenthetical
+titles survive (`(I Can't Get No) Satisfaction`), `&` matches "and", a credit
+like "Joan Jett & The Blackhearts" accepts "Joan Jett" in the lead, and when
+the top hit is a same-named TV episode the next plausible page is tried.
 
 Charts are parsed from the article's `{{single chart}}` templates. Only
 weekly charts count: year-end, decade-end, all-time, certification and sales
@@ -62,15 +65,17 @@ and any story error.
   `trackdetail.story_at` / `story_error` on boot. The worker then starts the
   story backfill in the background (roughly 3-4 s per track).
 - Verification:
-  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 420 passed.
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 424 passed.
   - `cd frontend && npm test -- --run` - 351 passed (34 files).
   - `npm run typecheck` - clean; `npm run build` - successful.
   - `alembic upgrade head` on a throwaway SQLite database - reached
     `d8e9f0a1b2c3` with both new columns.
   - Real Wikipedia probe: Poison "Every Rose Has Its Thorn" 11 charts,
     AC/DC "Thunderstruck" 18 charts, Mary MacGregor "Torn Between Two
-    Lovers" 12 charts; OPM tracks with no article are missed cleanly; the
-    generic-artist false positive is rejected.
+    Lovers" 12 charts, The Animals "House of the Rising Sun" 12 charts,
+    The Rolling Stones "(I Can't Get No) Satisfaction" 10 charts,
+    Joan Jett "I Love Rock 'n' Roll" 25 charts; OPM tracks with no article
+    are missed cleanly; the generic-artist false positive is rejected.
 
 ## 2026-10-26 - automatic track detail enrichment (Deezer + MusicBrainz)
 

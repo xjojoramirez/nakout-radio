@@ -251,11 +251,9 @@ def _get_json(client: httpx.Client, **params: object) -> dict:
     return data
 
 
-def _choose_page(hits: list[dict], title: str) -> tuple[dict, float] | None:
-    """Best search hit, ignoring album/list pages and weak title matches."""
-    best: dict | None = None
-    best_ratio = 0.0
-    best_score: tuple[float, float, float] | None = None
+def _rank_pages(hits: list[dict], title: str) -> list[tuple[dict, float]]:
+    """Plausible pages, best first. Verification may reject the top one."""
+    scored: list[tuple[tuple[float, float, float], dict, float]] = []
     for hit in hits:
         if not isinstance(hit, dict):
             continue
@@ -268,15 +266,33 @@ def _choose_page(hits: list[dict], title: str) -> tuple[dict, float] | None:
         ratio = key_ratio(title, cleaned)
         if ratio < MIN_MATCH_RATIO:
             continue
-        song_page = 1.0 if re.search(r"\((?:song|single)\)\s*$", page_title, re.I) else 0.0
+        song_page = (
+            1.0
+            if re.search(r"\((?:song|single)\)\s*$", page_title, re.I)
+            else 0.0
+        )
         score = (1.0 if ratio == 1.0 else 0.0, song_page, ratio)
-        if best_score is None or score > best_score:
-            best_score = score
-            best = hit
-            best_ratio = ratio
-    if best is None:
-        return None
-    return best, best_ratio
+        scored.append((score, hit, ratio))
+    scored.sort(key=lambda entry: entry[0], reverse=True)
+    return [(hit, ratio) for _, hit, ratio in scored]
+
+
+def _search_title(raw: str) -> str:
+    """Keep a leading parenthetical, drop trailing edition noise.
+
+    ``"(I Can't Get No) Satisfaction (Mono)"`` keeps the part that the generic
+    title cleaner would throw away, which is the only searchable title.
+    """
+    text = (raw or "").strip()
+    if " - " in text:
+        return ""
+    previous = None
+    while previous != text:
+        previous = text
+        text = re.sub(r"\s*[\(\[][^\)\]]*[\)\]]\s*$", "", text).strip()
+    if text.startswith(("(", "[")):
+        return text
+    return ""
 
 
 def _int(value: str) -> int | None:
@@ -292,6 +308,36 @@ def _mentions(text: str, artist: str) -> bool:
     words = _WORD_RE.findall((text or "").casefold())
     size = len(wanted)
     return any(words[i : i + size] == wanted for i in range(len(words) - size + 1))
+
+
+def _artist_variants(artist: str) -> list[str]:
+    """Accept the common credit variants found in article leads."""
+    artist = (artist or "").strip()
+    if not artist:
+        return []
+    variants = [artist]
+    swapped = artist.replace("&", "and")
+    if swapped != artist:
+        variants.append(swapped)
+    primary = re.split(
+        r"\s*(?:&|\band\b|\bfeat\.?\b|\bfeaturing\b)\s*",
+        artist,
+        maxsplit=1,
+        flags=re.I,
+    )[0].strip()
+    if primary and primary != artist:
+        variants.append(primary)
+    if artist.casefold().startswith("the "):
+        variants.append(artist[4:].strip())
+    seen: list[str] = []
+    for variant in variants:
+        if variant and variant.casefold() not in {item.casefold() for item in seen}:
+            seen.append(variant)
+    return seen
+
+
+def _mentions_any(text: str, artist: str) -> bool:
+    return any(_mentions(text, variant) for variant in _artist_variants(artist))
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -456,7 +502,8 @@ def lookup_wikipedia(
     if not clean_title:
         return None
 
-    query = f"{clean_title} {clean_artist}".strip()
+    search_title = _search_title(title) or clean_title
+    query = f"{search_title} {clean_artist}".strip()
     search = _get_json(
         client,
         action="query",
@@ -469,69 +516,67 @@ def lookup_wikipedia(
         for hit in (search.get("query") or {}).get("search") or []
         if isinstance(hit, dict)
     ]
-    chosen = _choose_page(hits, clean_title)
-    if chosen is None:
-        return None
-    page, ratio = chosen
-    page_title = page["title"]
 
-    sleep(PAUSE_S)
-    details = _get_json(
-        client,
-        action="query",
-        prop="extracts|info",
-        inprop="url",
-        explaintext=1,
-        redirects=1,
-        titles=page_title,
-    )
-    pages = [
-        item
-        for item in (details.get("query") or {}).get("pages") or []
-        if isinstance(item, dict) and not item.get("missing")
-    ]
-    if not pages:
-        return None
-    page_data = pages[0]
-    extract = page_data.get("extract") or ""
-    url = (
-        page_data.get("fullurl")
-        or f"https://en.wikipedia.org/wiki/{quote(page_title.replace(' ', '_'))}"
-    )
-
-    # A same-titled album or film page mentions the artist too, but the title
-    # filter above removes those. Requiring the artist in the lead catches
-    # unrelated songs that share a name (and generic artist names such as
-    # "Release" that occur as ordinary words later in the article).
-    intro, sections = _top_sections(extract)
-    if clean_artist and not _mentions(intro, clean_artist):
-        return None
-    summary = _truncate(intro, SUMMARY_LIMIT)
-    story = _story_for(sections)
-    if not summary and not story:
-        return None
-
-    charts: list[ChartData] = []
-    sleep(PAUSE_S)
-    try:
-        parsed = _get_json(
+    # A title match alone is not enough: a TV episode can share the name, and
+    # the first hit may be a cover by someone else. Try the plausible pages in
+    # order and keep the first whose lead actually names the artist.
+    for page, ratio in _rank_pages(hits, search_title)[:3]:
+        page_title = page["title"]
+        sleep(PAUSE_S)
+        details = _get_json(
             client,
-            action="parse",
-            page=page_title,
-            prop="wikitext",
+            action="query",
+            prop="extracts|info",
+            inprop="url",
+            explaintext=1,
             redirects=1,
+            titles=page_title,
         )
-        wikitext = (parsed.get("parse") or {}).get("wikitext") or ""
-        charts = parse_charts(wikitext, url)
-    except (httpx.HTTPError, ProviderError):
-        # Prose is the valuable part; chart templates are a bonus.
-        charts = []
+        pages = [
+            item
+            for item in (details.get("query") or {}).get("pages") or []
+            if isinstance(item, dict) and not item.get("missing")
+        ]
+        if not pages:
+            continue
+        page_data = pages[0]
+        extract = page_data.get("extract") or ""
+        url = (
+            page_data.get("fullurl")
+            or f"https://en.wikipedia.org/wiki/"
+            f"{quote(page_title.replace(' ', '_'))}"
+        )
 
-    return WikipediaData(
-        title=page_title,
-        url=url,
-        summary=summary,
-        story=story,
-        charts=charts,
-        confidence="exact" if ratio == 1.0 else "fuzzy",
-    )
+        intro, sections = _top_sections(extract)
+        if clean_artist and not _mentions_any(intro, clean_artist):
+            continue
+        summary = _truncate(intro, SUMMARY_LIMIT)
+        story = _story_for(sections)
+        if not summary and not story:
+            continue
+
+        charts: list[ChartData] = []
+        sleep(PAUSE_S)
+        try:
+            parsed = _get_json(
+                client,
+                action="parse",
+                page=page_title,
+                prop="wikitext",
+                redirects=1,
+            )
+            wikitext = (parsed.get("parse") or {}).get("wikitext") or ""
+            charts = parse_charts(wikitext, url)
+        except (httpx.HTTPError, ProviderError):
+            # Prose is the valuable part; chart templates are a bonus.
+            charts = []
+
+        return WikipediaData(
+            title=page_title,
+            url=url,
+            summary=summary,
+            story=story,
+            charts=charts,
+            confidence="exact" if ratio == 1.0 else "fuzzy",
+        )
+    return None

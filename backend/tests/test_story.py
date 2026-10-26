@@ -246,6 +246,174 @@ def test_lookup_keeps_the_story_when_chart_wikitext_fails():
     assert data.charts == []
 
 
+def test_lookup_skips_a_same_named_episode():
+    extracts = {
+        "House of the Rising Sun (Lost)": (
+            '"House of the Rising Sun" is the sixth episode of Lost.\n'
+        ),
+        "The House of the Rising Sun": (
+            '"The House of the Rising Sun" is a traditional folk song. '
+            "The Animals recorded the best-known version in 1964.\n\n"
+            "== Background ==\nThe song travelled from England to America.\n"
+        ),
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        params = request.url.params
+        if params.get("list") == "search":
+            return httpx.Response(
+                200,
+                json={
+                    "query": {
+                        "search": [
+                            {"title": "House of the Rising Sun (Lost)"},
+                            {"title": "The House of the Rising Sun"},
+                        ]
+                    }
+                },
+            )
+        if params.get("action") == "query":
+            title = params.get("titles")
+            return httpx.Response(
+                200,
+                json={
+                    "query": {
+                        "pages": [
+                            {
+                                "title": title,
+                                "fullurl": "https://en.wikipedia.org/wiki/"
+                                + str(title).replace(" ", "_"),
+                                "extract": extracts[title],
+                            }
+                        ]
+                    }
+                },
+            )
+        return httpx.Response(
+            200,
+            json={
+                "parse": {
+                    "wikitext": (
+                        "== Charts ==\n"
+                        "{{single chart|Billboardhot100|22|"
+                        "artist=The Animals}}"
+                    )
+                }
+            },
+        )
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+
+    data = lookup_wikipedia(
+        "House of the Rising Sun", "The Animals", client, sleep=lambda _: None
+    )
+
+    assert data is not None
+    assert data.title == "The House of the Rising Sun"
+    assert data.confidence == "fuzzy"
+    assert data.charts[0].peak == 22
+
+
+def test_lookup_keeps_a_leading_parenthetical_title():
+    seen: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        params = request.url.params
+        if params.get("list") == "search":
+            seen.append(params.get("srsearch") or "")
+            return httpx.Response(
+                200,
+                json={
+                    "query": {
+                        "search": [
+                            {"title": "(I Can't Get No) Satisfaction"}
+                        ]
+                    }
+                },
+            )
+        return httpx.Response(
+            200,
+            json={
+                "query": {
+                    "pages": [
+                        {
+                            "title": "(I Can't Get No) Satisfaction",
+                            "fullurl": "https://en.wikipedia.org/wiki/"
+                            "(I_Can%27t_Get_No)_Satisfaction",
+                            "extract": (
+                                '"(I Can\'t Get No) Satisfaction" is a song '
+                                "by the Rolling Stones.\n"
+                            ),
+                        }
+                    ]
+                }
+            },
+        )
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+
+    data = lookup_wikipedia(
+        "(I Can't Get No) Satisfaction (Mono)",
+        "The Rolling Stones",
+        client,
+        sleep=lambda _: None,
+    )
+
+    assert data is not None
+    assert seen and "Satisfaction" in seen[0]
+    assert "I Can" in seen[0]
+
+
+def test_lookup_accepts_a_band_credit_without_its_backing_band():
+    def handler(request: httpx.Request) -> httpx.Response:
+        params = request.url.params
+        if params.get("list") == "search":
+            return httpx.Response(
+                200,
+                json={
+                    "query": {
+                        "search": [{"title": "I Love Rock 'n' Roll"}]
+                    }
+                },
+            )
+        return httpx.Response(
+            200,
+            json={
+                "query": {
+                    "pages": [
+                        {
+                            "title": "I Love Rock 'n' Roll",
+                            "fullurl": "https://en.wikipedia.org/wiki/"
+                            "I_Love_Rock_%27n%27_Roll",
+                            "extract": (
+                                '"I Love Rock \'n\' Roll" is a rock song '
+                                "covered by Joan Jett in 1981.\n"
+                            ),
+                        }
+                    ]
+                }
+            },
+        )
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+
+    data = lookup_wikipedia(
+        "I Love Rock 'N Roll",
+        "Joan Jett & The Blackhearts",
+        client,
+        sleep=lambda _: None,
+    )
+
+    assert data is not None
+    assert data.confidence == "exact"
+
+
+def test_key_ratio_treats_ampersand_as_and():
+    from app.matching import key_ratio
+
+    assert key_ratio("When Love And Hate Collide", "When Love & Hate Collide") == 1.0
+
+
 def test_parse_charts_skips_decade_and_all_time_sections():
     charts = parse_charts(WIKITEXT, PAGE_URL)
 
