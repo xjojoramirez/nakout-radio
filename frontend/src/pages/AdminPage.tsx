@@ -5,6 +5,7 @@ import { NowPlayingPanel } from "../components/admin/NowPlayingPanel";
 import { PlaylistsPanel } from "../components/admin/PlaylistsPanel";
 import { SchedulePanel } from "../components/admin/SchedulePanel";
 import { GenresPanel } from "../components/admin/GenresPanel";
+import { TrackLibraryPanel } from "../components/admin/TrackLibraryPanel";
 import { Toast } from "../components/admin/Toast";
 import { Tabs, type TabDef } from "../components/admin/Tabs";
 import {
@@ -29,6 +30,7 @@ export function AdminPage() {
   const [changelogOpen, setChangelogOpen] = useState(false);
   const [playlistCount, setPlaylistCount] = useState<number | null>(null);
   const [slotCount, setSlotCount] = useState<number | null>(null);
+  const [libraryCount, setLibraryCount] = useState<number | null>(null);
   const [playlistIntent, setPlaylistIntent] = useState<number | null>(null);
   const [scheduleIntent, setScheduleIntent] = useState<number | null>(null);
 
@@ -38,6 +40,7 @@ export function AdminPage() {
   const tabsDef: TabDef[] = [
     { id: "now", label: "Now Playing" },
     { id: "playlists", label: "Playlists", count: playlistCount },
+    { id: "library", label: "Library", count: libraryCount },
     { id: "genres", label: "Genres", count: genres.length },
     { id: "schedule", label: "Schedule", count: slotCount },
   ];
@@ -101,6 +104,7 @@ export function AdminPage() {
     setNotice(null);
     setPlaylistCount(null);
     setSlotCount(null);
+    setLibraryCount(null);
     setPlaylistIntent(null);
     setScheduleIntent(null);
   };
@@ -261,6 +265,13 @@ export function AdminPage() {
                 initialGenre={playlistIntent}
                 onIntentConsumed={consumePlaylistIntent}
                 onJump={jump}
+              />
+            )}
+            {tab === "library" && (
+              <TrackLibraryPanel
+                onNotice={onNotice}
+                onError={onError}
+                onCountChange={setLibraryCount}
               />
             )}
             {tab === "genres" && (

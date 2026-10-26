@@ -4,6 +4,14 @@ Short, user-facing notes for the Studio Changelog dialog. Keep this file free
 of file paths, infrastructure details, issue numbers, and deployment commands.
 Newest first.
 
+## 2026-10-26 — Liner notes for the track on air
+
+The radio page now shows a Liner notes card for the current track: its story, album facts, credits, moods and chart history. When nothing is known yet it says so instead of disappearing.
+
+## 2026-10-26 — A library in the Studio
+
+The Studio has a new Library tab listing every track in the crates. Search it, see which tracks still need details, and fill them in — including a personal DJ note, a key lyric and chart placements.
+
 ## 2026-10-26 — Louder at full volume
 
 Tracks now reach full loudness at the top of the volume control instead of being held back.

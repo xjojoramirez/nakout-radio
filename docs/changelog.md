@@ -3,6 +3,70 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-26 - track details, on-air liner notes and a Studio library
+
+Every cached track can now carry its own record: album, release date/year,
+label, catalog number, ISRC, credits, genres, BPM/key, a story, a DJ note, a
+key lyric, moods, links, similar tracks and chart history (Billboard, local
+charts, any named chart). Details are keyed by YouTube video id in new
+`trackdetail` / `trackchartentry` tables, so playlist re-syncs never delete
+them and the same video shares one record across playlists.
+
+The radio page shows a "Liner notes" card under the sleeve for the track on
+air, with Story / Details / Charts tabs. States are explicit: `Fetching
+details…`, `Details not available for this track yet.`, and `Details are not
+available at the moment.` with a Retry button. A compact `Album · year · label`
+line sits under the artist. The card is display-only; it never blocks playback.
+
+The Studio has a new **Library** tab: searchable/paginated track list with
+detail status (`Empty` / `Auto` / `Curated`) and a `n/6` completeness meter,
+plus an editor for every field. Saving with "Protect these details" locks the
+non-empty fields so later auto-enrichment cannot overwrite manual work; charts
+are replaced as a set. `Clear details` removes the record. `GET
+/api/tracks/{video_id}` is the public read endpoint (404 = no details yet);
+the `/api/studio/tracks` endpoints are session-protected.
+
+This is phase 1 (manual entry). Automatic Deezer/MusicBrainz/Wikipedia
+enrichment is phase 2/3; the `sources`, `locked_fields`, `enriched_at`,
+`enrich_error` and `needs_review` columns and the public payload's existing
+shape are already in place for it.
+
+- Files touched:
+  - `backend/app/models.py`
+  - `backend/app/schemas.py`
+  - `backend/app/track_details.py`
+  - `backend/app/routers/tracks.py`
+  - `backend/app/main.py`
+  - `backend/alembic/versions/c9d8e7f6a5b4_track_details.py`
+  - `backend/tests/test_track_details.py`
+  - `frontend/src/types.ts`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/hooks/useTrackDetails.ts`
+  - `frontend/src/hooks/useTrackDetails.dom.test.ts`
+  - `frontend/src/components/liner/LinerNotes.tsx`
+  - `frontend/src/components/liner/TrackFacts.tsx`
+  - `frontend/src/components/liner/LinerNotes.dom.test.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.tsx`
+  - `frontend/src/components/admin/TrackDetailEditor.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `frontend/src/components/admin/Skeleton.tsx`
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+  - `docs/studio/changelog.md`
+- **Container restart required?** Yes - both:
+  `docker compose up -d --build backend frontend`. The Alembic migration runs
+  automatically on backend start. Hard-refresh the browser after the rebuild.
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 373 passed.
+  - `cd frontend && npm test -- --run` - 342 passed (34 files).
+  - `npm run typecheck` - clean.
+  - `npm run build` - successful.
+  - `alembic upgrade head` / `downgrade a7b8c9d0e1f2` against a temp SQLite DB -
+    clean.
+
 ## 2026-10-26 - raise the loudness target so full volume stays loud
 
 Loudness normalization now anchors at `-9` dB instead of `-15` dB. At the top

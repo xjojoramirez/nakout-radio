@@ -12,6 +12,10 @@ import type {
   ScheduleToday,
   SlotToday,
   Track,
+  TrackDetail,
+  TrackDetailInput,
+  TrackLibraryPage,
+  StudioTrackDetail,
 } from "../types";
 
 export class ApiError extends Error {
@@ -55,6 +59,8 @@ export const api = {
   getGenre: (slug: string) => request<GenreDetail>(`/genres/${slug}`),
   scheduleNow: () => request<CurrentGenre>("/schedule/now"),
   now: () => request<BroadcastNow>("/now"),
+  trackDetail: (videoId: string) =>
+    request<TrackDetail>(`/tracks/${encodeURIComponent(videoId)}`),
   scheduleToday: () => request<ScheduleToday>("/schedule/today"),
   advance: (cursor: string, direction: "next" | "prev" | "random") =>
     request<{ track: Track | null; cursor: string }>("/queue/advance", {
@@ -70,6 +76,38 @@ export const api = {
   session: () => request<{ status: string }>("/studio/session"),
   changelog: (limit = 10) =>
     request<ChangelogEntry[]>(`/studio/changelog?limit=${limit}`),
+  listTracks: (
+    params: {
+      q?: string;
+      status?: "empty" | "auto" | "curated";
+      limit?: number;
+      offset?: number;
+    } = {},
+  ) => {
+    const search = new URLSearchParams();
+    if (params.q) search.set("q", params.q);
+    if (params.status) search.set("status", params.status);
+    if (params.limit != null) search.set("limit", String(params.limit));
+    if (params.offset != null) search.set("offset", String(params.offset));
+    const suffix = search.toString();
+    return request<TrackLibraryPage>(
+      `/studio/tracks${suffix ? `?${suffix}` : ""}`,
+    );
+  },
+  studioTrack: (videoId: string) =>
+    request<StudioTrackDetail>(
+      `/studio/tracks/${encodeURIComponent(videoId)}`,
+    ),
+  saveStudioTrack: (videoId: string, body: TrackDetailInput) =>
+    request<StudioTrackDetail>(
+      `/studio/tracks/${encodeURIComponent(videoId)}`,
+      { method: "PUT", body: JSON.stringify(body) },
+    ),
+  deleteStudioTrack: (videoId: string) =>
+    request<{ status: string }>(
+      `/studio/tracks/${encodeURIComponent(videoId)}`,
+      { method: "DELETE" },
+    ),
   genreTracks: (genreId: number) =>
     request<Track[]>(`/studio/genres/${genreId}/tracks`),
   genreQueue: (genreId: number) =>

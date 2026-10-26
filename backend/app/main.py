@@ -32,11 +32,13 @@ def create_app() -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
-    from app.routers import admin, now, queue, schedule, genres, ws
+    from app.routers import admin, now, queue, schedule, genres, tracks, ws
 
     app.include_router(genres.router)
     app.include_router(schedule.router)
     app.include_router(now.router)
+    app.include_router(tracks.router)
+    app.include_router(tracks.studio_router)
     app.include_router(admin.router)
     app.include_router(ws.router)
     app.include_router(queue.router)
