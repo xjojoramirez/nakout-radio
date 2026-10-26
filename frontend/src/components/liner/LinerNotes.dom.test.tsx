@@ -52,6 +52,7 @@ function detail(overrides: Partial<TrackDetail> = {}): TrackDetail {
     similar: [
       { youtube_video_id: "vid2", title: "So What", artist: "Miles Davis" },
     ],
+    metadata_sources: [],
     ...overrides,
   };
 }
@@ -131,6 +132,21 @@ describe("LinerNotes", () => {
       "href",
       "https://example.com/chart",
     );
+  });
+
+  it("credits the metadata providers on the details tab", () => {
+    render(
+      <LinerNotes
+        status="ready"
+        detail={detail({ metadata_sources: ["Deezer", "MusicBrainz"] })}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: "Details" }));
+
+    expect(
+      screen.getByText("Metadata: Deezer · MusicBrainz"),
+    ).toBeInTheDocument();
   });
 
   it("moves between tabs with the arrow keys", () => {

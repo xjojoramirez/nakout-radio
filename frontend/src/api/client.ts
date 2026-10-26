@@ -16,6 +16,7 @@ import type {
   TrackDetailInput,
   TrackLibraryPage,
   StudioTrackDetail,
+  EnrichmentStatus,
 } from "../types";
 
 export class ApiError extends Error {
@@ -107,6 +108,17 @@ export const api = {
     request<{ status: string }>(
       `/studio/tracks/${encodeURIComponent(videoId)}`,
       { method: "DELETE" },
+    ),
+  enrichmentStatus: () =>
+    request<EnrichmentStatus>("/studio/tracks/enrich/status"),
+  enrichMissing: () =>
+    request<{ started: boolean }>("/studio/tracks/enrich", {
+      method: "POST",
+    }),
+  enrichTrack: (videoId: string) =>
+    request<StudioTrackDetail>(
+      `/studio/tracks/${encodeURIComponent(videoId)}/enrich`,
+      { method: "POST" },
     ),
   genreTracks: (genreId: number) =>
     request<Track[]>(`/studio/genres/${genreId}/tracks`),

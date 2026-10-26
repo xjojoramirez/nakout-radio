@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     loudness_target_db: float = -9.0
     loudness_max_boost_db: float = 6.0
     loudness_lookup_enabled: bool = True
+    enrichment_enabled: bool = True
+    enrichment_pause_seconds: float = 0.5
+    enrichment_max_consecutive_errors: int = 5
     rotation_repeat_percent: int = 10
     rotation_min_window: int = 5
     rotation_fallback_window: int = 20
@@ -71,6 +74,22 @@ class Settings(BaseSettings):
     def _valid_loudness_boost(cls, v: float) -> float:
         if not 0 <= v <= 24:
             raise ValueError("loudness_max_boost_db must be between 0 and 24")
+        return v
+
+    @field_validator("enrichment_pause_seconds")
+    @classmethod
+    def _valid_enrichment_pause(cls, v: float) -> float:
+        if not 0 <= v <= 10:
+            raise ValueError("enrichment_pause_seconds must be between 0 and 10")
+        return v
+
+    @field_validator("enrichment_max_consecutive_errors")
+    @classmethod
+    def _valid_enrichment_errors(cls, v: int) -> int:
+        if not 1 <= v <= 50:
+            raise ValueError(
+                "enrichment_max_consecutive_errors must be between 1 and 50"
+            )
         return v
 
     @field_validator("rotation_repeat_percent")

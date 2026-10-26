@@ -11,6 +11,7 @@ from app.models import (
     TrackDetail,
     _utcnow,
 )
+from app.enrichment.base import metadata_sources
 from app.schemas import (
     ChartEntryOut,
     SimilarTrackOut,
@@ -200,6 +201,7 @@ def _base_payload(
         "similar": _similar_tracks(
             session, list(row.similar_video_ids or []) if row else []
         ),
+        "metadata_sources": metadata_sources(row),
     }
 
 
@@ -342,6 +344,7 @@ def library_page(
                 release_year=row.release_year if row else None,
                 status=item_status,
                 completeness=completeness_for(row, chart_total),
+                needs_review=bool(row.needs_review) if row else False,
                 genres=sorted(genres.get(video_id, set())),
             )
         )

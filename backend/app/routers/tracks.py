@@ -3,10 +3,11 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session
 
-from app import track_details
+from app import enrichment, track_details
 from app.db import get_session
 from app.routers.admin import require_admin
 from app.schemas import (
+    EnrichmentStatusOut,
     TrackDetailBase,
     TrackDetailIn,
     TrackDetailOut,
@@ -44,6 +45,41 @@ def list_tracks(
     return track_details.library_page(
         session, query=q, status=status, limit=limit, offset=offset
     )
+
+
+@studio_router.post("/tracks/enrich")
+def start_enrichment() -> dict[str, bool]:
+    """Kick off a background run over every track without details."""
+    return {"started": enrichment.ensure_backfill(retry_failed=True)}
+
+
+@studio_router.get(
+    "/tracks/enrich/status", response_model=EnrichmentStatusOut
+)
+def enrichment_status(
+    session: Session = Depends(get_session),
+) -> EnrichmentStatusOut:
+    return EnrichmentStatusOut(**enrichment.progress(session))
+
+
+@studio_router.post(
+    "/tracks/{video_id}/enrich", response_model=TrackDetailOut
+)
+def enrich_studio_track(
+    video_id: str, session: Session = Depends(get_session)
+) -> TrackDetailOut:
+    if track_details.track_row(session, video_id) is None:
+        raise HTTPException(status_code=404, detail="track not found")
+    outcome = enrichment.enrich_track(session, video_id, force=True)
+    if not outcome.committed and outcome.errors:
+        raise HTTPException(
+            status_code=502,
+            detail="metadata providers are unavailable, try again later",
+        )
+    detail = track_details.admin_detail(session, video_id)
+    if detail is None:
+        raise HTTPException(status_code=404, detail="track not found")
+    return detail
 
 
 @studio_router.get("/tracks/{video_id}", response_model=TrackDetailOut)

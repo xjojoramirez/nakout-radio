@@ -175,6 +175,12 @@ function FactsPanel({ detail }: { detail: TrackDetail }) {
           </ul>
         </section>
       )}
+
+      {detail.metadata_sources.length > 0 && (
+        <p className="liner-metadata">
+          Metadata: {detail.metadata_sources.join(" · ")}
+        </p>
+      )}
     </div>
   );
 }

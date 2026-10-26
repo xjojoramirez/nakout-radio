@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { api } from "../../api/client";
 import type { StudioTrackDetail, TrackDetailInput } from "../../types";
@@ -146,6 +146,14 @@ const splitList = (value: string) =>
     .map((part) => part.trim())
     .filter(Boolean);
 
+const PROVIDER_LABELS: Record<string, string> = {
+  deezer: "Deezer",
+  musicbrainz: "MusicBrainz",
+};
+
+const providerLabel = (provider: string) =>
+  PROVIDER_LABELS[provider] ?? provider;
+
 const nullable = (value: string) => value.trim() || null;
 
 const toInt = (value: string) => {
@@ -229,6 +237,7 @@ export function TrackDetailEditor({
   const [draft, setDraft] = useState<Draft | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [error, setError] = useState("");
   const [protect, setProtect] = useState(true);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -427,6 +436,25 @@ export function TrackDetailEditor({
     }
   };
 
+  const fetchDetails = async () => {
+    setFetching(true);
+    setError("");
+    try {
+      const saved = await api.enrichTrack(videoId);
+      setDetail(saved);
+      setDraft(draftFrom(saved));
+      onSaved(
+        saved.metadata_sources.length > 0
+          ? "Details fetched"
+          : "No details found for this track",
+      );
+    } catch (failure) {
+      setError(messageFor(failure));
+    } finally {
+      setFetching(false);
+    }
+  };
+
   const addChart = () => {
     update("charts", [
       ...(draft?.charts ?? []),
@@ -472,6 +500,14 @@ export function TrackDetailEditor({
           </div>
           <button
             type="button"
+            className="btn btn-primary btn-sm"
+            onClick={fetchDetails}
+            disabled={loading || fetching || saving}
+          >
+            {fetching ? "Fetching…" : "Fetch details"}
+          </button>
+          <button
+            type="button"
             className="btn btn-secondary btn-sm"
             onClick={onClose}
           >
@@ -485,7 +521,7 @@ export function TrackDetailEditor({
           </p>
         )}
 
-        {loading && <p className="hint">Loading detailsâ€¦</p>}
+        {loading && <p className="hint">Loading details…</p>}
 
         {!loading && draft && (
           <form
@@ -749,7 +785,7 @@ export function TrackDetailEditor({
                   />
                   <input
                     aria-label={`Link ${index + 1} URL`}
-                    placeholder="https://â€¦"
+                    placeholder="https://…"
                     value={link.url}
                     onChange={(event) =>
                       updateLink(index, "url",
@@ -783,7 +819,7 @@ export function TrackDetailEditor({
               <label className="field">
                 Find similar tracks
                 <input
-                  placeholder="Search the libraryâ€¦"
+                  placeholder="Search the library…"
                   value={similarQuery}
                   onChange={(event) => setSimilarQuery(event.target.value)}
                 />
@@ -808,7 +844,7 @@ export function TrackDetailEditor({
                           setSimilarResults([]);
                         }}
                       >
-                        {candidate.title} â€” {candidate.artist}
+                        {candidate.title} — {candidate.artist}
                       </button>
                     </li>
                   ))}
@@ -820,14 +856,14 @@ export function TrackDetailEditor({
                     <li key={track.youtube_video_id}>
                       <span>
                         {track.title}
-                        {track.artist ? ` â€” ${track.artist}` : ""}
+                        {track.artist ? ` — ${track.artist}` : ""}
                       </span>
                       <button
                         type="button"
                         aria-label={`Remove similar track ${track.title}`}
                         onClick={() => removeSimilar(index)}
                       >
-                        Ã—
+                        ×
                       </button>
                     </li>
                   ))}
@@ -927,6 +963,56 @@ export function TrackDetailEditor({
               </button>
             </fieldset>
 
+            {detail &&
+              (detail.enriched_at ||
+                detail.needs_review ||
+                detail.enrich_error ||
+                Object.keys(detail.sources).length > 0) && (
+                <fieldset className="track-editor-section">
+                  <legend>Metadata</legend>
+                  {detail.needs_review && (
+                    <p className="te-warning">
+                      This match is fuzzy — check the album, label and year
+                      before trusting it.
+                    </p>
+                  )}
+                  <p className="hint">
+                    {detail.enriched_at
+                      ? `Fetched ${new Date(
+                          detail.enriched_at,
+                        ).toLocaleDateString()}`
+                      : "Not fetched yet"}
+                    {detail.metadata_sources.length > 0 &&
+                      ` · ${detail.metadata_sources.join(" · ")}`}
+                  </p>
+                  {detail.enrich_error && (
+                    <p className="te-warning">{detail.enrich_error}</p>
+                  )}
+                  {Object.keys(detail.sources).length > 0 && (
+                    <ul className="te-sources">
+                      {Object.entries(detail.sources).map(
+                        ([field, source]) => (
+                          <li key={field}>
+                            <span>{field.replace(/_/g, " ")}</span>
+                            {source.url ? (
+                              <a
+                                href={source.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {providerLabel(source.provider)}
+                              </a>
+                            ) : (
+                              <span>{providerLabel(source.provider)}</span>
+                            )}
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  )}
+                </fieldset>
+              )}
+
             <label className="te-check">
               <input
                 type="checkbox"
@@ -957,7 +1043,7 @@ export function TrackDetailEditor({
                 className="btn btn-primary"
                 disabled={saving}
               >
-                {saving ? "Savingâ€¦" : "Save"}
+                {saving ? "Saving…" : "Save"}
               </button>
             </footer>
           </form>

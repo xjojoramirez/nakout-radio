@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import enrichment
 from app.config import get_settings
 from app.loudness import ensure_backfill
 
@@ -16,6 +17,9 @@ def create_app() -> FastAPI:
         # LOUDNESS_LOOKUP_ENABLED is false (tests, offline installs) or when
         # a backfill is already running.
         ensure_backfill()
+        # Same best-effort background fill for track details. Also a no-op in
+        # tests and when ENRICHMENT_ENABLED is false.
+        enrichment.ensure_backfill()
         yield
 
     app = FastAPI(title="Nakout Radio", lifespan=lifespan)

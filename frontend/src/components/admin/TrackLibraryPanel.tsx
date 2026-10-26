@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../api/client";
-import type { TrackLibraryPage } from "../../types";
+import type { EnrichmentStatus, TrackLibraryPage } from "../../types";
 import { messageFor } from "../../utils/errors";
 import { SkeletonList } from "./Skeleton";
 import { TrackDetailEditor } from "./TrackDetailEditor";
@@ -32,11 +32,18 @@ export function TrackLibraryPanel({
   const [loading, setLoading] = useState(true);
   const [reload, setReload] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
+  const [enrichStatus, setEnrichStatus] = useState<EnrichmentStatus | null>(
+    null,
+  );
+  const [polling, setPolling] = useState(false);
+  const [startingEnrichment, setStartingEnrichment] = useState(false);
 
   const errorRef = useRef(onError);
   errorRef.current = onError;
   const countRef = useRef(onCountChange);
   countRef.current = onCountChange;
+  const noticeRef = useRef(onNotice);
+  noticeRef.current = onNotice;
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -76,9 +83,83 @@ export function TrackLibraryPanel({
     if (data) countRef.current?.(data.total);
   }, [data]);
 
+  useEffect(() => {
+    let active = true;
+    api.enrichmentStatus().then(
+      (status) => {
+        if (!active) return;
+        setEnrichStatus(status);
+        if (status.running) setPolling(true);
+      },
+      () => {},
+    );
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!polling) return;
+    let active = true;
+    let timer = 0;
+
+    const tick = async () => {
+      try {
+        const status = await api.enrichmentStatus();
+        if (!active) return;
+        setEnrichStatus(status);
+        if (status.running) {
+          timer = window.setTimeout(tick, 2000);
+        } else {
+          setPolling(false);
+          setReload((current) => current + 1);
+          noticeRef.current(
+            `Enriched ${status.enriched} of ${status.total} tracks`,
+          );
+        }
+      } catch {
+        if (active) setPolling(false);
+      }
+    };
+
+    tick();
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [polling]);
+
+  const startEnrichment = async () => {
+    setStartingEnrichment(true);
+    try {
+      const result = await api.enrichMissing();
+      if (result.started) {
+        setPolling(true);
+        return;
+      }
+      const status = await api.enrichmentStatus();
+      setEnrichStatus(status);
+      if (status.running) {
+        setPolling(true);
+      } else {
+        noticeRef.current("Nothing to enrich right now.");
+      }
+    } catch (failure) {
+      errorRef.current(messageFor(failure));
+    } finally {
+      setStartingEnrichment(false);
+    }
+  };
+
   const total = data?.total ?? 0;
   const start = total === 0 ? 0 : page * LIMIT + 1;
   const end = Math.min(total, (page + 1) * LIMIT);
+  const busy =
+    polling || startingEnrichment || Boolean(enrichStatus?.running);
+  const progressPct =
+    enrichStatus && enrichStatus.total > 0
+      ? Math.round((enrichStatus.enriched / enrichStatus.total) * 100)
+      : 0;
 
   return (
     <section className="admin-panel track-library">
@@ -91,7 +172,49 @@ export function TrackLibraryPanel({
               : `${total} track${total === 1 ? "" : "s"}`}
           </p>
         </div>
+        {enrichStatus && enrichStatus.total > 0 && (
+          <div className="lib-enrich">
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              disabled={
+                busy ||
+                (enrichStatus.remaining === 0 && enrichStatus.failed === 0)
+              }
+              onClick={startEnrichment}
+            >
+              {busy
+                ? "Enriching…"
+                : enrichStatus.remaining > 0
+                  ? `Enrich missing (${enrichStatus.remaining})`
+                  : enrichStatus.failed > 0
+                    ? `Retry failed (${enrichStatus.failed})`
+                    : "All tracks checked"}
+            </button>
+          </div>
+        )}
       </div>
+
+      {busy && enrichStatus && (
+        <div className="lib-progress">
+          <div
+            className="lib-progress-track"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progressPct}
+            aria-label="Track enrichment progress"
+          >
+            <span style={{ width: `${progressPct}%` }} />
+          </div>
+          <small>
+            {enrichStatus.enriched}/{enrichStatus.total} checked
+            {enrichStatus.failed > 0
+              ? ` · ${enrichStatus.failed} failed`
+              : ""}
+          </small>
+        </div>
+      )}
 
       <div className="lib-toolbar">
         <label className="field lib-search">
@@ -140,7 +263,12 @@ export function TrackLibraryPanel({
                     )}
                     <span className="lib-main">
                       <strong>{item.title}</strong>
-                      <small>{item.artist || "Unknown artist"}</small>
+                      <small>
+                        {item.artist || "Unknown artist"}
+                        {item.needs_review && (
+                          <span className="lib-review">review</span>
+                        )}
+                      </small>
                     </span>
                     <span className="lib-album">
                       {item.album ?? "—"}

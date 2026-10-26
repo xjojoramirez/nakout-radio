@@ -14,6 +14,9 @@ vi.mock("../../api/client", () => ({
     studioTrack: vi.fn(),
     saveStudioTrack: vi.fn(),
     deleteStudioTrack: vi.fn(),
+    enrichmentStatus: vi.fn(),
+    enrichMissing: vi.fn(),
+    enrichTrack: vi.fn(),
   },
 }));
 
@@ -22,6 +25,9 @@ const mocked = api as unknown as {
   studioTrack: ReturnType<typeof vi.fn>;
   saveStudioTrack: ReturnType<typeof vi.fn>;
   deleteStudioTrack: ReturnType<typeof vi.fn>;
+  enrichmentStatus: ReturnType<typeof vi.fn>;
+  enrichMissing: ReturnType<typeof vi.fn>;
+  enrichTrack: ReturnType<typeof vi.fn>;
 };
 
 function item(overrides: Partial<TrackLibraryItem> = {}): TrackLibraryItem {
@@ -36,6 +42,7 @@ function item(overrides: Partial<TrackLibraryItem> = {}): TrackLibraryItem {
     status: "curated",
     completeness: 3,
     genres: ["Jazz"],
+    needs_review: false,
     ...overrides,
   };
 }
@@ -94,6 +101,7 @@ function detail(
     updated_at: null,
     status: "curated",
     completeness: 4,
+    metadata_sources: [],
     ...overrides,
   };
 }
@@ -115,6 +123,13 @@ function renderPanel() {
 beforeEach(() => {
   vi.clearAllMocks();
   mocked.listTracks.mockResolvedValue(page([item()]));
+  mocked.enrichmentStatus.mockResolvedValue({
+    running: false,
+    total: 1,
+    enriched: 0,
+    failed: 0,
+    remaining: 1,
+  });
 });
 
 describe("TrackLibraryPanel", () => {
@@ -240,5 +255,116 @@ describe("TrackLibraryPanel", () => {
       expect(mocked.deleteStudioTrack).toHaveBeenCalledWith("vid1"),
     );
     expect(onNotice).toHaveBeenCalledWith("Track details cleared");
+  });
+
+  it("starts enrichment for missing details and reports progress", async () => {
+    mocked.enrichMissing.mockResolvedValue({ started: true });
+    mocked.enrichmentStatus
+      .mockResolvedValueOnce({
+        running: false,
+        total: 1,
+        enriched: 0,
+        failed: 0,
+        remaining: 1,
+      })
+      .mockResolvedValue({
+        running: false,
+        total: 1,
+        enriched: 1,
+        failed: 0,
+        remaining: 0,
+      });
+    const { onNotice } = renderPanel();
+    await screen.findByText("Blue in Green");
+    const button = await screen.findByRole("button", {
+      name: /Enrich missing/,
+    });
+
+    fireEvent.click(button);
+
+    await waitFor(() => expect(mocked.enrichMissing).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(onNotice).toHaveBeenCalledWith("Enriched 1 of 1 tracks"),
+    );
+    expect(mocked.listTracks).toHaveBeenCalledTimes(2);
+  });
+
+  it("disables enrichment once every track has been checked", async () => {
+    mocked.enrichmentStatus.mockResolvedValue({
+      running: false,
+      total: 1,
+      enriched: 1,
+      failed: 0,
+      remaining: 0,
+    });
+    renderPanel();
+
+    expect(
+      await screen.findByRole("button", { name: "All tracks checked" }),
+    ).toBeDisabled();
+  });
+
+  it("offers to retry failed tracks", async () => {
+    mocked.enrichmentStatus.mockResolvedValue({
+      running: false,
+      total: 1,
+      enriched: 0,
+      failed: 1,
+      remaining: 0,
+    });
+    renderPanel();
+
+    expect(
+      await screen.findByRole("button", { name: "Retry failed (1)" }),
+    ).toBeEnabled();
+  });
+
+  it("flags fuzzy auto-matches for review", async () => {
+    mocked.listTracks.mockResolvedValue(
+      page([item({ needs_review: true })]),
+    );
+    renderPanel();
+
+    expect(await screen.findByText("review")).toBeInTheDocument();
+  });
+
+  it("fetches provider details into the editor", async () => {
+    mocked.studioTrack.mockResolvedValue(
+      detail({
+        album: null,
+        sources: {},
+        enriched_at: null,
+        metadata_sources: [],
+      }),
+    );
+    mocked.enrichTrack.mockResolvedValue(
+      detail({
+        album: "Kind of Blue",
+        enriched_at: "2026-10-26T00:00:00",
+        metadata_sources: ["Deezer"],
+        sources: {
+          album: {
+            provider: "deezer",
+            url: "https://www.deezer.com/track/1",
+            fetched_at: "2026-10-26T00:00:00",
+          },
+        },
+      }),
+    );
+    const { onNotice } = renderPanel();
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Blue in Green/ }),
+    );
+    const album = await screen.findByLabelText("Album");
+    expect(album).toHaveValue("");
+    fireEvent.click(screen.getByRole("button", { name: "Fetch details" }));
+
+    await waitFor(() => expect(album).toHaveValue("Kind of Blue"));
+    expect(onNotice).toHaveBeenCalledWith("Details fetched");
+    expect(screen.getByRole("link", { name: "Deezer" })).toHaveAttribute(
+      "href",
+      "https://www.deezer.com/track/1",
+    );
   });
 });

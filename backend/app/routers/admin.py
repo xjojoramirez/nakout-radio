@@ -12,6 +12,7 @@ from sqlalchemy import func
 from sqlmodel import Session, col, delete, select, update
 
 from app import ratelimit
+from app import enrichment
 from app.auth import (
     COOKIE_NAME,
     create_session_token,
@@ -335,6 +336,7 @@ def create_playlist(
         sync_error = _redact_secrets(exc)
     if sync_error is None:
         ensure_backfill()
+        enrichment.ensure_backfill()
     return {
         "id": playlist.id,
         "youtube_playlist_id": yt_id,
@@ -420,6 +422,7 @@ def refresh_playlist(
         logger.warning("YouTube refresh failed: %s", _redact_secrets(exc))
         raise HTTPException(status_code=502, detail="YouTube fetch failed") from exc
     ensure_backfill()
+    enrichment.ensure_backfill()
     return {"id": playlist.id, "synced": synced}
 
 
@@ -434,6 +437,7 @@ def sync_all(session: Session = Depends(get_session)) -> dict:
         except httpx.HTTPError as exc:
             results.append({"id": pl.id, "synced": 0, "error": _redact_secrets(exc)})
     ensure_backfill()
+    enrichment.ensure_backfill()
     return {"results": results}
 
 

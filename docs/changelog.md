@@ -3,6 +3,78 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-26 - automatic track detail enrichment (Deezer + MusicBrainz)
+
+Track details now fill themselves in. Deezer is the primary source: album,
+release date/year, label, genres, credits, BPM (rounded, Deezer returns a
+float), ISRC and cover. MusicBrainz fills the gaps Deezer leaves - canonical
+release year, label, country and ISRC - using the recording's release groups
+so the earliest (original) release wins over later compilations. Both are
+keyless; no new API keys are needed.
+
+Merge rules keep manual work safe: locked fields are never touched, empty
+fields are filled, and a re-fetch only refreshes values that carry an auto
+source entry. Each field records `{provider, url, fetched_at}` in `sources`,
+so the Studio can show where it came from. Fuzzy matches set `needs_review`
+and show a "review" flag in the Library. MusicBrainz search-only fallbacks
+(its detail request failed) are also marked fuzzy.
+
+A single-flight background worker mirrors the loudness backfill: it starts at
+boot, after playlist syncs, and from the Studio "Enrich missing" button. The
+Library shows `Enriched x/y`, failures and a retry action; the editor gains
+"Fetch details" for one track plus a Metadata panel with the sources, last
+fetch time and warnings. A definitive miss is remembered so the bulk run does
+not retry it forever; a manual fetch can always try again. MusicBrainz
+returning 503/429 never loses Deezer data - the track is saved with a warning,
+and MusicBrainz is simply skipped when Deezer already filled everything.
+
+The listener Details tab now credits the metadata providers.
+
+- Files touched:
+  - `backend/app/matching.py` (matching helpers moved out of `loudness.py`)
+  - `backend/app/loudness.py`
+  - `backend/app/config.py`
+  - `backend/.env.example`
+  - `backend/app/enrichment/__init__.py`
+  - `backend/app/enrichment/base.py`
+  - `backend/app/enrichment/deezer.py`
+  - `backend/app/enrichment/musicbrainz.py`
+  - `backend/app/enrichment/pipeline.py`
+  - `backend/app/track_details.py`
+  - `backend/app/schemas.py`
+  - `backend/app/routers/tracks.py`
+  - `backend/app/routers/admin.py`
+  - `backend/app/main.py`
+  - `backend/tests/test_enrichment.py`
+  - `backend/tests/test_config.py`
+  - `backend/tests/conftest.py`
+  - `frontend/src/types.ts`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/components/admin/TrackLibraryPanel.tsx`
+  - `frontend/src/components/admin/TrackDetailEditor.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `frontend/src/components/liner/LinerNotes.tsx`
+  - `frontend/src/components/liner/LinerNotes.dom.test.tsx`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `frontend/src/hooks/useTrackDetails.dom.test.ts`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+  - `docs/studio/changelog.md`
+- **Container restart required?** Yes - both:
+  `docker compose up -d --build backend frontend`. No migration: phase 1's
+  table already has `sources`, `locked_fields`, `enriched_at`, `enrich_error`
+  and `needs_review`. The first boot starts the backfill; watch
+  `docker compose logs -f backend` and the Studio Library progress.
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 400 passed.
+  - `cd frontend && npm test -- --run` - 348 passed (34 files).
+  - `npm run typecheck` - clean.
+  - `npm run build` - successful.
+  - Real Deezer smoke lookup on "Stairway to Heaven" - 12 fields applied,
+    exact match, 143.1 BPM rounded to 143. MusicBrainz was 503 from this
+    network during the probe; the 503 path is covered by tests and leaves the
+    track pending for a later run.
+
 ## 2026-10-26 - track details, on-air liner notes and a Studio library
 
 Every cached track can now carry its own record: album, release date/year,

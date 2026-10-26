@@ -419,6 +419,7 @@ class TrackDetailBase(BaseModel):
 
     charts: list[ChartEntryOut] = Field(default_factory=list)
     similar: list[SimilarTrackOut] = Field(default_factory=list)
+    metadata_sources: list[str] = Field(default_factory=list)
 
 
 class TrackDetailOut(TrackDetailBase):
@@ -444,6 +445,7 @@ class TrackLibraryItem(BaseModel):
     release_year: int | None = None
     status: Literal["empty", "auto", "curated"] = "empty"
     completeness: int = 0
+    needs_review: bool = False
     genres: list[str] = Field(default_factory=list)
 
 
@@ -452,3 +454,11 @@ class TrackLibraryOut(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class EnrichmentStatusOut(BaseModel):
+    running: bool = False
+    total: int = 0
+    enriched: int = 0
+    failed: int = 0
+    remaining: int = 0

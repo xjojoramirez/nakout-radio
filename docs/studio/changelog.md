@@ -4,6 +4,10 @@ Short, user-facing notes for the Studio Changelog dialog. Keep this file free
 of file paths, infrastructure details, issue numbers, and deployment commands.
 Newest first.
 
+## 2026-10-26 — Details fill themselves in
+
+The Studio can now fetch album facts, credits and cover art automatically from Deezer and MusicBrainz. Press **Enrich missing** in the Library, or let the station do it after a restart. Your own edits are protected, and fuzzy matches are marked **review**.
+
 ## 2026-10-26 — Liner notes for the track on air
 
 The radio page now shows a Liner notes card for the current track: its story, album facts, credits, moods and chart history. When nothing is known yet it says so instead of disappearing.

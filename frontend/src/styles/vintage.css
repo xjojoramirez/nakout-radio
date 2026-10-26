@@ -3715,3 +3715,122 @@ a.pid:hover {
     justify-self: start;
   }
 }
+
+/* ---------- Studio: automatic enrichment ---------- */
+
+.lib-enrich {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lib-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+}
+
+.lib-progress-track {
+  flex: 1;
+  max-width: 360px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--wood-dark);
+}
+
+.lib-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--amber);
+  transition: width 0.3s ease;
+}
+
+.lib-progress small {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.lib-review {
+  margin-left: 6px;
+  color: var(--amber-strong);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.track-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.te-warning {
+  margin: 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--amber);
+  border-radius: 0 8px 8px 0;
+  background: var(--amber-soft);
+  color: var(--cream);
+  font-size: 0.86rem;
+}
+
+.te-sources {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+}
+
+.te-sources li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--border);
+}
+
+.te-sources span:first-child {
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.te-sources a {
+  color: var(--amber-strong);
+  text-decoration: none;
+}
+
+.te-sources a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .lib-progress {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .lib-progress-track {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.liner-metadata {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.03em;
+}

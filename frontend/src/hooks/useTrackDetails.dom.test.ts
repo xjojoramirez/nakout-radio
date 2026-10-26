@@ -41,6 +41,7 @@ function detail(id: string, overrides: Partial<TrackDetail> = {}): TrackDetail {
     links: [],
     charts: [],
     similar: [],
+    metadata_sources: [],
     ...overrides,
   };
 }

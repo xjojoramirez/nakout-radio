@@ -71,3 +71,26 @@ def test_preload_lead_rejects_out_of_range():
 def test_preload_lead_accepts_zero_and_fraction():
     assert Settings(_env_file=None, preload_lead_seconds=0).preload_lead_seconds == 0
     assert Settings(_env_file=None, preload_lead_seconds=12.5).preload_lead_seconds == 12.5
+
+
+def test_enrichment_defaults(monkeypatch):
+    monkeypatch.delenv("ENRICHMENT_ENABLED", raising=False)
+    monkeypatch.delenv("ENRICHMENT_PAUSE_SECONDS", raising=False)
+    monkeypatch.delenv("ENRICHMENT_MAX_CONSECUTIVE_ERRORS", raising=False)
+
+    settings = Settings(_env_file=None)
+
+    assert settings.enrichment_enabled is True
+    assert settings.enrichment_pause_seconds == 0.5
+    assert settings.enrichment_max_consecutive_errors == 5
+
+
+def test_enrichment_settings_reject_out_of_range():
+    with pytest.raises(Exception):
+        Settings(_env_file=None, enrichment_pause_seconds=-1)
+    with pytest.raises(Exception):
+        Settings(_env_file=None, enrichment_pause_seconds=11)
+    with pytest.raises(Exception):
+        Settings(_env_file=None, enrichment_max_consecutive_errors=0)
+    with pytest.raises(Exception):
+        Settings(_env_file=None, enrichment_max_consecutive_errors=51)

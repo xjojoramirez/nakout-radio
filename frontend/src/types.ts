@@ -164,6 +164,7 @@ export interface TrackDetail {
   links: TrackLink[];
   charts: TrackChartEntry[];
   similar: SimilarTrack[];
+  metadata_sources: string[];
 }
 
 /** Lifecycle of the on-air track's details request. */
@@ -198,6 +199,7 @@ export interface TrackLibraryItem {
   status: "empty" | "auto" | "curated";
   completeness: number;
   genres: string[];
+  needs_review: boolean;
 }
 
 export interface TrackLibraryPage {
@@ -207,6 +209,14 @@ export interface TrackLibraryPage {
   offset: number;
 }
 
+export interface EnrichmentStatus {
+  running: boolean;
+  total: number;
+  enriched: number;
+  failed: number;
+  remaining: number;
+}
+
 export type TrackDetailInput = Omit<
   StudioTrackDetail,
   | "youtube_video_id"
@@ -214,6 +224,7 @@ export type TrackDetailInput = Omit<
   | "artist"
   | "similar"
   | "sources"
+  | "metadata_sources"
   | "needs_review"
   | "enriched_at"
   | "enrich_error"
