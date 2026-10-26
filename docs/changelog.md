@@ -3,6 +3,22 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-26 - liner notes read in full
+
+The desktop liner-notes panel was a 250px scroll box, so a long Story cut off
+mid-word at the fold (the "Jump" summary stopped at "martial artist..."). The
+Story and Details panels now grow with their content. The Charts table keeps
+its own bounded 320px scroll area, with a visible thin scrollbar, so a song
+with 25 placements does not take over the page.
+
+- Files touched:
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - frontend only:
+  `docker compose up -d --build frontend`.
+- Verification: `npm test -- --run` - 351 passed; `npm run typecheck` - clean;
+  `npm run build` - successful.
+
 ## 2026-10-26 - Wikipedia stories and chart history
 
 Tracks now get real liner-note prose and a chart history. A new Wikipedia
