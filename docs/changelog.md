@@ -19,12 +19,15 @@ titles survive (`(I Can't Get No) Satisfaction`), `&` matches "and", a credit
 like "Joan Jett & The Blackhearts" accepts "Joan Jett" in the lead, and when
 the top hit is a same-named TV episode the next plausible page is tried.
 
-Charts are parsed from the article's `{{single chart}}` templates. Only
-weekly charts count: year-end, decade-end, all-time, certification and sales
-sections are skipped. Duplicate placements keep the best peak, chart ids are
-mapped to readable names and countries (Billboard fallback included), entries
-link to the article, and a track keeps at most 40. Missing chart data is a
-normal empty state, not an error.
+Charts are parsed from the article's `{{single chart}}` templates and from
+hand-written wikitables (common on 1970s/1980s articles, where the Hot 100
+placement is just `|US ''Billboard'' Hot 100 ... | 1`). Only weekly charts
+count: year-end, decade-end, all-time, certification and sales sections are
+skipped, and a later "Live version" section's chart table is excluded because
+those placements belong to a different recording. Duplicate placements keep
+the best peak, chart ids are mapped to readable names and countries (Billboard
+fallback included), entries link to the article, and a track keeps at most 40.
+Missing chart data is a normal empty state, not an error.
 
 A `story_at` marker (plus `story_error`) mirrors `enriched_at`, so the bulk
 worker can backfill stories for already-enriched tracks once. It runs after
@@ -65,7 +68,7 @@ and any story error.
   `trackdetail.story_at` / `story_error` on boot. The worker then starts the
   story backfill in the background (roughly 3-4 s per track).
 - Verification:
-  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 424 passed.
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 427 passed.
   - `cd frontend && npm test -- --run` - 351 passed (34 files).
   - `npm run typecheck` - clean; `npm run build` - successful.
   - `alembic upgrade head` on a throwaway SQLite database - reached
@@ -76,6 +79,10 @@ and any story error.
     The Rolling Stones "(I Can't Get No) Satisfaction" 10 charts,
     Joan Jett "I Love Rock 'n' Roll" 25 charts; OPM tracks with no article
     are missed cleanly; the generic-artist false positive is rejected.
+  - Jump (Van Halen), the reported case: the article's Hot 100 #1 is a plain
+    wikitables row, not a template. The table parser now returns 25 weekly
+    placements (Hot 100 #1, Mainstream Rock #1, Dance Club Songs #17, UK #7)
+    and excludes the 1993 live-version table.
   - Local backfill of the 390-track library: 390/390 checked, 276 with
     Wikipedia prose (189 with a full story section), 189 tracks with 2455
     chart entries, 0 provider errors, 4 fuzzy matches for review (all four

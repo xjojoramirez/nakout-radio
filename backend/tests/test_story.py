@@ -58,6 +58,42 @@ WIKITEXT = """
 {{single chart|Billboardhot100|80|artist=Miles Davis|song=Blue in Green}}
 """
 
+# Jump (Van Halen) style: weekly charts written as a plain wikitables, with a
+# template row mixed in and a separate year-end table that must be ignored.
+WIKITABLE = """
+== Charts ==
+=== Weekly charts ===
+{| class="wikitable sortable"
+|-
+!Chart (1984)
+!Peak<br/>position
+|-
+|Argentina ([[CAPIF]])<ref>{{cite web|url=x|title=y}}</ref>
+|align="center"|8
+|-
+{{Single chart|Austria|4|artist=Van Halen|song=Jump}}
+|-
+|US ''Billboard'' Hot 100<ref name="musicvf.com"/>
+| style="text-align:center;"|1
+|-
+|UK Singles ([[Official Charts Company|OCC]])
+| style="text-align:center;"|7
+|}
+=== Year-end charts ===
+{| class="wikitable sortable"
+|-
+!Chart (1984)
+!Peak<br/>position
+|-
+|US ''Billboard'' Hot 100
+|6
+|}
+"""
+
+
+def _chart_pairs(charts):
+    return {(entry.chart_name, entry.peak) for entry in charts}
+
 PAGE_URL = "https://en.wikipedia.org/wiki/Blue_in_Green_(song)"
 
 
@@ -422,6 +458,59 @@ def test_parse_charts_skips_decade_and_all_time_sections():
         ("UK Singles (OCC)", 12),
     ]
     assert all(entry.source_url == PAGE_URL for entry in charts)
+
+
+def test_parse_charts_reads_plain_wikitables():
+    charts = parse_charts(WIKITABLE, PAGE_URL)
+
+    pairs = _chart_pairs(charts)
+    assert ("Billboard Hot 100", 1) in pairs
+    assert ("UK Singles (OCC)", 7) in pairs
+    assert ("Argentina (CAPIF)", 8) in pairs
+    assert ("Austria (Ö3)", 4) in pairs
+    assert ("Billboard Hot 100", 6) not in pairs
+
+    hot = next(entry for entry in charts if entry.chart_name == "Billboard Hot 100")
+    assert hot.country == "US"
+    assert hot.year == 1984
+    assert hot.source_url == PAGE_URL
+
+
+def test_parse_charts_ignores_live_version_chart_tables():
+    wikitext = """
+== Charts ==
+=== Weekly charts ===
+{|
+|-
+|US ''Billboard'' Hot 100
+|1
+|}
+== Live version ==
+=== Weekly chart performance ===
+{|
+|-
+|UK Singles (OCC)
+|26
+|}
+"""
+
+    pairs = _chart_pairs(parse_charts(wikitext))
+
+    assert ("Billboard Hot 100", 1) in pairs
+    assert ("UK Singles (OCC)", 26) not in pairs
+
+
+def test_parse_charts_ignores_tables_outside_chart_sections():
+    wikitext = """
+== Personnel ==
+{| class="wikitable"
+|-
+|Guitar
+|1
+|}
+"""
+
+    assert parse_charts(wikitext) == []
 
 
 def test_parse_charts_names_unmapped_billboard_charts():

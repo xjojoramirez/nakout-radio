@@ -9,6 +9,7 @@ weekly, year-end and decade-end placement in separate sections; keeping the
 heading context lets us drop the aggregate lists and keep real chart peaks.
 """
 
+import html
 import re
 import time
 from collections.abc import Callable
@@ -435,19 +436,195 @@ def _chart_label(chart_id: str) -> tuple[str, str]:
     return (pretty.title(), "")
 
 
+_REF_RE = re.compile(r"<ref[^>]*/>|<ref[^>]*>.*?</ref>", re.I | re.S)
+_TAG_RE = re.compile(r"<[^>]+>")
+_WIKILINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]")
+_CELL_ATTR_RE = re.compile(
+    r"^\s*(?:style|align|class|scope|colspan|rowspan|width|height|data-[\w-]+)\s*=",
+    re.I,
+)
+
+_TABLE_COUNTRY: tuple[tuple[str, str, bool], ...] = (
+    (r"^(?:US|U\.S\.)\s+", "US", True),
+    (r"^UK\b", "GB", False),
+    (r"^Canada\b", "CA", False),
+    (r"^Australia\b", "AU", False),
+    (r"^New Zealand\b", "NZ", False),
+    (r"^(?:West )?Germany\b", "DE", False),
+    (r"^France\b", "FR", False),
+    (r"^Italy\b", "IT", False),
+    (r"^Spain\b", "ES", False),
+    (r"^Sweden\b", "SE", False),
+    (r"^Norway\b", "NO", False),
+    (r"^Denmark\b", "DK", False),
+    (r"^Finland\b", "FI", False),
+    (r"^Netherlands\b", "NL", False),
+    (r"^Belgium\b", "BE", False),
+    (r"^Switzerland\b", "CH", False),
+    (r"^Austria\b", "AT", False),
+    (r"^Ireland\b", "IE", False),
+    (r"^Japan\b", "JP", False),
+    (r"^Brazil\b", "BR", False),
+    (r"^Mexico\b", "MX", False),
+    (r"^Poland\b", "PL", False),
+    (r"^Portugal\b", "PT", False),
+    (r"^Scotland\b", "GB", False),
+    (r"^Argentina\b", "AR", False),
+    (r"^Peru\b", "PE", False),
+    (r"^Paraguay\b", "PY", False),
+    (r"^Uruguay\b", "UY", False),
+    (r"^Venezuela\b", "VE", False),
+)
+
+
+def _plain_cell(text: str) -> str:
+    """Strip refs, links and markup from a table cell."""
+    text = _REF_RE.sub("", text or "")
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    text = re.sub(r"<br\s*/?>", " ", text, flags=re.I)
+    text = _TAG_RE.sub("", text)
+    text = _WIKILINK_RE.sub(lambda match: match.group(2) or match.group(1), text)
+    text = text.replace("'''", "").replace("''", "")
+    text = html.unescape(text)
+    return " ".join(text.split()).strip(" |")
+
+
+def _cell_value(cell: str) -> str:
+    cell = _REF_RE.sub("", cell or "")
+    if "|" in cell:
+        prefix, rest = cell.split("|", 1)
+        if _CELL_ATTR_RE.match(prefix):
+            cell = rest
+    return _plain_cell(cell)
+
+
+def _split_cells(line: str) -> list[str]:
+    return [_cell_value(part) for part in line.split("||")]
+
+
+def _table_peak(text: str) -> int | None:
+    match = re.search(r"\b(\d{1,3})\b", text or "")
+    if match is None:
+        return None
+    peak = int(match.group(1))
+    return peak if 1 <= peak <= 200 else None
+
+
+def _table_chart(name: str) -> tuple[str, str] | None:
+    name = (name or "").strip(" |-–—")
+    if not name:
+        return None
+    folded = name.casefold()
+    if folded.startswith(("chart", "peak", "position")):
+        return None
+    country = ""
+    for pattern, code, strip_prefix in _TABLE_COUNTRY:
+        if re.match(pattern, name):
+            country = code
+            if strip_prefix:
+                name = re.sub(pattern, "", name, count=1).strip()
+            break
+    if name == "Canada Top Singles (RPM)":
+        name = "Canada RPM"
+    return (name, country) if name else None
+
+
+def _is_chart_section(headings: list[tuple[int, str]]) -> bool:
+    if any(_BAD_CHART_SECTION_RE.search(name) for _, name in headings):
+        return False
+    # Only the article's main chart section. A later "Live version" (or
+    # remix) section can have its own chart table, but those placements do
+    # not belong to the studio recording the station plays.
+    top = next((name for level, name in headings if level == 2), None)
+    if top is None:
+        return False
+    return bool(re.search(r"^\s*charts?\b|chart performance", top, re.I))
+
+
 def parse_charts(wikitext: str, source_url: str = "") -> list[ChartData]:
-    """``{{single chart}}`` placements, skipping year/decade/all-time lists."""
+    """Chart placements from ``{{single chart}}`` templates and wikitables.
+
+    Older song articles list weekly placements in a hand-written table rather
+    than templates (e.g. ``|US ''Billboard'' Hot 100 ... | 1``). Both shapes
+    are read; year-end, decade-end and all-time tables stay excluded.
+    """
     found: dict[str, ChartData] = {}
     headings: list[tuple[int, str]] = []
+    in_table = False
+    table_allowed = False
+    table_year: int | None = None
+    row: list[str] = []
+
+    def add(name: str, country: str, peak: int, year: int | None) -> None:
+        existing = found.get(name)
+        if existing is not None and existing.peak <= peak:
+            return
+        found[name] = ChartData(
+            chart_name=name,
+            country=country,
+            peak=peak,
+            year=year,
+            source_url=source_url,
+        )
+
+    def flush_row() -> None:
+        nonlocal row
+        if len(row) >= 2:
+            chart = _table_chart(row[0])
+            peak = _table_peak(row[1])
+            if chart is not None and peak is not None:
+                add(chart[0], chart[1], peak, table_year)
+        row = []
 
     for line in (wikitext or "").splitlines():
         heading = _HEADING_RE.match(line)
         if heading:
+            if in_table:
+                flush_row()
+                in_table = False
             level = len(heading.group(1))
             while headings and headings[-1][0] >= level:
                 headings.pop()
             headings.append((level, heading.group(2).strip()))
             continue
+
+        stripped = line.lstrip()
+        if stripped.startswith("{|"):
+            in_table = True
+            table_allowed = _is_chart_section(headings)
+            table_year = None
+            row = []
+            continue
+        if stripped.startswith("|}"):
+            if in_table and table_allowed:
+                flush_row()
+            in_table = False
+            row = []
+            continue
+
+        if in_table:
+            if not table_allowed:
+                continue
+            if line.startswith("|-"):
+                flush_row()
+                continue
+            if line.startswith(("!", "|+")):
+                flush_row()
+                header = _plain_cell(line[1:])
+                year_match = re.search(r"\((\d{4})\)", header)
+                if year_match:
+                    table_year = int(year_match.group(1))
+                continue
+            if line.startswith("|"):
+                row.extend(_split_cells(line[1:]))
+                continue
+            if line.startswith("{{"):
+                # A template chart row inside the table; parsed below.
+                pass
+            else:
+                if line.strip() and row:
+                    row[-1] += " " + line.strip()
+                continue
 
         if any(_BAD_CHART_SECTION_RE.search(name) for _, name in headings):
             continue
@@ -474,16 +651,10 @@ def parse_charts(wikitext: str, source_url: str = "") -> list[ChartData]:
                 year = int(head.group(1))
                 break
 
-        existing = found.get(name)
-        if existing is not None and existing.peak <= peak:
-            continue
-        found[name] = ChartData(
-            chart_name=name,
-            country=country,
-            peak=peak,
-            year=year,
-            source_url=source_url,
-        )
+        add(name, country, peak, year)
+
+    if in_table and table_allowed:
+        flush_row()
 
     charts = list(found.values())
     charts.sort(key=lambda entry: (entry.chart_name, entry.peak))
