@@ -36,7 +36,7 @@ adopts them (the auto marker is dropped), so manual chart edits are never
 overwritten.
 
 The Library now shows detail and story progress (`390/390 details ·
-214/390 stories`), a `story` badge per track, and the retry button counts both
+276/390 stories`), a `story` badge per track, and the retry button counts both
 kinds of failure. The editor's Metadata panel shows when the story was checked
 and any story error.
 
@@ -76,6 +76,10 @@ and any story error.
     The Rolling Stones "(I Can't Get No) Satisfaction" 10 charts,
     Joan Jett "I Love Rock 'n' Roll" 25 charts; OPM tracks with no article
     are missed cleanly; the generic-artist false positive is rejected.
+  - Local backfill of the 390-track library: 390/390 checked, 276 with
+    Wikipedia prose (189 with a full story section), 189 tracks with 2455
+    chart entries, 0 provider errors, 4 fuzzy matches for review (all four
+    are correct articles with a title variant).
 
 ## 2026-10-26 - automatic track detail enrichment (Deezer + MusicBrainz)
 
