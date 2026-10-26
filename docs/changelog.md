@@ -100,7 +100,7 @@ and any story error.
     placements (Hot 100 #1, Mainstream Rock #1, Dance Club Songs #17, UK #7)
     and excludes the 1993 live-version table.
   - Local backfill of the 390-track library: 390/390 checked, 276 with
-    Wikipedia prose (189 with a full story section), 189 tracks with 2455
+    Wikipedia prose (189 with a full story section), 215 tracks with 2516
     chart entries, 0 provider errors, 4 fuzzy matches for review (all four
     are correct articles with a title variant).
 
