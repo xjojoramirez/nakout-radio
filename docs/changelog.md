@@ -3,6 +3,30 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-26 - raise the loudness target so full volume stays loud
+
+Loudness normalization now anchors at `-9` dB instead of `-15` dB. At the top
+of the fader the average track plays at full output (previously ~66%) and only
+the loudest masters are trimmed, by roughly 2 dB (previously up to 8 dB). The
+correction still clamps at 100, so normalization remains strongest below the
+top of the fader.
+
+- Files touched:
+  - `backend/app/config.py`
+  - `backend/.env.example`
+  - `backend/tests/test_loudness.py`
+  - `backend/tests/test_models.py`
+  - `backend/tests/test_now.py`
+  - `backend/tests/test_config.py`
+  - `docs/changelog.md` (this entry)
+  - `docs/studio/changelog.md`
+- **Container restart required?** Yes - `backend` only:
+  `docker compose up -d --build backend`.
+  If the server's `backend/.env` sets `LOUDNESS_TARGET_DB=-15`, update it to
+  `-9` (or remove the line); the env value overrides the new default.
+- Verification: `cd backend && .venv\Scripts\python.exe -m pytest -q` - 356
+  passed.
+
 ## 2026-10-23 - make the studio Changelog button a plain header link
 
 The Changelog control now matches the **Back to radio** link: plain muted text

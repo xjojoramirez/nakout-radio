@@ -10,6 +10,11 @@ def test_settings_defaults():
     assert s.database_url.startswith("sqlite")
 
 
+def test_loudness_target_default(monkeypatch):
+    monkeypatch.delenv("LOUDNESS_TARGET_DB", raising=False)
+    assert Settings(_env_file=None).loudness_target_db == -9.0
+
+
 def test_changelog_path_points_at_the_curated_studio_feed():
     path = Settings(_env_file=None).changelog_path.replace("\\", "/")
 

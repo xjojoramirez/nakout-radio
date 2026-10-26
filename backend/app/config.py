@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     track_gap_seconds: float = 2.0
     preload_lead_seconds: float = 20.0
     cookie_secure: bool = True
-    loudness_target_db: float = -15.0
+    loudness_target_db: float = -9.0
     loudness_max_boost_db: float = 6.0
     loudness_lookup_enabled: bool = True
     rotation_repeat_percent: int = 10

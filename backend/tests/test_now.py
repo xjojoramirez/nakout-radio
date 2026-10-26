@@ -392,8 +392,8 @@ def test_now_track_carries_the_loudness_offset(tmp_path):
         s.add(row)
         s.commit()
     body = _client(engine).get("/api/now").json()
-    assert body["track"]["volume_offset_db"] == -8.0
-    assert body["next_track"]["volume_offset_db"] == -8.0  # one track, wraps
+    assert body["track"]["volume_offset_db"] == -2.0
+    assert body["next_track"]["volume_offset_db"] == -2.0  # one track, wraps
 
 
 def test_now_peeks_next_in_manual_queue(tmp_path):
