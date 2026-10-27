@@ -40,8 +40,17 @@ class Playlist(SQLModel, table=True):
 
 
 class TrackCache(SQLModel, table=True):
+    """A library track, optionally attached to a playlist.
+
+    ``playlist_id`` is NULL for standalone tracks that were detached when a
+    playlist stopped listing them. They stay in the library and the library API
+    but never enter a genre rotation.
+    """
+
     id: int | None = Field(default=None, primary_key=True)
-    playlist_id: int = Field(foreign_key="playlist.id", index=True)
+    playlist_id: int | None = Field(
+        default=None, foreign_key="playlist.id", index=True
+    )
     youtube_video_id: str
     title: str
     artist: str
@@ -110,9 +119,9 @@ LOCKABLE_FIELDS: tuple[str, ...] = (
 class TrackDetail(SQLModel, table=True):
     """Editorial metadata for a track, keyed by YouTube video id.
 
-    ``TrackCache`` rows are deleted and recreated by playlist syncs, so details
-    deliberately hang off the video id instead of a cache row. The same video in
-    two playlists shares one detail record.
+    Details deliberately hang off the video id instead of a cache row. The same
+    video in two playlists shares one detail record, and a track that is
+    detached from every playlist keeps its details.
     """
 
     youtube_video_id: str = Field(primary_key=True)

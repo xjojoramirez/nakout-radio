@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     track_gap_seconds: float = 2.0
     preload_lead_seconds: float = 20.0
     cookie_secure: bool = True
+    library_api_key: str = ""
+    library_import_enabled: bool = False
     loudness_target_db: float = -9.0
     loudness_max_boost_db: float = 6.0
     loudness_lookup_enabled: bool = True

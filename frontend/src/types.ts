@@ -203,6 +203,7 @@ export interface TrackLibraryItem {
   genres: string[];
   needs_review: boolean;
   has_story: boolean;
+  has_playlist: boolean;
 }
 
 export interface TrackLibraryPage {

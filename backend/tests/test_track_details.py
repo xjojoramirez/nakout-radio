@@ -328,8 +328,31 @@ def test_library_lists_unique_videos_with_status_and_completeness(tmp_path):
     assert by_id["vid1"]["album"] == "Kind of Blue"
     assert by_id["vid1"]["completeness"] == 6
     assert by_id["vid1"]["genres"] == ["Jazz"]
+    assert by_id["vid1"]["has_playlist"] is True
     assert by_id["vid2"]["status"] == "empty"
     assert by_id["vid2"]["completeness"] == 0
+
+
+def test_library_unassigned_filter(tmp_path):
+    client, engine = _seed(tmp_path)
+    with Session(engine) as s:
+        s.add(
+            TrackCache(
+                playlist_id=None,
+                youtube_video_id="solo",
+                title="Solo",
+                artist="Nobody",
+                position=0,
+            )
+        )
+        s.commit()
+
+    resp = client.get("/api/studio/tracks", params={"unassigned": "true"})
+
+    assert resp.status_code == 200
+    items = resp.json()["items"]
+    assert [item["youtube_video_id"] for item in items] == ["solo"]
+    assert items[0]["has_playlist"] is False
 
 
 def test_library_search_matches_title_or_artist(tmp_path):

@@ -3,6 +3,81 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-27 - Nakout 2.0 music library API
+
+Tracks are now permanent library records, and the live library can be pulled
+into a local deployment through an authenticated API.
+
+- `trackcache.playlist_id` is nullable. A row with no playlist is a standalone
+  library track. Removing a track from a playlist now detaches it instead of
+  deleting it; deleting a playlist or genre detaches its tracks too.
+- Playlist sync updates rows in place, re-attaches returning tracks, and keeps
+  row IDs stable. Details, stories, charts, locks and sources survive every
+  membership change.
+- New `/api/library` routes: `meta`, paginated `tracks` (with the virtual
+  `group=unassigned` bucket), `tracks/{video_id}`, `export`, and a local-only
+  `import`. All require `LIBRARY_API_KEY`; import also requires
+  `LIBRARY_IMPORT_ENABLED=true`.
+- `scripts/pull_library.py` downloads the live snapshot and posts it to the
+  local import route (supports `--dry-run` and `--save`).
+- Import merges: live wins except for locally locked fields, charts are
+  replaced unless locked, and no track is ever deleted. Re-importing the same
+  snapshot is a no-op.
+- Studio's Library panel shows a "No playlist" badge and filter.
+- V1 radio behavior, public routes, scheduling and playback are unchanged.
+
+- Files touched:
+  - `backend/app/models.py`
+  - `backend/app/__init__.py`
+  - `backend/app/config.py`
+  - `backend/app/main.py`
+  - `backend/app/library.py` (new)
+  - `backend/app/library_schemas.py` (new)
+  - `backend/app/routers/library.py` (new)
+  - `backend/app/routers/admin.py`
+  - `backend/app/routers/tracks.py`
+  - `backend/app/sync.py`
+  - `backend/app/schemas.py`
+  - `backend/app/track_details.py`
+  - `backend/alembic/versions/b7c1d2e3f4a5_nullable_playlist_id.py` (new)
+  - `backend/.env.example`
+  - `backend/tests/test_library.py` (new)
+  - `backend/tests/test_library_import.py` (new)
+  - `backend/tests/test_migration_nullable_playlist.py` (new)
+  - `backend/tests/test_sync.py`
+  - `backend/tests/test_admin.py`
+  - `backend/tests/test_track_details.py`
+  - `scripts/pull_library.py` (new)
+  - `frontend/src/types.ts`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/components/admin/TrackLibraryPanel.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `frontend/src/components/admin/GenresPanel.tsx`
+  - `frontend/src/components/admin/GenresPanel.dom.test.tsx`
+  - `frontend/src/components/admin/PlaylistsPanel.tsx`
+  - `frontend/src/components/admin/PlaylistsPanel.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `README.md`
+  - `docs/superpowers/specs/2026-10-27-music-library-api-design.md` (new)
+  - `docs/superpowers/plans/2026-10-27-music-library-api.md` (new)
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - backend and frontend:
+  `docker compose up -d --build backend frontend`. The backend migration makes
+  `trackcache.playlist_id` nullable on start; the frontend image must be
+  rebuilt for the badge/filter and confirmation copy. Hard-refresh the browser
+  after the frontend rebuild.
+- **Verification:** backend `pytest` 481 passed; frontend `npm run typecheck`
+  passed, `npm test` 352 passed, `npm run build` passed. The migration was run
+  on a copy of the local volume database first (392 track rows and 390 details
+  preserved; `playlist_id` became nullable with the FK and index intact), then
+  applied to the live local volume on rebuild. `/api/library` export/import was
+  smoke-tested against the real local library: meta reported 390 unique
+  tracks, 390 details, 3 playlists; an identical snapshot imported as a no-op;
+  removing one membership detached the track, kept its detail, and re-importing
+  re-attached it. `scripts/pull_library.py --dry-run` completed with an
+  idempotent summary. The rebuilt local stack is healthy and serves the new
+  frontend bundle.
+
 ## 2026-10-27 - short researched stories
 
 The Story tab now shows a short highlight instead of an article dump.

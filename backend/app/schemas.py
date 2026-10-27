@@ -449,6 +449,7 @@ class TrackLibraryItem(BaseModel):
     completeness: int = 0
     needs_review: bool = False
     has_story: bool = False
+    has_playlist: bool = True
     genres: list[str] = Field(default_factory=list)
 
 

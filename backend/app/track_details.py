@@ -311,6 +311,7 @@ def library_page(
     *,
     query: str = "",
     status: str | None = None,
+    unassigned: bool = False,
     limit: int = 50,
     offset: int = 0,
 ) -> TrackLibraryOut:
@@ -326,6 +327,14 @@ def library_page(
     }
     counts = chart_counts(session)
     genres = _genre_names(session)
+    assigned = {
+        video_id
+        for video_id in session.exec(
+            select(TrackCache.youtube_video_id).where(
+                TrackCache.playlist_id.is_not(None)
+            )
+        ).all()
+    }
 
     needle = (query or "").strip().casefold()
     items: list[TrackLibraryItem] = []
@@ -334,6 +343,9 @@ def library_page(
             needle not in track.title.casefold()
             and needle not in track.artist.casefold()
         ):
+            continue
+        has_playlist = video_id in assigned
+        if unassigned and has_playlist:
             continue
         row = details.get(video_id)
         chart_total = counts.get(video_id, 0)
@@ -353,6 +365,7 @@ def library_page(
                 completeness=completeness_for(row, chart_total),
                 needs_review=bool(row.needs_review) if row else False,
                 has_story=bool(row and (row.summary or row.story)),
+                has_playlist=has_playlist,
                 genres=sorted(genres.get(video_id, set())),
             )
         )

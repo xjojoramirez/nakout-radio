@@ -527,7 +527,9 @@ describe("PlaylistsPanel", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Remove" })[1]);
     const dialog = await screen.findByRole("dialog");
     expect(
-      within(dialog).getByText(/Remove "Work Drive Mix" and its tracks/),
+      within(dialog).getByText(
+        /Remove "Work Drive Mix" from .* Its tracks stay in the library\./,
+      ),
     ).toBeInTheDocument();
     fireEvent.click(within(dialog).getByText("Cancel"));
     expect(mocked.deletePlaylist).not.toHaveBeenCalled();

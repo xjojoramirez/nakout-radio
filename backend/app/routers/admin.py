@@ -33,6 +33,7 @@ from app.broadcast import (
 from app.changelog import load_changelog
 from app.config import get_settings
 from app.db import get_session
+from app.library import detach_membership
 from app.loudness import ensure_backfill
 from app.models import (
     Playlist,
@@ -300,7 +301,11 @@ def delete_genre(genre_id: int, session: Session = Depends(get_session)) -> dict
         select(Playlist.id).where(Playlist.genre_id == genre_id)
     ).all()
     if playlist_ids:
-        session.exec(delete(TrackCache).where(TrackCache.playlist_id.in_(playlist_ids)))
+        rows = session.exec(
+            select(TrackCache).where(TrackCache.playlist_id.in_(playlist_ids))
+        ).all()
+        for row in rows:
+            detach_membership(session, row)
     session.exec(delete(Playlist).where(Playlist.genre_id == genre_id))
     session.exec(delete(ScheduleSlot).where(ScheduleSlot.genre_id == genre_id))
     session.exec(delete(TrackPlay).where(TrackPlay.genre_id == genre_id))
@@ -403,7 +408,11 @@ def delete_playlist(
     playlist = session.get(Playlist, playlist_id)
     if playlist is None:
         raise HTTPException(status_code=404, detail="playlist not found")
-    session.exec(delete(TrackCache).where(TrackCache.playlist_id == playlist_id))
+    rows = session.exec(
+        select(TrackCache).where(TrackCache.playlist_id == playlist_id)
+    ).all()
+    for row in rows:
+        detach_membership(session, row)
     session.delete(playlist)
     session.commit()
     return {"status": "deleted"}

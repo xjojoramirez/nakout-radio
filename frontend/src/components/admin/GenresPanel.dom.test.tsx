@@ -295,7 +295,9 @@ describe("GenresPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete Emo Night" }));
     const dialog = await screen.findByRole("dialog");
     expect(
-      within(dialog).getByText(/playlists, tracks, and schedule slots/),
+      within(dialog).getByText(
+        /playlists and schedule slots\? Tracks stay in the library\./,
+      ),
     ).toBeInTheDocument();
     fireEvent.click(within(dialog).getByText("Cancel"));
     expect(mocked.deleteGenre).not.toHaveBeenCalled();

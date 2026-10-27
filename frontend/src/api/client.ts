@@ -81,6 +81,7 @@ export const api = {
     params: {
       q?: string;
       status?: "empty" | "auto" | "curated";
+      unassigned?: boolean;
       limit?: number;
       offset?: number;
     } = {},
@@ -88,6 +89,7 @@ export const api = {
     const search = new URLSearchParams();
     if (params.q) search.set("q", params.q);
     if (params.status) search.set("status", params.status);
+    if (params.unassigned) search.set("unassigned", "true");
     if (params.limit != null) search.set("limit", String(params.limit));
     if (params.offset != null) search.set("offset", String(params.offset));
     const suffix = search.toString();

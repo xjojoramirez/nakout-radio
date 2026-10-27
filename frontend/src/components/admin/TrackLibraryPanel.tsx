@@ -27,6 +27,7 @@ export function TrackLibraryPanel({
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<StatusFilter>("");
+  const [unassigned, setUnassigned] = useState(false);
   const [page, setPage] = useState(0);
   const [data, setData] = useState<TrackLibraryPage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,7 @@ export function TrackLibraryPanel({
       .listTracks({
         q: search || undefined,
         status: status || undefined,
+        unassigned: unassigned || undefined,
         limit: LIMIT,
         offset: page * LIMIT,
       })
@@ -77,7 +79,7 @@ export function TrackLibraryPanel({
     return () => {
       active = false;
     };
-  }, [search, status, page, reload]);
+  }, [search, status, unassigned, page, reload]);
 
   useEffect(() => {
     if (data) countRef.current?.(data.total);
@@ -254,6 +256,17 @@ export function TrackLibraryPanel({
             <option value="curated">Curated</option>
           </select>
         </label>
+        <label className="lib-unassigned">
+          <input
+            type="checkbox"
+            checked={unassigned}
+            onChange={(event) => {
+              setUnassigned(event.target.checked);
+              setPage(0);
+            }}
+          />
+          No playlist
+        </label>
       </div>
 
       {loading && !data && <SkeletonList rows={6} />}
@@ -283,6 +296,9 @@ export function TrackLibraryPanel({
                         )}
                         {item.needs_review && (
                           <span className="lib-review">review</span>
+                        )}
+                        {!item.has_playlist && (
+                          <span className="lib-noplist">no playlist</span>
                         )}
                       </small>
                     </span>

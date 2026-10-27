@@ -44,6 +44,7 @@ function item(overrides: Partial<TrackLibraryItem> = {}): TrackLibraryItem {
     genres: ["Jazz"],
     needs_review: false,
     has_story: false,
+    has_playlist: true,
     ...overrides,
   };
 }
@@ -177,6 +178,22 @@ describe("TrackLibraryPanel", () => {
     await waitFor(() =>
       expect(mocked.listTracks).toHaveBeenLastCalledWith(
         expect.objectContaining({ status: "empty" }),
+      ),
+    );
+  });
+
+  it("filters and badges tracks with no playlist", async () => {
+    mocked.listTracks.mockResolvedValue(
+      page([item({ has_playlist: false })]),
+    );
+
+    renderPanel();
+
+    expect(await screen.findByText("no playlist")).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("No playlist"));
+    await waitFor(() =>
+      expect(mocked.listTracks).toHaveBeenLastCalledWith(
+        expect.objectContaining({ unassigned: true }),
       ),
     );
   });

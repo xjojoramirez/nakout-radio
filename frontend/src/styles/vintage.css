@@ -3770,6 +3770,27 @@ a.pid:hover {
   text-transform: uppercase;
 }
 
+.lib-unassigned {
+  align-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lib-noplist {
+  margin-left: 6px;
+  color: var(--ink-soft, #8a7f6a);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .track-editor-actions {
   display: flex;
   align-items: center;

@@ -38,12 +38,18 @@ studio_router = APIRouter(
 def list_tracks(
     q: str = "",
     status: Literal["empty", "auto", "curated"] | None = None,
+    unassigned: bool = False,
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     session: Session = Depends(get_session),
 ) -> TrackLibraryOut:
     return track_details.library_page(
-        session, query=q, status=status, limit=limit, offset=offset
+        session,
+        query=q,
+        status=status,
+        unassigned=unassigned,
+        limit=limit,
+        offset=offset,
     )
 
 

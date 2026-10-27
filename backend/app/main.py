@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app import enrichment
+from app import __version__, enrichment
 from app.config import get_settings
 from app.loudness import ensure_backfill
 
@@ -22,7 +22,9 @@ def create_app() -> FastAPI:
         enrichment.ensure_backfill()
         yield
 
-    app = FastAPI(title="Nakout Radio", lifespan=lifespan)
+    app = FastAPI(
+        title="Nakout Radio", version=__version__, lifespan=lifespan
+    )
 
     app.add_middleware(
         CORSMiddleware,
@@ -36,8 +38,18 @@ def create_app() -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
-    from app.routers import admin, now, queue, schedule, genres, tracks, ws
+    from app.routers import (
+        admin,
+        genres,
+        library,
+        now,
+        queue,
+        schedule,
+        tracks,
+        ws,
+    )
 
+    app.include_router(library.router)
     app.include_router(genres.router)
     app.include_router(schedule.router)
     app.include_router(now.router)

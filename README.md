@@ -4,11 +4,16 @@ A personal internet-radio website streaming the owner's YouTube playlists as a
 single always-on broadcast, with a time-of-day scheduled genre, a live
 listener count, and an admin panel.
 
+Nakout 2.0 adds an authenticated **music library API** and makes every track a
+permanent library record: removing a track from a playlist detaches it instead
+of deleting it. The V1 radio, schedule, and public site keep working exactly as
+before.
+
 ## Architecture
 
 - `backend/` — FastAPI + SQLite. Reads playlist tracks via the YouTube Data
-  API v3 and caches them. Serves genres, schedule, admin, and a listener
-  websocket.
+  API v3 and caches them. Serves genres, schedule, admin, the music library
+  API, and a listener websocket.
 - `frontend/` — React + Vite. Drives the YouTube IFrame Player and renders the
   vintage-radio UI.
 - `caddy` — TLS termination and routing: `/` to frontend, `/api` and `/api/ws`
@@ -52,6 +57,8 @@ Backend (`backend/.env`):
 | `CACHE_TTL_MINUTES` | Reserved for future automatic cache refresh; not yet used |
 | `ENRICHMENT_ENABLED` | Automatic track details, stories and charts (default `true`) |
 | `COOKIE_SECURE` | `true` in production (HTTPS); `false` for local http dev |
+| `LIBRARY_API_KEY` | Bearer key for `/api/library/*`. Empty disables the API |
+| `LIBRARY_IMPORT_ENABLED` | Allow `POST /api/library/import` (keep `false` on live) |
 
 > Track details are enriched in the background: albums, release years, labels,
 > credits and covers come from Deezer, with MusicBrainz filling gaps. Wikipedia
@@ -67,6 +74,93 @@ Root (`.env`):
 > Track caching is refreshed when a playlist is added (or re-added) and when you
 > click **Sync all playlists** in the admin panel. There is no automatic timer
 > yet, so `CACHE_TTL_MINUTES` is currently unused.
+
+## Nakout 2.0: Music Library API
+
+The library API exposes the station's tracks and editorial details over HTTP.
+It is read-only except for the local-only import route. A track belongs to the
+library permanently; playlist membership is optional. Removing a track from a
+playlist detaches it, and it stays available as a "No playlist" library track.
+
+### Authentication
+
+Every route requires a bearer key:
+
+```bash
+LIBRARY_API_KEY=<random-secret>
+```
+
+Generate one with:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+When `LIBRARY_API_KEY` is empty, the routes return **503** instead of allowing
+access. Set the same key on live and local, or use different keys and pass the
+local one with `--import-key`.
+
+`POST /api/library/import` is additionally disabled unless
+`LIBRARY_IMPORT_ENABLED=true`. Keep it `false` on the live station.
+
+### Routes
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/library/meta` | Version, timestamp, track/detail counts |
+| `GET` | `/api/library/tracks?limit=50&offset=0&group=all` | Paginated unique tracks |
+| `GET` | `/api/library/tracks/{video_id}` | One track with all memberships and details |
+| `GET` | `/api/library/export` | Full snapshot, including empty playlists |
+| `POST` | `/api/library/import?dry_run=true` | Apply a snapshot (local only) |
+
+`group=unassigned` returns only the virtual **No playlist** group. A track in
+several playlists appears once with a `playlists` array.
+
+```bash
+curl -H "Authorization: Bearer $LIBRARY_API_KEY" \
+  https://radio.example.com/api/library/export > live-library.json
+```
+
+### Pulling live into local
+
+The local backend must be reachable (default `http://localhost:8011`). Use the
+live key for the source and the local key for the import:
+
+```powershell
+$liveKey = "<key set on the live backend>"
+$localKey = ((Get-Content backend/.env |
+  Where-Object { $_ -match '^LIBRARY_API_KEY=' }) -replace '^LIBRARY_API_KEY=','').Trim()
+
+python scripts/pull_library.py `
+  --from https://radio.example.com `
+  --to http://localhost:8011 `
+  --key $liveKey `
+  --import-key $localKey
+```
+
+The script downloads `/api/library/export`, writes the snapshot to the local
+`/api/library/import` route, and prints created/updated/detached counts. Add
+`--dry-run` to validate and count without committing, or `--save snapshot.json`
+to keep the downloaded snapshot.
+
+If the live key is missing, the live API returns **503**. If the local import is
+disabled, the local API returns **404**.
+
+The import merges rather than replaces:
+
+- Live values win, except for fields in the local track's `locked_fields`.
+- New tracks and details are added; existing ones are updated.
+- Tracks removed from a live playlist are detached locally, never deleted.
+- Local-only playlists and tracks are left alone.
+- Re-running the same snapshot is idempotent.
+
+### Schema notes
+
+- `trackcache.playlist_id` is nullable. `NULL` means a standalone library track.
+- `TrackDetail` is keyed by video ID, so stories, charts, locks and sources
+  survive detaching and re-attaching.
+- Deleting a genre or playlist in Studio now detaches its tracks; they remain in
+  the library with no playlist.
 
 ## Production deploy
 
