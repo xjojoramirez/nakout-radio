@@ -154,6 +154,53 @@ The import merges rather than replaces:
 - Local-only playlists and tracks are left alone.
 - Re-running the same snapshot is idempotent.
 
+### Pushing local stories to live
+
+The normal direction is live -> local. If you have curated stories locally
+and want them on live without touching live playlists or metadata, use
+`scripts/push_stories.py`. It matches tracks by video ID, copies only
+`summary`, `story` and `dj_note`, and sends a playlist-free snapshot, so live
+memberships are never reconciled. Live album/year/label, charts and every
+other detail field are preserved.
+
+By default it pushes only story fields already in the local `locked_fields`.
+Use `--all` to include unlocked provider prose, and `--no-lock` to leave
+transferred fields unlocked (live enrichment may overwrite them).
+
+The live import route must be enabled for the duration of the push:
+
+```bash
+# on live
+sed -i 's/^LIBRARY_IMPORT_ENABLED=.*/LIBRARY_IMPORT_ENABLED=true/' backend/.env
+docker compose up -d backend
+```
+
+Then, from local:
+
+```powershell
+$liveKey = "<key set on the live backend>"
+$localKey = ((Get-Content backend/.env |
+  Where-Object { $_ -match '^LIBRARY_API_KEY=' }) -replace '^LIBRARY_API_KEY=','').Trim()
+
+python scripts/push_stories.py `
+  --from http://localhost:8011 `
+  --to https://radio.example.com `
+  --key $localKey `
+  --import-key $liveKey `
+  --dry-run
+```
+
+Review the counts, remove `--dry-run` to apply, then disable the route again:
+
+```bash
+# on live
+sed -i 's/^LIBRARY_IMPORT_ENABLED=.*/LIBRARY_IMPORT_ENABLED=false/' backend/.env
+docker compose up -d backend
+```
+
+`--save payload.json` writes the generated snapshot for inspection. The push
+is idempotent; re-running it only changes the story fields it carries.
+
 ### Schema notes
 
 - `trackcache.playlist_id` is nullable. `NULL` means a standalone library track.
