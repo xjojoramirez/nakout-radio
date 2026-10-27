@@ -150,6 +150,8 @@ const splitList = (value: string) =>
 const PROVIDER_LABELS: Record<string, string> = {
   deezer: "Deezer",
   musicbrainz: "MusicBrainz",
+  wikipedia: "Wikipedia",
+  editor: "Editor",
 };
 
 const providerLabel = (provider: string) =>

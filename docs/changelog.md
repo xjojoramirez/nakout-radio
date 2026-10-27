@@ -3,6 +3,108 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-27 - short researched stories
+
+The Story tab now shows a short highlight instead of an article dump.
+
+- Wikipedia enrichment writes a first-sentence summary (220 characters max)
+  and one filtered anecdote (400 characters max, 2-3 sentences). Chart, award,
+  tour, release-format and personnel sentences are dropped. If no anecdote is
+  found, the story stays empty and a forced refresh clears the old provider
+  story.
+- Composer prose limits are now 40-220 characters for `summary` and 80-400 for
+  `story`. The composer researches Wikipedia and MusicBrainz and writes one
+  origin/recording anecdote; when the sources have no real anecdote it writes
+  only the summary.
+- `python -m app.story_refresh` re-fetches provider prose for unlocked
+  Wikipedia-sourced rows without touching charts. It is a separate module, so
+  the composer and reviewer agents cannot call it.
+- The reviewer's length checks and highlight guidance now match the tighter
+  limits.
+
+- Files touched:
+  - `backend/app/enrichment/wikipedia.py`
+  - `backend/app/enrichment/pipeline.py`
+  - `backend/app/composer.py`
+  - `backend/app/story_refresh.py`
+  - `backend/tests/test_story.py`
+  - `backend/tests/test_composer.py`
+  - `backend/tests/test_story_refresh.py`
+  - `.opencode/agents/track-info-composer.md`
+  - `.opencode/agents/track-details-reviewer.md`
+  - `docs/superpowers/specs/2026-10-27-short-researched-stories-design.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - backend only:
+  `docker compose up -d --build backend` (then `opencode reload` for the agent
+  prompt changes). No frontend change, so no frontend rebuild or hard refresh
+  is needed.
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 454 passed.
+  - `cd frontend && npm test -- --run` - 351 passed; `npm run typecheck` and
+    `npm run build` clean.
+  - `python -m app.story_refresh --dry-run` inside the backend container -
+    276 provider-written tracks selected.
+  - Live refresh - all 390 summaries are now 220 characters or fewer. Two
+    legacy locked stories remain over 400 characters (`Jump` 425, `Free Bird`
+    443); their summaries were shortened and their locks were respected. 259
+    tracks now have a summary and no story because the article had no usable
+    origin anecdote.
+  - Composer sample - 10 tracks composed from Wikipedia sources and applied.
+    Their summaries are 117-170 characters and their stories 275-367; all 20
+    fields are locked with the source URL.
+
+## 2026-10-27 - track info composer and read-only reviewer
+
+Added a `track-info-composer` subagent and a narrow CLI, `app.detail_tools`, so
+an agent can research a track and write the details listeners see without
+touching the database directly:
+
+```
+docker compose exec -T backend python -m app.detail_tools find "Jump"
+docker compose exec -T backend python -m app.detail_tools show <video_id>
+docker compose exec -T backend python -m app.detail_tools apply <video_id> --source-url <url> [--summary ...] [--story ...] [--album ...] [--release-year ...] [--label ...] [--isrc ...] [--credit "Role=Name"] [--dry-run]
+```
+
+`app.composer` applies the payload with evidence rules:
+
+- `summary` and `story` may replace empty or provider-written prose; manually
+  entered prose is left alone unless it is unlocked.
+- `album`, `release_year`, `label`, `isrc` and `credits` are fill-only. An
+  existing value is reported as a conflict, never overwritten.
+- Every written field is locked and records its evidence URL in `sources`, so
+  the next enrichment pass keeps it and Studio can show where it came from.
+- Story highlights are 40-900 characters (ideally 250-450); summaries are
+  20-600. ISRCs are normalized and validated as 12 characters.
+
+The reviewer is read-only again. It now uses `detail_tools find/show` instead
+of ad-hoc SQLite one-liners, audits composer-written and locked fields against
+their `sources` URLs, and proposes a highlight without saving it. The composer
+owns all writes. Studio's source list now labels Wikipedia and editor sources.
+
+- Files touched:
+  - `.opencode/agents/track-info-composer.md`
+  - `.opencode/agents/track-details-reviewer.md`
+  - `backend/app/composer.py`
+  - `backend/app/detail_tools.py`
+  - `backend/tests/test_composer.py`
+  - `frontend/src/components/admin/TrackDetailEditor.tsx`
+  - `docs/superpowers/specs/2026-10-27-track-info-composer-design.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - both:
+  `docker compose up -d --build backend frontend` (then hard-refresh the
+  browser).
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 443 passed.
+  - `cd frontend && npm test -- --run` - 351 passed; `npm run typecheck` and
+    `npm run build` clean.
+  - Real probe against the live volume: `detail_tools find "Jump"` returned
+    `bX9RMdcFQAw`, and an `apply --dry-run` for album/year/label reported all
+    three as already set and wrote nothing.
+  - Recreated `backend` and `frontend`; both healthy, `/api/health` returns
+    `ok`, and the new CLI runs in the live backend container.
+  - Both subagents load after an OpenCode config reload and answer a no-tool
+    smoke prompt.
+
 ## 2026-10-26 - chart templates inside tables
 
 The new reviewer caught a missing Ireland placement for "Torn Between Two
@@ -14,6 +116,11 @@ Live-version, remix, cover-version and re-recording headings are excluded for
 templates as well as tables, and South African chart rows now carry `ZA`.
 Template rows inside a table also inherit the header's `Chart (1984)` year, and
 `Billboardrocksongs` maps to its current name, Hot Rock & Alternative Songs.
+Three table shapes from "Free Bird" are covered too: a `Chart and sales
+performance` heading is a chart section (the old `sales` guard wrongly
+excluded it), chart names written as row headers
+(`!scope="row"| Canada RPM Top Singles`) are data labels, and a bold
+`'''Live version'''` line blocks the table that follows.
 
 - Files touched:
   - `backend/app/enrichment/wikipedia.py`
@@ -24,7 +131,9 @@ Template rows inside a table also inherit the header's `Chart (1984)` year, and
 - Verification: 428 backend tests passed. Real probe: "Torn Between Two
   Lovers" now returns 15 placements, including Ireland (IRMA) #5 and South
   Africa (Springbok Radio) #6 with country `ZA`; Jump's template rows now
-  carry 1984, leaving only the two 2020-2023 placements undated.
+  carry 1984, leaving only the two 2020-2023 placements undated; "Free Bird"
+  returns 6 studio placements (Hot 100 #19, Canada RPM #58, Cashbox #25) and
+  excludes its live-version table.
 
 ## 2026-10-26 - track details reviewer agent
 

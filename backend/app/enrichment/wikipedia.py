@@ -27,16 +27,16 @@ PROVIDER = "wikipedia"
 
 # MediaWiki has no hard request budget, but the API is shared infrastructure.
 PAUSE_S = 0.8
-SUMMARY_LIMIT = 900
-STORY_LIMIT = 900
-STORY_FIRST_LIMIT = 600
-STORY_SECOND_LIMIT = 300
+SUMMARY_LIMIT = 220
+STORY_LIMIT = 400
+STORY_MAX_SENTENCES = 3
 MAX_CHARTS = 40
 MIN_MATCH_RATIO = 0.6
 
 _HEADING_RE = re.compile(r"^(={2,6})\s*(.+?)\s*\1\s*$")
 _SINGLE_CHART_RE = re.compile(r"\{\{\s*single chart\s*\|([^}]*)\}\}", re.I)
 _WORD_RE = re.compile(r"[a-z0-9]+")
+_SENTENCE_RE = re.compile(r"(?<=[.!?])\s+(?=[\"'“‘(]?[A-Z0-9])")
 _DISAMBIG_RE = re.compile(r"\s*\([^)]*\)\s*$")
 _BAD_PAGE_RE = re.compile(
     r"\((?:album|ep|mixtape|compilation|soundtrack|film|musical)\)\s*$",
@@ -45,8 +45,34 @@ _BAD_PAGE_RE = re.compile(
 _LIST_PAGE_RE = re.compile(r"^(?:list of|discography)", re.I)
 _BAD_CHART_SECTION_RE = re.compile(
     r"decade[- ]end|all[- ]time|year[- ]end|year end|"
-    r"certification|sales|awards?|accolades?|"
+    r"certification|awards?|accolades?|"
     r"live[- ](?:version|performance)|remix|cover version|re-recording",
+    re.I,
+)
+
+# Sentences that describe reception or logistics rather than the one human
+# detail a listener would repeat. "Tour bus" is deliberately allowed; a tour
+# date is not.
+_BORING_PROSE_RE = re.compile(
+    r"\bchart(?:ed|s|ing)?\b|\bpeak(?:ed|s)?\b|\bbillboard\b|\bhot 100\b|"
+    r"\bnumber one\b|\bno\.?\s*1\b|\bcertified\b|\bcertification\b|"
+    r"\bplatinum\b|\bgold\b|\bawards?\b|\bgrammy\b|\bconcert\b|"
+    r"\btour dates?\b|\bperformed\b|\bcover version\b|\bremix(?:ed)?\b|"
+    r"\breissue[ds]?\b|\bmusic video\b|"
+    r"\b(?:debut|lead|first|second|third|fourth|final)\s+single\b|"
+    r"\breleased as (?:a|the)\b[^.]*?\bsingle\b|"
+    r"\b(?:the|this|that)\s+single\b|\bpersonnel\b|"
+    r"\bline-?up\b|\bpraised\b|\bopined\b|\bcritic(?:s|ized)?\b|"
+    r"\breview(?:ed|s)?\b",
+    re.I,
+)
+_WEAK_START_RE = re.compile(r"^(?:He|She|It|They|This|These|Those)\b", re.I)
+_ANECDOTE_RE = re.compile(
+    r"\b(?:wrote|written|composed|composer|originated|inspired|inspiration|"
+    r"recorded|recording|session|interview|said|told|explained|"
+    r"related|recalled|remembered|recounted|idea|came up|named|title|"
+    r"dedicated|homage|"
+    r"wanted|asked|invited|introduced|met|heard)\b",
     re.I,
 )
 
@@ -62,19 +88,20 @@ _STORY_GROUPS: tuple[tuple[str, ...], ...] = (
     (
         "writing and recording",
         "writing and production",
+        "history and recording",
+        "history and production",
+        "recording and production",
         "writing",
         "production",
         "recording",
+        "history",
     ),
     (
-        "composition and lyrics",
-        "lyrics and composition",
+        "music and lyrics",
+        "music and composition",
+        "background and lyrics",
         "composition",
-        "lyrical content",
-        "lyrics",
     ),
-    ("release and promotion", "release", "music video"),
-    ("legacy", "impact"),
 )
 
 _CHART_LABELS: dict[str, tuple[str, str]] = {
@@ -358,7 +385,10 @@ def _truncate(text: str, limit: int) -> str:
     end = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "))
     if end >= limit // 2:
         return cut[: end + 1].strip()
-    return cut.rsplit(" ", 1)[0].rstrip(",;:") + "..."
+    trimmed = cut.rsplit(" ", 1)[0].rstrip(",;:")
+    if len(trimmed) + 3 <= limit:
+        return trimmed + "..."
+    return trimmed[: limit - 3].rstrip(" ,;:") + "..."
 
 
 def _top_sections(text: str) -> tuple[str, list[tuple[str, str]]]:
@@ -387,77 +417,94 @@ def _top_sections(text: str) -> tuple[str, list[tuple[str, str]]]:
     return "\n".join(intro).strip(), sections
 
 
-def shorten_story(text: str, limit: int = STORY_LIMIT) -> str:
-    """Keep whole sentences from the top of a section, within ``limit``.
-
-    The opening of a Background/Composition section carries the origin story;
-    cutting there is more readable than a hard character truncation and never
-    stops mid-word.
-    """
+def _sentences(text: str) -> list[str]:
     text = " ".join((text or "").split())
     if not text:
+        return []
+    return [part.strip() for part in _SENTENCE_RE.split(text) if part.strip()]
+
+
+def _short_summary(text: str, limit: int = SUMMARY_LIMIT) -> str:
+    """The lead's first sentence, with a short second only when it adds context."""
+    sentences = _sentences(text)
+    if not sentences:
         return ""
-    sentences = re.split(r"(?<=[.!?])\s+", text)
-    picked: list[str] = []
-    total = 0
-    for sentence in sentences:
-        if picked and total + len(sentence) > limit:
+    picked = [sentences[0]]
+    if (
+        len(sentences) > 1
+        and len(sentences[0]) < 100
+        and not _BORING_PROSE_RE.search(sentences[1])
+        and len(sentences[0]) + 1 + len(sentences[1]) <= limit
+    ):
+        picked.append(sentences[1])
+    return _truncate(" ".join(picked), limit)
+
+
+def _best_anecdote(text: str, limit: int = STORY_LIMIT) -> str:
+    """One vivid origin/recording window, with reception sentences removed."""
+    sentences: list[str] = []
+    candidates: list[tuple[int, int, str]] = []
+    for paragraph in re.split(r"\n\s*\n", text or ""):
+        sentences = _sentences(paragraph)
+        for index, sentence in enumerate(sentences):
+            if (
+                len(sentence) > limit
+                or sentence.count('"') % 2
+                or _BORING_PROSE_RE.search(sentence)
+                or _WEAK_START_RE.match(sentence)
+            ):
+                continue
+            score = len(_ANECDOTE_RE.findall(sentence))
+            if score:
+                candidates.append((score, index, sentence))
+        if candidates:
+            # The first paragraph with a usable anecdote is the closest to the
+            # song's origin; later paragraphs are usually reception or legacy.
             break
-        picked.append(sentence)
-        total += len(sentence) + 1
-    return " ".join(picked).strip()
+    if not candidates:
+        return ""
+
+    _, index, sentence = max(candidates, key=lambda item: (item[0], -item[1]))
+    window = [sentence]
+    total = len(sentence)
+
+    for position in range(index + 1, len(sentences)):
+        if len(window) >= STORY_MAX_SENTENCES:
+            break
+        candidate = sentences[position]
+        if candidate.count('"') % 2:
+            break
+        if _BORING_PROSE_RE.search(candidate) or _WEAK_START_RE.match(candidate):
+            continue
+        if total + 1 + len(candidate) > limit:
+            break
+        window.append(candidate)
+        total += 1 + len(candidate)
+    return " ".join(window).strip()
 
 
 def _story_for(sections: list[tuple[str, str]]) -> str:
+    """Pick the first section that yields one usable anecdote."""
     lowered = [(title.casefold(), body) for title, body in sections]
 
-    def pick(group: tuple[str, ...]) -> tuple[str, str] | None:
+    def bodies(group: tuple[str, ...]) -> list[str]:
+        found: list[str] = []
         for name in group:
             for title, body in lowered:
-                if title == name and len(body) >= 120:
-                    return title, body
+                if title == name and len(body) >= 80:
+                    found.append(body)
         for name in group:
             for title, body in lowered:
-                if title.startswith(name) and len(body) >= 120:
-                    return title, body
-        return None
+                if title.startswith(name) and len(body) >= 80:
+                    found.append(body)
+        return found
 
-    chosen: list[str] = []
-    seen: set[str] = set()
-
-    def add(hit: tuple[str, str] | None) -> None:
-        if hit is None or hit[0] in seen:
-            return
-        seen.add(hit[0])
-        chosen.append(hit[1])
-
-    background = pick(_STORY_GROUPS[0])
-    if background:
-        add(background)
-        # "Background and composition" already covers the music; only pull a
-        # second section when the background is about the recording.
-        if "composition" not in background[0]:
-            add(pick(_STORY_GROUPS[2]))
-    else:
-        add(pick(_STORY_GROUPS[1]))
-        add(pick(_STORY_GROUPS[2]))
-
-    if not chosen:
-        for group in _STORY_GROUPS[3:]:
-            hit = pick(group)
-            if hit:
-                add(hit)
-                break
-
-    if not chosen:
-        return ""
-    if len(chosen) == 1:
-        return shorten_story(chosen[0], STORY_LIMIT)
-    parts = [
-        shorten_story(chosen[0], STORY_FIRST_LIMIT),
-        shorten_story(chosen[1], STORY_SECOND_LIMIT),
-    ]
-    return "\n\n".join(part for part in parts if part)
+    for group in _STORY_GROUPS[:3]:
+        for body in bodies(group):
+            anecdote = _best_anecdote(body)
+            if anecdote:
+                return anecdote
+    return ""
 
 
 def _chart_label(chart_id: str) -> tuple[str, str]:
@@ -563,6 +610,10 @@ def _table_chart(name: str) -> tuple[str, str] | None:
             break
     if name == "Canada Top Singles (RPM)":
         name = "Canada RPM"
+    if name == "Canada RPM Top Singles":
+        name = "Canada RPM"
+    if name == "UK Singles Chart":
+        name = "UK Singles (OCC)"
     return (name, country) if name else None
 
 
@@ -590,6 +641,7 @@ def parse_charts(wikitext: str, source_url: str = "") -> list[ChartData]:
     in_table = False
     table_allowed = False
     table_year: int | None = None
+    next_table_blocked = False
     row: list[str] = []
 
     def add(name: str, country: str, peak: int, year: int | None) -> None:
@@ -626,9 +678,19 @@ def parse_charts(wikitext: str, source_url: str = "") -> list[ChartData]:
             continue
 
         stripped = line.lstrip()
+        label = re.fullmatch(r"'''(.+?)'''", stripped)
+        if label and not in_table:
+            # A bold line introduces the next table ("'''Live version'''").
+            next_table_blocked = bool(
+                _BAD_CHART_SECTION_RE.search(label.group(1))
+            )
+            continue
         if stripped.startswith("{|"):
             in_table = True
-            table_allowed = _is_chart_section(headings)
+            table_allowed = (
+                _is_chart_section(headings) and not next_table_blocked
+            )
+            next_table_blocked = False
             table_year = None
             row = []
             continue
@@ -677,12 +739,24 @@ def parse_charts(wikitext: str, source_url: str = "") -> list[ChartData]:
             if line.startswith("|-"):
                 flush_row()
                 continue
-            if line.startswith(("!", "|+")):
+            if line.startswith("|+"):
                 flush_row()
-                header = _plain_cell(line[1:])
-                year_match = re.search(r"\((\d{4})\)", header)
-                if year_match:
-                    table_year = int(year_match.group(1))
+                continue
+            if line.startswith("!"):
+                if re.match(
+                    r"^!\s*(?:scope|id|style|class|rowspan|colspan)\s*=",
+                    line,
+                    re.I,
+                ):
+                    # ``!scope="row"| Canada RPM`` is a data label, not a
+                    # column header.
+                    row.extend(_split_cells(line[1:]))
+                else:
+                    flush_row()
+                    header = _plain_cell(line[1:])
+                    year_match = re.search(r"\((\d{4})\)", header)
+                    if year_match:
+                        table_year = int(year_match.group(1))
                 continue
             if line.startswith("|"):
                 row.extend(_split_cells(line[1:]))
@@ -705,6 +779,7 @@ def lookup_wikipedia(
     client: httpx.Client,
     *,
     sleep: Callable[[float], None] = time.sleep,
+    with_charts: bool = True,
 ) -> WikipediaData | None:
     """Best-effort Wikipedia prose and chart placements for a track."""
     clean_title, clean_artist = clean_query(title, artist)
@@ -759,26 +834,27 @@ def lookup_wikipedia(
         intro, sections = _top_sections(extract)
         if clean_artist and not _mentions_any(intro, clean_artist):
             continue
-        summary = _truncate(intro, SUMMARY_LIMIT)
+        summary = _short_summary(intro)
         story = _story_for(sections)
         if not summary and not story:
             continue
 
         charts: list[ChartData] = []
-        sleep(PAUSE_S)
-        try:
-            parsed = _get_json(
-                client,
-                action="parse",
-                page=page_title,
-                prop="wikitext",
-                redirects=1,
-            )
-            wikitext = (parsed.get("parse") or {}).get("wikitext") or ""
-            charts = parse_charts(wikitext, url)
-        except (httpx.HTTPError, ProviderError):
-            # Prose is the valuable part; chart templates are a bonus.
-            charts = []
+        if with_charts:
+            sleep(PAUSE_S)
+            try:
+                parsed = _get_json(
+                    client,
+                    action="parse",
+                    page=page_title,
+                    prop="wikitext",
+                    redirects=1,
+                )
+                wikitext = (parsed.get("parse") or {}).get("wikitext") or ""
+                charts = parse_charts(wikitext, url)
+            except (httpx.HTTPError, ProviderError):
+                # Prose is the valuable part; chart templates are a bonus.
+                charts = []
 
         return WikipediaData(
             title=page_title,

@@ -178,11 +178,15 @@ def test_lookup_maps_summary_story_and_charts():
     assert data.url == PAGE_URL
     assert data.confidence == "exact"
     assert data.summary.startswith('"Blue in Green" is a jazz ballad')
-    assert "ten-bar form" in data.story
+    assert len(data.summary) <= 220
+    assert "Davis composed" in data.story
+    assert "30th Street Studio" in data.story
+    assert "ten-bar form" not in data.story
     assert "References" not in data.story
     assert "===" not in data.story
-    assert "sketched in one afternoon" in data.story
-    assert "\n\n" in data.story
+    assert "sketched in one afternoon" not in data.story
+    assert "\n\n" not in data.story
+    assert len(data.story) <= 400
     assert [(entry.chart_name, entry.peak) for entry in data.charts] == [
         ("Billboard Hot 100", 3),
         ("UK Singles (OCC)", 12),
@@ -205,9 +209,88 @@ def test_story_keeps_whole_sentences_within_the_limit():
     )
 
     assert data is not None
-    assert len(data.story) <= 950
+    assert len(data.story) <= 400
     assert data.story.endswith(".")
     assert "..." not in data.story
+
+
+def test_lookup_can_skip_chart_parsing():
+    data = lookup_wikipedia(
+        "Blue in Green", "Miles Davis", _client(),
+        sleep=lambda _: None,
+        with_charts=False,
+    )
+
+    assert data is not None
+    assert data.summary
+    assert data.charts == []
+
+
+def test_truncate_respects_the_limit():
+    from app.enrichment.wikipedia import _truncate
+
+    assert len(_truncate("word " * 100, 220)) <= 220
+
+
+def test_summary_is_one_short_sentence():
+    extract = (
+        '"Blue in Green" is a modal jazz ballad by Miles Davis, recorded in '
+        "1959 for the album Kind of Blue and later included on many "
+        "compilations, reissues and live albums over the following decades.\n"
+    )
+
+    data = lookup_wikipedia(
+        "Blue in Green", "Miles Davis", _client(extract=extract),
+        sleep=lambda _: None,
+    )
+
+    assert data is not None
+    assert data.summary.startswith('"Blue in Green"')
+    assert len(data.summary) <= 220
+
+
+def test_story_prefers_an_origin_anecdote_and_drops_reception():
+    extract = (
+        '"Blue in Green" is a jazz ballad by Miles Davis.\n\n'
+        "== Background ==\n"
+        "The song peaked at number 3 on the Billboard Hot 100. "
+        "Davis composed the piece with Bill Evans in 1959 after an all-night "
+        "rehearsal. It was certified platinum in 1990 and won a Grammy Award. "
+        "The recording was made in two takes at Columbia's 30th Street "
+        "Studio.\n"
+    )
+
+    data = lookup_wikipedia(
+        "Blue in Green", "Miles Davis", _client(extract=extract),
+        sleep=lambda _: None,
+    )
+
+    assert data is not None
+    assert "composed" in data.story
+    assert "30th Street Studio" in data.story
+    assert "Billboard" not in data.story
+    assert "certified" not in data.story
+    assert "Grammy" not in data.story
+    assert len(data.story) <= 400
+
+
+def test_story_is_empty_when_the_article_has_no_anecdote():
+    extract = (
+        '"Blue in Green" is a jazz ballad by Miles Davis.\n\n'
+        "== Composition ==\n"
+        "The piece is a ten-bar form rather than the usual twelve-bar blues. "
+        "Its modal harmony moves slowly, leaving room for the trumpet and "
+        "piano solos.\n"
+    )
+
+    data = lookup_wikipedia(
+        "Blue in Green", "Miles Davis", _client(extract=extract),
+        sleep=lambda _: None,
+    )
+
+    assert data is not None
+    assert data.summary.startswith('"Blue in Green"')
+    assert data.story == ""
 
 
 def test_lookup_rejects_a_page_that_does_not_mention_the_artist():
@@ -485,6 +568,40 @@ def test_parse_charts_skips_decade_and_all_time_sections():
     assert all(entry.source_url == PAGE_URL for entry in charts)
 
 
+def test_parse_charts_reads_row_headers_and_skips_a_labeled_live_table():
+    wikitext = """
+==Chart and sales performance==
+===Weekly charts===
+'''Studio version'''
+{|
+|-
+! Chart (1974–1975)
+! Peak<br />position
+|-
+!scope="row"| US ''Billboard'' Hot 100
+|align="center"| 19
+|-
+!scope="row"| Canada ''[[RPM (magazine)|RPM]]'' Top Singles
+| 58
+|}
+'''Live version'''
+{|
+|-
+! Chart (1976–1977)
+! Peak<br />position
+|-
+!scope="row"| US ''Billboard'' Hot 100
+| 38
+|}
+"""
+
+    pairs = _chart_pairs(parse_charts(wikitext))
+
+    assert ("Billboard Hot 100", 19) in pairs
+    assert ("Canada RPM", 58) in pairs
+    assert ("Billboard Hot 100", 38) not in pairs
+
+
 def test_parse_charts_reads_plain_wikitables():
     charts = parse_charts(WIKITABLE, PAGE_URL)
 
@@ -682,6 +799,110 @@ def test_story_force_refreshes_auto_text_but_not_manual_text(tmp_path):
 
     assert row.summary.startswith('"Blue in Green"')
     assert row.story == "Manual story"
+
+
+def test_story_force_clears_auto_prose_on_a_definitive_miss(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as session:
+        session.add(
+            TrackDetail(
+                youtube_video_id="v1",
+                summary="Old auto summary",
+                story="Old auto story",
+                sources={
+                    "summary": {
+                        "provider": "wikipedia",
+                        "url": "https://old",
+                        "fetched_at": "2020-01-01",
+                    },
+                    "story": {
+                        "provider": "wikipedia",
+                        "url": "https://old",
+                        "fetched_at": "2020-01-01",
+                    },
+                },
+            )
+        )
+        session.commit()
+
+        enrich_story(
+            session,
+            "v1",
+            force=True,
+            client=object(),
+            wikipedia=lambda *_: None,
+        )
+        row = session.get(TrackDetail, "v1")
+
+    assert row.summary == ""
+    assert row.story == ""
+    assert "summary" not in row.sources
+    assert "story" not in row.sources
+    assert row.story_at is not None
+
+
+def test_story_force_keeps_locked_provider_story_when_no_anecdote(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as session:
+        session.add(
+            TrackDetail(
+                youtube_video_id="v1",
+                story="A locked story that must survive.",
+                locked_fields=["story"],
+                sources={
+                    "story": {
+                        "provider": "wikipedia",
+                        "url": "https://old",
+                        "fetched_at": "2020-01-01",
+                    }
+                },
+            )
+        )
+        session.commit()
+
+        enrich_story(
+            session,
+            "v1",
+            force=True,
+            client=object(),
+            wikipedia=lambda *_: _wiki(story=""),
+        )
+        row = session.get(TrackDetail, "v1")
+
+    assert row.story == "A locked story that must survive."
+    assert row.sources["story"]["url"] == "https://old"
+
+
+def test_story_force_clears_provider_story_when_no_anecdote(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as session:
+        session.add(
+            TrackDetail(
+                youtube_video_id="v1",
+                story="An old article dump that should disappear.",
+                sources={
+                    "story": {
+                        "provider": "wikipedia",
+                        "url": "https://old",
+                        "fetched_at": "2020-01-01",
+                    }
+                },
+            )
+        )
+        session.commit()
+
+        enrich_story(
+            session,
+            "v1",
+            force=True,
+            client=object(),
+            wikipedia=lambda *_: _wiki(story=""),
+        )
+        row = session.get(TrackDetail, "v1")
+
+    assert row.story == ""
+    assert "story" not in row.sources
+    assert row.story_at is not None
 
 
 def test_story_force_replaces_auto_charts_but_keeps_manual_charts(tmp_path):

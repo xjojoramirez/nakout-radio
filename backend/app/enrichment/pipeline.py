@@ -83,6 +83,31 @@ def _record_confidence(outcome: EnrichOutcome, data: ProviderData) -> None:
         outcome.confidence = "fuzzy"
 
 
+def _clear_stale_prose(
+    row: TrackDetail, fields: dict[str, str], provider: str
+) -> int:
+    """Remove old provider prose when a refresh has nothing to replace it with.
+
+    ``apply_provider_data`` ignores empty values, so without this a shortened
+    extractor would leave an old article dump in place forever.
+    """
+    sources = dict(row.sources or {})
+    locked = set(row.locked_fields or [])
+    cleared = 0
+    for field_name, value in fields.items():
+        if not is_empty(value) or field_name in locked:
+            continue
+        source = sources.get(field_name)
+        if not isinstance(source, dict) or source.get("provider") != provider:
+            continue
+        setattr(row, field_name, "")
+        sources.pop(field_name, None)
+        cleared += 1
+    if cleared:
+        row.sources = sources
+    return cleared
+
+
 def enrich_track(
     session: Session,
     video_id: str,
@@ -241,7 +266,9 @@ def enrich_story(
         return outcome
 
     if data is None:
-        # A definitive miss: remember it so the bulk run does not retry.
+        # A definitive miss: remember it so the bulk run does not retry. Old
+        # auto prose is no longer supported by the article, so clear it.
+        _clear_stale_prose(row, {"summary": "", "story": ""}, WIKIPEDIA)
         row.story_at = _utcnow()
         row.story_error = None
         session.add(row)
@@ -260,6 +287,11 @@ def enrich_story(
         ),
         fetched_at=fetched_at,
         force=force,
+    )
+    outcome.applied += _clear_stale_prose(
+        row,
+        {"summary": data.summary, "story": data.story},
+        WIKIPEDIA,
     )
 
     if data.url and "links" not in locked:
