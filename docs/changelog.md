@@ -3,6 +3,34 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-27 - push curated stories to live
+
+Added `scripts/push_stories.py`, a story-only bridge for the local -> live
+direction. It fetches both snapshots, matches tracks by video ID, copies only
+`summary`, `story` and `dj_note`, and sends a playlist-free snapshot so live
+playlists and non-story metadata are untouched.
+
+- Default: only fields already locked locally. `--all` includes unlocked
+  provider prose, `--no-lock` leaves transferred fields unlocked, and
+  `--save` keeps the generated payload.
+- Requires `LIBRARY_IMPORT_ENABLED=true` on live only for the push.
+- Files touched:
+  - `scripts/push_stories.py` (new)
+  - `README.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No - tooling and docs only; no served code
+  changed. The live import flag is a temporary operational toggle: recreating
+  the live backend applies it, then recreating it again disables it.
+- **Verification:**
+  - Default local dry-run: 55 tracks selected (53 summaries, 34 stories), 356
+    unlocked fields skipped, 0 membership changes, 0 detail updates because
+    source and target were the same library.
+  - `--all` local dry-run: 289 tracks selected (289 summaries, 154 stories),
+    236 details updated only because locks were added, 0 membership changes.
+  - Payload inspection: `playlists` empty, every track membership empty,
+    live album/year/charts and other fields preserved (sample "Back In Black":
+    album, 2014, 11 chart rows).
+
 ## 2026-10-27 - Nakout 2.0 music library API
 
 Tracks are now permanent library records, and the live library can be pulled
