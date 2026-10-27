@@ -12,6 +12,7 @@ from sqlalchemy import func
 from sqlmodel import Session, col, delete, select, update
 
 from app import ratelimit
+from app import enrichment
 from app.auth import (
     COOKIE_NAME,
     create_session_token,
@@ -32,6 +33,7 @@ from app.broadcast import (
 from app.changelog import load_changelog
 from app.config import get_settings
 from app.db import get_session
+from app.library import detach_membership
 from app.loudness import ensure_backfill
 from app.models import (
     Playlist,
@@ -299,7 +301,11 @@ def delete_genre(genre_id: int, session: Session = Depends(get_session)) -> dict
         select(Playlist.id).where(Playlist.genre_id == genre_id)
     ).all()
     if playlist_ids:
-        session.exec(delete(TrackCache).where(TrackCache.playlist_id.in_(playlist_ids)))
+        rows = session.exec(
+            select(TrackCache).where(TrackCache.playlist_id.in_(playlist_ids))
+        ).all()
+        for row in rows:
+            detach_membership(session, row)
     session.exec(delete(Playlist).where(Playlist.genre_id == genre_id))
     session.exec(delete(ScheduleSlot).where(ScheduleSlot.genre_id == genre_id))
     session.exec(delete(TrackPlay).where(TrackPlay.genre_id == genre_id))
@@ -335,6 +341,7 @@ def create_playlist(
         sync_error = _redact_secrets(exc)
     if sync_error is None:
         ensure_backfill()
+        enrichment.ensure_backfill()
     return {
         "id": playlist.id,
         "youtube_playlist_id": yt_id,
@@ -401,7 +408,11 @@ def delete_playlist(
     playlist = session.get(Playlist, playlist_id)
     if playlist is None:
         raise HTTPException(status_code=404, detail="playlist not found")
-    session.exec(delete(TrackCache).where(TrackCache.playlist_id == playlist_id))
+    rows = session.exec(
+        select(TrackCache).where(TrackCache.playlist_id == playlist_id)
+    ).all()
+    for row in rows:
+        detach_membership(session, row)
     session.delete(playlist)
     session.commit()
     return {"status": "deleted"}
@@ -420,6 +431,7 @@ def refresh_playlist(
         logger.warning("YouTube refresh failed: %s", _redact_secrets(exc))
         raise HTTPException(status_code=502, detail="YouTube fetch failed") from exc
     ensure_backfill()
+    enrichment.ensure_backfill()
     return {"id": playlist.id, "synced": synced}
 
 
@@ -434,6 +446,7 @@ def sync_all(session: Session = Depends(get_session)) -> dict:
         except httpx.HTTPError as exc:
             results.append({"id": pl.id, "synced": 0, "error": _redact_secrets(exc)})
     ensure_backfill()
+    enrichment.ensure_backfill()
     return {"results": results}
 
 

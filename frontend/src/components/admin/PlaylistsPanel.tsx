@@ -672,7 +672,7 @@ export function PlaylistsPanel({
       {pendingRemove && (
         <ConfirmDialog
           title="Remove playlist"
-          message={`Remove "${pendingRemove.label || pendingRemove.youtube_playlist_id}" and its tracks from ${pendingRemove.genre_name}?`}
+          message={`Remove "${pendingRemove.label || pendingRemove.youtube_playlist_id}" from ${pendingRemove.genre_name}? Its tracks stay in the library.`}
           confirmLabel="Remove"
           danger
           onConfirm={() => {

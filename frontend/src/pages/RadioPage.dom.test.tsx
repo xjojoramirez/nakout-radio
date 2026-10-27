@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { SlotToday, Track } from "../types";
+import type { SlotToday, Track, TrackDetail } from "../types";
 import { api } from "../api/client";
 import { RadioPage } from "./RadioPage";
 
@@ -8,12 +8,14 @@ vi.mock("../api/client", () => ({
   api: {
     now: vi.fn(),
     scheduleToday: vi.fn(),
+    trackDetail: vi.fn(),
   },
 }));
 
 const mocked = api as unknown as {
   now: ReturnType<typeof vi.fn>;
   scheduleToday: ReturnType<typeof vi.fn>;
+  trackDetail: ReturnType<typeof vi.fn>;
 };
 
 function track(id: string): Track {
@@ -25,6 +27,42 @@ function track(id: string): Track {
     duration_seconds: 200,
     position: 0,
     volume_offset_db: 0,
+  };
+}
+
+function detail(overrides: Partial<TrackDetail> = {}): TrackDetail {
+  return {
+    youtube_video_id: "live",
+    title: "live",
+    artist: "Miles Davis",
+    album: "Kind of Blue",
+    album_artist: "Miles Davis",
+    release_date: "1959-08-17",
+    release_year: 1959,
+    label: "Columbia",
+    catalog_number: null,
+    isrc: null,
+    track_number: 3,
+    disc_number: 1,
+    genres: ["jazz"],
+    country: "US",
+    language: null,
+    bpm: null,
+    musical_key: null,
+    cover_url: null,
+    summary: "A modal jazz ballad.",
+    story: "Recorded in two sessions in 1959.",
+    dj_note: null,
+    lyric_snippet: null,
+    moods: [],
+    credits: [],
+    links: [
+      { label: "Wikipedia", url: "https://en.wikipedia.org/wiki/Blue_in_Green" },
+    ],
+    charts: [],
+    similar: [],
+    metadata_sources: [],
+    ...overrides,
   };
 }
 
@@ -100,6 +138,9 @@ beforeEach(() => {
     source: "schedule",
   });
   mocked.scheduleToday.mockResolvedValue({ current_id: null, slots: [] });
+  // Pending by default so tests that do not assert on liner notes do not
+  // update state after the test has finished.
+  mocked.trackDetail.mockReturnValue(new Promise(() => {}));
 });
 
 afterEach(() => {
@@ -251,5 +292,28 @@ describe("RadioPage", () => {
     expect(brand).not.toBeNull();
     expect(brand?.textContent).toBe("Nakout Radio");
     expect(brand?.querySelector("span")).toBeNull();
+  });
+
+  it("shows the album facts and liner notes for the on-air track", async () => {
+    mocked.trackDetail.mockResolvedValue(detail());
+
+    render(<RadioPage />);
+
+    expect(
+      await screen.findByText("Kind of Blue · 1959 · Columbia"),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("Liner notes")).toBeInTheDocument();
+    expect(
+      await screen.findByText("A modal jazz ballad."),
+    ).toBeInTheDocument();
+  });
+
+  it("says details are not available when the track has none", async () => {
+    mocked.trackDetail.mockRejectedValue({ status: 404 });
+    render(<RadioPage />);
+
+    expect(
+      await screen.findByText("Details not available for this track yet."),
+    ).toBeInTheDocument();
   });
 });

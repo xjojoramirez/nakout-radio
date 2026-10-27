@@ -12,6 +12,9 @@ os.environ["GENRE_TZ"] = "Asia/Manila"
 # Loudness lookups must never hit the network from tests; the lookup code is
 # exercised directly with fake clients/transports instead.
 os.environ["LOUDNESS_LOOKUP_ENABLED"] = "false"
+# Enrichment must never hit Deezer/MusicBrainz from tests; providers are
+# exercised directly with fake HTTP transports.
+os.environ["ENRICHMENT_ENABLED"] = "false"
 
 
 @pytest.fixture

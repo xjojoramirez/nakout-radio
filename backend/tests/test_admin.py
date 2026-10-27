@@ -112,7 +112,7 @@ def test_duplicate_slug_returns_409(tmp_path):
     assert resp.status_code == 409
 
 
-def test_delete_genre_removes_children(tmp_path):
+def test_delete_genre_detaches_tracks_and_removes_children(tmp_path):
     client, engine = _client(tmp_path)
     client.post("/api/studio/login", json={"password": "test-pass"})
     sid = client.post(
@@ -147,10 +147,83 @@ def test_delete_genre_removes_children(tmp_path):
     assert client.delete(f"/api/studio/genres/{sid}").status_code == 200
     with Session(engine) as s:
         assert s.exec(select(Playlist)).all() == []
-        assert s.exec(select(TrackCache)).all() == []
+        tracks = s.exec(select(TrackCache)).all()
+        assert [t.youtube_video_id for t in tracks] == ["v"]
+        assert tracks[0].playlist_id is None
         assert s.exec(select(ScheduleSlot)).all() == []
         assert s.exec(select(TrackPlay)).all() == []
         assert s.exec(select(Genre)).all() == []
+
+
+def test_delete_genre_detaches_once_when_track_is_in_two_playlists(tmp_path):
+    client, engine = _client(tmp_path)
+    _login(client)
+    sid = client.post(
+        "/api/studio/genres", json={"name": "S", "slug": "s"}
+    ).json()["id"]
+    with Session(engine) as s:
+        first = Playlist(genre_id=sid, youtube_playlist_id="PL1")
+        second = Playlist(genre_id=sid, youtube_playlist_id="PL2")
+        s.add(first)
+        s.add(second)
+        s.commit()
+        s.refresh(first)
+        s.refresh(second)
+        for playlist in (first, second):
+            s.add(
+                TrackCache(
+                    playlist_id=playlist.id,
+                    youtube_video_id="v",
+                    title="t",
+                    artist="a",
+                    position=0,
+                )
+            )
+        s.commit()
+
+    assert client.delete(f"/api/studio/genres/{sid}").status_code == 200
+    with Session(engine) as s:
+        rows = s.exec(select(TrackCache)).all()
+        assert len(rows) == 1
+        assert rows[0].youtube_video_id == "v"
+        assert rows[0].playlist_id is None
+
+
+def test_delete_genre_keeps_membership_in_another_genre(tmp_path):
+    client, engine = _client(tmp_path)
+    _login(client)
+    first_id = client.post(
+        "/api/studio/genres", json={"name": "A", "slug": "a"}
+    ).json()["id"]
+    second_id = client.post(
+        "/api/studio/genres", json={"name": "B", "slug": "b"}
+    ).json()["id"]
+    with Session(engine) as s:
+        first = Playlist(genre_id=first_id, youtube_playlist_id="PL1")
+        second = Playlist(genre_id=second_id, youtube_playlist_id="PL2")
+        s.add(first)
+        s.add(second)
+        s.commit()
+        s.refresh(first)
+        s.refresh(second)
+        kept_playlist_id = second.id
+        for playlist in (first, second):
+            s.add(
+                TrackCache(
+                    playlist_id=playlist.id,
+                    youtube_video_id="v",
+                    title="t",
+                    artist="a",
+                    position=0,
+                )
+            )
+        s.commit()
+
+    assert client.delete(f"/api/studio/genres/{first_id}").status_code == 200
+    with Session(engine) as s:
+        rows = s.exec(select(TrackCache)).all()
+        assert len(rows) == 1
+        assert rows[0].playlist_id == kept_playlist_id
 
 
 def test_update_genre_requires_auth(tmp_path):
@@ -600,8 +673,10 @@ def test_refresh_playlist(tmp_path, monkeypatch):
     assert resp.status_code == 200
     assert resp.json()["synced"] == 1
     with Session(engine) as s:
-        rows = s.exec(select(TrackCache)).all()
-        assert [r.youtube_video_id for r in rows] == ["v2"]
+        rows = s.exec(select(TrackCache).order_by(TrackCache.id)).all()
+        assert [r.youtube_video_id for r in rows] == ["v1", "v2"]
+        assert rows[0].playlist_id is None
+        assert rows[1].playlist_id == pid
 
 
 def test_refresh_missing_playlist_404(tmp_path):
@@ -935,7 +1010,7 @@ def test_list_added_playlists_counts_zero_without_tracks(tmp_path):
     assert resp.json()[0]["track_count"] == 0
 
 
-def test_delete_playlist_removes_tracks(tmp_path, monkeypatch):
+def test_delete_playlist_detaches_tracks(tmp_path, monkeypatch):
     client, engine = _client(tmp_path)
     _login(client)
     sid = client.post(
@@ -952,7 +1027,9 @@ def test_delete_playlist_removes_tracks(tmp_path, monkeypatch):
     assert client.delete(f"/api/studio/playlists/{pid}").status_code == 200
     with Session(engine) as s:
         assert s.exec(select(Playlist)).all() == []
-        assert s.exec(select(TrackCache)).all() == []
+        tracks = s.exec(select(TrackCache)).all()
+        assert [t.youtube_video_id for t in tracks] == ["v1"]
+        assert tracks[0].playlist_id is None
 
 
 def test_delete_playlist_missing_404(tmp_path):
@@ -1150,9 +1227,10 @@ def test_delete_playlist_leaves_other_playlists_tracks(tmp_path, monkeypatch):
     with Session(engine) as s:
         playlists = s.exec(select(Playlist)).all()
         assert [p.id for p in playlists] == [second["id"]]
-        tracks = s.exec(select(TrackCache)).all()
-        assert [t.playlist_id for t in tracks] == [second["id"]]
-        assert [t.youtube_video_id for t in tracks] == ["v2"]
+        tracks = s.exec(select(TrackCache).order_by(TrackCache.id)).all()
+        assert [t.youtube_video_id for t in tracks] == ["v1", "v2"]
+        assert tracks[0].playlist_id is None
+        assert tracks[1].playlist_id == second["id"]
 
 
 def _seed_genre_with_tracks(engine, slug="chill", vids=("a", "b", "c")):

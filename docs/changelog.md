@@ -3,6 +3,498 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-27 - Nakout 2.0 music library API
+
+Tracks are now permanent library records, and the live library can be pulled
+into a local deployment through an authenticated API.
+
+- `trackcache.playlist_id` is nullable. A row with no playlist is a standalone
+  library track. Removing a track from a playlist now detaches it instead of
+  deleting it; deleting a playlist or genre detaches its tracks too.
+- Playlist sync updates rows in place, re-attaches returning tracks, and keeps
+  row IDs stable. Details, stories, charts, locks and sources survive every
+  membership change.
+- New `/api/library` routes: `meta`, paginated `tracks` (with the virtual
+  `group=unassigned` bucket), `tracks/{video_id}`, `export`, and a local-only
+  `import`. All require `LIBRARY_API_KEY`; import also requires
+  `LIBRARY_IMPORT_ENABLED=true`.
+- `scripts/pull_library.py` downloads the live snapshot and posts it to the
+  local import route (supports `--dry-run` and `--save`).
+- Import merges: live wins except for locally locked fields, charts are
+  replaced unless locked, and no track is ever deleted. Re-importing the same
+  snapshot is a no-op.
+- Studio's Library panel shows a "No playlist" badge and filter.
+- V1 radio behavior, public routes, scheduling and playback are unchanged.
+
+- Files touched:
+  - `backend/app/models.py`
+  - `backend/app/__init__.py`
+  - `backend/app/config.py`
+  - `backend/app/main.py`
+  - `backend/app/library.py` (new)
+  - `backend/app/library_schemas.py` (new)
+  - `backend/app/routers/library.py` (new)
+  - `backend/app/routers/admin.py`
+  - `backend/app/routers/tracks.py`
+  - `backend/app/sync.py`
+  - `backend/app/schemas.py`
+  - `backend/app/track_details.py`
+  - `backend/alembic/versions/b7c1d2e3f4a5_nullable_playlist_id.py` (new)
+  - `backend/.env.example`
+  - `backend/tests/test_library.py` (new)
+  - `backend/tests/test_library_import.py` (new)
+  - `backend/tests/test_migration_nullable_playlist.py` (new)
+  - `backend/tests/test_sync.py`
+  - `backend/tests/test_admin.py`
+  - `backend/tests/test_track_details.py`
+  - `scripts/pull_library.py` (new)
+  - `frontend/src/types.ts`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/components/admin/TrackLibraryPanel.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `frontend/src/components/admin/GenresPanel.tsx`
+  - `frontend/src/components/admin/GenresPanel.dom.test.tsx`
+  - `frontend/src/components/admin/PlaylistsPanel.tsx`
+  - `frontend/src/components/admin/PlaylistsPanel.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `README.md`
+  - `docs/superpowers/specs/2026-10-27-music-library-api-design.md` (new)
+  - `docs/superpowers/plans/2026-10-27-music-library-api.md` (new)
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - backend and frontend:
+  `docker compose up -d --build backend frontend`. The backend migration makes
+  `trackcache.playlist_id` nullable on start; the frontend image must be
+  rebuilt for the badge/filter and confirmation copy. Hard-refresh the browser
+  after the frontend rebuild.
+- **Verification:** backend `pytest` 481 passed; frontend `npm run typecheck`
+  passed, `npm test` 352 passed, `npm run build` passed. The migration was run
+  on a copy of the local volume database first (392 track rows and 390 details
+  preserved; `playlist_id` became nullable with the FK and index intact), then
+  applied to the live local volume on rebuild. `/api/library` export/import was
+  smoke-tested against the real local library: meta reported 390 unique
+  tracks, 390 details, 3 playlists; an identical snapshot imported as a no-op;
+  removing one membership detached the track, kept its detail, and re-importing
+  re-attached it. `scripts/pull_library.py --dry-run` completed with an
+  idempotent summary. The rebuilt local stack is healthy and serves the new
+  frontend bundle.
+
+## 2026-10-27 - short researched stories
+
+The Story tab now shows a short highlight instead of an article dump.
+
+- Wikipedia enrichment writes a first-sentence summary (220 characters max)
+  and one filtered anecdote (400 characters max, 2-3 sentences). Chart, award,
+  tour, release-format and personnel sentences are dropped. If no anecdote is
+  found, the story stays empty and a forced refresh clears the old provider
+  story.
+- Composer prose limits are now 40-220 characters for `summary` and 80-400 for
+  `story`. The composer researches Wikipedia and MusicBrainz and writes one
+  origin/recording anecdote; when the sources have no real anecdote it writes
+  only the summary.
+- `python -m app.story_refresh` re-fetches provider prose for unlocked
+  Wikipedia-sourced rows without touching charts. It is a separate module, so
+  the composer and reviewer agents cannot call it.
+- The reviewer's length checks and highlight guidance now match the tighter
+  limits.
+
+- Files touched:
+  - `backend/app/enrichment/wikipedia.py`
+  - `backend/app/enrichment/pipeline.py`
+  - `backend/app/composer.py`
+  - `backend/app/story_refresh.py`
+  - `backend/tests/test_story.py`
+  - `backend/tests/test_composer.py`
+  - `backend/tests/test_story_refresh.py`
+  - `.opencode/agents/track-info-composer.md`
+  - `.opencode/agents/track-details-reviewer.md`
+  - `docs/superpowers/specs/2026-10-27-short-researched-stories-design.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - backend only:
+  `docker compose up -d --build backend` (then `opencode reload` for the agent
+  prompt changes). No frontend change, so no frontend rebuild or hard refresh
+  is needed.
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 454 passed.
+  - `cd frontend && npm test -- --run` - 351 passed; `npm run typecheck` and
+    `npm run build` clean.
+  - `python -m app.story_refresh --dry-run` inside the backend container -
+    276 provider-written tracks selected.
+  - Live refresh - all 390 summaries are now 220 characters or fewer. Two
+    legacy locked stories remain over 400 characters (`Jump` 425, `Free Bird`
+    443); their summaries were shortened and their locks were respected. 259
+    tracks now have a summary and no story because the article had no usable
+    origin anecdote.
+  - Composer sample - 10 tracks composed from Wikipedia sources and applied.
+    Their summaries are 117-170 characters and their stories 275-367; all 20
+    fields are locked with the source URL.
+
+## 2026-10-27 - track info composer and read-only reviewer
+
+Added a `track-info-composer` subagent and a narrow CLI, `app.detail_tools`, so
+an agent can research a track and write the details listeners see without
+touching the database directly:
+
+```
+docker compose exec -T backend python -m app.detail_tools find "Jump"
+docker compose exec -T backend python -m app.detail_tools show <video_id>
+docker compose exec -T backend python -m app.detail_tools apply <video_id> --source-url <url> [--summary ...] [--story ...] [--album ...] [--release-year ...] [--label ...] [--isrc ...] [--credit "Role=Name"] [--dry-run]
+```
+
+`app.composer` applies the payload with evidence rules:
+
+- `summary` and `story` may replace empty or provider-written prose; manually
+  entered prose is left alone unless it is unlocked.
+- `album`, `release_year`, `label`, `isrc` and `credits` are fill-only. An
+  existing value is reported as a conflict, never overwritten.
+- Every written field is locked and records its evidence URL in `sources`, so
+  the next enrichment pass keeps it and Studio can show where it came from.
+- Story highlights are 40-900 characters (ideally 250-450); summaries are
+  20-600. ISRCs are normalized and validated as 12 characters.
+
+The reviewer is read-only again. It now uses `detail_tools find/show` instead
+of ad-hoc SQLite one-liners, audits composer-written and locked fields against
+their `sources` URLs, and proposes a highlight without saving it. The composer
+owns all writes. Studio's source list now labels Wikipedia and editor sources.
+
+- Files touched:
+  - `.opencode/agents/track-info-composer.md`
+  - `.opencode/agents/track-details-reviewer.md`
+  - `backend/app/composer.py`
+  - `backend/app/detail_tools.py`
+  - `backend/tests/test_composer.py`
+  - `frontend/src/components/admin/TrackDetailEditor.tsx`
+  - `docs/superpowers/specs/2026-10-27-track-info-composer-design.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - both:
+  `docker compose up -d --build backend frontend` (then hard-refresh the
+  browser).
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 443 passed.
+  - `cd frontend && npm test -- --run` - 351 passed; `npm run typecheck` and
+    `npm run build` clean.
+  - Real probe against the live volume: `detail_tools find "Jump"` returned
+    `bX9RMdcFQAw`, and an `apply --dry-run` for album/year/label reported all
+    three as already set and wrote nothing.
+  - Recreated `backend` and `frontend`; both healthy, `/api/health` returns
+    `ok`, and the new CLI runs in the live backend container.
+  - Both subagents load after an OpenCode config reload and answer a no-tool
+    smoke prompt.
+
+## 2026-10-26 - chart templates inside tables
+
+The new reviewer caught a missing Ireland placement for "Torn Between Two
+Lovers": the template was written inside a table cell
+(`|{{single chart|Ireland2|5|...}}`), and the table branch treated the whole
+line as a cell instead of parsing the template. Chart templates are now read
+before table rows, so both `{{single chart}}` and `|{{single chart}}` work.
+Live-version, remix, cover-version and re-recording headings are excluded for
+templates as well as tables, and South African chart rows now carry `ZA`.
+Template rows inside a table also inherit the header's `Chart (1984)` year, and
+`Billboardrocksongs` maps to its current name, Hot Rock & Alternative Songs.
+Three table shapes from "Free Bird" are covered too: a `Chart and sales
+performance` heading is a chart section (the old `sales` guard wrongly
+excluded it), chart names written as row headers
+(`!scope="row"| Canada RPM Top Singles`) are data labels, and a bold
+`'''Live version'''` line blocks the table that follows.
+
+- Files touched:
+  - `backend/app/enrichment/wikipedia.py`
+  - `backend/tests/test_story.py`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - backend only:
+  `docker compose up -d --build backend`. Existing chart rows need a re-parse.
+- Verification: 428 backend tests passed. Real probe: "Torn Between Two
+  Lovers" now returns 15 placements, including Ireland (IRMA) #5 and South
+  Africa (Springbok Radio) #6 with country `ZA`; Jump's template rows now
+  carry 1984, leaving only the two 2020-2023 placements undated; "Free Bird"
+  returns 6 studio placements (Hot 100 #19, Canada RPM #58, Cashbox #25) and
+  excludes its live-version table.
+
+## 2026-10-26 - track details reviewer agent
+
+Added a project subagent for auditing liner notes:
+`.opencode/agents/track-details-reviewer.md`. It is read-only and checks that
+the story, facts and chart rows all describe the same recording: wrong
+article/version (cover, live, remix, same-named episode), contradictions
+between story and album/year/label, leftover wiki markup, duplicate or
+misnamed charts, year-end numbers posing as peaks, and story claims such as
+"#1 on the Hot 100" with no matching row. It reports findings with the
+article URL or row as evidence and suggests field corrections; it never edits
+files or writes to the database.
+
+Ask the main agent to use it, for example: "use the track-details-reviewer
+subagent to review Jump by Van Halen". It can find the track by name in the
+library, read `/data/radio.db` through `docker compose exec`, call the public
+API with `curl -k`, and fetch the Wikipedia article.
+
+- Files touched:
+  - `.opencode/agents/track-details-reviewer.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No - agent configuration is picked up by
+  OpenCode without restarting the app containers.
+- Verification: the agent is present in the subagent catalog; a live review of
+  "Jump" confirmed 25 chart rows, the Hot 100 #1, and no live-version entries.
+
+## 2026-10-26 - shorter stories, even text weight
+
+The Story tab now reads as one voice: the summary is normal weight instead of
+semibold, and the story is capped at about 900 characters. It keeps whole
+sentences from the top of the background section (up to 600 characters) plus
+the composition section (up to 300), so it reads as a short origin story
+rather than a full article dump. Section breaks are preserved as paragraphs,
+and the text never stops mid-word.
+
+- Files touched:
+  - `backend/app/enrichment/wikipedia.py`
+  - `backend/tests/test_story.py`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - both:
+  `docker compose up -d --build backend frontend`. Existing stories are
+  regenerated by clearing them and letting the background worker refetch.
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 428 passed.
+  - `cd frontend && npm test -- --run` - 351 passed; typecheck and build clean.
+  - Real probe: Jump's story is 897 characters (was 2164) and keeps the synth
+    line, the 1951 Mercury, and the "jump" lyric origin.
+
+## 2026-10-26 - liner notes read in full
+
+The desktop liner-notes panel was a 250px scroll box, so a long Story cut off
+mid-word at the fold (the "Jump" summary stopped at "martial artist..."). The
+Story and Details panels now grow with their content. The Charts table keeps
+its own bounded 320px scroll area, with a visible thin scrollbar, so a song
+with 25 placements does not take over the page.
+
+- Files touched:
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes - frontend only:
+  `docker compose up -d --build frontend`.
+- Verification: `npm test -- --run` - 351 passed; `npm run typecheck` - clean;
+  `npm run build` - successful.
+
+## 2026-10-26 - Wikipedia stories and chart history
+
+Tracks now get real liner-note prose and a chart history. A new Wikipedia
+provider searches the article for the song, keeps the lead paragraph as the
+`summary` and the background / writing / composition sections as the `story`
+(capped at a readable length, nested headings stripped), and records the
+article URL as a `Wikipedia` link.
+
+Matching is deliberately conservative: album, EP and list pages are rejected,
+the artist must appear in the article lead as a whole word (so a band called
+"Release" no longer matches the word "released" in an Alicia Keys article),
+and fuzzy title matches are still marked `needs_review`. Leading parenthetical
+titles survive (`(I Can't Get No) Satisfaction`), `&` matches "and", a credit
+like "Joan Jett & The Blackhearts" accepts "Joan Jett" in the lead, and when
+the top hit is a same-named TV episode the next plausible page is tried.
+
+Charts are parsed from the article's `{{single chart}}` templates and from
+hand-written wikitables (common on 1970s/1980s articles, where the Hot 100
+placement is just `|US ''Billboard'' Hot 100 ... | 1`). Only weekly charts
+count: year-end, decade-end, all-time, certification and sales sections are
+skipped, and a later "Live version" section's chart table is excluded because
+those placements belong to a different recording. Duplicate placements keep
+the best peak, chart ids are mapped to readable names and countries (Billboard
+fallback included), entries link to the article, and a track keeps at most 40.
+Missing chart data is a normal empty state, not an error.
+
+A `story_at` marker (plus `story_error`) mirrors `enriched_at`, so the bulk
+worker can backfill stories for already-enriched tracks once. It runs after
+the details pass at boot, after playlist syncs and from the Studio. A manual
+"Fetch details" fetches both facts and the story. Locked summary/story/links
+survive; a forced fetch only replaces auto-sourced prose. Auto charts are
+replaced only when they were auto-sourced, and saving charts in the Studio
+adopts them (the auto marker is dropped), so manual chart edits are never
+overwritten.
+
+The Library now shows detail and story progress (`390/390 details ·
+276/390 stories`), a `story` badge per track, and the retry button counts both
+kinds of failure. The editor's Metadata panel shows when the story was checked
+and any story error.
+
+- Files touched:
+  - `backend/app/enrichment/wikipedia.py`
+  - `backend/app/enrichment/pipeline.py`
+  - `backend/app/enrichment/__init__.py`
+  - `backend/app/matching.py` (`normalize_key` / `key_ratio` shared helpers)
+  - `backend/app/models.py` (`story_at`, `story_error`, lockable `charts`)
+  - `backend/app/schemas.py`
+  - `backend/app/track_details.py`
+  - `backend/app/routers/tracks.py`
+  - `backend/alembic/versions/d8e9f0a1b2c3_track_story.py`
+  - `backend/tests/test_story.py`
+  - `backend/tests/test_enrichment.py`
+  - `frontend/src/types.ts`
+  - `frontend/src/components/admin/TrackLibraryPanel.tsx`
+  - `frontend/src/components/admin/TrackDetailEditor.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `README.md`
+  - `docs/changelog.md` (this entry)
+  - `docs/studio/changelog.md`
+- **Container restart required?** Yes - both:
+  `docker compose up -d --build backend frontend`. The backend migration adds
+  `trackdetail.story_at` / `story_error` on boot. The worker then starts the
+  story backfill in the background (roughly 3-4 s per track).
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 427 passed.
+  - `cd frontend && npm test -- --run` - 351 passed (34 files).
+  - `npm run typecheck` - clean; `npm run build` - successful.
+  - `alembic upgrade head` on a throwaway SQLite database - reached
+    `d8e9f0a1b2c3` with both new columns.
+  - Real Wikipedia probe: Poison "Every Rose Has Its Thorn" 11 charts,
+    AC/DC "Thunderstruck" 18 charts, Mary MacGregor "Torn Between Two
+    Lovers" 12 charts, The Animals "House of the Rising Sun" 12 charts,
+    The Rolling Stones "(I Can't Get No) Satisfaction" 10 charts,
+    Joan Jett "I Love Rock 'n' Roll" 25 charts; OPM tracks with no article
+    are missed cleanly; the generic-artist false positive is rejected.
+  - Jump (Van Halen), the reported case: the article's Hot 100 #1 is a plain
+    wikitables row, not a template. The table parser now returns 25 weekly
+    placements (Hot 100 #1, Mainstream Rock #1, Dance Club Songs #17, UK #7)
+    and excludes the 1993 live-version table.
+  - Local backfill of the 390-track library: 390/390 checked, 276 with
+    Wikipedia prose (189 with a full story section), 215 tracks with 2516
+    chart entries, 0 provider errors, 4 fuzzy matches for review (all four
+    are correct articles with a title variant).
+
+## 2026-10-26 - automatic track detail enrichment (Deezer + MusicBrainz)
+
+Track details now fill themselves in. Deezer is the primary source: album,
+release date/year, label, genres, credits, BPM (rounded, Deezer returns a
+float), ISRC and cover. MusicBrainz fills the gaps Deezer leaves - canonical
+release year, label, country and ISRC - using the recording's release groups
+so the earliest (original) release wins over later compilations. Both are
+keyless; no new API keys are needed.
+
+Merge rules keep manual work safe: locked fields are never touched, empty
+fields are filled, and a re-fetch only refreshes values that carry an auto
+source entry. Each field records `{provider, url, fetched_at}` in `sources`,
+so the Studio can show where it came from. Fuzzy matches set `needs_review`
+and show a "review" flag in the Library. MusicBrainz search-only fallbacks
+(its detail request failed) are also marked fuzzy.
+
+A single-flight background worker mirrors the loudness backfill: it starts at
+boot, after playlist syncs, and from the Studio "Enrich missing" button. The
+Library shows `Enriched x/y`, failures and a retry action; the editor gains
+"Fetch details" for one track plus a Metadata panel with the sources, last
+fetch time and warnings. A definitive miss is remembered so the bulk run does
+not retry it forever; a manual fetch can always try again. MusicBrainz
+returning 503/429 never loses Deezer data - the track is saved with a warning,
+and MusicBrainz is simply skipped when Deezer already filled everything.
+
+The listener Details tab now credits the metadata providers.
+
+- Files touched:
+  - `backend/app/matching.py` (matching helpers moved out of `loudness.py`)
+  - `backend/app/loudness.py`
+  - `backend/app/config.py`
+  - `backend/.env.example`
+  - `backend/app/enrichment/__init__.py`
+  - `backend/app/enrichment/base.py`
+  - `backend/app/enrichment/deezer.py`
+  - `backend/app/enrichment/musicbrainz.py`
+  - `backend/app/enrichment/pipeline.py`
+  - `backend/app/track_details.py`
+  - `backend/app/schemas.py`
+  - `backend/app/routers/tracks.py`
+  - `backend/app/routers/admin.py`
+  - `backend/app/main.py`
+  - `backend/tests/test_enrichment.py`
+  - `backend/tests/test_config.py`
+  - `backend/tests/conftest.py`
+  - `frontend/src/types.ts`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/components/admin/TrackLibraryPanel.tsx`
+  - `frontend/src/components/admin/TrackDetailEditor.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `frontend/src/components/liner/LinerNotes.tsx`
+  - `frontend/src/components/liner/LinerNotes.dom.test.tsx`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `frontend/src/hooks/useTrackDetails.dom.test.ts`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+  - `docs/studio/changelog.md`
+- **Container restart required?** Yes - both:
+  `docker compose up -d --build backend frontend`. No migration: phase 1's
+  table already has `sources`, `locked_fields`, `enriched_at`, `enrich_error`
+  and `needs_review`. The first boot starts the backfill; watch
+  `docker compose logs -f backend` and the Studio Library progress.
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 400 passed.
+  - `cd frontend && npm test -- --run` - 349 passed (34 files).
+  - `npm run typecheck` - clean.
+  - `npm run build` - successful.
+  - Real Deezer smoke lookup on "Stairway to Heaven" - 12 fields applied,
+    exact match, 143.1 BPM rounded to 143. MusicBrainz was 503 from this
+    network during the probe; the 503 path is covered by tests and leaves the
+    track pending for a later run.
+
+## 2026-10-26 - track details, on-air liner notes and a Studio library
+
+Every cached track can now carry its own record: album, release date/year,
+label, catalog number, ISRC, credits, genres, BPM/key, a story, a DJ note, a
+key lyric, moods, links, similar tracks and chart history (Billboard, local
+charts, any named chart). Details are keyed by YouTube video id in new
+`trackdetail` / `trackchartentry` tables, so playlist re-syncs never delete
+them and the same video shares one record across playlists.
+
+The radio page shows a "Liner notes" card under the sleeve for the track on
+air, with Story / Details / Charts tabs. States are explicit: `Fetching
+details…`, `Details not available for this track yet.`, and `Details are not
+available at the moment.` with a Retry button. A compact `Album · year · label`
+line sits under the artist. The card is display-only; it never blocks playback.
+
+The Studio has a new **Library** tab: searchable/paginated track list with
+detail status (`Empty` / `Auto` / `Curated`) and a `n/6` completeness meter,
+plus an editor for every field. Saving with "Protect these details" locks the
+non-empty fields so later auto-enrichment cannot overwrite manual work; charts
+are replaced as a set. `Clear details` removes the record. `GET
+/api/tracks/{video_id}` is the public read endpoint (404 = no details yet);
+the `/api/studio/tracks` endpoints are session-protected.
+
+This is phase 1 (manual entry). Automatic Deezer/MusicBrainz/Wikipedia
+enrichment is phase 2/3; the `sources`, `locked_fields`, `enriched_at`,
+`enrich_error` and `needs_review` columns and the public payload's existing
+shape are already in place for it.
+
+- Files touched:
+  - `backend/app/models.py`
+  - `backend/app/schemas.py`
+  - `backend/app/track_details.py`
+  - `backend/app/routers/tracks.py`
+  - `backend/app/main.py`
+  - `backend/alembic/versions/c9d8e7f6a5b4_track_details.py`
+  - `backend/tests/test_track_details.py`
+  - `frontend/src/types.ts`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/hooks/useTrackDetails.ts`
+  - `frontend/src/hooks/useTrackDetails.dom.test.ts`
+  - `frontend/src/components/liner/LinerNotes.tsx`
+  - `frontend/src/components/liner/TrackFacts.tsx`
+  - `frontend/src/components/liner/LinerNotes.dom.test.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.tsx`
+  - `frontend/src/components/admin/TrackDetailEditor.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `frontend/src/components/admin/Skeleton.tsx`
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+  - `docs/studio/changelog.md`
+- **Container restart required?** Yes - both:
+  `docker compose up -d --build backend frontend`. The Alembic migration runs
+  automatically on backend start. Hard-refresh the browser after the rebuild.
+- Verification:
+  - `cd backend && .venv\Scripts\python.exe -m pytest -q` - 373 passed.
+  - `cd frontend && npm test -- --run` - 342 passed (34 files).
+  - `npm run typecheck` - clean.
+  - `npm run build` - successful.
+  - `alembic upgrade head` / `downgrade a7b8c9d0e1f2` against a temp SQLite DB -
+    clean.
+
 ## 2026-10-26 - raise the loudness target so full volume stays loud
 
 Loudness normalization now anchors at `-9` dB instead of `-15` dB. At the top

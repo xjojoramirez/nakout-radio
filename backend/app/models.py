@@ -40,8 +40,17 @@ class Playlist(SQLModel, table=True):
 
 
 class TrackCache(SQLModel, table=True):
+    """A library track, optionally attached to a playlist.
+
+    ``playlist_id`` is NULL for standalone tracks that were detached when a
+    playlist stopped listing them. They stay in the library and the library API
+    but never enter a genre rotation.
+    """
+
     id: int | None = Field(default=None, primary_key=True)
-    playlist_id: int = Field(foreign_key="playlist.id", index=True)
+    playlist_id: int | None = Field(
+        default=None, foreign_key="playlist.id", index=True
+    )
     youtube_video_id: str
     title: str
     artist: str
@@ -78,6 +87,93 @@ class TrackPlay(SQLModel, table=True):
     last_played_at: datetime
     last_run_started_at: datetime
     play_count: int = 0
+
+
+LOCKABLE_FIELDS: tuple[str, ...] = (
+    "album",
+    "album_artist",
+    "release_date",
+    "release_year",
+    "label",
+    "catalog_number",
+    "isrc",
+    "track_number",
+    "disc_number",
+    "genres",
+    "country",
+    "language",
+    "bpm",
+    "musical_key",
+    "cover_url",
+    "summary",
+    "story",
+    "dj_note",
+    "lyric_snippet",
+    "moods",
+    "credits",
+    "links",
+    "charts",
+)
+
+
+class TrackDetail(SQLModel, table=True):
+    """Editorial metadata for a track, keyed by YouTube video id.
+
+    Details deliberately hang off the video id instead of a cache row. The same
+    video in two playlists shares one detail record, and a track that is
+    detached from every playlist keeps its details.
+    """
+
+    youtube_video_id: str = Field(primary_key=True)
+
+    album: str | None = None
+    album_artist: str | None = None
+    release_date: str | None = None
+    release_year: int | None = None
+    label: str | None = None
+    catalog_number: str | None = None
+    isrc: str | None = None
+    track_number: int | None = None
+    disc_number: int | None = None
+    genres: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    country: str | None = None
+    language: str | None = None
+    bpm: int | None = None
+    musical_key: str | None = None
+    cover_url: str | None = None
+
+    summary: str | None = None
+    story: str | None = None
+    dj_note: str | None = None
+    dj_note_public: bool = True
+    lyric_snippet: str | None = None
+    moods: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    similar_video_ids: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    credits: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
+    links: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
+
+    sources: dict = Field(default_factory=dict, sa_column=Column(JSON))
+    locked_fields: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    enriched_at: datetime | None = None
+    enrich_error: str | None = None
+    story_at: datetime | None = None
+    story_error: str | None = None
+    needs_review: bool = False
+    created_at: datetime = Field(default_factory=_utcnow)
+    updated_at: datetime = Field(default_factory=_utcnow)
+
+
+class TrackChartEntry(SQLModel, table=True):
+    """One chart placement for a track (Billboard, local charts, ...)."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    youtube_video_id: str = Field(index=True)
+    chart_name: str
+    country: str = ""
+    peak: int
+    weeks_on_chart: int | None = None
+    year: int | None = None
+    source_url: str = ""
 
 
 class Setting(SQLModel, table=True):

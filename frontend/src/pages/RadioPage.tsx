@@ -1,3 +1,5 @@
+import { LinerNotes } from "../components/liner/LinerNotes";
+import { TrackFacts } from "../components/liner/TrackFacts";
 import { OfflineNotice } from "../components/OfflineNotice";
 import { VUMeter } from "../components/VUMeter";
 import { TurntableDeck } from "../components/deck/TurntableDeck";
@@ -6,6 +8,7 @@ import { VolumeKnob } from "../components/deck/VolumeKnob";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { useListenerCount } from "../hooks/useListenerCount";
 import { useTodaySchedule } from "../hooks/useTodaySchedule";
+import { useTrackDetails } from "../hooks/useTrackDetails";
 import { useYouTubePlayer } from "../hooks/useYouTubePlayer";
 import { formatClock, todayScheduleRows } from "../utils/deck";
 
@@ -14,6 +17,7 @@ export function RadioPage() {
   const { today } = useTodaySchedule();
   const { state, refresh } = useBroadcast();
   const player = useYouTubePlayer("yt-player", state, refresh);
+  const details = useTrackDetails(state?.track?.youtube_video_id ?? null);
 
   const offline = state != null && (state.source === "none" || !state.track);
   const gap = state?.phase === "gap";
@@ -101,6 +105,7 @@ export function RadioPage() {
                   >
                     {track?.artist || "Nakout Radio"}
                   </div>
+                  <TrackFacts detail={details.detail} />
                 </div>
               </div>
               {!gap && (
@@ -121,6 +126,11 @@ export function RadioPage() {
                   </div>
                 </div>
               )}
+              <LinerNotes
+                status={details.status}
+                detail={details.detail}
+                onRetry={details.retry}
+              />
             </>
           )}
 

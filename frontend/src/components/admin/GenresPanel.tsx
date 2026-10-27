@@ -368,7 +368,7 @@ export function GenresPanel({
       {pendingDelete && (
         <ConfirmDialog
           title="Delete genre"
-          message={`Delete “${pendingDelete.name}” and all of its playlists, tracks, and schedule slots?`}
+          message={`Delete “${pendingDelete.name}” and its playlists and schedule slots? Tracks stay in the library.`}
           confirmLabel="Delete"
           danger
           onConfirm={() => {

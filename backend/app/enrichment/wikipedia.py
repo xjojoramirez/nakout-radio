@@ -1,0 +1,867 @@
+"""Wikipedia story and chart provider (keyless MediaWiki API).
+
+Two things come out of one article: prose for the liner notes (the lead
+paragraph as a summary, plus the background/composition sections as the story)
+and chart placements parsed from the article's ``{{single chart}}`` templates.
+
+Templates are read rather than rendered HTML because song articles put every
+weekly, year-end and decade-end placement in separate sections; keeping the
+heading context lets us drop the aggregate lists and keep real chart peaks.
+"""
+
+import html
+import re
+import time
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import Literal
+from urllib.parse import quote
+
+import httpx
+
+from app.enrichment.base import ProviderError
+from app.matching import clean_query, key_ratio
+
+API_URL = "https://en.wikipedia.org/w/api.php"
+PROVIDER = "wikipedia"
+
+# MediaWiki has no hard request budget, but the API is shared infrastructure.
+PAUSE_S = 0.8
+SUMMARY_LIMIT = 220
+STORY_LIMIT = 400
+STORY_MAX_SENTENCES = 3
+MAX_CHARTS = 40
+MIN_MATCH_RATIO = 0.6
+
+_HEADING_RE = re.compile(r"^(={2,6})\s*(.+?)\s*\1\s*$")
+_SINGLE_CHART_RE = re.compile(r"\{\{\s*single chart\s*\|([^}]*)\}\}", re.I)
+_WORD_RE = re.compile(r"[a-z0-9]+")
+_SENTENCE_RE = re.compile(r"(?<=[.!?])\s+(?=[\"'“‘(]?[A-Z0-9])")
+_DISAMBIG_RE = re.compile(r"\s*\([^)]*\)\s*$")
+_BAD_PAGE_RE = re.compile(
+    r"\((?:album|ep|mixtape|compilation|soundtrack|film|musical)\)\s*$",
+    re.I,
+)
+_LIST_PAGE_RE = re.compile(r"^(?:list of|discography)", re.I)
+_BAD_CHART_SECTION_RE = re.compile(
+    r"decade[- ]end|all[- ]time|year[- ]end|year end|"
+    r"certification|awards?|accolades?|"
+    r"live[- ](?:version|performance)|remix|cover version|re-recording",
+    re.I,
+)
+
+# Sentences that describe reception or logistics rather than the one human
+# detail a listener would repeat. "Tour bus" is deliberately allowed; a tour
+# date is not.
+_BORING_PROSE_RE = re.compile(
+    r"\bchart(?:ed|s|ing)?\b|\bpeak(?:ed|s)?\b|\bbillboard\b|\bhot 100\b|"
+    r"\bnumber one\b|\bno\.?\s*1\b|\bcertified\b|\bcertification\b|"
+    r"\bplatinum\b|\bgold\b|\bawards?\b|\bgrammy\b|\bconcert\b|"
+    r"\btour dates?\b|\bperformed\b|\bcover version\b|\bremix(?:ed)?\b|"
+    r"\breissue[ds]?\b|\bmusic video\b|"
+    r"\b(?:debut|lead|first|second|third|fourth|final)\s+single\b|"
+    r"\breleased as (?:a|the)\b[^.]*?\bsingle\b|"
+    r"\b(?:the|this|that)\s+single\b|\bpersonnel\b|"
+    r"\bline-?up\b|\bpraised\b|\bopined\b|\bcritic(?:s|ized)?\b|"
+    r"\breview(?:ed|s)?\b",
+    re.I,
+)
+_WEAK_START_RE = re.compile(r"^(?:He|She|It|They|This|These|Those)\b", re.I)
+_ANECDOTE_RE = re.compile(
+    r"\b(?:wrote|written|composed|composer|originated|inspired|inspiration|"
+    r"recorded|recording|session|interview|said|told|explained|"
+    r"related|recalled|remembered|recounted|idea|came up|named|title|"
+    r"dedicated|homage|"
+    r"wanted|asked|invited|introduced|met|heard)\b",
+    re.I,
+)
+
+# section headings that carry the story, in order of preference
+_STORY_GROUPS: tuple[tuple[str, ...], ...] = (
+    (
+        "background and composition",
+        "background and development",
+        "background and recording",
+        "background and release",
+        "background",
+    ),
+    (
+        "writing and recording",
+        "writing and production",
+        "history and recording",
+        "history and production",
+        "recording and production",
+        "writing",
+        "production",
+        "recording",
+        "history",
+    ),
+    (
+        "music and lyrics",
+        "music and composition",
+        "background and lyrics",
+        "composition",
+    ),
+)
+
+_CHART_LABELS: dict[str, tuple[str, str]] = {
+    "billboardhot100": ("Billboard Hot 100", "US"),
+    "billboardadultcontemporary": ("Billboard Adult Contemporary", "US"),
+    "billboardadultpopsongs": ("Billboard Adult Pop Songs", "US"),
+    "billboardcountrysongs": ("Billboard Hot Country Songs", "US"),
+    "billboardpopsongs": ("Billboard Pop Songs", "US"),
+    "billboardrandbhiphop": ("Billboard Hot R&B/Hip-Hop Songs", "US"),
+    "billboardrhythmic": ("Billboard Rhythmic", "US"),
+    "billboarddanceclubplay": ("Billboard Dance Club Songs", "US"),
+    "billboarddanceairplay": ("Billboard Dance/Mix Show Airplay", "US"),
+    "billboardmainstreamrock": ("Billboard Mainstream Rock", "US"),
+    "billboardrocksongs": (
+        "Billboard Hot Rock & Alternative Songs",
+        "US",
+    ),
+    "billboarddigitalsongs": ("Billboard Digital Song Sales", "US"),
+    "billboardalternativesongs": ("Billboard Alternative Songs", "US"),
+    "billboardglobal200": ("Billboard Global 200", ""),
+    "billboardjapanhot100": ("Billboard Japan Hot 100", "JP"),
+    "billboardargentinahot100": ("Billboard Argentina Hot 100", "AR"),
+    "billboardcolombiahot100": ("Billboard Colombia Hot 100", "CO"),
+    "billboardeurodigital": ("Billboard Euro Digital Song Sales", ""),
+    "billboardcanadaac": ("Billboard Canada AC", "CA"),
+    "billboardcanadachrtop40": ("Billboard Canada CHR/Top 40", "CA"),
+    "billboardcanadahotac": ("Billboard Canada Hot AC", "CA"),
+    "australiaurban": ("Australia Urban (ARIA)", "AU"),
+    "australia urban": ("Australia Urban (ARIA)", "AU"),
+    "uk": ("UK Singles (OCC)", "GB"),
+    "uksingles": ("UK Singles (OCC)", "GB"),
+    "uksinglesbyname": ("UK Singles (OCC)", "GB"),
+    "ukrandb": ("UK R&B (OCC)", "GB"),
+    "scotland": ("Scotland (OCC)", "GB"),
+    "south africa": ("South Africa (Springbok Radio)", "ZA"),
+    "southafrica": ("South Africa (Springbok Radio)", "ZA"),
+    "ireland": ("Ireland (IRMA)", "IE"),
+    "ireland2": ("Ireland (IRMA)", "IE"),
+    "ireland4": ("Ireland (IRMA)", "IE"),
+    "dutch40": ("Netherlands (Dutch Top 40)", "NL"),
+    "dutch100": ("Netherlands (Single Top 100)", "NL"),
+    "flanders": ("Belgium (Ultratop 50 Flanders)", "BE"),
+    "wallonia": ("Belgium (Ultratop 50 Wallonia)", "BE"),
+    "newzealand": ("New Zealand (RMNZ)", "NZ"),
+    "new zealand": ("New Zealand (RMNZ)", "NZ"),
+    "australia": ("Australia (ARIA)", "AU"),
+    "canada": ("Canada (Canadian Hot 100)", "CA"),
+    "canada rpm": ("Canada RPM", "CA"),
+    "canada rpm ac": ("Canada RPM Adult Contemporary", "CA"),
+    "canada rpm country": ("Canada RPM Country", "CA"),
+    "germany": ("Germany (GfK)", "DE"),
+    "west germany": ("West Germany (GfK)", "DE"),
+    "austria": ("Austria (Ö3)", "AT"),
+    "switzerland": ("Switzerland (Schweizer Hitparade)", "CH"),
+    "sweden": ("Sweden (Sverigetopplistan)", "SE"),
+    "norway": ("Norway (VG-lista)", "NO"),
+    "denmark": ("Denmark (Tracklisten)", "DK"),
+    "finland": ("Finland (Suomen virallinen lista)", "FI"),
+    "france": ("France (SNEP)", "FR"),
+    "frenchdigital": ("France (SNEP)", "FR"),
+    "italy": ("Italy (FIMI)", "IT"),
+    "spain": ("Spain (PROMUSICAE)", "ES"),
+    "portugal": ("Portugal (AFP)", "PT"),
+    "poland": ("Poland (ZPAV)", "PL"),
+    "hungary": ("Hungary (Mahasz)", "HU"),
+    "hungarysingle": ("Hungary (Mahasz)", "HU"),
+    "hungarydance": ("Hungary (Dance Top 40)", "HU"),
+    "hungarystream": ("Hungary (Stream Top 40)", "HU"),
+    "czech republic": ("Czech Republic (IFPI)", "CZ"),
+    "czechdigital": ("Czech Republic (Singles Digitál Top 100)", "CZ"),
+    "slovakia2": ("Slovakia (IFPI)", "SK"),
+    "slovakdigital2": ("Slovakia (Singles Digitál Top 100)", "SK"),
+    "japan": ("Japan (Oricon)", "JP"),
+    "mexico": ("Mexico (AMPROFON)", "MX"),
+    "brazil2": ("Brazil (Billboard)", "BR"),
+}
+
+# Billboard ids are camel-cased chart names ("Billboardmainstreamrock").
+_BILLBOARD_WORDS: tuple[str, ...] = (
+    "hot100",
+    "chrtop",
+    "mainstream",
+    "alternative",
+    "contemporary",
+    "christian",
+    "argentina",
+    "colombia",
+    "australia",
+    "rhythmic",
+    "airplay",
+    "country",
+    "singles",
+    "digital",
+    "global",
+    "canada",
+    "japan",
+    "mexico",
+    "brazil",
+    "adult",
+    "dance",
+    "songs",
+    "randb",
+    "hiphop",
+    "latin",
+    "gospel",
+    "rock",
+    "club",
+    "play",
+    "euro",
+    "pop",
+    "hot",
+    "ac",
+    "top",
+    "200",
+    "100",
+)
+_BILLBOARD_TOKEN_DISPLAY = {
+    "randb": "R&B",
+    "hiphop": "Hip-Hop",
+    "hot100": "Hot 100",
+    "chrtop": "CHR/Top",
+    "ac": "AC",
+}
+
+
+def _billboard_words(rest: str) -> str:
+    lower = rest.casefold()
+    words = sorted(_BILLBOARD_WORDS, key=len, reverse=True)
+    parts: list[str] = []
+    index = 0
+    while index < len(lower):
+        for word in words:
+            if lower.startswith(word, index):
+                parts.append(_BILLBOARD_TOKEN_DISPLAY.get(word, word.title()))
+                index += len(word)
+                break
+        else:
+            end = index + 1
+            while end < len(lower) and not any(
+                lower.startswith(word, end) for word in words
+            ):
+                end += 1
+            parts.append(lower[index:end].title())
+            index = end
+    return " ".join(parts)
+
+
+@dataclass
+class ChartData:
+    chart_name: str
+    country: str = ""
+    peak: int = 0
+    weeks_on_chart: int | None = None
+    year: int | None = None
+    source_url: str = ""
+
+
+@dataclass
+class WikipediaData:
+    url: str
+    summary: str = ""
+    story: str = ""
+    charts: list[ChartData] = field(default_factory=list)
+    confidence: Literal["exact", "fuzzy"] = "exact"
+    title: str = ""
+
+
+def _get_json(client: httpx.Client, **params: object) -> dict:
+    resp = client.get(
+        API_URL,
+        params={**params, "format": "json", "formatversion": 2},
+    )
+    resp.raise_for_status()
+    try:
+        data = resp.json()
+    except ValueError as exc:
+        raise ProviderError("malformed Wikipedia response") from exc
+    if not isinstance(data, dict):
+        raise ProviderError("unexpected Wikipedia response")
+    error = data.get("error")
+    if error:
+        message = error.get("info") if isinstance(error, dict) else error
+        raise ProviderError(f"Wikipedia error: {message}")
+    return data
+
+
+def _rank_pages(hits: list[dict], title: str) -> list[tuple[dict, float]]:
+    """Plausible pages, best first. Verification may reject the top one."""
+    scored: list[tuple[tuple[float, float, float], dict, float]] = []
+    for hit in hits:
+        if not isinstance(hit, dict):
+            continue
+        page_title = (hit.get("title") or "").strip()
+        if not page_title or _LIST_PAGE_RE.search(page_title):
+            continue
+        if _BAD_PAGE_RE.search(page_title):
+            continue
+        cleaned = _DISAMBIG_RE.sub("", page_title).strip()
+        ratio = key_ratio(title, cleaned)
+        if ratio < MIN_MATCH_RATIO:
+            continue
+        song_page = (
+            1.0
+            if re.search(r"\((?:song|single)\)\s*$", page_title, re.I)
+            else 0.0
+        )
+        score = (1.0 if ratio == 1.0 else 0.0, song_page, ratio)
+        scored.append((score, hit, ratio))
+    scored.sort(key=lambda entry: entry[0], reverse=True)
+    return [(hit, ratio) for _, hit, ratio in scored]
+
+
+def _search_title(raw: str) -> str:
+    """Keep a leading parenthetical, drop trailing edition noise.
+
+    ``"(I Can't Get No) Satisfaction (Mono)"`` keeps the part that the generic
+    title cleaner would throw away, which is the only searchable title.
+    """
+    text = (raw or "").strip()
+    if " - " in text:
+        return ""
+    previous = None
+    while previous != text:
+        previous = text
+        text = re.sub(r"\s*[\(\[][^\)\]]*[\)\]]\s*$", "", text).strip()
+    if text.startswith(("(", "[")):
+        return text
+    return ""
+
+
+def _int(value: str) -> int | None:
+    text = (value or "").strip().lstrip("#").replace(",", "")
+    return int(text) if text.isdigit() else None
+
+
+def _mentions(text: str, artist: str) -> bool:
+    """Whole-word artist match, so "Release" is not found inside "released"."""
+    wanted = _WORD_RE.findall((artist or "").casefold())
+    if not wanted:
+        return False
+    words = _WORD_RE.findall((text or "").casefold())
+    size = len(wanted)
+    return any(words[i : i + size] == wanted for i in range(len(words) - size + 1))
+
+
+def _artist_variants(artist: str) -> list[str]:
+    """Accept the common credit variants found in article leads."""
+    artist = (artist or "").strip()
+    if not artist:
+        return []
+    variants = [artist]
+    swapped = artist.replace("&", "and")
+    if swapped != artist:
+        variants.append(swapped)
+    primary = re.split(
+        r"\s*(?:&|\band\b|\bfeat\.?\b|\bfeaturing\b)\s*",
+        artist,
+        maxsplit=1,
+        flags=re.I,
+    )[0].strip()
+    if primary and primary != artist:
+        variants.append(primary)
+    if artist.casefold().startswith("the "):
+        variants.append(artist[4:].strip())
+    seen: list[str] = []
+    for variant in variants:
+        if variant and variant.casefold() not in {item.casefold() for item in seen}:
+            seen.append(variant)
+    return seen
+
+
+def _mentions_any(text: str, artist: str) -> bool:
+    return any(_mentions(text, variant) for variant in _artist_variants(artist))
+
+
+def _truncate(text: str, limit: int) -> str:
+    text = " ".join((text or "").split())
+    if len(text) <= limit:
+        return text
+    cut = text[:limit]
+    end = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "))
+    if end >= limit // 2:
+        return cut[: end + 1].strip()
+    trimmed = cut.rsplit(" ", 1)[0].rstrip(",;:")
+    if len(trimmed) + 3 <= limit:
+        return trimmed + "..."
+    return trimmed[: limit - 3].rstrip(" ,;:") + "..."
+
+
+def _top_sections(text: str) -> tuple[str, list[tuple[str, str]]]:
+    """Lead text plus level-2 sections (subsections stay in their parent)."""
+    intro: list[str] = []
+    sections: list[tuple[str, str]] = []
+    title: str | None = None
+    body: list[str] = []
+    for line in (text or "").splitlines():
+        heading = _HEADING_RE.match(line)
+        if heading:
+            if len(heading.group(1)) == 2:
+                if title is not None:
+                    sections.append((title, "\n".join(body).strip()))
+                title = heading.group(2).strip()
+                body = []
+            # Deeper headings are structure, not prose; drop the markup but
+            # keep their paragraphs in the parent section.
+            continue
+        if title is None:
+            intro.append(line)
+        else:
+            body.append(line)
+    if title is not None:
+        sections.append((title, "\n".join(body).strip()))
+    return "\n".join(intro).strip(), sections
+
+
+def _sentences(text: str) -> list[str]:
+    text = " ".join((text or "").split())
+    if not text:
+        return []
+    return [part.strip() for part in _SENTENCE_RE.split(text) if part.strip()]
+
+
+def _short_summary(text: str, limit: int = SUMMARY_LIMIT) -> str:
+    """The lead's first sentence, with a short second only when it adds context."""
+    sentences = _sentences(text)
+    if not sentences:
+        return ""
+    picked = [sentences[0]]
+    if (
+        len(sentences) > 1
+        and len(sentences[0]) < 100
+        and not _BORING_PROSE_RE.search(sentences[1])
+        and len(sentences[0]) + 1 + len(sentences[1]) <= limit
+    ):
+        picked.append(sentences[1])
+    return _truncate(" ".join(picked), limit)
+
+
+def _best_anecdote(text: str, limit: int = STORY_LIMIT) -> str:
+    """One vivid origin/recording window, with reception sentences removed."""
+    sentences: list[str] = []
+    candidates: list[tuple[int, int, str]] = []
+    for paragraph in re.split(r"\n\s*\n", text or ""):
+        sentences = _sentences(paragraph)
+        for index, sentence in enumerate(sentences):
+            if (
+                len(sentence) > limit
+                or sentence.count('"') % 2
+                or _BORING_PROSE_RE.search(sentence)
+                or _WEAK_START_RE.match(sentence)
+            ):
+                continue
+            score = len(_ANECDOTE_RE.findall(sentence))
+            if score:
+                candidates.append((score, index, sentence))
+        if candidates:
+            # The first paragraph with a usable anecdote is the closest to the
+            # song's origin; later paragraphs are usually reception or legacy.
+            break
+    if not candidates:
+        return ""
+
+    _, index, sentence = max(candidates, key=lambda item: (item[0], -item[1]))
+    window = [sentence]
+    total = len(sentence)
+
+    for position in range(index + 1, len(sentences)):
+        if len(window) >= STORY_MAX_SENTENCES:
+            break
+        candidate = sentences[position]
+        if candidate.count('"') % 2:
+            break
+        if _BORING_PROSE_RE.search(candidate) or _WEAK_START_RE.match(candidate):
+            continue
+        if total + 1 + len(candidate) > limit:
+            break
+        window.append(candidate)
+        total += 1 + len(candidate)
+    return " ".join(window).strip()
+
+
+def _story_for(sections: list[tuple[str, str]]) -> str:
+    """Pick the first section that yields one usable anecdote."""
+    lowered = [(title.casefold(), body) for title, body in sections]
+
+    def bodies(group: tuple[str, ...]) -> list[str]:
+        found: list[str] = []
+        for name in group:
+            for title, body in lowered:
+                if title == name and len(body) >= 80:
+                    found.append(body)
+        for name in group:
+            for title, body in lowered:
+                if title.startswith(name) and len(body) >= 80:
+                    found.append(body)
+        return found
+
+    for group in _STORY_GROUPS[:3]:
+        for body in bodies(group):
+            anecdote = _best_anecdote(body)
+            if anecdote:
+                return anecdote
+    return ""
+
+
+def _chart_label(chart_id: str) -> tuple[str, str]:
+    key = " ".join((chart_id or "").replace("_", " ").split()).casefold()
+    if key in _CHART_LABELS:
+        return _CHART_LABELS[key]
+    if key.startswith("billboard"):
+        rest = chart_id.strip()[len("billboard") :]
+        words = _billboard_words(rest) if rest else "Chart"
+        return (f"Billboard {words}".strip(), "US")
+    pretty = re.sub(r"(\d+)$", r" \1", chart_id.strip())
+    return (pretty.title(), "")
+
+
+_REF_RE = re.compile(r"<ref[^>]*/>|<ref[^>]*>.*?</ref>", re.I | re.S)
+_TAG_RE = re.compile(r"<[^>]+>")
+_WIKILINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]")
+_CELL_ATTR_RE = re.compile(
+    r"^\s*(?:style|align|class|scope|colspan|rowspan|width|height|data-[\w-]+)\s*=",
+    re.I,
+)
+
+_TABLE_COUNTRY: tuple[tuple[str, str, bool], ...] = (
+    (r"^(?:US|U\.S\.)\s+", "US", True),
+    (r"^UK\b", "GB", False),
+    (r"^Canada\b", "CA", False),
+    (r"^Australia\b", "AU", False),
+    (r"^New Zealand\b", "NZ", False),
+    (r"^(?:West )?Germany\b", "DE", False),
+    (r"^France\b", "FR", False),
+    (r"^Italy\b", "IT", False),
+    (r"^Spain\b", "ES", False),
+    (r"^Sweden\b", "SE", False),
+    (r"^Norway\b", "NO", False),
+    (r"^Denmark\b", "DK", False),
+    (r"^Finland\b", "FI", False),
+    (r"^Netherlands\b", "NL", False),
+    (r"^Belgium\b", "BE", False),
+    (r"^Switzerland\b", "CH", False),
+    (r"^Austria\b", "AT", False),
+    (r"^Ireland\b", "IE", False),
+    (r"^Japan\b", "JP", False),
+    (r"^Brazil\b", "BR", False),
+    (r"^Mexico\b", "MX", False),
+    (r"^Poland\b", "PL", False),
+    (r"^Portugal\b", "PT", False),
+    (r"^Scotland\b", "GB", False),
+    (r"^South Africa\b", "ZA", False),
+    (r"^Argentina\b", "AR", False),
+    (r"^Peru\b", "PE", False),
+    (r"^Paraguay\b", "PY", False),
+    (r"^Uruguay\b", "UY", False),
+    (r"^Venezuela\b", "VE", False),
+)
+
+
+def _plain_cell(text: str) -> str:
+    """Strip refs, links and markup from a table cell."""
+    text = _REF_RE.sub("", text or "")
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    text = re.sub(r"<br\s*/?>", " ", text, flags=re.I)
+    text = _TAG_RE.sub("", text)
+    text = _WIKILINK_RE.sub(lambda match: match.group(2) or match.group(1), text)
+    text = text.replace("'''", "").replace("''", "")
+    text = html.unescape(text)
+    return " ".join(text.split()).strip(" |")
+
+
+def _cell_value(cell: str) -> str:
+    cell = _REF_RE.sub("", cell or "")
+    if "|" in cell:
+        prefix, rest = cell.split("|", 1)
+        if _CELL_ATTR_RE.match(prefix):
+            cell = rest
+    return _plain_cell(cell)
+
+
+def _split_cells(line: str) -> list[str]:
+    return [_cell_value(part) for part in line.split("||")]
+
+
+def _table_peak(text: str) -> int | None:
+    match = re.search(r"\b(\d{1,3})\b", text or "")
+    if match is None:
+        return None
+    peak = int(match.group(1))
+    return peak if 1 <= peak <= 200 else None
+
+
+def _table_chart(name: str) -> tuple[str, str] | None:
+    name = (name or "").strip(" |-–—")
+    if not name:
+        return None
+    folded = name.casefold()
+    if folded.startswith(("chart", "peak", "position")):
+        return None
+    country = ""
+    for pattern, code, strip_prefix in _TABLE_COUNTRY:
+        if re.match(pattern, name):
+            country = code
+            if strip_prefix:
+                name = re.sub(pattern, "", name, count=1).strip()
+            break
+    if name == "Canada Top Singles (RPM)":
+        name = "Canada RPM"
+    if name == "Canada RPM Top Singles":
+        name = "Canada RPM"
+    if name == "UK Singles Chart":
+        name = "UK Singles (OCC)"
+    return (name, country) if name else None
+
+
+def _is_chart_section(headings: list[tuple[int, str]]) -> bool:
+    if any(_BAD_CHART_SECTION_RE.search(name) for _, name in headings):
+        return False
+    # Only the article's main chart section. A later "Live version" (or
+    # remix) section can have its own chart table, but those placements do
+    # not belong to the studio recording the station plays.
+    top = next((name for level, name in headings if level == 2), None)
+    if top is None:
+        return False
+    return bool(re.search(r"^\s*charts?\b|chart performance", top, re.I))
+
+
+def parse_charts(wikitext: str, source_url: str = "") -> list[ChartData]:
+    """Chart placements from ``{{single chart}}`` templates and wikitables.
+
+    Older song articles list weekly placements in a hand-written table rather
+    than templates (e.g. ``|US ''Billboard'' Hot 100 ... | 1``). Both shapes
+    are read; year-end, decade-end and all-time tables stay excluded.
+    """
+    found: dict[str, ChartData] = {}
+    headings: list[tuple[int, str]] = []
+    in_table = False
+    table_allowed = False
+    table_year: int | None = None
+    next_table_blocked = False
+    row: list[str] = []
+
+    def add(name: str, country: str, peak: int, year: int | None) -> None:
+        existing = found.get(name)
+        if existing is not None and existing.peak <= peak:
+            return
+        found[name] = ChartData(
+            chart_name=name,
+            country=country,
+            peak=peak,
+            year=year,
+            source_url=source_url,
+        )
+
+    def flush_row() -> None:
+        nonlocal row
+        if len(row) >= 2:
+            chart = _table_chart(row[0])
+            peak = _table_peak(row[1])
+            if chart is not None and peak is not None:
+                add(chart[0], chart[1], peak, table_year)
+        row = []
+
+    for line in (wikitext or "").splitlines():
+        heading = _HEADING_RE.match(line)
+        if heading:
+            if in_table:
+                flush_row()
+                in_table = False
+            level = len(heading.group(1))
+            while headings and headings[-1][0] >= level:
+                headings.pop()
+            headings.append((level, heading.group(2).strip()))
+            continue
+
+        stripped = line.lstrip()
+        label = re.fullmatch(r"'''(.+?)'''", stripped)
+        if label and not in_table:
+            # A bold line introduces the next table ("'''Live version'''").
+            next_table_blocked = bool(
+                _BAD_CHART_SECTION_RE.search(label.group(1))
+            )
+            continue
+        if stripped.startswith("{|"):
+            in_table = True
+            table_allowed = (
+                _is_chart_section(headings) and not next_table_blocked
+            )
+            next_table_blocked = False
+            table_year = None
+            row = []
+            continue
+        if stripped.startswith("|}"):
+            if in_table and table_allowed:
+                flush_row()
+            in_table = False
+            row = []
+            continue
+
+        # A template can be the whole row or sit inside a table cell
+        # (``|{{single chart|Ireland2|5|...}}``). Parse it before the table
+        # branch so both shapes work. Tables outside a chart section (a live
+        # version, personnel) are skipped.
+        if (not in_table or table_allowed) and not any(
+            _BAD_CHART_SECTION_RE.search(name) for _, name in headings
+        ):
+            match = _SINGLE_CHART_RE.search(line)
+            if match is not None:
+                parts = [part.strip() for part in match.group(1).split("|")]
+                if len(parts) >= 2:
+                    peak = _int(parts[1])
+                    if peak is not None and 1 <= peak <= 200:
+                        name, country = _chart_label(parts[0])
+                        year = None
+                        for part in parts[2:]:
+                            if "=" not in part:
+                                continue
+                            key, value = part.split("=", 1)
+                            if key.strip().casefold() not in {"date", "year"}:
+                                continue
+                            head = re.search(r"(\d{4})", value)
+                            if head and 1900 <= int(head.group(1)) <= 2100:
+                                year = int(head.group(1))
+                                break
+                        if year is None and in_table:
+                            # ``{{single chart}}`` rows often sit inside a
+                            # table whose header carries the year.
+                            year = table_year
+                        add(name, country, peak, year)
+                continue
+
+        if in_table:
+            if not table_allowed:
+                continue
+            if line.startswith("|-"):
+                flush_row()
+                continue
+            if line.startswith("|+"):
+                flush_row()
+                continue
+            if line.startswith("!"):
+                if re.match(
+                    r"^!\s*(?:scope|id|style|class|rowspan|colspan)\s*=",
+                    line,
+                    re.I,
+                ):
+                    # ``!scope="row"| Canada RPM`` is a data label, not a
+                    # column header.
+                    row.extend(_split_cells(line[1:]))
+                else:
+                    flush_row()
+                    header = _plain_cell(line[1:])
+                    year_match = re.search(r"\((\d{4})\)", header)
+                    if year_match:
+                        table_year = int(year_match.group(1))
+                continue
+            if line.startswith("|"):
+                row.extend(_split_cells(line[1:]))
+                continue
+            if line.strip() and row:
+                row[-1] += " " + line.strip()
+            continue
+
+    if in_table and table_allowed:
+        flush_row()
+
+    charts = list(found.values())
+    charts.sort(key=lambda entry: (entry.chart_name, entry.peak))
+    return charts[:MAX_CHARTS]
+
+
+def lookup_wikipedia(
+    title: str,
+    artist: str,
+    client: httpx.Client,
+    *,
+    sleep: Callable[[float], None] = time.sleep,
+    with_charts: bool = True,
+) -> WikipediaData | None:
+    """Best-effort Wikipedia prose and chart placements for a track."""
+    clean_title, clean_artist = clean_query(title, artist)
+    if not clean_title:
+        return None
+
+    search_title = _search_title(title) or clean_title
+    query = f"{search_title} {clean_artist}".strip()
+    search = _get_json(
+        client,
+        action="query",
+        list="search",
+        srsearch=query,
+        srlimit=6,
+    )
+    hits = [
+        hit
+        for hit in (search.get("query") or {}).get("search") or []
+        if isinstance(hit, dict)
+    ]
+
+    # A title match alone is not enough: a TV episode can share the name, and
+    # the first hit may be a cover by someone else. Try the plausible pages in
+    # order and keep the first whose lead actually names the artist.
+    for page, ratio in _rank_pages(hits, search_title)[:3]:
+        page_title = page["title"]
+        sleep(PAUSE_S)
+        details = _get_json(
+            client,
+            action="query",
+            prop="extracts|info",
+            inprop="url",
+            explaintext=1,
+            redirects=1,
+            titles=page_title,
+        )
+        pages = [
+            item
+            for item in (details.get("query") or {}).get("pages") or []
+            if isinstance(item, dict) and not item.get("missing")
+        ]
+        if not pages:
+            continue
+        page_data = pages[0]
+        extract = page_data.get("extract") or ""
+        url = (
+            page_data.get("fullurl")
+            or f"https://en.wikipedia.org/wiki/"
+            f"{quote(page_title.replace(' ', '_'))}"
+        )
+
+        intro, sections = _top_sections(extract)
+        if clean_artist and not _mentions_any(intro, clean_artist):
+            continue
+        summary = _short_summary(intro)
+        story = _story_for(sections)
+        if not summary and not story:
+            continue
+
+        charts: list[ChartData] = []
+        if with_charts:
+            sleep(PAUSE_S)
+            try:
+                parsed = _get_json(
+                    client,
+                    action="parse",
+                    page=page_title,
+                    prop="wikitext",
+                    redirects=1,
+                )
+                wikitext = (parsed.get("parse") or {}).get("wikitext") or ""
+                charts = parse_charts(wikitext, url)
+            except (httpx.HTTPError, ProviderError):
+                # Prose is the valuable part; chart templates are a bonus.
+                charts = []
+
+        return WikipediaData(
+            title=page_title,
+            url=url,
+            summary=summary,
+            story=story,
+            charts=charts,
+            confidence="exact" if ratio == 1.0 else "fuzzy",
+        )
+    return None

@@ -72,12 +72,24 @@ function ScheduleSkeleton() {
   );
 }
 
+function LibrarySkeleton() {
+  return (
+    <section className="admin-panel" aria-hidden="true">
+      <Skeleton variant="title" />
+      <SkeletonForm count={2} />
+      <SkeletonList rows={6} />
+    </section>
+  );
+}
+
 export function PanelSkeleton({ tab }: { tab: string }) {
   switch (tab) {
     case "now":
       return <NowSkeleton />;
     case "playlists":
       return <PlaylistsSkeleton />;
+    case "library":
+      return <LibrarySkeleton />;
     case "genres":
       return <GenresSkeleton />;
     case "schedule":
