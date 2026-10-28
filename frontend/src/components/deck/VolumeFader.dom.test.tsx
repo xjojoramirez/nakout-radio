@@ -31,6 +31,37 @@ describe("VolumeFader", () => {
     expect(onChange).toHaveBeenLastCalledWith(60);
   });
 
+  it("supports a horizontal fader", () => {
+    render(
+      <VolumeFader
+        value={50}
+        onChange={() => {}}
+        label="Volume"
+        orientation="horizontal"
+      />,
+    );
+    const fader = screen.getByRole("slider", { name: "Volume" });
+    expect(fader).toHaveAttribute("aria-orientation", "horizontal");
+    expect(fader).toHaveClass("horizontal");
+  });
+
+  it("drags horizontally to change value", () => {
+    const onChange = vi.fn();
+    render(
+      <VolumeFader
+        value={50}
+        onChange={onChange}
+        label="Volume"
+        orientation="horizontal"
+      />,
+    );
+    const fader = screen.getByRole("slider", { name: "Volume" });
+    fireEvent.pointerDown(fader, { pointerId: 1, clientX: 100 });
+    fireEvent.pointerMove(fader, { pointerId: 1, clientX: 120 });
+    fireEvent.pointerUp(fader, { pointerId: 1, clientX: 120 });
+    expect(onChange).toHaveBeenLastCalledWith(70);
+  });
+
   it("drags vertically to change value", () => {
     const onChange = vi.fn();
     render(<VolumeFader value={50} onChange={onChange} label="Volume fader" />);

@@ -10,18 +10,34 @@ interface Props {
   onChange: (value: number) => void;
   label: string;
   disabled?: boolean;
+  orientation?: "vertical" | "horizontal";
 }
 
 function clamp(value: number): number {
   return Math.min(100, Math.max(0, Math.round(value)));
 }
 
-export function VolumeFader({ value, onChange, label, disabled }: Props) {
-  const dragRef = useRef<{ startY: number; startValue: number } | null>(null);
+export function VolumeFader({
+  value,
+  onChange,
+  label,
+  disabled,
+  orientation = "vertical",
+}: Props) {
+  const dragRef = useRef<{
+    startX: number;
+    startY: number;
+    startValue: number;
+  } | null>(null);
+  const horizontal = orientation === "horizontal";
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (disabled) return;
-    dragRef.current = { startY: event.clientY, startValue: value };
+    dragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      startValue: value,
+    };
     if (typeof event.currentTarget.setPointerCapture === "function") {
       event.currentTarget.setPointerCapture(event.pointerId);
     }
@@ -31,7 +47,10 @@ export function VolumeFader({ value, onChange, label, disabled }: Props) {
     if (disabled) return;
     const drag = dragRef.current;
     if (!drag) return;
-    onChange(clamp(drag.startValue + (drag.startY - event.clientY)));
+    const delta = horizontal
+      ? event.clientX - drag.startX
+      : drag.startY - event.clientY;
+    onChange(clamp(drag.startValue + delta));
   };
 
   const onPointerUp = (event: PointerEvent<HTMLDivElement>) => {
@@ -69,12 +88,20 @@ export function VolumeFader({ value, onChange, label, disabled }: Props) {
 
   return (
     <div
-      className={disabled ? "fader disabled" : "fader"}
+      className={
+        disabled
+          ? horizontal
+            ? "fader horizontal disabled"
+            : "fader disabled"
+          : horizontal
+            ? "fader horizontal"
+            : "fader"
+      }
       role="slider"
       tabIndex={disabled ? -1 : 0}
       aria-label={label}
       aria-disabled={disabled || undefined}
-      aria-orientation="vertical"
+      aria-orientation={orientation}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={value}

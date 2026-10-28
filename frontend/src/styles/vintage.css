@@ -1989,9 +1989,9 @@ a.pid:hover {
 /* ---------- Vinyl deck (reference: Nakout Vinyl Deck.html) ---------- */
 
 .radio-page {
-  width: min(1080px, 96vw);
+  width: min(1100px, 96vw);
   display: grid;
-  gap: 24px;
+  gap: 22px;
   color: var(--cream);
 }
 
@@ -2045,7 +2045,7 @@ a.pid:hover {
 
 .deck-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: 32px;
   align-items: start;
 }
@@ -2226,6 +2226,8 @@ a.pid:hover {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
+/* Homepage uses .player-dock (below) instead of the inline admin mixer. */
+
 .mixer .vu-meter {
   height: 38px;
   padding: 0;
@@ -2237,6 +2239,124 @@ a.pid:hover {
 
 .mixer .vu-bar {
   flex: 0 0 6px;
+}
+
+/* Player dock: the reference player bar is fixed to the bottom of the
+   viewport. The admin deck keeps the inline .mixer above. */
+body:has(.player-dock) {
+  padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+}
+
+.player-dock {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 52px minmax(150px, 240px) minmax(0, 1fr) auto auto auto;
+  grid-template-areas: "cover dj vu time vol tune";
+  gap: 20px;
+  align-items: center;
+  margin: 0;
+  padding: 14px max(20px, calc((100vw - 1100px) / 2))
+    calc(14px + env(safe-area-inset-bottom, 0px));
+  border-radius: 20px 20px 0 0;
+  background: var(--wood-light);
+  box-shadow:
+    0 -14px 34px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.player-dock::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  border-radius: 20px 20px 0 0;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.player-dock::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  height: 3px;
+  width: calc(100% * var(--p, 0));
+  border-radius: 20px 0 0 0;
+  background: var(--amber);
+}
+
+.player-dock.offline {
+  filter: saturate(0.6) brightness(0.85);
+}
+
+.player-dock .dcover {
+  grid-area: cover;
+  width: 52px;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background-color: var(--wood-light);
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+.player-dock .dj {
+  grid-area: dj;
+  min-width: 0;
+}
+
+.player-dock .dj strong {
+  font-size: 1.05rem;
+}
+
+.player-dock .vu-meter {
+  grid-area: vu;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  gap: 4px;
+  justify-content: flex-start;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.player-dock .vu-bar {
+  flex: 0 0 6px;
+}
+
+.player-dock .time {
+  grid-area: time;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.player-dock .vol {
+  grid-area: vol;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.player-dock .tune-btn {
+  grid-area: tune;
+  min-width: 148px;
+  padding: 14px 30px;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 18px rgba(242, 163, 58, 0.25);
+}
+
+.player-dock .tune-btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .dj {
@@ -2373,6 +2493,61 @@ a.pid:hover {
   outline-offset: 3px;
 }
 
+/* Horizontal fader used by the fixed player dock. */
+.fader.horizontal {
+  width: 150px;
+  height: 30px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  cursor: ew-resize;
+}
+
+.fader.horizontal::before {
+  left: 4px;
+  right: 4px;
+  top: 50%;
+  bottom: auto;
+  width: auto;
+  height: 8px;
+  margin-top: -4px;
+  transform: none;
+  border-radius: 4px;
+  background: #130b06;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.fader.horizontal .fader-thumb {
+  left: calc(4px + (100% - 30px) * var(--v, 0));
+  top: 0;
+  bottom: auto;
+  width: 22px;
+  height: 30px;
+  transform: none;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #f6b24f, #e08f1f);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+.fader.horizontal .fader-thumb::after {
+  left: 10px;
+  right: auto;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  height: auto;
+  transform: none;
+  background: rgba(28, 17, 10, 0.6);
+}
+
+.fader.horizontal:active {
+  cursor: ew-resize;
+}
+
+.fader.horizontal.disabled {
+  cursor: not-allowed;
+}
+
 .np-col {
   display: grid;
   gap: 18px;
@@ -2462,12 +2637,6 @@ a.pid:hover {
   font-variant-numeric: tabular-nums;
 }
 
-.np-controls {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
 .tune-btn {
   font-family: var(--font-display);
   font-weight: 800;
@@ -2544,9 +2713,119 @@ a.pid:hover {
   box-shadow: inset 3px 0 0 var(--amber);
 }
 
+@media (min-width: 821px) {
+  .radio-page .deck-side {
+    position: sticky;
+    top: 20px;
+  }
+
+  /* The dock already carries the progress line and time on desktop. */
+  .radio-page .np-progress {
+    display: none;
+  }
+}
+
 @media (max-width: 820px) {
-  .deck-grid {
-    grid-template-columns: minmax(0, 1fr);
+  body:has(.player-dock) {
+    padding-block: 14px calc(132px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .radio-page {
+    gap: 14px;
+  }
+
+  .radio-page .deck-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .radio-page .deck-side,
+  .radio-page .np-col {
+    display: contents;
+  }
+
+  .radio-page .sleeve {
+    order: 1;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .radio-page .np-cover {
+    width: 72px;
+  }
+
+  .radio-page .np-title {
+    margin: 4px 0 2px;
+    font-size: clamp(1.35rem, 6.2vw, 1.8rem);
+  }
+
+  .radio-page .sleeve .np-artist {
+    font-size: 0.95rem;
+  }
+
+  .radio-page .np-facts {
+    display: none;
+  }
+
+  .radio-page .deck {
+    order: 2;
+    width: min(100%, calc(44vh * 1.15));
+    width: min(100%, calc(44dvh * 1.15));
+    margin-inline: auto;
+  }
+
+  .radio-page .np-progress {
+    order: 3;
+  }
+
+  .radio-page .offline-notice {
+    order: 1;
+    margin: 0;
+  }
+
+  .radio-page .np-col > p.np-artist {
+    order: 3;
+  }
+
+  .radio-page .liner {
+    order: 4;
+  }
+
+  .radio-page .sched {
+    order: 5;
+  }
+
+  .player-dock {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "dj tune"
+      "vu tune";
+    gap: 4px 16px;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .player-dock .dcover,
+  .player-dock .time,
+  .player-dock .vol {
+    display: none;
+  }
+
+  .player-dock .vu-meter {
+    height: 24px;
+  }
+
+  .player-dock .vu-bar {
+    flex-basis: 5px;
+  }
+
+  .player-dock .tune-btn {
+    justify-self: stretch;
+    align-self: center;
+    min-width: 150px;
+    padding: 18px 26px;
+    font-size: 1.1rem;
   }
 }
 
@@ -2579,7 +2858,7 @@ a.pid:hover {
 
   /* Home page */
   .radio-page {
-    width: min(1080px, 100vw - 16px);
+    width: min(1100px, 100vw - 16px);
   }
 
   .brand {
@@ -2715,14 +2994,6 @@ a.pid:hover {
     padding-inline: 8px;
   }
 
-  .sleeve {
-    grid-template-columns: 84px minmax(0, 1fr);
-  }
-
-  .np-cover {
-    width: 84px;
-  }
-
   .np-title {
     font-size: 1.4rem;
   }
@@ -2748,6 +3019,21 @@ a.pid:hover {
   .queue-list .queue-row .drag-handle,
   .queue-list .queue-row .queue-duration {
     display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .player-dock .tune-btn {
+    min-width: 124px;
+    padding-inline: 18px;
+  }
+
+  .radio-page .sleeve {
+    grid-template-columns: 60px minmax(0, 1fr);
+  }
+
+  .radio-page .np-cover {
+    width: 60px;
   }
 }
 
