@@ -201,6 +201,32 @@ docker compose up -d backend
 `--save payload.json` writes the generated snapshot for inspection. The push
 is idempotent; re-running it only changes the story fields it carries.
 
+### Pushing reviewed facts to live
+
+`scripts/push_facts.py` is the narrow facts counterpart. It sends only fields
+that are **locked locally**, and only for the video IDs you list explicitly;
+it never pushes the whole library. It starts each track from the live detail
+and overlays the reviewed local facts, so live prose, charts, timestamps and
+memberships are preserved. Lock a corrected fact locally first; otherwise the
+next pull or enrichment may revert it.
+
+Use the same temporary live import route as above, then dry-run to review the
+field-by-field diff:
+
+```powershell
+python scripts/push_facts.py `
+  --from http://localhost:8011 `
+  --to https://radio.example.com `
+  --key $localKey `
+  --import-key $liveKey `
+  --ids-file reviewed-ids.txt `
+  --dry-run
+```
+
+Remove `--dry-run` to apply, then disable the live import route. `--video-id`
+can be repeated instead of `--ids-file`, and `--save` keeps the generated
+payload. The tool reports any live-locked field it refuses to overwrite.
+
 ### Schema notes
 
 - `trackcache.playlist_id` is nullable. `NULL` means a standalone library track.

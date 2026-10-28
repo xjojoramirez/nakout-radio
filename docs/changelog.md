@@ -3,6 +3,67 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-28 - reviewed facts push tool and live facts correction
+
+Added `scripts/push_facts.py` for the narrow local -> live facts path, then
+used it to correct the live metadata that the story push could not carry.
+
+- The tool takes explicit `--video-id` / `--ids-file` values and sends only
+  fact fields that are **locked locally**. It starts each track from the live
+  detail, overlays the reviewed facts and their sources, and sends a
+  playlist-free snapshot. Live prose, charts, timestamps and memberships are
+  preserved. `--dry-run` prints a field-by-field live -> local diff.
+- Locked 83 corrected fact fields on 35 tracks locally; 6 more were already
+  locked by the composer. The live push covered 37 tracks and 89 fields.
+- Added focused tests for locked-field selection, live-lock precedence,
+  source requirements, playlist-free payloads and id-file parsing.
+- Files touched:
+  - `scripts/push_facts.py` (new)
+  - `backend/tests/test_push_facts.py` (new)
+  - `README.md`
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No — the script, tests and docs are not
+  served code. The live backend was recreated twice to toggle
+  `LIBRARY_IMPORT_ENABLED`; it is back to `false`.
+- **Verification:**
+  - `python -m pytest backend/tests/test_push_facts.py -q` — 6 passed.
+  - Full backend suite — 487 passed.
+  - Facts dry run: 37 tracks, 89 changed fields, 0 membership changes, 0
+    charts replaced.
+  - Facts apply: 37 tracks and 37 details updated; 0 memberships, 0 charts.
+  - Post-push comparison of the 37 tracks: 0 fact, prose, membership or chart
+    mismatches; 0 missing live locks.
+  - `pull_library.py --dry-run` after the push: 884 unchanged tracks, 0
+    membership changes, 0 detail changes, 0 charts replaced.
+  - Live import route returns 404 after the toggle was reverted.
+
+## 2026-10-28 - story worklist and live story push
+
+Added `docs/story-worklist.md` to record the remaining story work after five
+composer batches, then pushed the curated stories to live.
+
+- Worklist: 50 tracks composed, 105 tracks locked, 330 still without prose;
+  remaining counts by genre and the next 10-track batch are recorded.
+- Live push: 105 tracks selected (103 summaries, 64 stories), applied with
+  `scripts/push_stories.py`. Playlist-free payload preserved every live
+  membership and chart row.
+- The live import route was enabled only for the push and is disabled again.
+- Files touched:
+  - `docs/story-worklist.md` (new)
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No — docs and data only. The live backend
+  was recreated twice to toggle `LIBRARY_IMPORT_ENABLED`; it is back to
+  `false`.
+- **Verification:**
+  - Dry run: 105 tracks selected, 0 memberships added/removed/detached, 0
+    charts replaced.
+  - Apply: 105 tracks and 105 details updated; 0 tracks created or detached.
+  - Live meta: 884 tracks, 884 details, 0 standalone, 8 playlists, 8 genres.
+  - Post-push comparison: 105/105 pushed tracks present on live, 0
+    `summary`/`story`/`dj_note` mismatches.
+  - Live import route returns 404 after the toggle was reverted.
+
 ## 2026-10-27 - push curated stories to live
 
 Added `scripts/push_stories.py`, a story-only bridge for the local -> live
