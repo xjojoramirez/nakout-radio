@@ -3,6 +3,43 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-28 - rebuild the radio page around the reference player dock
+
+The homepage now follows
+`dev reference/design/nakout now playing/Nakout Radio Player.html`: the mixer
+is a fixed bottom player dock, and the page content is ordered for phones.
+
+- The dock spans the viewport and carries the cover, DJ / genre, VU meter,
+  time, volume knob plus horizontal fader, and the single Tune in / Tune out
+  button. Its top edge doubles as the playback progress line.
+- Desktop keeps the deck sticky in the left column and hides the duplicate
+  in-page progress bar. At ≤820px the now-playing header comes first, the deck
+  second, then progress, liner notes and schedule. The compact mobile dock is
+  laid out as `dj / tune` and `vu / tune`, with the large tune button spanning
+  both rows; cover, time and volume controls are hidden there as in the
+  reference.
+- `VolumeFader` gained an `orientation` prop and horizontal rail/cap styles;
+  the radio page uses the horizontal variant in the dock.
+- Layout rules are scoped to `.radio-page` and `.player-dock`, so the admin
+  mixer keeps its inline two-column layout.
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `frontend/src/components/deck/VolumeFader.tsx`
+  - `frontend/src/components/deck/VolumeFader.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`. Hard-refresh the browser afterwards.
+- **Verification:**
+  - `npm test` — 355 passed across 34 test files.
+  - `npm run typecheck` — passed.
+  - `npm run build` — passed.
+  - Headless Edge checks with no horizontal overflow:
+    - 320×568: dock at y=469–568, tune button 124×59 at x=180–304.
+    - 390×844: dock at y=745–844, tune button 150×59 at x=224–374.
+    - 1280×900: dock at y=820–900, time and horizontal fader shown, in-page
+      progress hidden.
 ## 2026-10-28 - reviewed facts push tool and live facts correction
 
 Added `scripts/push_facts.py` for the narrow local -> live facts path, then

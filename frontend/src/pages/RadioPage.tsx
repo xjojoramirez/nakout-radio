@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { LinerNotes } from "../components/liner/LinerNotes";
 import { TrackFacts } from "../components/liner/TrackFacts";
 import { OfflineNotice } from "../components/OfflineNotice";
@@ -31,137 +32,154 @@ export function RadioPage() {
   const rows = todayScheduleRows(today);
 
   return (
-    <div className={offline ? "radio-page offline" : "radio-page"}>
-      <header className="radio-top">
-        <div className="brand">Nakout Radio</div>
-        <div className="onair">
-          <span
-            className={player.playing || gap ? "led on" : "led"}
-            aria-hidden="true"
-          />
-          <span>{player.playing || gap ? "On air" : "Standing by"}</span>
-          <span>{listeners} listening</span>
-        </div>
-      </header>
-
-      <div id="yt-player" className="hidden-player" />
-      <div id="yt-preload" className="hidden-player" />
-
-      <main className="deck-grid">
-        <section className="deck-side" aria-label="Turntable">
-          <TurntableDeck
-            playing={player.playing}
-            artUrl={track?.thumbnail_url ?? null}
-          />
-          <div className="mixer">
-            <div className="dj">
-              <small>On the decks</small>
-              <strong>{genreName ?? "Nakout Radio"}</strong>
-            </div>
-            <VUMeter playing={player.playing} />
-            <div className="knob-row">
-              <VolumeKnob
-                label="Volume"
-                value={player.volume}
-                onChange={player.setVolume}
-              />
-              <VolumeFader
-                label="Volume fader"
-                value={player.volume}
-                onChange={player.setVolume}
-                disabled={offline}
-              />
-            </div>
+    <>
+      <div className={offline ? "radio-page offline" : "radio-page"}>
+        <header className="radio-top">
+          <div className="brand">Nakout Radio</div>
+          <div className="onair">
+            <span
+              className={player.playing || gap ? "led on" : "led"}
+              aria-hidden="true"
+            />
+            <span>{player.playing || gap ? "On air" : "Standing by"}</span>
+            <span>{listeners} listening</span>
           </div>
-        </section>
+        </header>
 
-        <section className="np-col">
-          {offline ? (
-            <>
-              <OfflineNotice />
-              <p className="np-artist">
-                The deck is at rest. Come back for the next show.
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="sleeve">
-                {track?.thumbnail_url && (
-                  <img className="np-cover" src={track.thumbnail_url} alt="" />
-                )}
-                <div>
-                  <div className="kicker">
-                    {genreName ? `${genreName} · live now` : "Live now"}
-                  </div>
-                  <h1
-                    className="np-title"
-                    title={track?.title ?? undefined}
-                  >
-                    {track?.title ?? "Tune in"}
-                  </h1>
-                  <div
-                    className="np-artist"
-                    title={track?.artist || undefined}
-                  >
-                    {track?.artist || "Nakout Radio"}
-                  </div>
-                  <TrackFacts detail={details.detail} />
-                </div>
-              </div>
-              {!gap && (
-                <div>
-                  <div className="np-bar">
-                    <div
-                      className="np-bar-fill"
-                      role="progressbar"
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={Math.round(pct)}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <div className="np-times">
-                    <span>{formatClock(player.progress)}</span>
-                    <span>{formatClock(duration)}</span>
-                  </div>
-                </div>
-              )}
-              <LinerNotes
-                status={details.status}
-                detail={details.detail}
-                onRetry={details.retry}
-              />
-            </>
-          )}
+        <div id="yt-player" className="hidden-player" />
+        <div id="yt-preload" className="hidden-player" />
 
-          <div className="np-controls">
-            <button
-              type="button"
-              className="tune-btn"
-              onClick={player.toggleMute}
-              disabled={offline}
-            >
-              {player.muted ? "Tune in" : "Tune out"}
-            </button>
-          </div>
-
-          <section className="sched" aria-label="Today's schedule">
-            <h2>Today's schedule</h2>
-            {rows.length > 0 ? (
-              <ul>
-                {rows.map((row) => (
-                  <li key={row.id} className={row.isNow ? "now" : undefined}>
-                    <span>{row.name}</span>
-                    <span>{row.range}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="np-artist">No schedule slots yet.</p>
-            )}
+        <main className="deck-grid">
+          <section className="deck-side" aria-label="Turntable">
+            <TurntableDeck
+              playing={player.playing}
+              artUrl={track?.thumbnail_url ?? null}
+            />
           </section>
-        </section>
-      </main>
-    </div>
+
+          <section className="np-col">
+            {offline ? (
+              <>
+                <OfflineNotice />
+                <p className="np-artist">
+                  The deck is at rest. Come back for the next show.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="sleeve">
+                  {track?.thumbnail_url && (
+                    <img className="np-cover" src={track.thumbnail_url} alt="" />
+                  )}
+                  <div>
+                    <div className="kicker">
+                      {genreName ? `${genreName} · live now` : "Live now"}
+                    </div>
+                    <h1
+                      className="np-title"
+                      title={track?.title ?? undefined}
+                    >
+                      {track?.title ?? "Tune in"}
+                    </h1>
+                    <div
+                      className="np-artist"
+                      title={track?.artist || undefined}
+                    >
+                      {track?.artist || "Nakout Radio"}
+                    </div>
+                    <TrackFacts detail={details.detail} />
+                  </div>
+                </div>
+                {!gap && (
+                  <div className="np-progress">
+                    <div className="np-bar">
+                      <div
+                        className="np-bar-fill"
+                        role="progressbar"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={Math.round(pct)}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="np-times">
+                      <span>{formatClock(player.progress)}</span>
+                      <span>{formatClock(duration)}</span>
+                    </div>
+                  </div>
+                )}
+                <LinerNotes
+                  status={details.status}
+                  detail={details.detail}
+                  onRetry={details.retry}
+                />
+              </>
+            )}
+
+            <section className="sched" aria-label="Today's schedule">
+              <h2>Today's schedule</h2>
+              {rows.length > 0 ? (
+                <ul>
+                  {rows.map((row) => (
+                    <li key={row.id} className={row.isNow ? "now" : undefined}>
+                      <span>{row.name}</span>
+                      <span>{row.range}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="np-artist">No schedule slots yet.</p>
+              )}
+            </section>
+          </section>
+        </main>
+      </div>
+
+      <div
+        className={offline ? "mixer player-dock offline" : "mixer player-dock"}
+        style={{ "--p": pct / 100 } as CSSProperties}
+      >
+        <div
+          className="dcover"
+          aria-hidden="true"
+          style={
+            track?.thumbnail_url
+              ? { backgroundImage: `url(${track.thumbnail_url})` }
+              : undefined
+          }
+        />
+        <div className="dj">
+          <small>On the decks</small>
+          <strong>{genreName ?? "Nakout Radio"}</strong>
+        </div>
+        <VUMeter playing={player.playing} />
+        <div className="time" aria-hidden="true">
+          <span>{formatClock(player.progress)}</span> /{" "}
+          <span>{formatClock(duration)}</span>
+        </div>
+        <div className="vol">
+          <VolumeKnob
+            label="Volume"
+            value={player.volume}
+            onChange={player.setVolume}
+          />
+          <VolumeFader
+            label="Volume fader"
+            value={player.volume}
+            onChange={player.setVolume}
+            disabled={offline}
+            orientation="horizontal"
+          />
+        </div>
+        <button
+          type="button"
+          className="tune-btn"
+          onClick={player.toggleMute}
+          disabled={offline}
+        >
+          {player.muted ? "Tune in" : "Tune out"}
+        </button>
+      </div>
+    </>
   );
 }

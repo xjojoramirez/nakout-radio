@@ -165,6 +165,18 @@ describe("RadioPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("puts the tune control and track readout in the player dock", async () => {
+    const { container } = render(<RadioPage />);
+    const tune = await screen.findByRole("button", { name: "Tune in" });
+    const dock = container.querySelector(".player-dock");
+    expect(dock).not.toBeNull();
+    expect(dock?.classList.contains("mixer")).toBe(true);
+    expect(dock?.contains(tune)).toBe(true);
+    expect(container.querySelector(".np-col .tune-btn")).toBeNull();
+    expect(dock?.querySelector(".dcover")).not.toBeNull();
+    expect(dock?.querySelector(".time")?.textContent).toMatch(/0:00/);
+  });
+
   it("keeps the tune control when the player errors (no Retry button)", async () => {
     render(<RadioPage />);
     await screen.findByText("live"); // broadcast loaded; player effect ran
@@ -184,9 +196,14 @@ describe("RadioPage", () => {
     const slider = await screen.findByRole("slider", { name: "Volume" });
     expect(slider).toHaveAttribute("aria-valuemax", "100");
     const fader = screen.getByRole("slider", { name: "Volume fader" });
-    expect(fader).toHaveAttribute("aria-valuenow", slider.getAttribute("aria-valuenow"));
+    expect(fader).toHaveAttribute(
+      "aria-valuenow",
+      slider.getAttribute("aria-valuenow"),
+    );
+    expect(fader).toHaveAttribute("aria-orientation", "horizontal");
+    expect(container.querySelector(".player-dock .fader.horizontal")).not.toBeNull();
     expect(
-      container.querySelectorAll(".knob-row .deck-knob:not(.interactive)"),
+      container.querySelectorAll(".player-dock .deck-knob:not(.interactive)"),
     ).toHaveLength(0);
   });
 
@@ -249,11 +266,14 @@ describe("RadioPage", () => {
       next_track: track("next"),
       seconds_until_start: 1.5,
     });
-    render(<RadioPage />);
+    const { container } = render(<RadioPage />);
     expect(await screen.findByText("prev")).toBeInTheDocument();
     expect(screen.getByText("On air")).toBeInTheDocument();
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
-    expect(screen.queryByText("3:20")).not.toBeInTheDocument();
+    expect(container.querySelector(".np-times")).toBeNull();
+    expect(container.querySelector(".player-dock .time")?.textContent).toContain(
+      "3:20",
+    );
     expect(screen.queryByText("next")).not.toBeInTheDocument();
   });
 
