@@ -3,6 +3,26 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-28 - match the reference volume rail in the player dock
+
+The horizontal volume control no longer inherits the vertical fader's filled
+capsule and outer shadow; it now uses the reference's bare 8px rail and
+22×30 amber cap.
+
+- `.fader.horizontal` clears the base fader background, border radius and
+  box shadow, matches the reference rail geometry, and uses the reference cap
+  shadow.
+- Files touched:
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`. Hard-refresh the browser afterwards.
+- **Verification:**
+  - `npm test` — 355 passed across 34 test files.
+  - `npm run build` — passed.
+  - Screenshot of the served dock at 1280×900 — thin rail and amber cap match
+    the reference.
+
 ## 2026-10-28 - rebuild the radio page around the reference player dock
 
 The homepage now follows

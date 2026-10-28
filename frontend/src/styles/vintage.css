@@ -2497,7 +2497,9 @@ body:has(.player-dock) {
 .fader.horizontal {
   width: 150px;
   height: 30px;
-  border-radius: 15px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
   cursor: ew-resize;
 }
 
@@ -2524,6 +2526,7 @@ body:has(.player-dock) {
   transform: none;
   border-radius: 5px;
   background: linear-gradient(180deg, #f6b24f, #e08f1f);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
 }
 
 .fader.horizontal .fader-thumb::after {
