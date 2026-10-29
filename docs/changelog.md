@@ -3,16 +3,16 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
-## 2026-10-29 - keep the volume controls in narrow desktop browser windows
+## 2026-10-29 - keep a hover-reveal volume control in narrow desktop browser windows
 
 The player dock hides its cover, time and volume controls at ≤820px to match
 the reference's phone layout. That left mouse/trackpad users in a narrow
 browser window with no in-page volume. A `(hover: hover) and (pointer: fine)`
-variant now restores a compact knob (30px) and horizontal fader (130px) as a
-third, right-aligned dock row under the Tune button and adds the bottom
-padding for it; touch phones keep the compact dock (hardware volume). Chrome
-DevTools touch emulation still reports a coarse pointer, so it shows the phone
-layout too.
+variant now shows a small speaker icon in a third, right-aligned dock row under
+the Tune button; hovering or focusing it expands the 130px horizontal fader to
+its left. Touch phones keep the compact dock (hardware volume). Chrome DevTools
+touch emulation still reports a coarse pointer, so it shows the phone layout
+too.
 
 - Files touched:
   - `frontend/src/styles/vintage.css`
@@ -23,10 +23,12 @@ layout too.
   - `npm test` — 355 passed across 34 test files.
   - `npm run build` — passed.
   - Headless Edge + CDP checks on the rebuilt container:
-    - 390×844 fine pointer: 30px volume row; the 130px fader aligns exactly
-      under the Tune button (x=229–359), dock 132.8px, body bottom padding
-      164px, no horizontal overflow.
-    - 320×568 fine pointer: the same row fits within 273px.
+    - 390×844 fine pointer: idle 30×26px speaker icon at x=329–359 with the
+      fader collapsed to 0px; hovering or focusing expands the 130px fader
+      (row 160px wide) to the icon's left, dock 128.8px, body bottom padding
+      160px, no horizontal overflow.
+    - 320×568 fine pointer: the icon and its 160px expanded row fit within
+      273px.
     - 1280×900 fine pointer: unchanged (volume row already shown, dock 80px).
     - 390×844 touch emulation: `(pointer: coarse)` true, volume row
       `display: none`, dock 98.8px, body bottom padding 132px.
