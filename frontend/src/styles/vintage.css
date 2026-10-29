@@ -2837,33 +2837,39 @@ body:has(.player-dock) {
 }
 
 /* Narrow viewports on mouse/trackpad devices keep a compact volume control:
-   a speaker icon that expands into the horizontal fader on hover or focus.
-   Real touch phones keep the reference's dock (hardware volume). */
+   a speaker icon beside the Tune button that expands into the horizontal
+   fader on hover or focus. Real touch phones keep the reference's dock
+   (hardware volume). */
 @media (max-width: 820px) and (hover: hover) and (pointer: fine) {
-  body:has(.player-dock) {
-    padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px));
+  .player-dock {
+    grid-template-columns: minmax(0, 1fr) 30px auto;
+    grid-template-areas:
+      "dj . tune"
+      "vu vol tune";
   }
 
-  .player-dock {
-    grid-template-areas:
-      "dj tune"
-      "vu tune"
-      "vol vol";
+  .player-dock .vu-meter {
+    transition: opacity 120ms ease;
+  }
+
+  .player-dock:has(.vol:hover) .vu-meter,
+  .player-dock:has(.vol:focus-within) .vu-meter {
+    opacity: 0;
   }
 
   .player-dock .vol {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    justify-self: end;
-    gap: 10px;
-    width: max-content;
-    max-width: 100%;
+    justify-content: center;
+    align-self: center;
+    width: 30px;
+    height: 26px;
   }
 
   .player-dock .vol::before {
     content: "";
-    order: 2;
     width: 20px;
     height: 20px;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 9.5v5h3.5L12 18V6L7.5 9.5H4z' fill='%23f1e4d0'/%3E%3Cg fill='none' stroke='%23f1e4d0' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M15.5 8.5a5 5 0 0 1 0 7'/%3E%3Cpath d='M18 6a8.5 8.5 0 0 1 0 12'/%3E%3C/g%3E%3C/svg%3E")
@@ -2882,12 +2888,17 @@ body:has(.player-dock) {
   }
 
   .player-dock .vol .fader.horizontal {
-    order: 1;
+    position: absolute;
+    top: 0;
+    right: calc(100% + 10px);
     width: 0;
     height: 26px;
     opacity: 0;
     overflow: hidden;
     pointer-events: none;
+    background: var(--wood-light);
+    border-radius: 6px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
     transition:
       width 160ms ease,
       opacity 120ms ease;
@@ -2896,7 +2907,7 @@ body:has(.player-dock) {
   .player-dock .vol:hover .fader.horizontal,
   .player-dock .vol:focus-within .fader.horizontal,
   .player-dock .vol:active .fader.horizontal {
-    width: 130px;
+    width: clamp(80px, calc(100vw - 240px), 130px);
     opacity: 1;
     pointer-events: auto;
   }
@@ -2911,6 +2922,21 @@ body:has(.player-dock) {
     left: 8px;
     top: 5px;
     bottom: 5px;
+  }
+}
+
+@media (max-width: 360px) and (hover: hover) and (pointer: fine) {
+  .player-dock .dj small {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+  }
+
+  .player-dock .vu-meter {
+    gap: 3px;
+  }
+
+  .player-dock .vu-bar {
+    flex-basis: 4px;
   }
 }
 
