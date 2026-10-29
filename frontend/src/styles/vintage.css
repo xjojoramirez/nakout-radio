@@ -2836,6 +2836,26 @@ body:has(.player-dock) {
   }
 }
 
+/* Narrow viewports on mouse/trackpad devices keep the volume controls.
+   Real touch phones keep the reference's compact dock (hardware volume). */
+@media (max-width: 820px) and (hover: hover) and (pointer: fine) {
+  body:has(.player-dock) {
+    padding-bottom: calc(168px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .player-dock {
+    grid-template-areas:
+      "dj tune"
+      "vu tune"
+      "vol vol";
+  }
+
+  .player-dock .vol {
+    display: flex;
+    justify-content: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .arm,
   .np-bar-fill,

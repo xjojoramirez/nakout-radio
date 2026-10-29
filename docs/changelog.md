@@ -3,6 +3,32 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-29 - keep the volume controls in narrow desktop browser windows
+
+The player dock hides its cover, time and volume controls at ≤820px to match
+the reference's phone layout. That left mouse/trackpad users in a narrow
+browser window with no in-page volume. A `(hover: hover) and (pointer: fine)`
+variant now restores the knob and horizontal fader as a third, centered dock
+row and adds the bottom padding for it; touch phones keep the compact dock
+(hardware volume). Chrome DevTools touch emulation still reports a coarse
+pointer, so it shows the phone layout too.
+
+- Files touched:
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`. Hard-refresh the browser afterwards.
+- **Verification:**
+  - `npm test` — 355 passed across 34 test files.
+  - `npm run build` — passed.
+  - Headless Edge + CDP checks on the rebuilt container:
+    - 390×844 fine pointer: volume row shown (34px tall, knob + 150px fader),
+      dock 136.8px, body bottom padding 168px, no horizontal overflow.
+    - 320×568 fine pointer: the same row fits within 273px.
+    - 1280×900 fine pointer: unchanged (volume row already shown, dock 80px).
+    - 390×844 touch emulation: `(pointer: coarse)` true, volume row
+      `display: none`, dock 98.8px, body bottom padding 132px.
+
 ## 2026-10-29 - hide the duplicate dock progress line on mobile
 
 At ≤820px the in-page progress bar (with its times) is visible, so the fixed
