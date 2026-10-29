@@ -3,6 +3,24 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-29 - hide the duplicate dock progress line on mobile
+
+At ≤820px the in-page progress bar (with its times) is visible, so the fixed
+player dock's top-edge progress line and its track read as a second scrub bar.
+Both dock pseudo-elements are now hidden at that breakpoint; desktop keeps the
+dock line and hides the in-page bar as before.
+
+- Files touched:
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`. Hard-refresh the browser afterwards.
+- **Verification:**
+  - `npm test` — 355 passed across 34 test files.
+  - `npm run build` — passed.
+  - Headless Edge screenshot at 390×844 — only the in-page progress bar is
+    visible; the dock top edge no longer paints a second line.
+
 ## 2026-10-28 - match the reference volume rail in the player dock
 
 The horizontal volume control no longer inherits the vertical fader's filled
