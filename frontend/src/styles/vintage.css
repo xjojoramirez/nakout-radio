@@ -2806,6 +2806,13 @@ body:has(.player-dock) {
     padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
   }
 
+  /* The in-page progress bar (with times) is visible here, so the dock's
+     top-edge progress line would read as a second scrub bar. */
+  .player-dock::before,
+  .player-dock::after {
+    display: none;
+  }
+
   .player-dock .dcover,
   .player-dock .time,
   .player-dock .vol {
