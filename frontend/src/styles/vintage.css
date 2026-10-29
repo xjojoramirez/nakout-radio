@@ -2840,7 +2840,7 @@ body:has(.player-dock) {
    Real touch phones keep the reference's compact dock (hardware volume). */
 @media (max-width: 820px) and (hover: hover) and (pointer: fine) {
   body:has(.player-dock) {
-    padding-bottom: calc(168px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(164px + env(safe-area-inset-bottom, 0px));
   }
 
   .player-dock {
@@ -2853,6 +2853,29 @@ body:has(.player-dock) {
   .player-dock .vol {
     display: flex;
     justify-content: flex-end;
+    gap: 12px;
+  }
+
+  .player-dock .vol .deck-knob.interactive {
+    width: 30px;
+    height: 30px;
+  }
+
+  .player-dock .vol .fader.horizontal {
+    width: 130px;
+    height: 26px;
+  }
+
+  .player-dock .vol .fader.horizontal .fader-thumb {
+    left: calc(4px + (100% - 26px) * var(--v, 0));
+    width: 18px;
+    height: 26px;
+  }
+
+  .player-dock .vol .fader.horizontal .fader-thumb::after {
+    left: 8px;
+    top: 5px;
+    bottom: 5px;
   }
 }
 

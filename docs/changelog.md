@@ -8,10 +8,11 @@ restart is required (see `AGENTS.md` for the restart commands).
 The player dock hides its cover, time and volume controls at ≤820px to match
 the reference's phone layout. That left mouse/trackpad users in a narrow
 browser window with no in-page volume. A `(hover: hover) and (pointer: fine)`
-variant now restores the knob and horizontal fader as a third, right-aligned
-dock row under the Tune button and adds the bottom padding for it; touch
-phones keep the compact dock (hardware volume). Chrome DevTools touch
-emulation still reports a coarse pointer, so it shows the phone layout too.
+variant now restores a compact knob (30px) and horizontal fader (130px) as a
+third, right-aligned dock row under the Tune button and adds the bottom
+padding for it; touch phones keep the compact dock (hardware volume). Chrome
+DevTools touch emulation still reports a coarse pointer, so it shows the phone
+layout too.
 
 - Files touched:
   - `frontend/src/styles/vintage.css`
@@ -22,9 +23,9 @@ emulation still reports a coarse pointer, so it shows the phone layout too.
   - `npm test` — 355 passed across 34 test files.
   - `npm run build` — passed.
   - Headless Edge + CDP checks on the rebuilt container:
-    - 390×844 fine pointer: volume row shown (34px tall); the 150px fader
-      aligns exactly under the Tune button (x=209–359), dock 136.8px, body
-      bottom padding 168px, no horizontal overflow.
+    - 390×844 fine pointer: 30px volume row; the 130px fader aligns exactly
+      under the Tune button (x=229–359), dock 132.8px, body bottom padding
+      164px, no horizontal overflow.
     - 320×568 fine pointer: the same row fits within 273px.
     - 1280×900 fine pointer: unchanged (volume row already shown, dock 80px).
     - 390×844 touch emulation: `(pointer: coarse)` true, volume row
