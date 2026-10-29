@@ -2852,7 +2852,7 @@ body:has(.player-dock) {
 
   .player-dock .vol {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
   }
 }
 
