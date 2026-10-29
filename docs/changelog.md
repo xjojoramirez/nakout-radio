@@ -3,6 +3,48 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-29 - sixth story batch and Jay-Z chart history
+
+Continued the track-story work with a live pull, ten composed tracks,
+reviewer corrections to reissue-era facts, and the first weekly chart import
+for Jay-Z's Empire State Of Mind.
+
+- Pulled live first: 884 tracks, 31 track-cache updates, 0 membership, detail
+  or chart changes.
+- Composed 10 tracks: 10 summaries and 5 stories. After Image, Brownman
+  Revival, Deftones, Siakol and Chicosci have no story because no source gave a
+  song-specific anecdote.
+- Reviewer corrections: original-release album/year/date on After Image,
+  Gloc-9, Siakol, Chicosci, Fra Lippo Lippi and Calloway; label on Fra Lippo
+  Lippi, Calloway and Jay-Z; two story wording fixes. The 16 corrected fields
+  are locked with Wikipedia or AllMusic sources.
+- Added 46 weekly chart rows for Jay-Z's Empire State Of Mind, with country
+  codes and the `charts` lock; monthly Brazil and year-end rows were excluded.
+- Live push: 16 fact fields on 7 tracks, 10 story updates (115-track push, 105
+  unchanged), 46 chart rows on 1 track; 0 memberships, 0 tracks created or
+  detached. The chart push used a one-off playlist-free payload; there is no
+  dedicated chart script yet. Live import was enabled only for the pushes and
+  is disabled again.
+- Post-push `pull_library.py --dry-run`: 0 track, 0 detail and 0 chart changes.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No — docs and data only. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED`; it is back to `false`.
+- **Verification:**
+  - Local validation: 10 summaries (107-162 chars), 5 stories (278-338 chars),
+    all locked with sources; no markup; 46 Jay-Z rows with no duplicates.
+  - Reviewer post-fix audit: facts and charts OK after the CIS/Czech metadata
+    corrections.
+  - `python -m pytest backend/tests/test_push_facts.py -q` — 6 passed.
+  - Facts dry run/apply: 7 tracks, 16 changed fields, 0 memberships, 0 charts.
+  - Stories dry run/apply: 115 tracks selected, 10 updated, 105 unchanged,
+    0 charts.
+  - Chart dry run/apply: 1 chart replaced, 0 locks skipped.
+  - Live export after the push: 10 summaries, 5 stories, corrected facts,
+    46 Jay-Z chart rows.
+  - `pull_library.py --dry-run` after the push: 0 changes.
+
 ## 2026-10-29 - hide the duplicate dock progress line on mobile
 
 At ≤820px the in-page progress bar (with its times) is visible, so the fixed
