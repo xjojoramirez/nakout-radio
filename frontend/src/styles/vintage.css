@@ -2883,6 +2883,16 @@ body:has(.player-dock) {
     opacity: 1;
   }
 
+  /* Keep the hover chain alive across the gap between icon and fader. */
+  .player-dock .vol::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 100%;
+    width: 10px;
+    height: 26px;
+  }
+
   .player-dock .vol .deck-knob {
     display: none;
   }

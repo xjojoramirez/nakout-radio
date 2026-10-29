@@ -10,10 +10,11 @@ the reference's phone layout. That left mouse/trackpad users in a narrow
 browser window with no in-page volume. A `(hover: hover) and (pointer: fine)`
 variant now places a small speaker icon beside the Tune button in the VU row;
 hovering or focusing it slides the horizontal fader (80–130px, depending on
-width) out to the left, fading the VU meter underneath. There is no extra dock
-row. Touch phones keep the compact dock (hardware volume). Chrome DevTools
-touch emulation still reports a coarse pointer, so it shows the phone layout
-too.
+width) out to the left, fading the VU meter underneath. A 10px invisible
+bridge keeps the hover state while the pointer crosses from the icon to the
+fader, so the slider can be dragged. There is no extra dock row. Touch phones
+keep the compact dock (hardware volume). Chrome DevTools touch emulation still
+reports a coarse pointer, so it shows the phone layout too.
 
 - Files touched:
   - `frontend/src/styles/vintage.css`
@@ -26,8 +27,9 @@ too.
   - Headless Edge + CDP checks on the rebuilt container:
     - 390×844 fine pointer: 30×26px speaker icon at x=163–193 beside the Tune
       button; the fader collapses to 0px and expands to 130px on hover/focus
-      (x=23–153), replacing the faded VU meter. Dock 100.8px, no horizontal
-      overflow.
+      (x=23–153), replacing the faded VU meter. Moving onto the fader keeps it
+      open, and a drag changed the volume from 70 to 90. Dock 100.8px, no
+      horizontal overflow.
     - 320×568 fine pointer: 100px dock, icon at x=119–149, 80px fader, 12 VU
       bars at 4px + 3px gaps, "On the decks" on one line.
     - 1280×900 fine pointer: unchanged (volume row already shown, dock 80px).
