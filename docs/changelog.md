@@ -3,6 +3,367 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-30 - push story batches thirteen to fifteen to live
+
+Pushed the three reviewed local batches to production.
+
+- Facts: 27 tracks updated, 105 changed fields (album, album artist, release
+  date/year, label, track number, ISRC, genres and credits); 0 tracks created or
+  detached, 0 membership or chart changes. Three tracks had no locked fact
+  fields and were skipped.
+- Stories: 205 locked tracks selected (203 summaries, 128 stories); 30 tracks
+  updated, 175 unchanged. Live now has 205 tracks with locked prose, 657
+  summaries and 380 stories.
+- Charts: Boys Town Gang's eight 1982 weekly rows replaced the empty live chart
+  for `PErizgPzwHM`.
+- Two verification gaps were closed after the first pass: Brownman Revival's
+  album artist was added, and Alamid's old acoustic-single ISRC was cleared.
+- Live import was enabled only for the push and is disabled again; an
+  authenticated dry-run POST to `/api/library/import` returns 404.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No repo rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED`.
+- **Verification:**
+  - Live and local both have 890 tracks and 890 details.
+  - All 30 pushed tracks match locally on facts, summary/story, locks and
+    charts; live has 657 summaries, 380 stories and 205 locked-prose tracks.
+  - Public API spot checks returned the corrected albums, years, labels and the
+    eight Boys Town Gang chart rows.
+  - Import route returns 404 with import off.
+
+## 2026-10-30 - compose and review fifteenth story batch
+
+Composed and reviewed ten more tracks locally. Batch fifteen is local only;
+live still carries the 175 previously pushed tracks.
+
+- Composed 10 tracks: 10 summaries and 9 stories (White Lion has no cited
+  song-specific anecdote). Remaining: 233 tracks with no prose, 510 with no
+  story, 205 with locked prose.
+- Reviewer corrections: 37 fact-field changes on nine tracks. Original editions
+  for Alamid (Alamid, 1994, Warner Music Philippines, track 4), After Image
+  (Tag-Ulan, Tag-Araw, 1994, Dyna, track 8), Limp Bizkit (Three Dollar Bill,
+  Y'all$, 1997-07-01, Flip/Interscope, track 9), Slapshock (Novena, 2004), Ella
+  May Saison (Language of Soul, 1993, track 1), Juan Dela Cruz Band (Kahit Anong
+  Mangyari, 1981, Blackgold, track 2) and Pierce The Veil (Selfish Machines,
+  2010-06-22, track 4); White Lion date/genres; Brownman Revival track number
+  and album artist. Alamid's acoustic-single ISRC was cleared.
+- Five prose fields were adjusted after review: Brownman Revival now names the
+  original Ikaw ang Aking Mahal, White Lion's summary dropped an unsupported
+  clause, Ella May Saison gained the second writer and correct sequencing, and
+  Juan Dela Cruz Band's No Touch story dropped a four-year claim.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No - docs and local data only.
+- **Verification:**
+  - 10 records checked: summaries 100-171 chars, stories 152-296 chars, every
+    summary/story locked with an http source, no wiki markup.
+  - Fact fields locked with Wikipedia, MusicBrainz, Deezer or Apple Music
+    sources; `detail_tools show` matches the reviewed values.
+  - All 10 public `/api/tracks/<id>` checks returned 200 with the corrected
+    album/year.
+  - Library counts: 890 details, 657 with prose, 233 without, 510 without a
+    story, 205 with locked prose.
+
+## 2026-10-30 - compose and review fourteenth story batch
+
+Composed and reviewed ten more tracks locally. Batch fourteen is local only;
+live still carries the 175 previously pushed tracks.
+
+- Composed 10 tracks: 10 summaries and 9 stories (Greyhoundz has no cited
+  song-specific anecdote). Remaining: 243 tracks with no prose, 519 with no
+  story, 195 with locked prose.
+- Reviewer corrections: 30 fact fields on eight tracks. Original editions for
+  Scorpions (Blackout, 1982-03-08, Harvest/EMI), Rivermaya (Trip, 1996-02-14,
+  BMG, track 4), Kamikazee (Romantico, 2012-03, track 11), Jose Mari Chan
+  (Constant Change, 1989-05-25, track 2), Juan Dela Cruz Band (Kahit Anong
+  Mangyari, 1981, Blackgold, track 1) and Boys Town Gang (Disc Charge, 1981,
+  Moby Dick); Deftones label/date (Maverick, 1995-10-03); Greyhoundz label
+  (PolyEast); plus provider genres on Juan Dela Cruz and Boys Town Gang.
+- Five stories were rewritten after review (Deftones, Jose Mari Chan, Juan Dela
+  Cruz Band, Neck Deep and Boys Town Gang) and Chiqui Pineda gained a sourced
+  story. Boys Town Gang's eight 1982 weekly chart rows were added locally and
+  `charts` was locked.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No - docs and local data only.
+- **Verification:**
+  - 10 records checked: summaries 114-171 chars, stories 245-338 chars, every
+    summary/story locked with an http source, no wiki markup.
+  - 30 corrected fact fields on 8 tracks locked with Wikipedia and MusicBrainz
+    sources; prose sources include GMA and the artist's own blog. `detail_tools
+    show` matches the reviewed values.
+  - All 10 public `/api/tracks/<id>` checks returned 200 with the corrected
+    album/year; Boys Town Gang returned 8 chart rows.
+  - Library counts: 890 details, 647 with prose, 243 without, 519 without a
+    story, 195 with locked prose.
+
+## 2026-10-30 - pull live and compose thirteenth story batch
+
+Pulled the current live library into local, then composed and reviewed ten more
+tracks. Batch thirteen is local only; live still carries the 175 previously
+pushed tracks.
+
+- Pull: 890-track live snapshot, 27 tracks and 2 details updated locally, 0
+  membership or chart changes.
+- Composed 10 tracks: 10 summaries and 9 stories (Francis M has no cited
+  song-specific anecdote). Remaining: 253 tracks with no prose, 528 with no
+  story, 185 with locked prose.
+- Reviewer corrections: 39 fact fields on all ten tracks. Original editions for
+  Bamboo (As the Music Plays, 2004), Francis M (Happy Battle, 1996, BMG),
+  Slapshock (Novena, 2004), Chicosci (Chicosci, 2006-06-06), Magazine 60
+  (Pancho Villa, 1986, Polydor) and Juan Dela Cruz Band (Maskara, 1974,
+  Vicor/Sunshine); labels for Deftones (Maverick), The Story So Far (Pure
+  Noise), Clair Marlo (Sheffield Lab) and David Gates (Discovery); dates for
+  Clair Marlo (1989) and David Gates (1994-09-06); and provider genres on eight
+  tracks. Magazine 60's long version took the 2024 remaster ISRC
+  FR9W18600287.
+- Two stories were rewritten after review: Bamboo's now credits Nathan Azarcon
+  with the verse and chorus and Bamboo with the second verse; Magazine 60's now
+  names the song and artist.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No - docs and local data only.
+- **Verification:**
+  - Pull dry run/apply: 27 tracks, 2 details updated, 0 membership/chart
+    changes; both libraries have 890 tracks.
+  - 10 records checked: summaries 101-177 chars, stories 237-338 chars, every
+    summary/story locked with an http source, no wiki markup.
+  - 39 corrected fact fields on 10 tracks locked with MusicBrainz, Wikipedia,
+    Discogs or Deezer sources; `detail_tools show` matches the reviewed values.
+  - All 10 public `/api/tracks/<id>` spot checks returned 200 with the corrected
+    album/year.
+  - Library counts: 890 details, 637 with prose, 253 without, 528 without a
+    story, 185 with locked prose.
+
+## 2026-10-29 - push story batches ten to twelve to live
+
+Pushed the last three reviewed batches to production.
+
+- Facts: 17 tracks, 55 changed fields (album, album artist, release date/year,
+  label, track number, ISRC, genres and country); 0 tracks created or detached,
+  0 membership or chart changes.
+- Stories: 175 locked tracks selected (173 summaries, 101 stories); 30 tracks
+  updated, 145 unchanged. Live now has 175 tracks with locked prose, 627
+  summaries and 353 stories.
+- Live import was enabled only for the push and is disabled again; the live
+  backend was recreated twice to toggle it. `POST /api/library/import` returns
+  404 with import off.
+- Live and local both have 890 tracks; every locked field matches.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Live backend only, twice, to toggle
+  `LIBRARY_IMPORT_ENABLED`; it is back to `false`. No local restart.
+- **Verification:**
+  - Dry runs: 17 fact tracks / 55 fields; 175 story tracks, 30 updates.
+  - Real pushes: same counts; 0 created/detached, 0 membership, 0 charts.
+  - Live export comparison: 0 real fact diffs and 0 story diffs across all
+    locked fields; 175 live tracks with locked prose.
+  - `https://nakout.com/api/health` 200; import route 404 after disabling.
+
+## 2026-10-29 - twelfth story batch
+
+Composed and reviewed 10 more tracks. Batches ten to twelve are waiting for a
+live push.
+
+- Composed 10 tracks: 10 summaries and 5 stories (James Taylor, Neck Deep,
+  A Rocket To The Moon, Dong Abay, Slapshock). Ugly Kid Joe, Bamboo,
+  Greyhoundz and Timmy Thomas have no story; Engelbert's story was cleared
+  after the version audit.
+- Wrong version fixed: the Engelbert video is the 1999 dance re-recording on
+  The Dance Album, not the 1968 original. Facts now say 1999, the summary
+  describes the dance album, and the 1968-original story was cleared.
+- Reviewer corrections: 20 fact fields on 8 tracks. Ugly Kid Joe to 1992,
+  James Taylor to 1977, A Rocket To The Moon to the standard Wild & Free
+  (2013-03-26), Bamboo to As the Music Plays (2004), Slapshock to 2002 /
+  EMI Philippines, Greyhoundz's label to PolyEast, and Timmy Thomas to the
+  1990 BCM single with the Radio Edit ISRC.
+- Before this push, live carried 145 tracks; batches ten to twelve (30 tracks)
+  were local only.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No — docs and local data only.
+- **Verification:**
+  - 10 records checked: summaries 100-156 chars, stories 241-346 chars, every
+    summary/story locked with an http source, no wiki markup.
+  - Library counts: 890 tracks, 627 with prose, 263 without, 537 without a
+    story, 175 with locked prose.
+
+## 2026-10-29 - eleventh story batch
+
+Composed and reviewed 10 more tracks. Batch ten and this batch are waiting for
+a live push.
+
+- Composed 10 tracks: 10 summaries and 6 stories (Scorpions, Rai
+  Thistlethwayte, P.O.T., Deftones, Pierce The Veil, The Used). Four tracks
+  have no story because no source gave a song-specific anecdote.
+- Wrong match fixed: the D'Sound video is the 2006 acoustic recording, not the
+  1998 studio single. Facts now match the 2006 Acoustic Live Session EP
+  (daWorks, track 5, ISRC NOX9X3113505) and the summary was rewritten.
+- Reviewer corrections: 20 fact fields on 5 tracks. Rai Thistlethwayte moved
+  to the self-released Pocket Music EP (2013); P.O.T. to its 1997 debut album
+  and a story clause without a source was removed; Deftones' label moved to
+  Maverick and date to 1995-10-03; White Lion's genres to glam metal/hard
+  rock. December Avenue's summary now says lead single.
+- Scorpions' Lady Starlight keeps its 2015 remaster fields because the local
+  audio is the remaster; the prose describes the 1980 original.
+- Live carries these 10 since the 2026-10-29 push.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No — docs and local data only.
+- **Verification:**
+  - 10 records checked: summaries 86-146 chars, stories 210-333 chars, every
+    summary/story locked with an http source, no wiki markup.
+  - Library counts: 890 tracks, 617 with prose, 273 without, 542 without a
+    story, 165 with locked prose.
+
+## 2026-10-29 - tenth story batch
+
+Composed and reviewed 10 more tracks, including the three prose-less Emo
+tracks from the live pull. Pushed to live on 2026-10-29; see the push entry.
+
+- Composed 10 tracks: 10 summaries and 4 stories (Underoath, Sleeping With
+  Sirens, Silent Circle, Ken Laszlo). Six tracks have no story because no
+  source gave a song-specific anecdote.
+- Identity fix: Skykittens69 is the YouTube uploader; the recording is Goodbye
+  Tomorrow's By a Thread, from the 2004 EP Tied by Miles. Summary, album and
+  album_artist credit Goodbye Tomorrow; the library artist/title still carry
+  the YouTube strings.
+- Reviewer corrections: 14 fact fields on 4 tracks, including the original
+  editions for Underoath (Define the Great Line, 2006), Nazareth (Sound Elixir,
+  1983) and Wolfgang (Wolfgang, 1995), plus the Goodbye Tomorrow album artist.
+  Two summaries were trimmed or corrected (keshi, The Dawn).
+- Silent Circle and Ken Laszlo keep their 2011/2015 edition metadata because
+  the local audio is the later radio version, not the 1980s original.
+- Live carries these 10 since the 2026-10-29 push.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No — docs and local data only.
+- **Verification:**
+  - 10 records checked: summaries 60-160 chars, stories 260-324 chars, every
+    summary/story locked with an http source, no wiki markup.
+  - Library counts: 890 tracks, 607 with prose, 283 without, 548 without a
+    story, 155 with locked prose.
+
+## 2026-10-29 - pull six new live tracks into local
+
+Pulled the six tracks that had been added to live since the last library pull.
+
+- Import: 6 tracks created, 33 updated, 851 unchanged; 7 memberships added,
+  0 removed or detached; 6 details created, 1 updated; 0 charts replaced.
+- Local and live now both have 890 tracks. The three new tracks without prose
+  are all Emo Night (Skykittens69, Sleeping With Sirens, Underoath); Black
+  Sabbath, Poco and The Animals arrived with live prose.
+- Locked local fields kept their sources: the import skips locked fields before
+  touching their source entries.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No.
+- **Verification:**
+  - Local counts: 890 tracks, 597 with prose, 293 without, 552 without a story,
+    145 with locked prose.
+  - Spot checks: corrected album/label fields still point at their Wikipedia or
+    MusicBrainz sources after the pull.
+
+## 2026-10-29 - push story batches seven to nine to live
+
+Pushed the reviewed local work from the last three batches to production.
+
+- Facts: 22 tracks, 65 changed fields (album, release date/year, label, track
+  and disc numbers), 0 tracks created or detached, 0 membership or chart
+  changes.
+- Stories: 145 locked tracks selected (143 summaries, 86 stories); 30 tracks
+  updated, 115 unchanged. Live now has 145 tracks with locked prose, 597
+  summaries and 338 stories.
+- Live import was enabled only for the push and is disabled again; the live
+  backend was recreated twice to toggle it. `POST /api/library/import` returns
+  404 with import off.
+- Live had 890 tracks vs 884 local. Six newer live tracks (Black Sabbath,
+  Poco, Skykittens69, Sleeping With Sirens, The Animals, Underoath) were
+  pulled into local immediately after; see the pull entry.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** Live backend only, twice, to toggle
+  `LIBRARY_IMPORT_ENABLED`; it is back to `false`. No local restart.
+- **Verification:**
+  - Dry runs: 22 fact tracks / 65 fields; 145 story tracks, 30 updates.
+  - Real pushes: same counts; 0 created/detached, 0 membership, 0 charts.
+  - Live export comparison: 0 fact diffs and 0 story diffs across all locked
+    fields; 145 live tracks with locked prose.
+  - `https://nakout.com/api/health` 200; import route 404 after disabling.
+
+## 2026-10-29 - ninth story batch
+
+Composed and reviewed 10 more tracks across OPM, NU metal, classic love,
+emo and classic rock, correcting the provider editions the reviewers found.
+Pushed to live on 2026-10-29; see the push entry.
+
+- Composed 10 tracks: 10 summaries and 7 stories. Cueshé, Saosin and Neck
+  Deep have no story because no source gave a song-specific anecdote.
+- Reviewer corrections: 18 fact fields on 6 tracks: original album/year/date/
+  label/track positions for Mike Hanopol (Awiting Pilipino, 1977, Blackgold)
+  and Sergio Mendes (self-titled, 1983, A&M); label/date for Slapshock
+  (OctoArts-EMI, June 1999) and Scorpions (Harvest/Mercury, 1982); label for
+  Randy Crawford (Warner Bros.); release date for 6cyclemind (27 Jan 2007).
+- Prose fix: Mike Hanopol's story dropped an unsupported "seminary before
+  rock guitarist" sequence; 6cyclemind's summary source moved from the
+  disambiguation page to the Home album article.
+- These 10 were pushed with batches seven and eight on 2026-10-29.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No — docs and local data only.
+- **Verification:**
+  - 10 local records checked: summaries 101-164 chars, stories 229-284 chars,
+    every summary/story locked with an http source, no wiki markup.
+  - 18 corrected fact fields on 6 tracks locked with Wikipedia/MusicBrainz
+    sources; `detail_tools show` confirms the values and source URLs.
+  - All 7 stories reviewed as same-recording and source-supported; 3
+    summary-only tracks intentionally have no story.
+
+## 2026-10-29 - seventh and eighth story batches
+
+Composed and reviewed 20 more tracks, corrected reissue-era facts, and
+polished two summaries and three stories. Pushed to live on 2026-10-29; see
+the push entry.
+
+- Composed 20 tracks across OPM, NU metal, classic love songs, emo, Pinoy
+  rock, new wave and classic rock: 20 summaries and 10 stories. The other 10
+  tracks have no story because no source gave a song-specific anecdote.
+- Reviewer corrections: 47 fact fields on 17 tracks, mostly original
+  album/year/date/label instead of Deezer compilation or remaster editions
+  (Rivermaya, Juan de la Cruz Band, Deftones, Jo Boxers, Eraserheads, Bamboo,
+  Passenger, Slapshock, Sugarfree, Céline Dion, Dan Fogelberg, James Ingram,
+  Taking Back Sunday and Scorpions).
+- Prose rewrites: Paramore and Taking Back Sunday summaries now name the song;
+  their stories were tightened or added, and Eraserheads' Overdrive story lost
+  the article-referencing wording. All rewritten fields keep their Wikipedia
+  source and lock.
+- These 20 were pushed on 2026-10-29; see the push entry.
+- Jo Boxers' six weekly chart rows are still pending.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No — docs and local data only.
+- **Verification:**
+  - 20 local records checked: summaries 102-166 chars, stories 223-347 chars,
+    every summary/story locked with an http source, no wiki markup.
+  - 47 corrected fact fields on 17 tracks locked with Wikipedia/MusicBrainz
+    sources; Studio PUT responses and `detail_tools show` agree.
+  - Public API spot checks: corrected album/year/label render.
+  - All 10 stories reviewed as same-recording and source-supported; 10
+    summary-only tracks intentionally have no story.
+
 ## 2026-10-29 - sixth story batch and Jay-Z chart history
 
 Continued the track-story work with a live pull, ten composed tracks,
