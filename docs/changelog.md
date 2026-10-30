@@ -3,6 +3,67 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-10-30 - push story batch sixteen to live
+
+Pushed the reviewed batch sixteen to production.
+
+- Facts: 9 tracks updated, 24 changed fields (album, release date/year, label,
+  track number and genres); 0 tracks created or detached, 0 membership or chart
+  changes. Sleeping With Sirens had no locked fact fields and was skipped.
+- Stories: 215 locked tracks selected (213 summaries, 135 stories); 10 tracks
+  updated, 205 unchanged. Live now has 667 summaries, 387 stories and 215
+  locked-prose tracks.
+- No chart rows changed.
+- Live import was enabled only for the push and is disabled again; an
+  authenticated dry-run POST to `/api/library/import` returns 404.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No repo rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED`.
+- **Verification:**
+  - Live and local both have 890 tracks and 890 details.
+  - All ten batch sixteen ids match on facts, summary/story, locks and charts.
+  - Public API spot checks returned FreeMan 1995-04 track 13, Sincerely Yours
+    1993 track 8, and Giyang 1995-11-14 with its three genres.
+  - Import route returns 404 with import off.
+
+## 2026-10-30 - compose and review sixteenth story batch
+
+Pulled live before composing, then composed and reviewed ten more tracks.
+At composition time batch sixteen was local only; live still had 205
+locked-prose tracks.
+
+- Pull: 1 track updated (Francis M) and 2 locked prose fields kept local; both
+  libraries stayed at 890 tracks.
+- Composed 10 tracks: 10 summaries and 7 stories (Bamboo, Disturbed and
+  Razorback have no song-specific anecdote; Razorback's album-title story was
+  cleared at review). Remaining: 223 tracks with no prose, 503 with no story,
+  215 with locked prose.
+- Reviewer corrections: 24 fact-field changes on nine tracks. Original editions
+  for Francis M (FreeMan, 1995-04, Musiko/BMG, track 13) and Chris Walker
+  (Sincerely Yours, 1993, Pendulum, track 8); Bamboo date 2007-02-16 and genre;
+  Agaw Agimat label Alpha Records, 1995, rock; Dong Abay label Synergy Music
+  Corporation; Limp Bizkit label Flip/Interscope and nu metal/rap metal;
+  Disturbed date 2000-03-07 and nu metal; Juris date 2012-09-21; Razorback date
+  1995-11-14 and heavy metal/hard rock/Pinoy rock genres.
+- Prose: two stories were adjusted (Dong Abay's engineer credit, Juris's
+  film-theme wording) and Razorback's off-topic story was cleared. Francis M's
+  Evil Stepsisters typo was fixed before review.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md` (this entry)
+- **Container restart required?** No - docs and local data only.
+- **Verification:**
+  - 10 records checked: summaries 97-176 chars, stories 189-311 where present;
+    every locked field has an http source.
+  - Fact fields locked with Wikipedia, MusicBrainz, Deezer, Discogs or
+    BusinessMirror sources.
+  - All 10 public `/api/tracks/<id>` checks returned 200.
+  - Library counts: 890 details, 667 with prose, 223 without, 503 without a
+    story, 215 with locked prose.
+  - Live was not pushed.
+
 ## 2026-10-30 - push story batches thirteen to fifteen to live
 
 Pushed the three reviewed local batches to production.
