@@ -6,13 +6,13 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 150 tracks composed across fifteen batches, all reviewed.
-- 205 tracks currently have `summary` and/or `story` locked in both libraries:
-  the 175 earlier locked tracks plus 10 each from batches thirteen, fourteen and
-  fifteen.
+- 160 tracks composed across sixteen batches, all reviewed.
+- 215 tracks currently have `summary` and/or `story` locked in both libraries:
+  the 175 earlier locked tracks plus 10 each from batches thirteen to sixteen.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
-  with no membership or chart changes.
+  with no membership or chart changes. A second pull before batch sixteen
+  updated one track and kept two locked prose fields local.
 - Batches seven to twelve corrected provider/reissue editions before locking:
   original albums and years for Rivermaya, Juan de la Cruz Band, Deftones,
   Jo Boxers, Eraserheads, Bamboo, Passenger, Mike Hanopol, Sergio Mendes,
@@ -75,22 +75,40 @@ Status of the local track-story composition work.
   Batch fifteen ids: `vD6Xn572fUk`, `MmHKTGUeZ80`, `0IUvwE7pXZA`,
   `vfuMejXDbmM`, `IsYPVEZfv-U`, `grvjPb-2nig`, `n52OZn9meYg`, `ez5VzYFqghc`,
   `SvIDbLADSOI`, `NbB4gi3hoGI`.
+- Batch sixteen corrected original editions on two tracks: Francis M (FreeMan,
+  April 1995, Musiko/BMG, track 13, alternative rock) and Chris Walker (Sincerely
+  Yours, 1993, Pendulum, track 8). Bamboo's date moved to the 2007-02-16
+  Philippine CD and its genre to alternative rock; Agaw Agimat's label moved to
+  Alpha Records, its date to 1995 and its genre to rock; Dong Abay's label
+  expanded to Synergy Music Corporation; Limp Bizkit's label became
+  Flip/Interscope with nu metal/rap metal genres; Disturbed's date moved to
+  2000-03-07 with nu metal; Juris's date moved to 2012-09-21; Razorback's date
+  moved to 1995-11-14 with heavy metal/hard rock/Pinoy rock genres.
+- Batch sixteen prose: 10 summaries and 7 stories. Razorback's album-title story
+  was cleared as off-topic, Dong Abay's engineer credit now matches the cited
+  blog, Juris's film-theme sentence no longer implies the 2012 recording, and
+  Francis M's Evil Stepsisters typo was fixed. Bamboo, Disturbed and Razorback
+  have no song-specific story.
+- Batch sixteen was pushed to live on 2026-10-30; live and local match on all
+  ten ids and both carry 215 locked-prose tracks. Ids: `7rOFMNsjvLY`,
+  `1oOaqTiF8bU`, `ZIugjdorIyQ`, `GkXsMFDhoBg`, `JqXrkfXxgMc`, `J_Ahb9Oq9qw`,
+  `8TB4-QxuC48`, `GVmmZAa41rE`, `0wdlods0VyA`, `V4bX570hywA`.
 
 ## Remaining
 
-- 233 tracks still have neither summary nor story.
-- 510 tracks still have no story at all.
+- 223 tracks still have neither summary nor story.
+- 503 tracks still have no story at all.
 
 ### Remaining by genre (no prose at all)
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 145 |
-| NU Metal | 34 |
-| Classic Love Songs | 20 |
-| Pinoy Bato | 13 |
+| OPM Tunog Kalye | 141 |
+| NU Metal | 32 |
+| Classic Love Songs | 18 |
+| Pinoy Bato | 12 |
 | New Wave | 11 |
-| Emo Night | 10 |
+| Emo Night | 9 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
 
@@ -100,16 +118,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Francis M — Kaleidoscope World | OPM Tunog Kalye | *Best Of Francis M* / 2002 | `7rOFMNsjvLY` | compilation; check original album/year |
-| Bamboo — Probinsyana | OPM Tunog Kalye | *We Stand Alone Together* / 2007 | `1oOaqTiF8bU` | verify original track/label |
-| Agaw Agimat — Sabi Nila | OPM Tunog Kalye | *R-15* / 1995 | `ZIugjdorIyQ` | verify label and track |
-| Dong Abay — Mateo Singko | OPM Tunog Kalye | *Flipino* / 2006 | `GkXsMFDhoBg` | verify original release |
-| Limp Bizkit — Livin' It Up | NU Metal | *Chocolate Starfish And The Hot Dog Flavored Water* / 2000 | `JqXrkfXxgMc` | verify label/track |
-| Disturbed — Violence Fetish | NU Metal | *The Sickness* / 2000 | `J_Ahb9Oq9qw` | verify original label |
-| Chris Walker — How Do You Heal a Broken Heart | Classic Love Songs | *How Do You Heal a Broken Heart* / 2019 | `8TB4-QxuC48` | likely re-recording; check original album/year |
-| Juris — I Love You Goodbye | Classic Love Songs | *Dreaming of You* / 2012 | `GVmmZAa41rE` | cover; check original song/album |
-| RazorbAck — Giyang | Pinoy Bato | *Hebigat Sounds Vol. 1* / 1995 | `0wdlods0VyA` | compilation; check original album/year |
-| Sleeping With Sirens — If I'm James Dean, You're Audrey Hepburn | Emo Night | *With Ears To See And Eyes To Hear* / 2010 | `V4bX570hywA` | verify original track/label |
+| Boldstar — Kumot At Unan | OPM Tunog Kalye | *Kami Napo Muna* / 2012 | `FP75Ps4DuwA` | verify original album/year |
+| Brownman Revival — Dahan Dahan | OPM Tunog Kalye | *Steady Lang* / 2005 | `YVNIhxP80GA` | verify track/label |
+| Cueshé — Can't Let You Go | OPM Tunog Kalye | *Half Empty, Half Full* / 2005 | `2gBIoxRVd-M` | verify track/label |
+| Dicta License — Ang Ating Araw | OPM Tunog Kalye | *Paghilom* / 2005 | `QSj3gaMJ5Mw` | verify label/track |
+| Greyhoundz — Taking U High | NU Metal | *7 Corners Of Your Game* / 1999 | `lSPh7dJM4lc` | check original date/label |
+| Deftones — One Weak | NU Metal | *Adrenaline* / 1995 | `T-De_zAKxwU` | verify label/track |
+| Jim Capaldi — Old Photographs | Classic Love Songs | *Let the Thunder Cry* / 1981 | `eQwcypxIVqw` | verify original album/year |
+| Karen Wyman — Somebody Waiting | Classic Love Songs | *Karen Wyman* / 1973 | `JFE-cVPrVAQ` | verify original album/year |
+| Datu's Tribe — Kwento Ni Del | Pinoy Bato | *Galit Kami Sa Baboy* / 1995 | `nqH3UDnaO-4` | verify label/track |
+| Fatima Rainey — Hey | New Wave | *Love Is A Wonderful Thing* / 1997 | `6-DSCo1s-S0` | verify original album/year |
 
 ## Resume workflow
 
@@ -160,3 +178,11 @@ These are still empty and are the recommended next batch.
   credits still lack Fritz Labrado and Ferdie Marquez; Brownman Revival has no
   genres filled. Ella May Saison's album year is 1993 on the promo vinyl but
   1992 in some sources; the 1992 single date is the one used in prose.
+- Batch sixteen follow-ups: Francis M's ISRC is the 2002 compilation code and
+  Agaw Agimat's is a 2021 digital-reissue code; Dong Abay's is a 2016 reissue
+  code and Chris Walker's is a 2019 TuneCore code. Chris Walker's US R&B number
+  87 chart row is not imported. Dong Abay's 160 bpm may be double-time for a
+  slow elegy and has no sourced replacement. Bamboo's label is PolyEast while
+  the physical CD says EMI Philippines. Razorback's track artist is still
+  `RazorbAck` against album artist `Razorback`. Juris's theme claim comes from
+  the 2010 Now Playing recording, not this 2012 version.
