@@ -3,6 +3,47 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-05 - push nineteenth story batch to live
+
+Pushed batch nineteen to production. `LIBRARY_IMPORT_ENABLED` was enabled on
+the live backend for the push and restored to `false` afterwards; the live
+backend was recreated to toggle the flag and is healthy.
+
+- Facts: 10 tracks, 56 changed fields.
+- Prose: 10 tracks updated (10 summaries and 6 stories); 225 previously locked
+  tracks were already current on live.
+- Edition corrections: Yano to the self-titled 1994 Alpha album; Rivermaya to
+  Tuloy ang Ligaya (2001-10-15); Parokya Ni Edgar to Gulong Itlog Gulong
+  (1999-08); Kamikazee to Maharot (2006-01-16); Greyhoundz to Sony Music
+  Philippines; Deftones to Maverick (1995-10-03); Wolfgang to Semenelin
+  (1996-06-15); Top Suzara to Carry On (2006); Europe to the 1985 Italo disco
+  12-inch on Shure Music; Taking Back Sunday to Victory Records (2004-07-27).
+- Europe is the Italian Italo disco trio, not the Swedish rock band; the
+  summary names Stefano Urso, Luigi C. Swother and Roberto Russo.
+- Prose fixes: Yano's story now avoids the unsupported phonetic-respelling
+  claim; Kamikazee's story credits Chito Miranda and Kaye Abad; Greyhoundz's
+  guest list moved from summary to credits; Top Suzara gained a story and lost
+  the stale former-Freestyle wording.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 203 tracks with no prose, 494 with no
+  story and 235 with locked prose. Batch nineteen ids: `h_gFoFatzNE`,
+  `XvZCJHP6rkI`, `TSfXeEodCTw`, `-9KU0T3wZH8`, `lSPh7dJM4lc`, `T-De_zAKxwU`,
+  `N7VOppMpo2o`, `N9YuNQWiu6E`, `A3_rTPV4d2k`, `WxXI16_c1iQ`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, summary, story, sources and locks.
+  - No duplicate playlist ids or duplicate track memberships.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-05 - push eighteenth story batch to live
 
 Pushed batch eighteen to production. `LIBRARY_IMPORT_ENABLED` was enabled on
