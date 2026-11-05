@@ -3,6 +3,47 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-05 - push twenty-first story batch to live
+
+Pushed batch twenty-one to production. `LIBRARY_IMPORT_ENABLED` was enabled on
+the live backend for the push and restored to `false` afterwards; the live
+backend was recreated to toggle the flag and is healthy.
+
+- Facts: 10 tracks, 51 changed fields.
+- Prose: 10 tracks updated (10 summaries and 4 stories); 245 previously locked
+  tracks were already current on live.
+- Edition corrections: Sugarfree's Burnout to Sa Wakas (2003-01-28); Sponge
+  Cola's Bitiw to Transit (2006-09-08); Kamikazee's Halik to Romantico
+  (2012-03); Rico Blanco's Antukin to 2008-08-08; Deftones' MX to 1997-10-28;
+  Limp Bizkit's Just Like This to 1999-06-22 on Flip/Interscope; Datu's Tribe
+  to Pinoy rock/heavy metal; Tiffany's It's the Lover to 1988-11-21 on MCA;
+  Lou Bega's Angelina to 2001-05-28 on Unicade Music; and New Found Glory's
+  The Promise to the canonical album title, 2007-09-18 and Drive-Thru Records.
+- Prose fixes: Kamikazee's summary now calls Halik a love song; Deftones' MX
+  story attributes the long silences to the track, not the album; New Found
+  Glory's story now says the When in Rome original was reintroduced by
+  Napoleon Dynamite, not that the cover plays in the film.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 183 tracks with no prose, 487 with no
+  story and 255 with locked prose. Batch twenty-one ids: `d0n3vgtsnzY`,
+  `cdBMMoX3O3s`, `iyHhNTd0OwU`, `HBWng9xZNN8`, `k9kgN2938lI`,
+  `cxd4dpbySXg`, `nqH3UDnaO-4`, `ukqBUGKTXMg`, `vQ0CQmAUMfM`,
+  `X7-pvbkofyg`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, sources and locks.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-05 - push twentieth story batch to live
 
 Pushed batch twenty to production. `LIBRARY_IMPORT_ENABLED` was enabled on the
