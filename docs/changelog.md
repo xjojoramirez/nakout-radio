@@ -3,6 +3,46 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-05 - push twentieth story batch to live
+
+Pushed batch twenty to production. `LIBRARY_IMPORT_ENABLED` was enabled on the
+live backend for the push and restored to `false` afterwards; the live backend
+was recreated to toggle the flag and is healthy.
+
+- Facts: 10 tracks, 52 changed fields.
+- Prose: 10 tracks updated (10 summaries and 3 stories); 235 previously locked
+  tracks were already current on live.
+- Edition corrections: Itchyworms to Noontime Show (2005-10-11); Join The Club
+  to 2005 on Redrum Music/Warner Music Philippines; Cueshé's label to Musiko
+  Records; Imago to 2001-06-27; Deftones' Rickets to 1997-10-28; Limp Bizkit's
+  9 Teen 90 Nine to 1999-06-22 on Flip/Interscope; Teeth's Laklak to the 1995
+  self-titled album, track 6; Jose Mari Chan to Constant Change (1989-05-25);
+  Fatima Rainey's album title cleaned, label Warner Music Sweden, track 2 and
+  ISRC SEPQA9641020; Neck Deep's December (again) identified as the 2016
+  Hopeless single, 2016-07-18, track 1 and ISRC USHR21679012.
+- Prose fix: Itchyworms' story no longer claims the SPOT.ph songwriting advice
+  was the specific backstory of Beer.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 193 tracks with no prose, 491 with no
+  story and 245 with locked prose. Batch twenty ids: `hv2C-tJrcrs`,
+  `Wa8S8MlrqFU`, `2gBIoxRVd-M`, `8KLzefx02mE`, `5WC_tw2q7C8`,
+  `nIC4J7_Y9Ig`, `askPs708P4Q`, `UV4snWQJHhs`, `6-DSCo1s-S0`,
+  `lROGjLQQHAg`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, cover, sources and locks.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-05 - push nineteenth story batch to live
 
 Pushed batch nineteen to production. `LIBRARY_IMPORT_ENABLED` was enabled on
