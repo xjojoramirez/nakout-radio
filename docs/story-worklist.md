@@ -6,10 +6,10 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 180 tracks composed across eighteen batches, all reviewed. Batches one to
-  sixteen and batch eighteen are live; batch seventeen was overwritten by the
-  live mirror.
-- 225 tracks currently have `summary` and/or `story` locked in both libraries.
+- 190 tracks composed across nineteen batches, all reviewed. Batches one to
+  sixteen, eighteen and nineteen are live; batch seventeen was overwritten by
+  the live mirror.
+- 235 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -149,23 +149,59 @@ Status of the local track-story composition work.
 - Batch eighteen ids: `12eR72YJM64`, `GRJqHELAA54`, `gBDeQdtHCX0`,
   `PhQpuXwWJEk`, `XhCBruock0E`, `1sHmtERxHMw`, `xOQg24J5fWk`, `cU9q06KoVzo`,
   `pWTUc_nZKG8`, `ZJh4a1TNdJs`.
+- Batch nineteen was composed locally on 2026-11-05 and pushed to live the
+  same day: 10 summaries and 6 stories. Rivermaya, Greyhoundz, Deftones and
+  Wolfgang have no story because no source gave a song-specific origin
+  anecdote.
+- Reviewer corrections fixed the original editions on all ten tracks: Yano to
+  the self-titled 1994-06-30 Alpha album (track 8, alternative rock/punk rock,
+  producer Rudy Y. Tee); Rivermaya to Tuloy ang Ligaya (2001-10-15, track 6,
+  Pinoy rock/pop rock/alternative rock); Parokya Ni Edgar to Gulong Itlog
+  Gulong (1999-08, track 2, alternative rock/novelty); Kamikazee to Maharot
+  (2006-01-16, track 3, pop-punk/alternative rock); Greyhoundz to Sony Music
+  Philippines and nu metal/alternative metal/rap metal; Deftones to Maverick,
+  1995-10-03, track 3, nu metal/alternative metal; Wolfgang to Semenelin
+  (1996-06-15, track 4, hard rock/alternative metal); Top Suzara to Carry On
+  (2006, track 10); and Taking Back Sunday to Victory Records, 2004-07-27,
+  track 4, pop-punk/emo/post-hardcore. Europe was identified as the Italian
+  Italo disco trio, not the Swedish rock band: the original is the 1985
+  12-inch on Shure Music, not the 2012 Starpoint digital reissue, and the
+  summary now spells the member Luigi C. Swother.
+- Prose fixes after review: Yano's story now carries the mall/campus detail
+  without the unsupported phonetic-respelling claim; Kamikazee's story credits
+  Chito Miranda and Kaye Abad as co-writers instead of overstating the album's
+  pop-punk styling; Greyhoundz's summary dropped the three-name guest list,
+  which moved to credits; Top Suzara gained a sourced story and lost the stale
+  former-Freestyle wording. Parokya's story now cites the Genius quote of
+  Chito Miranda's post.
+- Every changed fact field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 203 tracks with no prose, 494 with no story and 235 with
+  locked prose.
+- Live push on 2026-11-05: 10 tracks of facts (56 changed fields) and 10
+  tracks of prose (10 summaries, 6 stories); the other 225 locked-prose tracks
+  were already current on live. The import route was disabled again after the
+  push. Live and local match on all ten ids, including sources and locks.
+- Batch nineteen ids: `h_gFoFatzNE`, `XvZCJHP6rkI`, `TSfXeEodCTw`,
+  `-9KU0T3wZH8`, `lSPh7dJM4lc`, `T-De_zAKxwU`, `N7VOppMpo2o`,
+  `N9YuNQWiu6E`, `A3_rTPV4d2k`, `WxXI16_c1iQ`.
 
 ## Remaining
 
-- 213 tracks still have neither summary nor story.
-- 500 tracks still have no story at all.
-- 225 tracks have locked prose.
+- 203 tracks still have neither summary nor story.
+- 494 tracks still have no story at all.
+- 235 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 124 |
-| NU Metal | 30 |
-| Pinoy Bato | 24 |
-| Classic Love Songs | 17 |
-| New Wave | 10 |
-| Emo Night | 8 |
+| OPM Tunog Kalye | 120 |
+| NU Metal | 28 |
+| Pinoy Bato | 23 |
+| Classic Love Songs | 16 |
+| New Wave | 9 |
+| Emo Night | 7 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
 
@@ -175,16 +211,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Yano — Esem | OPM Tunog Kalye | *The 2-In-1 Series: Yano* / 2024 | `h_gFoFatzNE` | verify original album/year |
-| Rivermaya — Umaaraw, Umuulan | OPM Tunog Kalye | *Tuloy Ang Ligaya* / 2002 | `XvZCJHP6rkI` | verify original album/year |
-| Parokya Ni Edgar — Halaga | OPM Tunog Kalye | *Gulong Itlog Gulong* / 2014 | `TSfXeEodCTw` | verify original album/year |
-| Kamikazee — Martyr Nyebera | OPM Tunog Kalye | *Maharot* / 2014 | `-9KU0T3wZH8` | verify original album/year |
-| Greyhoundz — Taking U High | NU Metal | *7 Corners Of Your Game* / 1999 | `lSPh7dJM4lc` | verify track/label |
-| Deftones — One Weak | NU Metal | *Adrenaline* / 1995 | `T-De_zAKxwU` | verify track/label |
-| Wolfgang — Mata Ng Diyos | Pinoy Bato | *Semenelin* / 2002 | `N7VOppMpo2o` | verify original album/year |
-| Top Suzara — Sabihin Mo Na | Classic Love Songs | *Carry On* / 2014 | `N9YuNQWiu6E` | verify original album/year |
-| Europe — Six, Two, Eight | New Wave | *Six Two Eight, 628* / 2012 | `A3_rTPV4d2k` | verify original album/year |
-| Taking Back Sunday — This Photograph Is Proof (I Know You Know) | Emo Night | *Where You Want To Be* / 2011 | `WxXI16_c1iQ` | verify original album/year |
+| Itchyworms — Beer | OPM Tunog Kalye | *Noon Time Show* / 2014 | `hv2C-tJrcrs` | verify original album/year |
+| Join The Club — Nobela | OPM Tunog Kalye | *Nobela* / 2016 | `Wa8S8MlrqFU` | verify original album/year |
+| Cueshé — Can't Let You Go | OPM Tunog Kalye | *Half Empty, Half Full* / 2005 | `2gBIoxRVd-M` | verify track/label |
+| Imago — Rainsong | OPM Tunog Kalye | *Probably Not, But Most Definitely* / 2019 | `8KLzefx02mE` | verify original album/year |
+| Deftones — Rickets | NU Metal | *Around the Fur* / 1997 | `5WC_tw2q7C8` | verify track/label |
+| Limp Bizkit — 9 Teen 90 Nine | NU Metal | *Significant Other* / 2008 | `nIC4J7_Y9Ig` | verify original album/year |
+| Teeth — Laklak | Pinoy Bato | *Dogs Can Fly (Teeth's Finest)* / 2003 | `askPs708P4Q` | verify original album/year |
+| Jose Mari Chan — Can't We Start Over Again | Classic Love Songs | *Constant Change* / 2014 | `UV4snWQJHhs` | verify original album/year |
+| Fatima Rainey — Hey | New Wave | *Love Is A Wonderful Thing* / 1997 | `6-DSCo1s-S0` | restore batch seventeen review |
+| Neck Deep — December (again) | Emo Night | *Life's Not Out To Get You* / 2015 | `lROGjLQQHAg` | verify track/label |
 
 ## Resume workflow
 
@@ -275,3 +311,17 @@ These are still empty and are the recommended next batch.
   its summary calls the track a single while the audio is the 4:35 album cut.
   Saosin's genres are broad Rock, its credits only carry Main, and the title
   casing differs between providers.
+- Batch nineteen follow-ups: Yano's ISRC PHS112100294 is a 2021 Sony reissue
+  code, and its story's SM City North EDSA / UP Diliman detail rests on the
+  Tagalog Wikipedia article while the English album page only supports the SM
+  wordplay. Parokya's release date is month-only and its credits omit producer
+  Robert Javier because the album page and Genius disagree; its ISRC is a 2023
+  digital-aggregator code. Kamikazee's ISRC is a digital-aggregator code.
+  Greyhoundz's ISRC NL8RL2456521 is a 2024 Dutch digital code, and its credits
+  now carry the guest vocalists instead of the summary. Deftones' credits list
+  Terry Date but not the band, which co-produced Adrenaline. Wolfgang's label
+  stays Epic while the album infobox says Sony Music Entertainment. Top
+  Suzara's date is year-only and its ISRC is the 2006 Universal code. Europe's
+  YouTube audio runs 5:53, between the 8:20 vocal and 5:36 play back versions,
+  and its ISRC FR6V81246259 is the 2012 Believe reissue code. Taking Back
+  Sunday's album title casing is fixed; its credits list Lou Giordano only.
