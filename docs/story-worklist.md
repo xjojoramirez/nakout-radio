@@ -6,10 +6,10 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 240 tracks composed across twenty-four batches, all reviewed. Batches one to
-  sixteen and eighteen to twenty-four are live; batch seventeen was overwritten
+- 250 tracks composed across twenty-five batches, all reviewed. Batches one to
+  sixteen and eighteen to twenty-five are live; batch seventeen was overwritten
   by the live mirror.
-- 285 tracks currently have `summary` and/or `story` locked in both libraries.
+- 295 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -342,12 +342,44 @@ Status of the local track-story composition work.
 - Batch twenty-four ids: `xPzSx8YlEhE`, `Yc6gQHdsod0`, `_MQHBr-2c_E`,
   `c7bFBOwdIlw`, `IPzNdVw72wU`, `kk2xqXFQilY`, `iy9BxkHq-X0`,
   `eQwcypxIVqw`, `I1NQ3tMpbwM`, `cRGqiBjnEqc`.
+- Batch twenty-five was composed locally on 2026-11-05 and pushed to live the
+  same day: 10 summaries and 8 stories. Kamikazee and Wolfgang's Halik Ni Hudas
+  have no story because no source gave a song-specific origin anecdote.
+- Reviewer corrections fixed editions and genres on all ten tracks: Wolfgang's
+  Anino genres; Sandwich's Sugod to 24 February 2006 on EMI Philippines;
+  Sponge Cola's
+  Jeepney to Palabas (2004-10-18, Sony BMG Music Philippines); Kamikazee's
+  Unang Tikim to May 2009; Deftones' Feiticeira to White Pony (2000-06-20,
+  Maverick, ISRC USMV20000030); Limp Bizkit's Show Me What You Got to
+  1999-06-22 on Flip/Interscope; Wolfgang's Halik Ni Hudas to the self-titled
+  1995 debut on Tone Def Records; Russell Hitchcock's label, credits and
+  year-only date; The Beach Boys' California Dreamin' to Made in U.S.A.
+  (1986-07-07, disc 2 track 6); and Silverstein's Call It Karma to Discovering
+  the Waterfront (2005-08-16, Victory, track 11, ISRC USVIC0525711,
+  post-hardcore).
+- Prose fixes after review: Kamikazee's summary now names 4:20 and Hot Mami;
+  Deftones' summary regained the possessive apostrophe; Silverstein's summary
+  dropped the incorrect Neil Boshart co-writer credit; and The Beach Boys'
+  story now cites Made in U.S.A. and says electric rather than 12-string
+  guitar.
+- Every changed fact field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 143 tracks with no prose, 461 with no story and 295 with
+  locked prose.
+- Batch twenty-five live push on 2026-11-05: 10 tracks of facts (35 changed
+  fields) and 10 tracks of prose (10 summaries, 8 stories); the other 285
+  locked-prose tracks were already current on live. The import route was
+  disabled again after the push. Live and local match on all ten ids, including
+  sources and locks.
+- Batch twenty-five ids: `y6lB5NA_MTc`, `2wpCG2DsbRs`, `sZoahxuHQDc`,
+  `zI9XFq5-AnE`, `4VxsE1YHUck`, `S5D3W8FnR7I`, `5w5Ct6m_Ero`,
+  `B-SvRkRhQM8`, `_SjWyd7LxZ8`, `qDypM0OWy7Q`.
 
 ## Remaining
 
-- 153 tracks still have neither summary nor story.
-- 469 tracks still have no story at all.
-- 285 tracks have locked prose.
+- 143 tracks still have neither summary nor story.
+- 461 tracks still have no story at all.
+- 295 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
@@ -356,12 +388,12 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 98 |
-| NU Metal | 18 |
-| Pinoy Bato | 20 |
-| Classic Love Songs | 11 |
-| New Wave | 4 |
-| Emo Night | 2 |
+| OPM Tunog Kalye | 94 |
+| NU Metal | 16 |
+| Pinoy Bato | 19 |
+| Classic Love Songs | 10 |
+| New Wave | 3 |
+| Emo Night | 1 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
 
@@ -371,16 +403,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Wolfgang — Anino | OPM Tunog Kalye | *Serve in Silence* / 1999 | `y6lB5NA_MTc` | verify track/label |
-| Sandwich — Sugod | OPM Tunog Kalye | *Five on the Floor* / 2006 | `2wpCG2DsbRs` | verify track/label |
-| Sponge Cola — Jeepney | OPM Tunog Kalye | *Palabas & Transit Collection* / 2014 | `sZoahxuHQDc` | verify original album/year |
-| Kamikazee — Unang Tikim | OPM Tunog Kalye | *Long Time Noisy* / 2009 | `zI9XFq5-AnE` | verify track/label |
-| Deftones — Feiticeira | NU Metal | *White Pony (20th Anniversary Deluxe Edition)* / 2020 | `4VxsE1YHUck` | use original *White Pony* / 2000 |
-| Limp Bizkit — Show Me What You Got | NU Metal | *Significant Other* / 2008 | `S5D3W8FnR7I` | verify original 1999 release |
-| Wolfgang — Halik Ni Hudas | Pinoy Bato | *The Legends Series: Wolfgang* / 2013 | `5w5Ct6m_Ero` | verify original album/year |
-| Russell Hitchcock — Someone Who Believes in You | Classic Love Songs | *Russell Hitchcock* / 1988 | `B-SvRkRhQM8` | verify track/label |
-| The Beach Boys — California Dreamin' (Remastered) | New Wave | *Made In California* / 2013 | `_SjWyd7LxZ8` | verify original release/version |
-| Silverstein — Call It Karma | Emo Night | *Redux: The First 10 Years* / 2019 | `qDypM0OWy7Q` | use original *Discovering the Waterfront* / 2005 |
+| Rico Blanco — Bye Bye Na | OPM Tunog Kalye | *Bye Bye Na* / 2016 | `LIuXKqwozeU` | verify track/label |
+| Parokya Ni Edgar — Your Song | OPM Tunog Kalye | *Bigotilyo* / 2014 | `w2pVa1NJaEQ` | use original *Bigotilyo* / 2003 |
+| Rivermaya — Awit Ng Kabataan | OPM Tunog Kalye | *Greatest Hits* / 2001 | `41OKPv-i7hk` | use original *Rivermaya* / 1994 |
+| Teeth — Laklak | OPM Tunog Kalye | *Dogs Can Fly (Teeth's Finest)* / 2003 | `rEc7z_SHDQA` | use original *Teeth* / 1995 |
+| Brownman Revival — Sorry Na, Pwede Ba? | OPM Tunog Kalye | *Ayos Din* / 2007 | `gMftByc4cJ0` | verify track/label |
+| Deftones — Street Carp | NU Metal | *White Pony (20th Anniversary Deluxe Edition)* / 2020 | `yt86EOxIgwE` | use original *White Pony* / 2000 |
+| Limp Bizkit — Pill Popper | NU Metal | *STILL SUCKS* / 2021 | `_Ss4KLVTirw` | verify track/label |
+| Siakol — Tropa | Pinoy Bato | *Tropa* / 2010 | `vfJRLQdzHgg` | verify track/label |
+| Karen Wyman — Somebody Waiting | Classic Love Songs | *Karen Wyman* / 1973 | `JFE-cVPrVAQ` | verify track/label |
+| Larusso — On ne s'aimera plus jamais | New Wave | *Simplement* / 1999 | `Z3rBpv7Wdgw` | verify artist/genre |
 
 ## Resume workflow
 
@@ -582,3 +614,28 @@ These are still empty and are the recommended next batch.
   Terry Date or the band, its genres are broad Hard Rock/Rock, and its country
   is empty. Pierce The Veil's genres remain broad Alternative, its credits only
   carry Main, and its country is empty.
+- Batch twenty-five follow-ups: Wolfgang's Anino keeps Epic against the parent
+  Sony Music Entertainment credit and 1999-03-19 against Wikipedia's 21 March;
+  its credits only carry Main and its ISRC PHS119900007 is a 1999 code.
+  Sandwich's single was 2006-01-29 ahead of the 2006-02-24 album, EMI
+  Philippines later became PolyEast, its genres are broad Pop/Rock, and its
+  credits only carry Main without Buddy Zabala. Sponge Cola's ISRC
+  PHU011312971 is also listed on the 2004 Palabas MusicBrainz release despite
+  its 2013-looking year, so it was kept; its cover_url still shows the 2014
+  collection art, its genres remain International Pop/Pop/Rock, and its
+  credits only carry Main. Kamikazee's date is month-only, its genres are
+  broad, its credits only carry Main, and it has no story. Deftones' cover_url
+  still shows the 2020 deluxe art, its genres are broad Rock, its credits only
+  carry Main without Terry Date or the band, and its country is empty. Limp
+  Bizkit's label is the combined Flip/Interscope credit, its genres are broad
+  Rock, its credits only carry Main, and its country is empty. Wolfgang's Halik
+  Ni Hudas keeps ISRC PHI010200731, a 2002 code on a 1995 album; its genres are
+  broad Rock, its credits only carry Main, and it has no story. Russell
+  Hitchcock's date is year-only, its genres are broad Rock, and its credits now
+  carry Goffin/King and Michael Lloyd but the album's other producers are not
+  stored. The Beach Boys' ISRC USGJP1300373 is the 2013 remaster while the
+  fields use the 1986 album, its cover_url still shows the 2013 box set art,
+  its two 1986 chart rows (US Hot 100 57, US Adult Contemporary 8) are not
+  stored, and its genres are broad Pop. Silverstein's cover_url still shows the
+  2019 Redux art, its credits only carry Main, its country is empty, and the
+  2005 original ISRC USVIC0525711 was adopted from MusicBrainz.
