@@ -6,10 +6,10 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 200 tracks composed across twenty batches, all reviewed. Batches one to
-  sixteen and eighteen to twenty are live; batch seventeen was overwritten by
-  the live mirror.
-- 245 tracks currently have `summary` and/or `story` locked in both libraries.
+- 210 tracks composed across twenty-one batches, all reviewed. Batches one to
+  sixteen and eighteen to twenty-one are live; batch seventeen was overwritten
+  by the live mirror.
+- 255 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -219,23 +219,56 @@ Status of the local track-story composition work.
 - Batch twenty ids: `hv2C-tJrcrs`, `Wa8S8MlrqFU`, `2gBIoxRVd-M`,
   `8KLzefx02mE`, `5WC_tw2q7C8`, `nIC4J7_Y9Ig`, `askPs708P4Q`,
   `UV4snWQJHhs`, `6-DSCo1s-S0`, `lROGjLQQHAg`.
+- Batch twenty-one was composed locally on 2026-11-05 and pushed to live the
+  same day: 10 summaries and 4 stories. Sponge Cola, Kamikazee, Limp Bizkit,
+  Datu's Tribe, Tiffany and Lou Bega have no story because no source gave a
+  song-specific origin anecdote.
+- Reviewer corrections fixed the original editions on all ten tracks:
+  Sugarfree's Burnout to Sa Wakas (2003-01-28, alternative rock/pop rock/Pinoy
+  rock, producers Angee Rozul and Rico Blanco); Sponge Cola's Bitiw to Transit
+  (2006-09-08, track 1); Kamikazee's Halik to Romantico (2012-03, track 1, with
+  Eric Perlas and band songwriters); Rico Blanco's Antukin to 2008-08-08 with
+  alternative rock/electronic rock/synthpop; Deftones' MX to 1997-10-28 with
+  alternative metal/nu metal/post-hardcore; Limp Bizkit's Just Like This to
+  1999-06-22, Flip/Interscope, nu metal/rap metal; Datu's Tribe to Pinoy
+  rock/heavy metal; Tiffany's It's the Lover to 1988-11-21 on MCA with teen
+  pop/bubblegum pop; Lou Bega's Angelina to 2001-05-28 on Unicade Music with
+  Latin pop; and New Found Glory's The Promise to the canonical album title,
+  2007-09-18, Drive-Thru Records and pop punk.
+- Prose fixes after review: Kamikazee's summary now calls Halik a love song
+  rather than an unsupported breakup song; Deftones' MX story attributes the
+  long silences to the track rather than the album; New Found Glory's story
+  now says the When in Rome original was reintroduced by Napoleon Dynamite,
+  not that the cover itself plays in the film.
+- Every changed fact field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 183 tracks with no prose, 487 with no story and 255 with
+  locked prose.
+- Batch twenty-one live push on 2026-11-05: 10 tracks of facts (51 changed
+  fields) and 10 tracks of prose (10 summaries, 4 stories); the other 245
+  locked-prose tracks were already current on live. The import route was
+  disabled again after the push. Live and local match on all ten ids, including
+  sources and locks.
+- Batch twenty-one ids: `d0n3vgtsnzY`, `cdBMMoX3O3s`, `iyHhNTd0OwU`,
+  `HBWng9xZNN8`, `k9kgN2938lI`, `cxd4dpbySXg`, `nqH3UDnaO-4`,
+  `ukqBUGKTXMg`, `vQ0CQmAUMfM`, `X7-pvbkofyg`.
 
 ## Remaining
 
-- 193 tracks still have neither summary nor story.
-- 491 tracks still have no story at all.
-- 245 tracks have locked prose.
+- 183 tracks still have neither summary nor story.
+- 487 tracks still have no story at all.
+- 255 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 116 |
-| NU Metal | 26 |
-| Pinoy Bato | 22 |
-| Classic Love Songs | 15 |
-| New Wave | 8 |
-| Emo Night | 6 |
+| OPM Tunog Kalye | 112 |
+| NU Metal | 24 |
+| Pinoy Bato | 21 |
+| Classic Love Songs | 14 |
+| New Wave | 7 |
+| Emo Night | 5 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
 
@@ -245,16 +278,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Sugarfree — Burnout | OPM Tunog Kalye | *Sa Wakas* / 2009 | `d0n3vgtsnzY` | verify original album/year |
-| Sponge Cola — Bitiw | OPM Tunog Kalye | *Transit Deluxe* / 2008 | `cdBMMoX3O3s` | verify original album/year |
-| Kamikazee — Halik | OPM Tunog Kalye | *Romantico* / 2014 | `iyHhNTd0OwU` | verify original album/year |
-| Rico Blanco — Antukin | OPM Tunog Kalye | *Your Universe* / 2008 | `HBWng9xZNN8` | verify track/label |
-| Deftones — MX | NU Metal | *Around the Fur* / 1997 | `k9kgN2938lI` | verify date/label |
-| Limp Bizkit — Just Like This | NU Metal | *Significant Other* / 2008 | `cxd4dpbySXg` | verify original album/year |
-| Datu's Tribe — Kwento Ni Del | Pinoy Bato | *Galit Kami Sa Baboy* / 1995 | `nqH3UDnaO-4` | verify track/label |
-| Tiffany — It's The Lover (Not The Love) | Classic Love Songs | *Hold An Old Friend's Hand* / 2010 | `ukqBUGKTXMg` | verify original album/year |
-| Lou Bega — Angelina | New Wave | *Ladies And Gentlemen* / 1990 | `vQ0CQmAUMfM` | verify original album/year |
-| New Found Glory — The Promise | Emo Night | *From The Screen To Your Stereo, Pt. II* / 2011 | `X7-pvbkofyg` | verify original album/year |
+| Rivermaya — Liwanag Sa Dilim | OPM Tunog Kalye | *Rivermaya 18 Greatest Hits* / 2010 | `5duJxdXc0T4` | verify original album/year |
+| Sugarfree — Prom | OPM Tunog Kalye | *Dramachine* / 2004 | `eVmH6KScvSE` | verify track/label |
+| Kamikazee — Ambisyoso | OPM Tunog Kalye | *Kamikazee (Their Greatest Hits)* / 2015 | `2ZbZL4Pc1YU` | verify original album/year |
+| Orange & Lemons — Hanggang Kailan | OPM Tunog Kalye | no stored album | `2vYtbUabbsQ` | fill original album/year |
+| Greyhoundz — Party At 802 | NU Metal | *7 Corners Of Your Game* / 1999 | `inTQVH2BiCg` | verify track/credits |
+| Queso — Mottaka | NU Metal | *Pilipinas* / 2002 | `4YBq8g3NkAY` | verify album/year |
+| The Youth — Basura | Pinoy Bato | *PolyEast Gold Series: Album Na Walang Pamagat* / 2014 | `dljGqOHOkHA` | verify original album/year |
+| Regina Spektor — The Call | Classic Love Songs | *The Call* / 2013 | `pCEUpVukAe8` | verify original soundtrack/year |
+| Eric Gadd — Do You Believe in Me | New Wave | *Do You Believe In Me* / 2014 | `jYxL0v7bwB0` | verify original album/year |
+| Neck Deep — Parachute | Emo Night | *The Peace And The Panic* / 2017 | `boo0AhpPwZk` | verify track/label |
 
 ## Resume workflow
 
@@ -375,3 +408,21 @@ These are still empty and are the recommended next batch.
   SEPQA9641020 rather than Deezer's swapped code. Neck Deep's country is still
   empty and its pop-punk/emo genres are inferred from the parent album rather
   than the 2016 single.
+- Batch twenty-one follow-ups: Sugarfree's ISRC PHO010200161 is a 2002 code
+  while the label was EMI Philippines in 2003 and is PolyEast today; its story
+  rests on Ebe Dancel's 2020 GMA interview. Sponge Cola's release date follows
+  Wikipedia's 2006-09-08 while MusicBrainz gives 2006-05-21; its ISRC
+  PHU010609743 is a 2006 code. Kamikazee's date is month-only, its genres are
+  the broad Rock, and its credits are album-level. Rico Blanco's date follows
+  Wikipedia's 2008-08-08 while MusicBrainz gives 2008-03-15; its bpm 156 is
+  unverified. Deftones' MX story covers the hidden tracks Bong Hit and Damone;
+  its catalog number 9 46810-2 is not stored. Limp Bizkit's label is the
+  combined Flip/Interscope credit and its credits include album-level producer
+  roles. Datu's Tribe's 1995-08-23 date is low confidence, its credits still
+  carry only Main, and the library title casing reads Kwento Ni Del against
+  Kwento ni Del in prose. Tiffany's date follows Wikipedia's 1988-11-21 while
+  MusicBrainz gives 1988-10-21; its bpm 120 likely reads double-time for a slow
+  ballad. Lou Bega's label is Unicade Music with BMG as parent, and its credits
+  are album-level. New Found Glory's story now distinguishes the When in Rome
+  original's Napoleon Dynamite placement from the 2007 cover; Chris Carrabba's
+  guest vocal is verified on the album page.
