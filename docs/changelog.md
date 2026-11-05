@@ -3,6 +3,46 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-05 - push twenty-fourth story batch to live
+
+Pushed batch twenty-four to production. `LIBRARY_IMPORT_ENABLED` was enabled on
+the live backend for the push and restored to `false` afterwards; the live
+backend was recreated to toggle the flag and is healthy.
+
+- Facts: 7 tracks, 13 changed fields.
+- Prose: 10 tracks updated (10 summaries and 6 stories); 275 previously locked
+  tracks were already current on live.
+- Edition corrections: Teeth's genres to alternative rock/grunge; Tropical
+  Depression's Bilog Na Naman Ang Buwan to the 1994 Viva album; Gloc-9's label
+  to Star Records; Greyhoundz's Pigface to the album casing 7 Corners of Your
+  Game on Sony Music Philippines; Weedd's Long Hair to 1995; Jim Capaldi's Old
+  Photographs to Carrere; and COLORS' Never Mind to the 1985 Discomagic
+  12-inch with Italo-disco genres.
+- Prose fixes: Cueshé's summary now dates Pasensya Na as the February 2007
+  fourth single rather than August 2006; Weedd's summary dropped the
+  unsupported school-haircut-protest claim; COLORS' summary was tightened and
+  its recording story added.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 153 tracks with no prose, 469 with no
+  story and 285 with locked prose. Batch twenty-four ids: `xPzSx8YlEhE`,
+  `Yc6gQHdsod0`, `_MQHBr-2c_E`, `c7bFBOwdIlw`, `IPzNdVw72wU`,
+  `kk2xqXFQilY`, `iy9BxkHq-X0`, `eQwcypxIVqw`, `I1NQ3tMpbwM`,
+  `cRGqiBjnEqc`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, sources and locks.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-05 - push twenty-third story batch to live
 
 Pushed batch twenty-three to production. `LIBRARY_IMPORT_ENABLED` was enabled on

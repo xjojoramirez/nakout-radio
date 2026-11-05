@@ -6,10 +6,10 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 230 tracks composed across twenty-three batches, all reviewed. Batches one to
-  sixteen and eighteen to twenty-three are live; batch seventeen was overwritten
+- 240 tracks composed across twenty-four batches, all reviewed. Batches one to
+  sixteen and eighteen to twenty-four are live; batch seventeen was overwritten
   by the live mirror.
-- 275 tracks currently have `summary` and/or `story` locked in both libraries.
+- 285 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -317,23 +317,51 @@ Status of the local track-story composition work.
 - Batch twenty-three ids: `2J2_bkJ_UG4`, `4hmodo8yDCo`, `yBn842DCdjI`,
   `OO_uTxR98nE`, `4I5TV6ZHokM`, `mBiouDt-Nt4`, `1OA84A4NPlk`,
   `mN6y6RE852g`, `ynyUCfqWiUs`, `KvUsCHDBv4c`.
+- Batch twenty-four was composed locally on 2026-11-05 and pushed to live the
+  same day: 10 summaries and 6 stories. Cueshé, Gloc-9, Deftones and Weedd have
+  no story because no source gave a song-specific origin anecdote.
+- Reviewer corrections fixed editions and genres on seven tracks: Teeth's
+  genres to alternative rock/grunge; Tropical Depression's Bilog Na Naman Ang
+  Buwan to the 1994 Viva album; Gloc-9's label to Star Records; Greyhoundz's
+  Pigface to 7 Corners of Your Game on Sony Music Philippines; Weedd's Long
+  Hair to 1995; Jim Capaldi's Old Photographs to Carrere; and COLORS' Never
+  Mind to the 1985 Discomagic 12-inch with Italo-disco genres.
+- Prose fixes after review: Cueshé's summary now dates Pasensya Na as the
+  February 2007 fourth single rather than August 2006; Weedd's summary dropped
+  the unsupported school-haircut-protest claim; COLORS' summary was tightened
+  and its recording story added.
+- Every changed fact field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 153 tracks with no prose, 469 with no story and 285 with
+  locked prose.
+- Batch twenty-four live push on 2026-11-05: 7 tracks of facts (13 changed
+  fields) and 10 tracks of prose (10 summaries, 6 stories); the other 275
+  locked-prose tracks were already current on live. The import route was
+  disabled again after the push. Live and local match on all ten ids, including
+  sources and locks.
+- Batch twenty-four ids: `xPzSx8YlEhE`, `Yc6gQHdsod0`, `_MQHBr-2c_E`,
+  `c7bFBOwdIlw`, `IPzNdVw72wU`, `kk2xqXFQilY`, `iy9BxkHq-X0`,
+  `eQwcypxIVqw`, `I1NQ3tMpbwM`, `cRGqiBjnEqc`.
 
 ## Remaining
 
-- 163 tracks still have neither summary nor story.
-- 475 tracks still have no story at all.
-- 275 tracks have locked prose.
+- 153 tracks still have neither summary nor story.
+- 469 tracks still have no story at all.
+- 285 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
+Tracks in both OPM Tunog Kalye and Pinoy Bato are counted once under Pinoy
+Bato.
+
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 104 |
-| NU Metal | 20 |
-| Pinoy Bato | 19 |
-| Classic Love Songs | 12 |
-| New Wave | 5 |
-| Emo Night | 3 |
+| OPM Tunog Kalye | 98 |
+| NU Metal | 18 |
+| Pinoy Bato | 20 |
+| Classic Love Songs | 11 |
+| New Wave | 4 |
+| Emo Night | 2 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
 
@@ -343,16 +371,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Teeth — Prinsesa | OPM Tunog Kalye | *Teeth* / 1995 | `xPzSx8YlEhE` | verify track/label |
-| Cueshé — Pasensya Na | OPM Tunog Kalye | *Back To Me* / 2006 | `Yc6gQHdsod0` | verify track/label |
-| Tropical Depression — Bilog Na Naman Ang Buwan | OPM Tunog Kalye | *Kapayapaan* / 2002 | `_MQHBr-2c_E` | verify track/label |
-| Gloc-9 — Hinahanap Ng Puso (feat. Hannah Romawac) | OPM Tunog Kalye | *G9 (Gloc Nine)* / 2003 | `c7bFBOwdIlw` | verify track/label |
-| Deftones — Good Morning Beautiful | NU Metal | *Deftones* / 2003 | `IPzNdVw72wU` | verify track/label |
-| Greyhoundz — Pigface | NU Metal | *7 Corners Of Your Game* / 1999 | `kk2xqXFQilY` | verify label/track |
-| Weedd — Long Hair | Pinoy Bato | *Weedd* / 2006 | `iy9BxkHq-X0` | verify track/label |
-| Jim Capaldi — Old Photographs | Classic Love Songs | *Let the Thunder Cry* / 1981 | `eQwcypxIVqw` | verify track/label |
-| COLORS — Never Mind | New Wave | *Never Mind* / 2010 | `I1NQ3tMpbwM` | verify artist/year |
-| Pierce The Veil — I'm Low On Gas And You Need A Jacket | Emo Night | *Collide With The Sky* / 2012 | `cRGqiBjnEqc` | verify track/label |
+| Wolfgang — Anino | OPM Tunog Kalye | *Serve in Silence* / 1999 | `y6lB5NA_MTc` | verify track/label |
+| Sandwich — Sugod | OPM Tunog Kalye | *Five on the Floor* / 2006 | `2wpCG2DsbRs` | verify track/label |
+| Sponge Cola — Jeepney | OPM Tunog Kalye | *Palabas & Transit Collection* / 2014 | `sZoahxuHQDc` | verify original album/year |
+| Kamikazee — Unang Tikim | OPM Tunog Kalye | *Long Time Noisy* / 2009 | `zI9XFq5-AnE` | verify track/label |
+| Deftones — Feiticeira | NU Metal | *White Pony (20th Anniversary Deluxe Edition)* / 2020 | `4VxsE1YHUck` | use original *White Pony* / 2000 |
+| Limp Bizkit — Show Me What You Got | NU Metal | *Significant Other* / 2008 | `S5D3W8FnR7I` | verify original 1999 release |
+| Wolfgang — Halik Ni Hudas | Pinoy Bato | *The Legends Series: Wolfgang* / 2013 | `5w5Ct6m_Ero` | verify original album/year |
+| Russell Hitchcock — Someone Who Believes in You | Classic Love Songs | *Russell Hitchcock* / 1988 | `B-SvRkRhQM8` | verify track/label |
+| The Beach Boys — California Dreamin' (Remastered) | New Wave | *Made In California* / 2013 | `_SjWyd7LxZ8` | verify original release/version |
+| Silverstein — Call It Karma | Emo Night | *Redux: The First 10 Years* / 2019 | `qDypM0OWy7Q` | use original *Discovering the Waterfront* / 2005 |
 
 ## Resume workflow
 
@@ -530,3 +558,27 @@ These are still empty and are the recommended next batch.
   192 seconds against the 1983 radio edit's 198 seconds, and the original label
   was Pacific Records. New Found Glory's album title was normalized from the
   provider styling, and its ISRC USDTR0600332 is a 2007 code.
+- Batch twenty-four follow-ups: Cueshé's library title is `Pasensya Na` while
+  the album lists `Pasensiya Na`, its album casing is `Back To Me` against
+  `Back to Me`, its bpm 160 reads double-time, and its credits still carry only
+  Main without Jovan Mabini. Teeth's ISRC PHW019800166 is a 1998 code on a 1995
+  album, its credits only carry Main, and its genres are now reviewer values.
+  Tropical Depression's ISRC PHV031010235 is a 2010 digital code on the 1994
+  album, its sibling Kapayapaan still carries 2002-01-06, and its bpm 192 may
+  be double-time. Gloc-9's label is now Star Records but sibling Simpleng Tao
+  still says ABS-CBN Film Productions, its credits only carry Main, and
+  Jonathan Florido's co-write is not stored. Greyhoundz's ISRC NL8RL2456520 is
+  a 2024 Dutch digital code, its sibling Taking U High still has 1999-08-01
+  while Party At 802 has 1999-07-29, and its genres remain broad Rock. Weedd's
+  date is year-only, its genres are still provider Alternative against
+  Discogs's Alternative Rock/Indie Rock, its credits only carry Main without
+  producer Ito Rapadas, and its ISRC PHU011413586 is a reissue code. Jim
+  Capaldi's ISRC GBBLY1200861 is a 2012 Esoteric remaster code while the fields
+  now use the 1981 Carrere LP, and its credits only carry Main. COLORS' ISRC
+  DEA311005141 is the 2010 ZYX digital code while the fields now use the 1985
+  Discomagic 12-inch, the library artist reads COLORS against album artist
+  Colors, and the 1985 release has no ISRC. Deftones' 19 May 2003 date is the
+  GB/FR edition while US/CA is 20 May, its credits only carry Main without
+  Terry Date or the band, its genres are broad Hard Rock/Rock, and its country
+  is empty. Pierce The Veil's genres remain broad Alternative, its credits only
+  carry Main, and its country is empty.
