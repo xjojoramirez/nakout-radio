@@ -1,14 +1,15 @@
 # Story worklist
 
-Date: 2026-10-30
+Date: 2026-11-05
 
 Status of the local track-story composition work.
 
 ## Completed
 
-- 160 tracks composed across sixteen batches, all reviewed.
-- 215 tracks currently have `summary` and/or `story` locked in both libraries:
-  the 175 earlier locked tracks plus 10 each from batches thirteen to sixteen.
+- 180 tracks composed across eighteen batches, all reviewed. Batches one to
+  sixteen and batch eighteen are live; batch seventeen was overwritten by the
+  live mirror.
+- 225 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -93,22 +94,78 @@ Status of the local track-story composition work.
   ten ids and both carry 215 locked-prose tracks. Ids: `7rOFMNsjvLY`,
   `1oOaqTiF8bU`, `ZIugjdorIyQ`, `GkXsMFDhoBg`, `JqXrkfXxgMc`, `J_Ahb9Oq9qw`,
   `8TB4-QxuC48`, `GVmmZAa41rE`, `0wdlods0VyA`, `V4bX570hywA`.
+- Batch seventeen was composed locally on 2026-11-05 after pulling live: 5
+  tracks created, 15 updated and 1 detail updated; local and live now both have
+  895 tracks and 895 details. The five new live tracks arrived with summaries
+  (two with stories), so three joined the no-story backlog; no memberships were
+  removed.
+- Batch seventeen composed 10 tracks: 10 summaries and 6 stories. Greyhoundz,
+  Jim Capaldi, Karen Wyman and Datu's Tribe had a sourced song-specific story
+  during composition; Boldstar and Deftones gained theirs after review.
+  Brownman Revival, Cueshé, Dicta License and Fatima Rainey have no story
+  because no source gave a song-specific origin anecdote.
+- Reviewer corrections on eight tracks: Boldstar to Kami nAPO Muna (2006,
+  Universal Records, track 8, PH); Cueshé genres to pop rock and a rewritten
+  summary; Dicta License release date 2005-09-21; Greyhoundz label Sony Music
+  Philippines; Deftones label Maverick and release date 1995-10-03; Jim Capaldi
+  label Carrere / EMI; Karen Wyman label Columbia; Fatima Rainey album, 1997
+  date, Warner Music Sweden label, track 2 and ISRC SEPQA9641020.
+- Every batch seventeen corrected fact field is locked with its source URL; the
+  two added stories and the rewritten Cueshé summary are locked with theirs.
+- A post-batch local playlist sync on 2026-11-05 added 7 tracks and briefly
+  left a duplicate NU Metal playlist row; both the extra tracks and the
+  duplicate were removed by the live mirror below.
+- The local database was replaced with a live snapshot on 2026-11-05 so local
+  now matches production, including its schedule. The local-only batch
+  seventeen records and local test schedules were overwritten; the pre-mirror
+  database is backed up at
+  `C:/Users/SD/nakout-backups/local-radio-pre-live-mirror-20261105-102635.db`.
+  Batch seventeen's prose and facts remain documented here and in that backup.
+- Batch eighteen was composed locally on 2026-11-05 from the live mirror and
+  pushed to live the same day: 10 summaries and 6 stories. Rivermaya,
+  Kamikazee, Datu's Tribe and Saosin have no story because no source gave a
+  song-specific origin anecdote.
+- Reviewer corrections on nine tracks: Rivermaya to Atomic Bomb (1997-01-31,
+  track 2); Parokya Ni Edgar to Khangkhungkherrnitz (1996, track 9, ISRC
+  FR6V82353109); Sugarfree to the canonical Sa Wakas date (2003-01-28);
+  Kamikazee to Kami nAPO Muna (2006, track 3); Deftones to Around the Fur
+  (1997-10-28, Maverick, disc 1); Slapshock to 2006-05-26 with alternative
+  metal/metalcore genres; Jose Mari Chan to Constant Change (1989-05-25);
+  Datu's Tribe album casing, 1995 date and Pinoy rock/heavy metal genres; and
+  Release to Industry (album artist, 1984, track 5, new wave).
+- The Release upload's artist and album artist were corrected to Industry in
+  the library row and detail. Its album is Stranger to Stranger (1984), track
+  5. Four weekly chart rows were added and locked: Australia (Kent Music
+  Report) 78, Italy (Hit Parade) 3, Sweden 10 and Billboard Hot 100 81.
+- Every changed fact field is locked with its source URL. Sugarfree's summary
+  source now points at the Wikipedia band page for the Sa Wakas date; the story
+  keeps the GMA interview.
+- Saosin needed no corrections. Its summary is locked; story remains empty.
+- Live push on 2026-11-05: 9 tracks of facts (36 changed fields), 10 tracks of
+  prose (10 summaries, 6 stories), four Industry chart rows, and the live
+  artist row corrected from Release to Industry. The import route was disabled
+  again after the push. Live and local now match on all ten ids; only the order
+  of `locked_fields` differs.
+- Batch eighteen ids: `12eR72YJM64`, `GRJqHELAA54`, `gBDeQdtHCX0`,
+  `PhQpuXwWJEk`, `XhCBruock0E`, `1sHmtERxHMw`, `xOQg24J5fWk`, `cU9q06KoVzo`,
+  `pWTUc_nZKG8`, `ZJh4a1TNdJs`.
 
 ## Remaining
 
-- 223 tracks still have neither summary nor story.
-- 503 tracks still have no story at all.
+- 213 tracks still have neither summary nor story.
+- 500 tracks still have no story at all.
+- 225 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 141 |
-| NU Metal | 32 |
-| Classic Love Songs | 18 |
-| Pinoy Bato | 12 |
-| New Wave | 11 |
-| Emo Night | 9 |
+| OPM Tunog Kalye | 124 |
+| NU Metal | 30 |
+| Pinoy Bato | 24 |
+| Classic Love Songs | 17 |
+| New Wave | 10 |
+| Emo Night | 8 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
 
@@ -118,16 +175,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Boldstar — Kumot At Unan | OPM Tunog Kalye | *Kami Napo Muna* / 2012 | `FP75Ps4DuwA` | verify original album/year |
-| Brownman Revival — Dahan Dahan | OPM Tunog Kalye | *Steady Lang* / 2005 | `YVNIhxP80GA` | verify track/label |
-| Cueshé — Can't Let You Go | OPM Tunog Kalye | *Half Empty, Half Full* / 2005 | `2gBIoxRVd-M` | verify track/label |
-| Dicta License — Ang Ating Araw | OPM Tunog Kalye | *Paghilom* / 2005 | `QSj3gaMJ5Mw` | verify label/track |
-| Greyhoundz — Taking U High | NU Metal | *7 Corners Of Your Game* / 1999 | `lSPh7dJM4lc` | check original date/label |
-| Deftones — One Weak | NU Metal | *Adrenaline* / 1995 | `T-De_zAKxwU` | verify label/track |
-| Jim Capaldi — Old Photographs | Classic Love Songs | *Let the Thunder Cry* / 1981 | `eQwcypxIVqw` | verify original album/year |
-| Karen Wyman — Somebody Waiting | Classic Love Songs | *Karen Wyman* / 1973 | `JFE-cVPrVAQ` | verify original album/year |
-| Datu's Tribe — Kwento Ni Del | Pinoy Bato | *Galit Kami Sa Baboy* / 1995 | `nqH3UDnaO-4` | verify label/track |
-| Fatima Rainey — Hey | New Wave | *Love Is A Wonderful Thing* / 1997 | `6-DSCo1s-S0` | verify original album/year |
+| Yano — Esem | OPM Tunog Kalye | *The 2-In-1 Series: Yano* / 2024 | `h_gFoFatzNE` | verify original album/year |
+| Rivermaya — Umaaraw, Umuulan | OPM Tunog Kalye | *Tuloy Ang Ligaya* / 2002 | `XvZCJHP6rkI` | verify original album/year |
+| Parokya Ni Edgar — Halaga | OPM Tunog Kalye | *Gulong Itlog Gulong* / 2014 | `TSfXeEodCTw` | verify original album/year |
+| Kamikazee — Martyr Nyebera | OPM Tunog Kalye | *Maharot* / 2014 | `-9KU0T3wZH8` | verify original album/year |
+| Greyhoundz — Taking U High | NU Metal | *7 Corners Of Your Game* / 1999 | `lSPh7dJM4lc` | verify track/label |
+| Deftones — One Weak | NU Metal | *Adrenaline* / 1995 | `T-De_zAKxwU` | verify track/label |
+| Wolfgang — Mata Ng Diyos | Pinoy Bato | *Semenelin* / 2002 | `N7VOppMpo2o` | verify original album/year |
+| Top Suzara — Sabihin Mo Na | Classic Love Songs | *Carry On* / 2014 | `N9YuNQWiu6E` | verify original album/year |
+| Europe — Six, Two, Eight | New Wave | *Six Two Eight, 628* / 2012 | `A3_rTPV4d2k` | verify original album/year |
+| Taking Back Sunday — This Photograph Is Proof (I Know You Know) | Emo Night | *Where You Want To Be* / 2011 | `WxXI16_c1iQ` | verify original album/year |
 
 ## Resume workflow
 
@@ -186,3 +243,35 @@ These are still empty and are the recommended next batch.
   the physical CD says EMI Philippines. Razorback's track artist is still
   `RazorbAck` against album artist `Razorback`. Juris's theme claim comes from
   the 2010 Now Playing recording, not this 2012 version.
+- Batch seventeen follow-ups: Cueshé's `bpm` 184 reads as double-time and has
+  no sourced replacement; Greyhoundz's story calls Ian Tayao's band Queso even
+  though it was still Cheese in 1999; Boldstar's ISRC PHU012116031 is a 2021
+  digital-edition code while the release facts now use the 2006 tribute album;
+  Karen Wyman's ISRC USSM12302491 is a 2023 reissue code; Jim Capaldi's ISRC
+  GBBLY1200861 is a 2012 reissue code; Fatima Rainey's date is year-only
+  because MusicBrainz has no exact day for the original Swedish CD. Brownman
+  Revival's label stays Musiko while BMG Records Pilipinas is the parent, and
+  the reviewer flagged the ambiguity. Boldstar's story cites the 1983
+  composition through the existing Danny Javier credits source; the story URL
+  itself is the Kami nAPO Muna page. Deftones' summary credits Terry Date alone
+  although the band co-produced Adrenaline.
+- Batch seventeen's ten tracks are empty again after the live mirror. Their
+  reviewed prose and facts remain in the batch seventeen entry above and in the
+  pre-mirror database at
+  `C:/Users/SD/nakout-backups/local-radio-pre-live-mirror-20261105-102635.db`;
+  re-applying them is an alternative to composing a fresh batch.
+- Batch eighteen follow-ups: Sugarfree's audio is the 4:15 *Full Volume* cut
+  (ISRC PHO010500083, released 2014-11-30) while the detail keeps the canonical
+  *Sa Wakas* album and 3:29 ISRC PHO010200161; its genres are still the provider
+  tag Pop, and credits lack Angee Rozul and Ebe Dancel. Rivermaya's `bpm` 150
+  reads double-time and its genres are Pop. Parokya's release date is year-only
+  and its credits lack Chito Miranda. Kamikazee's possible No. 1 Philippines
+  claim is uncited and its credits lack Danny Javier. Deftones' genres are the
+  broad Rock and credits lack Terry Date and the band. Slapshock's label stays
+  PolyEast while the physical CD says EMI Philippines, and Wikipedia's producer
+  credit (Francis Reyes) conflicts with the EMI release's self-produced claim.
+  Jose Mari Chan's ISRC is a 2023 Believe digital code. Datu's Tribe's ISRC is a
+  2014 reissue code and its credits only carry Main. Industry has no ISRC and
+  its summary calls the track a single while the audio is the 4:35 album cut.
+  Saosin's genres are broad Rock, its credits only carry Main, and the title
+  casing differs between providers.

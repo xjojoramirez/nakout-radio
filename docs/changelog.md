@@ -3,6 +3,175 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-05 - push eighteenth story batch to live
+
+Pushed batch eighteen to production. `LIBRARY_IMPORT_ENABLED` was enabled on
+the live backend for the push and restored to `false` afterwards; the live
+backend was recreated to toggle the flag and is healthy.
+
+- Facts: 9 tracks, 36 changed fields. Saosin had no locked fact fields and was
+  skipped by the facts push.
+- Prose: 10 tracks updated (10 summaries and 6 stories); 215 previously locked
+  tracks were already current on live.
+- Charts: four Industry rows added and locked: Australia (Kent Music Report)
+  78, Italy (Hit Parade) 3, Sweden 10 and Billboard Hot 100 81.
+- Library identity: live `trackcache.artist` for `pWTUc_nZKG8` corrected from
+  Release to Industry; the detail album artist is Industry.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 213 tracks with no prose, 500 with no
+  story and 225 with locked prose. Batch eighteen ids: `12eR72YJM64`,
+  `GRJqHELAA54`, `gBDeQdtHCX0`, `PhQpuXwWJEk`, `XhCBruock0E`, `1sHmtERxHMw`,
+  `xOQg24J5fWk`, `cU9q06KoVzo`, `pWTUc_nZKG8`, `ZJh4a1TNdJs`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, credits,
+    summary, story, charts and locks; only `locked_fields` ordering differs.
+  - Live public `/api/tracks/pWTUc_nZKG8` returns Industry, 1984 and four
+    chart rows.
+  - No duplicate playlist ids or duplicate track memberships remain.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
+## 2026-11-05 - compose and review eighteenth story batch
+
+Composed ten more tracks locally from the live mirror. Batch eighteen is local
+only; nothing was pushed. The pre-batch local database is backed up at
+`C:/Users/SD/nakout-backups/local-radio-pre-batch18-20261105-110126.db`.
+
+- Composed 10 tracks: 10 summaries and 6 stories. Rivermaya, Kamikazee, Datu's
+  Tribe and Saosin have no story because no source gave a song-specific origin
+  anecdote. Slapshock's story was added after review from the EMI Philippines
+  press release archived at Titik Pilipino.
+- Reviewer corrections on nine tracks: Rivermaya to Atomic Bomb (1997-01-31,
+  track 2); Parokya Ni Edgar to Khangkhungkherrnitz (1996, track 9, ISRC
+  FR6V82353109); Sugarfree to the canonical Sa Wakas date (2003-01-28);
+  Kamikazee to Kami nAPO Muna (2006, track 3); Deftones to Around the Fur
+  (1997-10-28, Maverick, disc 1); Slapshock to 2006-05-26 with alternative
+  metal/metalcore genres; Jose Mari Chan to Constant Change (1989-05-25);
+  Datu's Tribe album casing, 1995 date and Pinoy rock/heavy metal genres; and
+  Release to Industry (album artist, 1984, track 5, new wave).
+- The Release upload is actually Industry's recording. The library artist and
+  detail album artist were corrected to Industry. Four weekly chart rows were
+  added and locked: Australia (Kent Music Report) 78, Italy (Hit Parade) 3,
+  Sweden 10 and Billboard Hot 100 81.
+- Every changed fact field is locked with its source URL. Current local totals:
+  895 tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066
+  chart rows. Remaining: 213 tracks with no prose, 500 with no story and 225
+  with locked prose.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - local library data and docs only.
+- **Verification:**
+  - `GET /api/library/export` returns 200 with 895 tracks and 8 playlists.
+  - `/api/library/meta`: 895 tracks, 895 details, 8 playlists, 8 genres.
+  - `/api/schedule/today` unchanged: the same 8 slots and current slot 2.
+  - Public `/api/tracks/<id>` for all ten batch tracks returns the corrected
+    album/year and summary/story; Industry returns four chart rows.
+  - No duplicate playlist ids or duplicate track memberships remain.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
+## 2026-11-05 - mirror live library and schedule data into local
+
+Replaced the local SQLite database with a consistent snapshot of the live
+database so the local station now matches production, including the schedule.
+The local-only batch seventeen records and local test schedules were
+overwritten; the pre-mirror database is backed up at
+`C:/Users/SD/nakout-backups/local-radio-pre-live-mirror-20261105-102635.db`.
+The live snapshot itself is at
+`C:/Users/SD/nakout-backups/live-radio-mirror-2026-11-05.db`.
+
+- Snapshot: 895 unique tracks (929 playlist memberships), 895 details, 6062
+  chart rows, 8 playlists, 8 genres, 9 schedule slots and 10 settings.
+- Local and live now return identical `/api/library/meta` counts and identical
+  `/api/schedule/today` payloads.
+- Static table comparison matched exactly for genre, playlist, trackcache,
+  trackdetail, trackchartentry and scheduleslot. Only the runtime trackplay
+  and broadcast_state tables moved after the local restart.
+- Remaining after mirror: 223 tracks with no prose, 506 with no story, 215 with
+  locked prose.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - local library data and docs only. The
+  local backend was stopped briefly for the database swap and restarted
+  healthy.
+- **Verification:**
+  - Live and local `/api/library/meta`: 895 tracks, 895 details, 8 playlists,
+    8 genres.
+  - Live and local `/api/schedule/today`: same 8 slots and current slot 2.
+  - Local database integrity check: ok.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests/test_changelog.py`:
+    13 passed.
+
+## 2026-11-05 - repair duplicate local NU Metal playlist
+
+A local playlist sync left two `playlist` rows for the same YouTube playlist
+id (`PLa-l4IQg3DDs`, NU Metal), each with the same 120 tracks. The library
+export rejected the duplicate memberships and returned 500. Removed the newer
+row and its 120 duplicate memberships; the original keeps all 120 tracks.
+
+- Post-batch sync: 7 tracks added (4 with summaries, 3 without), all eight
+  playlists refreshed. Local now has 902 tracks, 216 with no prose, 504 with no
+  story and 225 with locked prose.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - local library data and docs only.
+- **Verification:**
+  - `GET /api/library/export` returns 200 with 902 tracks and 8 playlists.
+  - No duplicate `(youtube_video_id, playlist_id)` memberships remain.
+
+## 2026-11-05 - compose and review seventeenth story batch
+
+Pulled the current live library into local, then composed and reviewed ten
+more tracks. Batch seventeen is local only; nothing was pushed.
+
+- Pull: live had 895 tracks (5 created, 15 updated, 1 detail updated) and 8
+  playlists; local now has 895 tracks and 895 details. The five new live tracks
+  arrived with summaries (two with stories), so they joined the no-story
+  backlog, not the no-prose backlog; no memberships were removed.
+- Composed 10 tracks: 10 summaries and 6 stories. Greyhoundz, Jim Capaldi,
+  Karen Wyman and Datu's Tribe had a sourced song-specific story during
+  composition; Boldstar and Deftones gained theirs after review. Brownman
+  Revival, Cueshé, Dicta License and Fatima Rainey have no story because no
+  source gave a song-specific origin anecdote.
+- Reviewer corrections on eight tracks: Boldstar to Kami nAPO Muna (2006,
+  Universal Records, track 8, PH); Cueshé genres to pop rock and a rewritten
+  summary; Dicta License release date 2005-09-21; Greyhoundz label Sony Music
+  Philippines; Deftones label Maverick and release date 1995-10-03; Jim Capaldi
+  label Carrere / EMI; Karen Wyman label Columbia; Fatima Rainey album, 1997
+  date, Warner Music Sweden label, track 2 and ISRC SEPQA9641020.
+- Every corrected fact field is locked with a source URL. The added stories and
+  the rewritten Cueshé summary are locked with their sources.
+- Remaining: 213 tracks with no prose, 500 with no story, 225 with locked prose.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - docs and local library data only.
+- **Verification:**
+  - Local export: 895 tracks, 213 with no summary, 500 with no story, 225 with
+    locked prose; the 213 no-prose tracks split 137 OPM Tunog Kalye, 30 NU
+    Metal, 16 Classic Love Songs, 11 Pinoy Bato, 10 New Wave and 9 Emo Night.
+  - All ten composed records are `curated`; summaries are 95-163 characters and
+    the six stories are 224-290 characters.
+  - Every changed fact field and every new or rewritten prose field has a
+    `sources` URL and a lock; spot checks confirmed Boldstar track 8, 2006 and
+    PH; Deftones 1995-10-03 and Maverick; Fatima Rainey track 2, 1997 and
+    SEPQA9641020.
+  - Post-batch live dry-run: 6 local detail records differ from live (the
+    reviewed batch), 34 locked fields kept local, and 0 membership or chart
+    changes.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests/test_changelog.py`:
+    13 passed.
+
 ## 2026-10-30 - push story batch sixteen to live
 
 Pushed the reviewed batch sixteen to production.
