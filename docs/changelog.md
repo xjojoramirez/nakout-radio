@@ -3,6 +3,51 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-05 - push twenty-fifth story batch to live
+
+Pushed batch twenty-five to production. `LIBRARY_IMPORT_ENABLED` was enabled on
+the live backend for the push and restored to `false` afterwards; the live
+backend was recreated to toggle the flag and is healthy.
+
+- Facts: 10 tracks, 35 changed fields.
+- Prose: 10 tracks updated (10 summaries and 8 stories); 285 previously locked
+  tracks were already current on live.
+- Edition corrections: Wolfgang's Anino genres to hard rock/alternative metal;
+  Sandwich's Sugod to 24 February 2006 on EMI Philippines; Sponge Cola's
+  Jeepney to Palabas (2004-10-18, Sony BMG Music Philippines); Kamikazee's
+  Unang Tikim to May 2009; Deftones' Feiticeira to White Pony (2000-06-20,
+  Maverick, ISRC USMV20000030); Limp Bizkit's Show Me What You Got to
+  1999-06-22 on Flip/Interscope; Wolfgang's Halik Ni Hudas to the self-titled
+  1995 debut on Tone Def Records; Russell Hitchcock's label to Arista with
+  Goffin/King and Michael Lloyd credits and a year-only date; The Beach Boys'
+  California Dreamin' to Made in U.S.A. (1986-07-07, disc 2 track 6); and
+  Silverstein's Call It Karma to Discovering the Waterfront (2005-08-16,
+  Victory, track 11, ISRC USVIC0525711, post-hardcore).
+- Prose fixes: Kamikazee's summary now names 4:20 and Hot Mami; Deftones'
+  summary regained the possessive apostrophe; Silverstein's summary dropped the
+  incorrect Neil Boshart co-writer credit; and The Beach Boys' story now cites
+  Made in U.S.A. and says electric rather than 12-string guitar.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 143 tracks with no prose, 461 with no
+  story and 295 with locked prose. Batch twenty-five ids: `y6lB5NA_MTc`,
+  `2wpCG2DsbRs`, `sZoahxuHQDc`, `zI9XFq5-AnE`, `4VxsE1YHUck`,
+  `S5D3W8FnR7I`, `5w5Ct6m_Ero`, `B-SvRkRhQM8`, `_SjWyd7LxZ8`,
+  `qDypM0OWy7Q`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, sources and locks.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-05 - push twenty-fourth story batch to live
 
 Pushed batch twenty-four to production. `LIBRARY_IMPORT_ENABLED` was enabled on
