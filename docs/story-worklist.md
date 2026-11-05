@@ -6,10 +6,10 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 220 tracks composed across twenty-two batches, all reviewed. Batches one to
-  sixteen and eighteen to twenty-two are live; batch seventeen was overwritten
+- 230 tracks composed across twenty-three batches, all reviewed. Batches one to
+  sixteen and eighteen to twenty-three are live; batch seventeen was overwritten
   by the live mirror.
-- 265 tracks currently have `summary` and/or `story` locked in both libraries.
+- 275 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -285,23 +285,55 @@ Status of the local track-story composition work.
 - Batch twenty-two ids: `5duJxdXc0T4`, `eVmH6KScvSE`, `2ZbZL4Pc1YU`,
   `2vYtbUabbsQ`, `inTQVH2BiCg`, `4YBq8g3NkAY`, `dljGqOHOkHA`,
   `pCEUpVukAe8`, `jYxL0v7bwB0`, `boo0AhpPwZk`.
+- Batch twenty-three was composed locally on 2026-11-05 and pushed to live the
+  same day: 10 summaries and 5 stories. Kitchie Nadal, Yano, Slapshock, Grin
+  Department and Seals & Crofts have no story because no source gave a
+  song-specific origin anecdote.
+- Reviewer corrections fixed editions and credits on nine tracks: Kitchie
+  Nadal's label to Warner Music Philippines / 12Stone with a songwriter credit;
+  Parokya ni Edgar's Harana to Buruguduystunstugudunstuy (1997, track 17) with
+  Eric Yaptangco's writer credit; Sandwich's Betamax to 2008-02-12 on EMI
+  Philippines, and its story no longer places Sugod on S Marks the Spot; Yano's
+  Senti to 1994-06-30, track 11, with the missing Main credit restored;
+  Deftones' Korea to 2000-06-20 on Maverick at track 8 of the original
+  eleven-track sequence; Slapshock's Anino Mo to 2002-06-02 on EMI Philippines;
+  Seals & Crofts' First Love to 1980-06 on Warner Bros. Records; Torch's Build
+  Me Up Buttercup clarified as a 1983 cover reissued in 2016, with both writers
+  credited; and New Found Glory's Stay (I Missed You) to 2007-09-18 on
+  Drive-Thru Records. Grin Department keeps the 2008 self-titled edition
+  because the upload is that recording.
+- Prose fixes after review: Sandwich's summary was rewritten around the album's
+  Jingle-magazine and Betamax nostalgia, and Slapshock's summary dropped the
+  unsourced Tagalog-language claim.
+- Every changed fact field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 163 tracks with no prose, 475 with no story and 275 with
+  locked prose.
+- Batch twenty-three live push on 2026-11-05: 9 tracks of facts (49 changed
+  fields) and 10 tracks of prose (10 summaries, 5 stories); the other 265
+  locked-prose tracks were already current on live. The import route was
+  disabled again after the push. Live and local match on all ten ids, including
+  sources and locks.
+- Batch twenty-three ids: `2J2_bkJ_UG4`, `4hmodo8yDCo`, `yBn842DCdjI`,
+  `OO_uTxR98nE`, `4I5TV6ZHokM`, `mBiouDt-Nt4`, `1OA84A4NPlk`,
+  `mN6y6RE852g`, `ynyUCfqWiUs`, `KvUsCHDBv4c`.
 
 ## Remaining
 
-- 173 tracks still have neither summary nor story.
-- 480 tracks still have no story at all.
-- 265 tracks have locked prose.
+- 163 tracks still have neither summary nor story.
+- 475 tracks still have no story at all.
+- 275 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 108 |
-| NU Metal | 22 |
-| Pinoy Bato | 20 |
-| Classic Love Songs | 13 |
-| New Wave | 6 |
-| Emo Night | 4 |
+| OPM Tunog Kalye | 104 |
+| NU Metal | 20 |
+| Pinoy Bato | 19 |
+| Classic Love Songs | 12 |
+| New Wave | 5 |
+| Emo Night | 3 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
 
@@ -311,16 +343,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Kitchie Nadal — Same Ground | OPM Tunog Kalye | *Kitchie Nadal* / 2004 | `2J2_bkJ_UG4` | verify track/label |
-| Parokya Ni Edgar — Harana | OPM Tunog Kalye | *Bente* / 2016 | `4hmodo8yDCo` | verify original album/year |
-| Sandwich — Betamax | OPM Tunog Kalye | *S Marks the Spot* / 2014 | `yBn842DCdjI` | verify original album/year |
-| Yano — Senti | OPM Tunog Kalye | *Yano* / 1994 | `OO_uTxR98nE` | verify track/label |
-| Deftones — Korea | NU Metal | *White Pony* / 2000 | `4I5TV6ZHokM` | verify track/label |
-| Slapshock — Anino Mo | NU Metal | *Project 11-41* / 2014 | `mBiouDt-Nt4` | verify original album/year |
-| Grin Department — Miss U | Pinoy Bato | *Grin Department* / 2008 | `1OA84A4NPlk` | verify original album/year |
-| Seals & Crofts — First Love | Classic Love Songs | *The Longest Road* / 2007 | `mN6y6RE852g` | verify original album/year |
-| Torch — Build Me Up Buttercup | New Wave | *Build Me Up Buttercup* / 2016 | `ynyUCfqWiUs` | verify original artist/year |
-| New Found Glory — Stay (I Missed You) | Emo Night | *From The Screen To Your Stereo, Pt. II* / 2011 | `KvUsCHDBv4c` | verify original album/year |
+| Teeth — Prinsesa | OPM Tunog Kalye | *Teeth* / 1995 | `xPzSx8YlEhE` | verify track/label |
+| Cueshé — Pasensya Na | OPM Tunog Kalye | *Back To Me* / 2006 | `Yc6gQHdsod0` | verify track/label |
+| Tropical Depression — Bilog Na Naman Ang Buwan | OPM Tunog Kalye | *Kapayapaan* / 2002 | `_MQHBr-2c_E` | verify track/label |
+| Gloc-9 — Hinahanap Ng Puso (feat. Hannah Romawac) | OPM Tunog Kalye | *G9 (Gloc Nine)* / 2003 | `c7bFBOwdIlw` | verify track/label |
+| Deftones — Good Morning Beautiful | NU Metal | *Deftones* / 2003 | `IPzNdVw72wU` | verify track/label |
+| Greyhoundz — Pigface | NU Metal | *7 Corners Of Your Game* / 1999 | `kk2xqXFQilY` | verify label/track |
+| Weedd — Long Hair | Pinoy Bato | *Weedd* / 2006 | `iy9BxkHq-X0` | verify track/label |
+| Jim Capaldi — Old Photographs | Classic Love Songs | *Let the Thunder Cry* / 1981 | `eQwcypxIVqw` | verify track/label |
+| COLORS — Never Mind | New Wave | *Never Mind* / 2010 | `I1NQ3tMpbwM` | verify artist/year |
+| Pierce The Veil — I'm Low On Gas And You Need A Jacket | Emo Night | *Collide With The Sky* / 2012 | `cRGqiBjnEqc` | verify track/label |
 
 ## Resume workflow
 
@@ -479,3 +511,22 @@ These are still empty and are the recommended next batch.
   on the 2014 single because the upload is the 3:58 edit while the 1991 album
   cut runs 5:07. Neck Deep's country is empty and its producer/writer credits
   are album-level.
+- Batch twenty-three follow-ups: Kitchie Nadal's ISRC USDY41595161 is a 2015
+  code on a 2004 album, its release date is the provider's 2004-01-01, and its
+  label is a compound Warner Music Philippines / 12Stone credit. Parokya ni
+  Edgar's ISRC FR6V82355241 is the 2023 Bente digital code while the fields now
+  point to the 1997 album; the original-code FR6V82353202 was not adopted, the
+  date is year-only, and the master match is inferred from duration. Sandwich's
+  album is stylized with angle brackets around the S, and its ISRC PHO010800005
+  is a 2008 code. Yano has no ISRC; track 11 follows the original 12-track pressing while
+  the 1998 reissue has 14 tracks and places Senti at 13. Deftones' fields follow
+  the original 11-track sequence, where Korea is track 8; the 12-track edition
+  places it at 9. Slapshock's day follows Wikipedia's 2002-06-02 while Deezer
+  gives 2002-11-30, and EMI Philippines became PolyEast. Grin Department's 2008
+  self-titled release is a separate 14-track album with nine of the 1995 tracks,
+  not a strict reissue, and its country is empty. Seals & Crofts' date is
+  month-only, its ISRC USWB10702801 is a 2007-assigned code, and the Billboard
+  Adult Contemporary No. 37 chart row is not stored. Torch's digital runtime is
+  192 seconds against the 1983 radio edit's 198 seconds, and the original label
+  was Pacific Records. New Found Glory's album title was normalized from the
+  provider styling, and its ISRC USDTR0600332 is a 2007 code.

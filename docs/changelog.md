@@ -3,6 +3,48 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-05 - push twenty-third story batch to live
+
+Pushed batch twenty-three to production. `LIBRARY_IMPORT_ENABLED` was enabled on
+the live backend for the push and restored to `false` afterwards; the live
+backend was recreated to toggle the flag and is healthy.
+
+- Facts: 9 tracks, 49 changed fields. Grin Department had prose only.
+- Prose: 10 tracks updated (10 summaries and 5 stories); 265 previously locked
+  tracks were already current on live.
+- Edition corrections: Kitchie Nadal's label and songwriter credit; Parokya ni
+  Edgar's Harana to Buruguduystunstugudunstuy (1997, track 17); Sandwich's
+  Betamax to 2008-02-12 on EMI Philippines, with its story corrected; Yano's
+  Senti to 1994-06-30, track 11, with its Main credit restored; Deftones' Korea
+  to 2000-06-20 on Maverick at track 8; Slapshock's Anino Mo to 2002-06-02 on
+  EMI Philippines; Seals & Crofts' First Love to 1980-06 on Warner Bros.
+  Records; Torch's Build Me Up Buttercup clarified as a 1983 cover reissued in
+  2016; and New Found Glory's Stay (I Missed You) to 2007-09-18 on Drive-Thru
+  Records. Grin Department keeps the 2008 self-titled edition that matches the
+  upload.
+- Prose fixes: Sandwich's story no longer places Sugod on S Marks the Spot;
+  Slapshock's summary dropped the unsourced Tagalog-language claim.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 163 tracks with no prose, 475 with no
+  story and 275 with locked prose. Batch twenty-three ids: `2J2_bkJ_UG4`,
+  `4hmodo8yDCo`, `yBn842DCdjI`, `OO_uTxR98nE`, `4I5TV6ZHokM`,
+  `mBiouDt-Nt4`, `1OA84A4NPlk`, `mN6y6RE852g`, `ynyUCfqWiUs`,
+  `KvUsCHDBv4c`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, sources and locks.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-05 - push twenty-second story batch to live
 
 Pushed batch twenty-two to production. `LIBRARY_IMPORT_ENABLED` was enabled on
