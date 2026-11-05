@@ -6,10 +6,10 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 210 tracks composed across twenty-one batches, all reviewed. Batches one to
-  sixteen and eighteen to twenty-one are live; batch seventeen was overwritten
+- 220 tracks composed across twenty-two batches, all reviewed. Batches one to
+  sixteen and eighteen to twenty-two are live; batch seventeen was overwritten
   by the live mirror.
-- 255 tracks currently have `summary` and/or `story` locked in both libraries.
+- 265 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -252,23 +252,56 @@ Status of the local track-story composition work.
 - Batch twenty-one ids: `d0n3vgtsnzY`, `cdBMMoX3O3s`, `iyHhNTd0OwU`,
   `HBWng9xZNN8`, `k9kgN2938lI`, `cxd4dpbySXg`, `nqH3UDnaO-4`,
   `ukqBUGKTXMg`, `vQ0CQmAUMfM`, `X7-pvbkofyg`.
+- Batch twenty-two was composed locally on 2026-11-05 and pushed to live the
+  same day: 10 summaries and 7 stories. Kamikazee, Greyhoundz and The Youth
+  have no story because no source gave a song-specific origin anecdote.
+- Reviewer corrections fixed the original editions on all ten tracks:
+  Rivermaya's Liwanag sa Dilim to the December 2004 special edition of Between
+  the Stars and Waves (track 16, with the July 2004 single noted in prose);
+  Sugarfree's Prom to Dramachine (2004-02-19, with Buddy Zabala and Raimund
+  Marasigan producer credits); Kamikazee's Ambisyoso to Maharot (2006-01-16,
+  track 9, pop-punk/alternative rock); Orange & Lemons' previously empty
+  Hanggang Kailan record filled with Strike Whilst the Iron Is Hot (2005-04-28,
+  track 2, Universal Records, producer Robert Javier and Clem Castro writer
+  credit); Greyhoundz's Party At 802 label to Sony Music Philippines with the
+  1999-07-29 CD date and nu metal/rap metal; Queso's Angee Rozul credit changed
+  from Featured to Co-Producer; The Youth's Basura to Album Na Walang Pamagat
+  (1994, PolyCosmic Records, alternative/punk rock); Regina Spektor's The Call
+  to the 2009 Sire single; Eric Gadd's credits and summary clarified while
+  keeping the 2014 short-edit release fields; and Neck Deep's Parachute to pop
+  punk/alternative rock with producer and writer credits.
+- Prose fixes after review: Kamikazee's summary dropped the misread claim that
+  the wished-for objects come free and now says dreaming is free; Eric Gadd's
+  summary now identifies the 2014 single as the shorter edit.
+- Every changed fact field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 173 tracks with no prose, 480 with no story and 265 with
+  locked prose.
+- Batch twenty-two live push on 2026-11-05: 10 tracks of facts (47 changed
+  fields) and 10 tracks of prose (10 summaries, 7 stories); the other 255
+  locked-prose tracks were already current on live. The import route was
+  disabled again after the push. Live and local match on all ten ids, including
+  sources and locks.
+- Batch twenty-two ids: `5duJxdXc0T4`, `eVmH6KScvSE`, `2ZbZL4Pc1YU`,
+  `2vYtbUabbsQ`, `inTQVH2BiCg`, `4YBq8g3NkAY`, `dljGqOHOkHA`,
+  `pCEUpVukAe8`, `jYxL0v7bwB0`, `boo0AhpPwZk`.
 
 ## Remaining
 
-- 183 tracks still have neither summary nor story.
-- 487 tracks still have no story at all.
-- 255 tracks have locked prose.
+- 173 tracks still have neither summary nor story.
+- 480 tracks still have no story at all.
+- 265 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 112 |
-| NU Metal | 24 |
-| Pinoy Bato | 21 |
-| Classic Love Songs | 14 |
-| New Wave | 7 |
-| Emo Night | 5 |
+| OPM Tunog Kalye | 108 |
+| NU Metal | 22 |
+| Pinoy Bato | 20 |
+| Classic Love Songs | 13 |
+| New Wave | 6 |
+| Emo Night | 4 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
 
@@ -278,16 +311,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Rivermaya — Liwanag Sa Dilim | OPM Tunog Kalye | *Rivermaya 18 Greatest Hits* / 2010 | `5duJxdXc0T4` | verify original album/year |
-| Sugarfree — Prom | OPM Tunog Kalye | *Dramachine* / 2004 | `eVmH6KScvSE` | verify track/label |
-| Kamikazee — Ambisyoso | OPM Tunog Kalye | *Kamikazee (Their Greatest Hits)* / 2015 | `2ZbZL4Pc1YU` | verify original album/year |
-| Orange & Lemons — Hanggang Kailan | OPM Tunog Kalye | no stored album | `2vYtbUabbsQ` | fill original album/year |
-| Greyhoundz — Party At 802 | NU Metal | *7 Corners Of Your Game* / 1999 | `inTQVH2BiCg` | verify track/credits |
-| Queso — Mottaka | NU Metal | *Pilipinas* / 2002 | `4YBq8g3NkAY` | verify album/year |
-| The Youth — Basura | Pinoy Bato | *PolyEast Gold Series: Album Na Walang Pamagat* / 2014 | `dljGqOHOkHA` | verify original album/year |
-| Regina Spektor — The Call | Classic Love Songs | *The Call* / 2013 | `pCEUpVukAe8` | verify original soundtrack/year |
-| Eric Gadd — Do You Believe in Me | New Wave | *Do You Believe In Me* / 2014 | `jYxL0v7bwB0` | verify original album/year |
-| Neck Deep — Parachute | Emo Night | *The Peace And The Panic* / 2017 | `boo0AhpPwZk` | verify track/label |
+| Kitchie Nadal — Same Ground | OPM Tunog Kalye | *Kitchie Nadal* / 2004 | `2J2_bkJ_UG4` | verify track/label |
+| Parokya Ni Edgar — Harana | OPM Tunog Kalye | *Bente* / 2016 | `4hmodo8yDCo` | verify original album/year |
+| Sandwich — Betamax | OPM Tunog Kalye | *S Marks the Spot* / 2014 | `yBn842DCdjI` | verify original album/year |
+| Yano — Senti | OPM Tunog Kalye | *Yano* / 1994 | `OO_uTxR98nE` | verify track/label |
+| Deftones — Korea | NU Metal | *White Pony* / 2000 | `4I5TV6ZHokM` | verify track/label |
+| Slapshock — Anino Mo | NU Metal | *Project 11-41* / 2014 | `mBiouDt-Nt4` | verify original album/year |
+| Grin Department — Miss U | Pinoy Bato | *Grin Department* / 2008 | `1OA84A4NPlk` | verify original album/year |
+| Seals & Crofts — First Love | Classic Love Songs | *The Longest Road* / 2007 | `mN6y6RE852g` | verify original album/year |
+| Torch — Build Me Up Buttercup | New Wave | *Build Me Up Buttercup* / 2016 | `ynyUCfqWiUs` | verify original artist/year |
+| New Found Glory — Stay (I Missed You) | Emo Night | *From The Screen To Your Stereo, Pt. II* / 2011 | `KvUsCHDBv4c` | verify original album/year |
 
 ## Resume workflow
 
@@ -426,3 +459,23 @@ These are still empty and are the recommended next batch.
   are album-level. New Found Glory's story now distinguishes the When in Rome
   original's Napoleon Dynamite placement from the 2007 cover; Chris Carrabba's
   guest vocal is verified on the album page.
+- Batch twenty-two follow-ups: Rivermaya's ISRC PHV031013584 is a 2010
+  compilation code, its date is month-only, and the Pepsi jingle claim needs
+  the second Wikipedia article as an additional source. Sugarfree's ISRC
+  PHO010400123 is a 2004 code, its label was EMI Philippines in 2004 and is
+  PolyEast today, and its story's Inquirer Super URL is best cited through its
+  Wayback copy. Kamikazee's ISRC is a 2006 code and its summary is now a short
+  statement without the lyric list. Orange & Lemons' ISRC FR6V82375017 is a
+  2023 French reissue code, its date follows the official 2005-04-28 release
+  against MusicBrainz's 2005-03-24, and the library title uses a hyphen where
+  the official title uses parentheses. Greyhoundz's ISRC NL8RL2456509 is a
+  later Dutch digital code, its 1999-07-29 CD date differs from the August 1
+  NU 107 launch, and the album casing should be 7 Corners of Your Game. Queso's
+  album artist is Queso while the 2002 sleeve credits Cheese, and its genres
+  are now a coarse nu metal/hard rock pair. The Youth's ISRC PHP171000565 is a
+  2011 reissue code and its date is year-only. Regina Spektor's fields describe
+  the 2009 Sire single master that the upload uses, not the 2008 Walt Disney
+  soundtrack, whose version carries a different ISRC. Eric Gadd's fields stay
+  on the 2014 single because the upload is the 3:58 edit while the 1991 album
+  cut runs 5:07. Neck Deep's country is empty and its producer/writer credits
+  are album-level.

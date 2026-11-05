@@ -3,6 +3,49 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-05 - push twenty-second story batch to live
+
+Pushed batch twenty-two to production. `LIBRARY_IMPORT_ENABLED` was enabled on
+the live backend for the push and restored to `false` afterwards; the live
+backend was recreated to toggle the flag and is healthy.
+
+- Facts: 10 tracks, 47 changed fields.
+- Prose: 10 tracks updated (10 summaries and 7 stories); 255 previously locked
+  tracks were already current on live.
+- Edition corrections: Rivermaya's Liwanag sa Dilim to the December 2004
+  special edition of Between the Stars and Waves; Sugarfree's Prom to
+  Dramachine (2004-02-19, with producer credits); Kamikazee's Ambisyoso to
+  Maharot (2006-01-16, track 9); Orange & Lemons' empty record filled with
+  Strike Whilst the Iron Is Hot (2005-04-28, track 2); Greyhoundz's Party At
+  802 label to Sony Music Philippines with the 1999-07-29 CD date; Queso's
+  Angee Rozul credit changed to Co-Producer; The Youth's Basura to Album Na
+  Walang Pamagat (1994, PolyCosmic Records); Regina Spektor's The Call to the
+  2009 Sire single; Eric Gadd's credits and summary clarified while keeping
+  the 2014 short-edit fields; and Neck Deep's Parachute to pop punk/
+  alternative rock with producer and writer credits.
+- Prose fixes: Kamikazee's summary no longer says the wished-for objects come
+  free; Eric Gadd's summary identifies the 2014 single as the shorter edit.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 173 tracks with no prose, 480 with no
+  story and 265 with locked prose. Batch twenty-two ids: `5duJxdXc0T4`,
+  `eVmH6KScvSE`, `2ZbZL4Pc1YU`, `2vYtbUabbsQ`, `inTQVH2BiCg`,
+  `4YBq8g3NkAY`, `dljGqOHOkHA`, `pCEUpVukAe8`, `jYxL0v7bwB0`,
+  `boo0AhpPwZk`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, sources and locks.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-05 - push twenty-first story batch to live
 
 Pushed batch twenty-one to production. `LIBRARY_IMPORT_ENABLED` was enabled on
