@@ -6,10 +6,10 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 190 tracks composed across nineteen batches, all reviewed. Batches one to
-  sixteen, eighteen and nineteen are live; batch seventeen was overwritten by
+- 200 tracks composed across twenty batches, all reviewed. Batches one to
+  sixteen and eighteen to twenty are live; batch seventeen was overwritten by
   the live mirror.
-- 235 tracks currently have `summary` and/or `story` locked in both libraries.
+- 245 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -174,34 +174,68 @@ Status of the local track-story composition work.
   which moved to credits; Top Suzara gained a sourced story and lost the stale
   former-Freestyle wording. Parokya's story now cites the Genius quote of
   Chito Miranda's post.
-- Every changed fact field is locked with its source URL. Current totals: 895
-  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
-  rows. Remaining: 203 tracks with no prose, 494 with no story and 235 with
-  locked prose.
-- Live push on 2026-11-05: 10 tracks of facts (56 changed fields) and 10
-  tracks of prose (10 summaries, 6 stories); the other 225 locked-prose tracks
-  were already current on live. The import route was disabled again after the
-  push. Live and local match on all ten ids, including sources and locks.
+- Every changed fact field is locked with its source URL. After batch nineteen:
+  895 tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066
+  chart rows; 203 tracks with no prose, 494 with no story and 235 with locked
+  prose.
+- Batch nineteen live push on 2026-11-05: 10 tracks of facts (56 changed
+  fields) and 10 tracks of prose (10 summaries, 6 stories); the other 225
+  locked-prose tracks were already current on live. The import route was
+  disabled again after the push. Live and local match on all ten ids, including
+  sources and locks.
 - Batch nineteen ids: `h_gFoFatzNE`, `XvZCJHP6rkI`, `TSfXeEodCTw`,
   `-9KU0T3wZH8`, `lSPh7dJM4lc`, `T-De_zAKxwU`, `N7VOppMpo2o`,
   `N9YuNQWiu6E`, `A3_rTPV4d2k`, `WxXI16_c1iQ`.
+- Batch twenty was composed locally on 2026-11-05 and pushed to live the same
+  day: 10 summaries and 3 stories. Join The Club, Cueshé, Deftones, Limp
+  Bizkit, Teeth, Jose Mari Chan and Fatima Rainey have no story because no
+  source gave a song-specific origin anecdote.
+- Reviewer corrections fixed the original editions on all ten tracks:
+  Itchyworms to Noontime Show (2005-10-11, track 7, pop rock/alternative
+  rock/Pinoy rock); Join The Club to 2005 on Redrum Music, distributed by
+  Warner Music Philippines; Cueshé's label to Musiko Records with pop
+  rock/alternative rock; Imago to 2001-06-27; Deftones' Rickets to 1997-10-28
+  with alternative metal/nu metal and Terry Date/Deftones credits; Limp
+  Bizkit's 9 Teen 90 Nine to 1999-06-22, Flip/Interscope, nu metal/rap metal;
+  Teeth's Laklak to the self-titled 1995 album, track 6, with a 1995 cover;
+  Jose Mari Chan to Constant Change (1989-05-25, pop/adult contemporary, with
+  producer and Cristina Tabora credits); Fatima Rainey's album title cleaned,
+  label Warner Music Sweden, track 2, ISRC SEPQA9641020 and year-only date;
+  and Neck Deep's December (again) identified as the 2016 single on Hopeless,
+  2016-07-18, track 1, ISRC USHR21679012.
+- Prose fix after review: Itchyworms' story no longer claims the SPOT.ph
+  songwriting advice was the specific backstory of Beer; it now says Nicolas
+  retells the advice when explaining the band's catchy songwriting and notes
+  Beer's place on Noontime Show.
+- Every changed fact field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 193 tracks with no prose, 491 with no story and 245 with
+  locked prose.
+- Batch twenty live push on 2026-11-05: 10 tracks of facts (52 changed fields)
+  and 10 tracks of prose (10 summaries, 3 stories); the other 235 locked-prose
+  tracks were already current on live. The import route was disabled again
+  after the push. Live and local match on all ten ids, including sources and
+  locks.
+- Batch twenty ids: `hv2C-tJrcrs`, `Wa8S8MlrqFU`, `2gBIoxRVd-M`,
+  `8KLzefx02mE`, `5WC_tw2q7C8`, `nIC4J7_Y9Ig`, `askPs708P4Q`,
+  `UV4snWQJHhs`, `6-DSCo1s-S0`, `lROGjLQQHAg`.
 
 ## Remaining
 
-- 203 tracks still have neither summary nor story.
-- 494 tracks still have no story at all.
-- 235 tracks have locked prose.
+- 193 tracks still have neither summary nor story.
+- 491 tracks still have no story at all.
+- 245 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 120 |
-| NU Metal | 28 |
-| Pinoy Bato | 23 |
-| Classic Love Songs | 16 |
-| New Wave | 9 |
-| Emo Night | 7 |
+| OPM Tunog Kalye | 116 |
+| NU Metal | 26 |
+| Pinoy Bato | 22 |
+| Classic Love Songs | 15 |
+| New Wave | 8 |
+| Emo Night | 6 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
 
@@ -211,16 +245,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Itchyworms — Beer | OPM Tunog Kalye | *Noon Time Show* / 2014 | `hv2C-tJrcrs` | verify original album/year |
-| Join The Club — Nobela | OPM Tunog Kalye | *Nobela* / 2016 | `Wa8S8MlrqFU` | verify original album/year |
-| Cueshé — Can't Let You Go | OPM Tunog Kalye | *Half Empty, Half Full* / 2005 | `2gBIoxRVd-M` | verify track/label |
-| Imago — Rainsong | OPM Tunog Kalye | *Probably Not, But Most Definitely* / 2019 | `8KLzefx02mE` | verify original album/year |
-| Deftones — Rickets | NU Metal | *Around the Fur* / 1997 | `5WC_tw2q7C8` | verify track/label |
-| Limp Bizkit — 9 Teen 90 Nine | NU Metal | *Significant Other* / 2008 | `nIC4J7_Y9Ig` | verify original album/year |
-| Teeth — Laklak | Pinoy Bato | *Dogs Can Fly (Teeth's Finest)* / 2003 | `askPs708P4Q` | verify original album/year |
-| Jose Mari Chan — Can't We Start Over Again | Classic Love Songs | *Constant Change* / 2014 | `UV4snWQJHhs` | verify original album/year |
-| Fatima Rainey — Hey | New Wave | *Love Is A Wonderful Thing* / 1997 | `6-DSCo1s-S0` | restore batch seventeen review |
-| Neck Deep — December (again) | Emo Night | *Life's Not Out To Get You* / 2015 | `lROGjLQQHAg` | verify track/label |
+| Sugarfree — Burnout | OPM Tunog Kalye | *Sa Wakas* / 2009 | `d0n3vgtsnzY` | verify original album/year |
+| Sponge Cola — Bitiw | OPM Tunog Kalye | *Transit Deluxe* / 2008 | `cdBMMoX3O3s` | verify original album/year |
+| Kamikazee — Halik | OPM Tunog Kalye | *Romantico* / 2014 | `iyHhNTd0OwU` | verify original album/year |
+| Rico Blanco — Antukin | OPM Tunog Kalye | *Your Universe* / 2008 | `HBWng9xZNN8` | verify track/label |
+| Deftones — MX | NU Metal | *Around the Fur* / 1997 | `k9kgN2938lI` | verify date/label |
+| Limp Bizkit — Just Like This | NU Metal | *Significant Other* / 2008 | `cxd4dpbySXg` | verify original album/year |
+| Datu's Tribe — Kwento Ni Del | Pinoy Bato | *Galit Kami Sa Baboy* / 1995 | `nqH3UDnaO-4` | verify track/label |
+| Tiffany — It's The Lover (Not The Love) | Classic Love Songs | *Hold An Old Friend's Hand* / 2010 | `ukqBUGKTXMg` | verify original album/year |
+| Lou Bega — Angelina | New Wave | *Ladies And Gentlemen* / 1990 | `vQ0CQmAUMfM` | verify original album/year |
+| New Found Glory — The Promise | Emo Night | *From The Screen To Your Stereo, Pt. II* / 2011 | `X7-pvbkofyg` | verify original album/year |
 
 ## Resume workflow
 
@@ -325,3 +359,19 @@ These are still empty and are the recommended next batch.
   YouTube audio runs 5:53, between the 8:20 vocal and 5:36 play back versions,
   and its ISRC FR6V81246259 is the 2012 Believe reissue code. Taking Back
   Sunday's album title casing is fixed; its credits list Lou Giordano only.
+- Batch twenty follow-ups: Itchyworms' ISRC FR6V82356065 is the 2014 digital
+  reissue code; its story source is a SPOT.ph feature that gives the advice but
+  does not explicitly tie it to Beer. Join The Club's release date is year-only,
+  its ISRC PHUM71600047 is a 2016 reissue code, and its credits still carry only
+  Main, so the Biboy Renia songwriter credit is not stored. Cueshé's credits
+  still lack Ferdie Marquez and Michael Manaloto, and its genres are reviewer
+  values rather than provider tags. Imago's date uses the 27 June 2001 album
+  launch. Limp Bizkit's label is the combined Flip/Interscope credit, and its
+  ISRC is the 1999 album code. Teeth's date is year-only and its ISRC
+  PHW019800164 carries a 1998 code on a 1995 album; its cover is a
+  Cover Art Archive scan and its credits only carry Main. Jose Mari Chan's ISRC
+  FR6V82357984 is a 2014 Believe digital code. Fatima Rainey's date is year-only
+  because the Swedish CD has no exact day, and its ISRC follows MusicBrainz
+  SEPQA9641020 rather than Deezer's swapped code. Neck Deep's country is still
+  empty and its pop-punk/emo genres are inferred from the parent album rather
+  than the 2016 single.
