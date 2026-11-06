@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - flag story batches 31-32 for review
+
+Marked the twenty tracks from batches thirty-one and thirty-two with the
+`needs_review` flag so they carry the Studio's "review" badge until the deferred
+reviewer pass runs.
+
+- `trackdetail.needs_review` set to true for all twenty ids on both local and
+  live. Glitch (`P0B4FmRWYik`) already had the flag; the other nineteen changed.
+- The flag is the same column the Studio uses for the "review" badge in the
+  library list and the fuzzy-match warning in the detail editor. There is no API
+  filter for it, so it is an advisory marker rather than a queue view.
+- Applied with a direct `update trackdetail set needs_review=1` in the backend
+  container on each side; `updated_at` was deliberately left untouched so the
+  tracks do not look freshly edited. No import route was enabled and no
+  container was restarted.
+- Both sides now carry 35 flagged details with identical id sets: the twenty
+  batch tracks plus the fifteen pre-existing fuzzy-match flags.
+- Files touched:
+  - `docs/changelog.md`
+  - `docs/story-worklist.md`
+- **Container restart required?** No. Data-only change; no code or config was
+  edited and the backend stayed healthy.
+
 ## 2026-11-06 - push story batches 31-32 to live
 
 Pushed the reviewed-so-far local work for batches thirty-one and thirty-two to

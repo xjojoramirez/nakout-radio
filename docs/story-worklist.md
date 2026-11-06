@@ -548,6 +548,9 @@ Status of the local track-story composition work.
   345 unchanged. No memberships or charts were touched. `ejVqbIQ5Pvw`'s studio
   cover was locked and pushed in a second facts pass because it had been set
   without a lock. Local and live are now value-identical for all 903 tracks.
+- The twenty batch tracks are flagged `needs_review` on both local and live, so
+  they show the Studio "review" badge until the reviewer pass runs. Both sides
+  hold 35 flagged details with the same ids.
 
 ## Review of batches 27-30
 
