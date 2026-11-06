@@ -3,6 +3,52 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - push twenty-seventh story batch to live
+
+Pushed batch twenty-seven to production without a separate reviewer pass; the
+track details/story review is still pending. `LIBRARY_IMPORT_ENABLED` was
+enabled on the live backend for the push and restored to `false` afterwards;
+the live backend was recreated to toggle the flag and is healthy.
+
+- Facts: 3 tracks, 11 changed fields.
+- Prose: 10 tracks updated (10 summaries and 5 stories); 305 previously locked
+  tracks were already current on live.
+- Restored batch seventeen entries: Boldstar — *Kumot At Unan*, Brownman
+  Revival — *Dahan Dahan* and Dicta License — *Ang Ating Araw*.
+- Fact changes: Boldstar to *Kami nAPO Muna* (2006, Universal Records, track 8,
+  PH, Songwriter Danny Javier); Dicta License's release date to 2005-09-21; and
+  Pierce The Veil's *Selfish Machines* (2010, Equal Vision Records) with
+  songwriter credits Vic Fuentes and Jonny Craig.
+- Known review items: Gloc-9's release date (2007-03-16 against 2007-05-20) and
+  missing songwriter credits; Itchyworms' *Noon Time Show* / 2014 against the
+  original *Noontime Show* / 2005; Deftones' 2010-04-23 date against 2010-05-04;
+  Limp Bizkit's Pop/Rock genres and `ZZ` ISRC prefix; Orient Pearl's 2020
+  compilation against *Orient Pearl 1* (1994/1995, track 4) and a 2020 ISRC;
+  Jose Mari Chan's 2019 Universal reissue against the 1985 WEA original, with a
+  login-gated Scribd songbook source; and Pierce The Veil's library artist/title
+  mismatch, missing ISRC and *Selfish Machines* placement.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 123 tracks with no prose, 448 with no
+  story and 315 with locked prose. Batch twenty-seven ids: `FP75Ps4DuwA`,
+  `YVNIhxP80GA`, `QSj3gaMJ5Mw`, `B1ZpqEFCAoQ`, `HEZ2E_nkMhY`,
+  `QY2Izgkku0Q`, `2i6-xwzCs0k`, `eAGF_t9Cb8A`, `Gsm_8mdKsoA`,
+  `EhJoM1PKGhw`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match apart from `generated_at`.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, sources and locks; only the order of `locked_fields`
+    differs.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-06 - push twenty-sixth story batch to live
 
 Pushed batch twenty-six to production. `LIBRARY_IMPORT_ENABLED` was enabled on

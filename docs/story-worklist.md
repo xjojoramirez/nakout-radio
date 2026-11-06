@@ -6,11 +6,12 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 260 tracks composed across twenty-six batches, all reviewed. Batches one to
-  sixteen, eighteen to twenty-five and twenty-six are live; batch seventeen was
-  overwritten by the live mirror, though its Karen Wyman entry was restored in
-  batch twenty-six.
-- 305 tracks currently have `summary` and/or `story` locked in both libraries.
+- 270 tracks composed across twenty-seven batches. Batches one to sixteen and
+  eighteen to twenty-seven are live; batch seventeen was overwritten by the
+  live mirror, though four of its entries were restored in batches twenty-six
+  and twenty-seven. Batch twenty-seven was pushed without a separate reviewer
+  pass; its review is pending.
+- 315 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -409,12 +410,44 @@ Status of the local track-story composition work.
 - Batch twenty-six ids: `LIuXKqwozeU`, `w2pVa1NJaEQ`, `41OKPv-i7hk`,
   `rEc7z_SHDQA`, `gMftByc4cJ0`, `yt86EOxIgwE`, `_Ss4KLVTirw`,
   `vfJRLQdzHgg`, `JFE-cVPrVAQ`, `Z3rBpv7Wdgw`.
+- Batch twenty-seven was composed locally on 2026-11-06 and pushed to live the
+  same day without a separate reviewer pass; the track details/story review is
+  pending. It adds 10 summaries and 5 stories. Brownman Revival, Dicta License,
+  Deftones, Limp Bizkit and Orient Pearl have no story because no source gave a
+  song-specific origin anecdote.
+- Three entries are restored batch seventeen prose/facts: Boldstar — Kumot At
+  Unan, Brownman Revival — Dahan Dahan and Dicta License — Ang Ating Araw.
+  Karen Wyman's entry was restored in batch twenty-six.
+- Fact changes: Boldstar to *Kami nAPO Muna* (2006, Universal Records, track 8,
+  PH, Songwriter Danny Javier); Dicta License's release date to 2005-09-21; and
+  Pierce The Veil's *Selfish Machines* (2010, Equal Vision Records) with
+  songwriter credits Vic Fuentes and Jonny Craig.
+- Known review items: Gloc-9's release date (2007-03-16 against 2007-05-20) and
+  missing songwriter credits; Itchyworms' *Noon Time Show* / 2014 against the
+  original *Noontime Show* / 2005; Deftones' 2010-04-23 date against 2010-05-04;
+  Limp Bizkit's Pop/Rock genres and `ZZ` ISRC prefix; Orient Pearl's 2020
+  compilation against *Orient Pearl 1* (1994/1995, track 4) and a 2020 ISRC;
+  Jose Mari Chan's 2019 Universal reissue against the 1985 WEA original, with a
+  login-gated Scribd songbook source; and Pierce The Veil's library artist/title
+  mismatch, missing ISRC and *Selfish Machines* placement.
+- Every changed fact field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 123 tracks with no prose, 448 with no story and 315 with
+  locked prose.
+- Batch twenty-seven live push on 2026-11-06: 3 tracks of facts (11 changed
+  fields) and 10 tracks of prose (10 summaries, 5 stories); the other 305
+  locked-prose tracks were already current on live. The import route was
+  disabled again after the push. Live and local match on all ten ids, including
+  sources and locks.
+- Batch twenty-seven ids: `FP75Ps4DuwA`, `YVNIhxP80GA`, `QSj3gaMJ5Mw`,
+  `B1ZpqEFCAoQ`, `HEZ2E_nkMhY`, `QY2Izgkku0Q`, `2i6-xwzCs0k`,
+  `eAGF_t9Cb8A`, `Gsm_8mdKsoA`, `EhJoM1PKGhw`.
 
 ## Remaining
 
-- 133 tracks still have neither summary nor story.
-- 453 tracks still have no story at all.
-- 305 tracks have locked prose.
+- 123 tracks still have neither summary nor story.
+- 448 tracks still have no story at all.
+- 315 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
@@ -423,12 +456,12 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 89 |
-| NU Metal | 14 |
-| Pinoy Bato | 18 |
-| Classic Love Songs | 9 |
+| OPM Tunog Kalye | 84 |
+| NU Metal | 12 |
+| Pinoy Bato | 17 |
+| Classic Love Songs | 8 |
 | New Wave | 2 |
-| Emo Night | 1 |
+| Emo Night | 0 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
 
@@ -438,22 +471,24 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Boldstar — Kumot At Unan | OPM Tunog Kalye | *Kami nAPO Muna* / 2006 | `FP75Ps4DuwA` | restore batch 17 prose/facts from the pre-mirror backup |
-| Brownman Revival — Dahan Dahan | OPM Tunog Kalye | *Steady Lang* / 2005 | `YVNIhxP80GA` | restore batch 17 summary from the pre-mirror backup |
-| Dicta License — Ang Ating Araw | OPM Tunog Kalye | *Paghilom* / 2005 | `QSj3gaMJ5Mw` | restore batch 17 summary from the pre-mirror backup |
-| Gloc-9 — Lando | OPM Tunog Kalye | *Diploma* / 2007 | `B1ZpqEFCAoQ` | verify original album/label |
-| Itchyworms — Akin Ka Na Lang | OPM Tunog Kalye | *Noon Time Show* / 2014 | `HEZ2E_nkMhY` | use original *Noontime Show* / 2005 |
-| Deftones — CMND/CTRL | NU Metal | *Diamond Eyes* / 2010 | `QY2Izgkku0Q` | verify original track/label |
-| Limp Bizkit — Dirty Rotten Bizkit | NU Metal | *STILL SUCKS* / 2021 | `2i6-xwzCs0k` | verify track/label |
-| Orient Pearl — Kasalanan | Pinoy Bato | *The Legends Series: Orient Pearl Recollection* / 2020 | `eAGF_t9Cb8A` | use original album/year; the 2020 set is a compilation |
-| Jose Mari Chan — A Love to Last a Lifetime | Classic Love Songs | *A Golden Collection* / 2019 | `Gsm_8mdKsoA` | use original album/year; the 2019 set is a compilation |
-| Pierce The Veil — She Makes Dirty Words Sound Pretty | Emo Night | *None* / None | `EhJoM1PKGhw` | fix library artist from Equal Vision Records to Pierce The Veil; verify original release |
+| Frio — Alive | OPM Tunog Kalye | *Frio* / 2006 | `qsH59dPs6TE` | verify track/label |
+| Hilera — Define | OPM Tunog Kalye | *Hilera* / 2014 | `uB7T72AfxBQ` | verify original album/year |
+| Join The Club — Lunes | OPM Tunog Kalye | *Nobela* / 2016 | `v52-Acb-rvg` | verify original album/year |
+| Kamikazee — Chiksilog | OPM Tunog Kalye | *Kamikazee (Their Greatest Hits)* / 2015 | `rBUuKRXFknQ` | use original album/year; the 2015 set is a compilation |
+| Itchyworms — Di Na Muli | OPM Tunog Kalye | *Sid & Aya (Not a Love Story) (Original Movie Soundtrack)* / 2019 | `kJhW-QXFpHM` | verify original soundtrack release |
+| Glitch — Faceplant | NU Metal | *Illementz* / 2000 | `_21qeXs3i5Y` | verify track/label |
+| Greyhoundz — 1s 3s 6s | NU Metal | *Apoy* / 2005 | `nC9o8Djv_sw` | verify original album/year |
+| Grin Department — 8 Pa | Pinoy Bato | *2NAH Ahgen* / 2009 | `mPuClJykoSI` | verify track/label |
+| Eugene Wilde — First Love Never Dies | Classic Love Songs | *Hits Anthology* / 2007 | `XQPrywW28x8` | use original album/year; the 2007 set is an anthology |
+| Engelbert Humperdinck — Quando Quando Quando | Classic Love Songs | *The Dance Album* / 2023 | `j2etakoV-rg` | verify original recording/edition |
 
 ## Resume workflow
 
 1. Pull live into local if the live library changed:
    `python scripts/pull_library.py --from https://nakout.com --to http://127.0.0.1:8011 ...`
 2. Compose the batch with the `track-info-composer` agent, one track at a time.
+   Compose-only is a valid stopping point when the review will be requested
+   separately; the batch stays local until the review and push commands.
 3. Audit with the `track-details-reviewer` agent, one reviewer per five tracks.
 4. Clean up fact/edition findings locally, update `sources`, and lock the
    corrected fact fields.
@@ -519,13 +554,13 @@ These are still empty and are the recommended next batch.
   itself is the Kami nAPO Muna page. Deftones' summary credits Terry Date alone
   although the band co-produced Adrenaline.
 - Batch seventeen's tracks were cleared by the live mirror; Karen Wyman's
-  entry was restored in batch twenty-six. The reviewed prose and facts for the
-  remaining batch seventeen tracks live in the batch seventeen entry above and
-  in the pre-mirror database at
+  entry was restored in batch twenty-six, and Boldstar, Brownman Revival's
+  Dahan Dahan and Dicta License's Ang Ating Araw were restored in batch
+  twenty-seven. The reviewed prose and facts for the remaining batch seventeen
+  tracks live in the batch seventeen entry above and in the pre-mirror database
+  at
   `C:/Users/SD/nakout-backups/local-radio-pre-live-mirror-20261105-102635.db`;
-  re-applying them is an alternative to composing a fresh batch. The next batch
-  recommendation restores Boldstar, Brownman Revival's Dahan Dahan and Dicta
-  License's Ang Ating Araw from that backup.
+  re-applying them is an alternative to composing a fresh batch.
 - Batch eighteen follow-ups: Sugarfree's audio is the 4:15 *Full Volume* cut
   (ISRC PHO010500083, released 2014-11-30) while the detail keeps the canonical
   *Sa Wakas* album and 3:29 ISRC PHO010200161; its genres are still the provider
@@ -703,3 +738,15 @@ These are still empty and are the recommended next batch.
   rows were imported, and its credits only carry Main without Dessca/Hillman.
   The two remaining New Wave rows are cover/compilation acts (Equinox Stars,
   Party Tyme); verify identity before composing.
+- Batch twenty-seven was composed and pushed without a separate reviewer pass;
+  the track details/story review is pending. Known items for that review:
+  Gloc-9's release date (2007-03-16 against 2007-05-20) and missing songwriter
+  credits; Itchyworms' *Noon Time Show* / 2014 against the original *Noontime
+  Show* / 2005; Deftones' 2010-04-23 date against 2010-05-04; Limp Bizkit's
+  Pop/Rock genres and `ZZ` ISRC prefix; Orient Pearl's 2020 compilation against
+  *Orient Pearl 1* (1994/1995, track 4) and a 2020 ISRC; Jose Mari Chan's 2019
+  Universal reissue against the 1985 WEA original, with a login-gated Scribd
+  songbook source; and Pierce The Veil's library artist/title mismatch, missing
+  ISRC and *Selfish Machines* placement. Boldstar's restored ISRC
+  PHU012116031 is a 2021 digital code; Brownman Revival and Dicta License have
+  no story.
