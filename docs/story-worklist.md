@@ -510,12 +510,25 @@ Status of the local track-story composition work.
   have no conflicts, though the 2010-04-23 date remains a canonical-date
   question.
 - Every composed prose field is locked with its source URL. After the 2026-11-06
-  pull from live, local totals match production: 903 tracks, 903 details, 8
-  playlists, 8 genres, 9 schedule slots and 6130 chart rows. Remaining on both
-  sides: 96 tracks with no prose, 431 with no story and 345 with locked prose.
+  pull from live, local held 903 tracks, 903 details, 8 playlists, 8 genres, 9
+  schedule slots and 6130 chart rows, matching production exactly. Batch thirty-
+  one then moved local ahead of live: local now has 86 tracks with no prose, 423
+  with no story and 355 with locked prose, while live stays at 96 / 431 / 345
+  until the batch is reviewed and pushed.
 - Batch thirty ids: `IhthDnQWrZw`, `8gSxdKK2Bz4`, `8Hl1eNn5rHQ`,
   `9CWSKyy4p7Q`, `xQciT9ZXbgQ`, `Tx9svogMLlk`, `oPvWJFbiakI`,
   `m14z8PirD2w`, `iE3mRENrmZg`, `blhEVJkgAtQ`.
+- Batch thirty-one was composed locally on 2026-11-06 and has not been reviewed
+  or pushed. It adds 10 summaries and 8 stories. Seven tracks also gained fact
+  corrections: Kjwan's label to MCA Music Philippines; Moonstar 88 to 2007 with
+  Pinoy rock / alternative rock / pop rock genres; Parokya Ni Edgar to
+  2005-05-26 and ISRC PHU010509019; Glitch's record filled from empty; Grin
+  Department to 1995; Siakol's album artist, track 5, disc 1 and genres; and
+  Joe LaMont to 1985-05. Loonie, Mojofly and WilaBaliw verified clean. Grin
+  Department's Skin and Siakol's Gawing Langit Ang Mundo have no story.
+- Batch thirty-one ids: `DDv81CuLTm0`, `ukJHVEz_FzQ`, `9mh66TFjQG0`,
+  `F3FZBfCLWYc`, `3Rdzqc51cEY`, `P0B4FmRWYik`, `ZEZh2MGlkw4`, `VBhXO8Tm8g4`,
+  `MDuWK9BmWNg`, `T2qofeyGaLg`.
 
 ## Review of batches 27-30
 
@@ -559,13 +572,14 @@ same day.
 
 ## Remaining
 
-- 96 tracks still have neither summary nor story.
-- 431 tracks still have no story at all.
-- 345 tracks have locked prose.
+- 86 tracks still have neither summary nor story.
+- 423 tracks still have no story at all.
+- 355 tracks have locked prose.
 
 The 2026-11-06 pull from live added three tracks to the no-prose backlog:
 Wolfgang's *Halik Ni Hudas* (OPM Tunog Kalye), The Outfield's *Talk To Me*
-(Classic Rock) and The Story So Far's *Nerve* (Emo Night).
+(Classic Rock) and The Story So Far's *Nerve* (Emo Night). Batch thirty-one
+then removed ten from it.
 
 ### Remaining by genre (no prose at all)
 
@@ -574,10 +588,10 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 70 |
-| NU Metal | 6 |
-| Pinoy Bato | 13 |
-| Classic Love Songs | 3 |
+| OPM Tunog Kalye | 65 |
+| NU Metal | 4 |
+| Pinoy Bato | 11 |
+| Classic Love Songs | 2 |
 | New Wave | 2 |
 | Emo Night | 1 |
 | Classic Rock | 1 |
@@ -589,16 +603,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Kjwan — Nasilayan | OPM Tunog Kalye | *13 Seconds To Love* / 2009 | `DDv81CuLTm0` | verify original album/year |
-| Loonie — Tao Lang | OPM Tunog Kalye | *Tao Lang* / 2012 | `ukJHVEz_FzQ` | verify original album/year |
-| Mojofly — Mata | OPM Tunog Kalye | *Now* / 2005 | `9mh66TFjQG0` | verify original album/year |
-| Moonstar 88 — Migraine | OPM Tunog Kalye | *Todo Combo* / 2008 | `F3FZBfCLWYc` | verify original album/year |
-| Parokya Ni Edgar — Gitara | OPM Tunog Kalye | *Halina Sa Parokya* / 2014 | `3Rdzqc51cEY` | use original album/year; 2014 is a reissue |
-| Glitch — Flower | NU Metal | *None* / None | `P0B4FmRWYik` | missing album/year; verify release |
-| WilaBaliw — Hindi Na Makita | NU Metal | *Aurum* / 2019 | `ZEZh2MGlkw4` | verify track/label |
-| Grin Department — Skin | Pinoy Bato | *Grin Department* / 2008 | `VBhXO8Tm8g4` | verify original album/year |
-| Siakol — Gawing Langit Ang Mundo | Pinoy Bato | *Tropa* / 2010 | `MDuWK9BmWNg` | verify original album/year |
-| Joe LaMont — Victims of Love | Classic Love Songs | *Secrets You Keep* / 2017 | `T2qofeyGaLg` | verify original album/year; 2017 may be a reissue |
+| Siakol — Akala Ko'y Langit | OPM Tunog Kalye | *Haymabu* / 2015 | `-iZg7wyrhpY` | verify original album/year |
+| Siakol — Ituloy Mo Lang | OPM Tunog Kalye | *Tropa* / 2010 | `B7xMFdx1NsA` | verify original album/year |
+| Rocksteddy — Magpakailanman | OPM Tunog Kalye | *Tsubtsatagilidakeyn* / 2016 | `S_SslJ7QdSE` | verify original album/year |
+| Sponge Cola — Pasubali | OPM Tunog Kalye | *Transit Deluxe* / 2008 | `O7nl9n6zsjg` | *Transit Deluxe* may be a reissue of *Transit* |
+| Siakol — Gawign Langit Ang Mundo | OPM Tunog Kalye | *Tropa* / 2010 | `dNYFGxsndyU` | title looks typo'd; may duplicate `MDuWK9BmWNg` |
+| Rivermaya — Panahon Na Naman | OPM Tunog Kalye | *Greatest Hits* / 2001 | `Looe5xph3jY` | *Greatest Hits* is a compilation; find the original |
+| Parokya Ni Edgar — Wag Mo Na Sana | OPM Tunog Kalye | *Gulong Itlog Gulong* / 2014 | `o2FZEQyw__c` | verify original album/year |
+| Parokya Ni Edgar — Para Sayo | OPM Tunog Kalye | *Inuman Sessions, Vol. 2 (Live)* / 2014 | `ejVqbIQ5Pvw` | live album; find the original studio version |
+| Rizal Underground — Bilanggo (Acoustic Version) | OPM Tunog Kalye | *Polyeast Gold Series: Rizal Underground* / 2010 | `A4YyTy6R13E` | acoustic on a compilation; find the original |
+| Siakol — P.I. | OPM Tunog Kalye | *Tropa* / 2010 | `Qa-O3q-CZi0` | verify original album/year |
 
 ## Resume workflow
 
@@ -905,3 +919,21 @@ These are still empty and are the recommended next batch.
   Deftones' When Girls Telephone Boys and Grin Department's Picture Mo Inday
   have no story. Brownman Revival's Paniwalaan Mo gained album *Ayos Din*, 2007
   and Sony BMG, with track number 2 unwritable and no ISRC.
+- Batch thirty-one was composed locally on 2026-11-06 and is not yet reviewed or
+  pushed. Findings: Kjwan's `Kjwan Music` label is the 2017 digital reissue
+  imprint against MCA Music Philippines for the 2009 original; Moonstar 88's 2008
+  Deezer date against the 2007 *Todo Combo*, plus a bad Rap/Hip Hop genre tag;
+  Parokya Ni Edgar's 2014 digital reissue against the 2005 *Halina Sa Parokya*,
+  with the original PH ISRC restored; Glitch's record was empty and is now filled
+  from Discogs and Deezer, though a racing apply dropped its summary source and
+  lock, which were re-stamped; Grin Department's 2008 digital date against 1995,
+  still contested by RateYourMusic and a collector listing that both say 1997;
+  Siakol's album artist, track 5, disc 1 and genres filled, with ISRC
+  HKG291500076 a 2015 assignment on a 2010 recording; and Joe LaMont's 2017
+  Deezer reissue against the 1985 Private I *Secrets You Keep*. Open: Kjwan's
+  ISRC FR2X41736719 may belong to the reissue; Mojofly, Moonstar 88 and Joe
+  LaMont still lack songwriter and producer credits; the library artists
+  `Joe LaMont` and `WilaBaliw` disagree with their album artists; Glitch's
+  `needs_review` stays set; and `PROVIDER_LABELS` has no `lastfm` entry so that
+  source renders as `Lastfm`. Loonie, Mojofly and WilaBaliw verified clean. Grin
+  Department's Skin and Siakol's Gawing Langit Ang Mundo have no story.

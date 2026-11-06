@@ -3,6 +3,77 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - compose thirty-first story batch locally
+
+Composed batch thirty-one in the local library only. The batch is not reviewed
+and has not been pushed; live is byte-identical to before this batch.
+
+- Facts: seven of the ten tracks changed, each changed field locked with its
+  source URL.
+  - Kjwan — Nasilayan: label `Kjwan Music` → `MCA Music Philippines`. The
+    stored label is the imprint on the 2017 digital reissue; Wikipedia and
+    PEP.ph both give MCA Music Philippines for the 2009 original.
+  - Moonstar 88 — Migraine: 2008-04-10 / 2008 → 2007 / 2007, because *Todo
+    Combo* is the 2007 album (PEP.ph launched it 22 Aug 2007) even though the
+    single followed on 19 Feb 2008; genres `Rap/Hip Hop` → Pinoy rock,
+    Alternative rock, Pop rock, which was a bad Deezer album-level tag.
+  - Parokya Ni Edgar — Gitara: 2014-03-17 / 2014 → 2005-05-26 / 2005, the
+    original *Halina Sa Parokya* (the 2014 date was a digital reissue), and
+    ISRC `FR6V82352986` → `PHU010509019`, the PH-registered 2005 code. The
+    album itself was verified as the band's sixth studio album, not a
+    compilation, so it stays.
+  - Glitch — Flower: filled album_artist, release_date, track 8, disc 1,
+    genres, credits and cover_url on a record that had no sources at all, and
+    restored the summary source and lock that a racing apply had dropped.
+  - Grin Department — Skin: 2008-10-16 / 2008 → 1995 / 1995, the original
+    Vicor CD (VCD-K-102); 2008 was the digital reissue date.
+  - Siakol — Gawing Langit Ang Mundo: filled album_artist, track 5, disc 1 and
+    genres; the composer also added label ABS-CBN Film Productions, Inc., ISRC
+    HKG291500076 and the Noel Palomo songwriting/production credits.
+  - Joe LaMont — Victims of Love: 2017-02-10 / 2017 → 1985-05 / 1985, the
+    original *Secrets You Keep* on Private I Records (BFZ 39968).
+- Prose: 10 tracks gained summaries and 8 gained stories. Grin Department's
+  Skin and Siakol's Gawing Langit Ang Mundo have no story because no source
+  gave a song-specific origin anecdote. Glitch's story came from the Last.fm
+  band biography supplied during the batch.
+- Verified clean, no change needed: Loonie's Tao Lang (original 2012 single,
+  not the 2013 *Ultrasound* appearance), Mojofly's Mata (original 2005 *Now*)
+  and WilaBaliw's Hindi Na Makita (track 12 and Tower of Doom both correct).
+- Open items for the review:
+  - Grin Department's year is contested: Discogs release 3025160 says 1995 for
+    VCD-K-102 while RateYourMusic and a collector listing say 1997. 1995 was
+    kept because the Discogs entry carries the matching 14-track list with
+    track 3 as *Iskin*.
+  - Kjwan's ISRC FR2X41736719 decodes to a 2017 assignment and may belong to
+    the reissue rather than the 2009 original.
+  - Siakol's ISRC HKG291500076 decodes to a 2015 assignment for a 2010
+    recording; it was kept because ISRCs identify recordings, not releases.
+  - Songwriter/producer credits are still missing on Mojofly's Mata, Moonstar
+    88's Migraine and Joe LaMont's Victims of Love.
+  - Library artist spelling: `Joe LaMont` against album artist `Joe Lamont`,
+    and `WilaBaliw` against `WilaBaliW`.
+  - Glitch's `needs_review` stays true until the year conflict settles.
+  - `PROVIDER_LABELS` has no `lastfm` entry, so Glitch's story source renders
+    as `Lastfm`.
+- Local totals: 903 tracks, 903 details, 86 tracks with no prose, 423 with no
+  story and 355 with locked prose. Live is unchanged at 96 / 431 / 345.
+- Batch thirty-one ids: `DDv81CuLTm0`, `ukJHVEz_FzQ`, `9mh66TFjQG0`,
+  `F3FZBfCLWYc`, `3Rdzqc51cEY`, `P0B4FmRWYik`, `ZEZh2MGlkw4`, `VBhXO8Tm8g4`,
+  `MDuWK9BmWNg`, `T2qofeyGaLg`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No. Only local database content changed; no
+  code or configuration was edited.
+- **Verification:**
+  - All ten records show a locked summary with a source URL; eight also show a
+    locked story with a source URL. Every locked field has a source entry and
+    every lock name is in `LOCKABLE_FIELDS`.
+  - Summary lengths are 116-171 characters and story lengths 229-306.
+  - A live export comparison confirms none of the ten carries any prose on
+    live, so nothing was pushed; live totals are unchanged at 96 / 431 / 345.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-06 - pull live library into local (903 tracks)
 
 Pulled the production library into the local deployment with
