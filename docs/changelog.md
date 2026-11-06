@@ -3,6 +3,49 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - push batches 29-30 and the 27-30 review corrections to live
+
+Pushed the batch 29-30 prose and every reviewed fact correction from batches
+27-30 to production. `LIBRARY_IMPORT_ENABLED` was enabled for the pushes and
+restored to `false` afterwards; the live backend was recreated to toggle the
+flag and is healthy.
+
+- Facts: 33 tracks, 106 changed fields (album, dates, label, track number, ISRC,
+  genres, credits and album artist).
+- Prose: 24 tracks updated: the 20 batch 29-30 tracks plus four reviewed tracks
+  whose summaries or stories changed (Deftones' CMND/CTRL, Jose Mari Chan,
+  Kamikazee's Chiksilog and Eugene Wilde).
+- Live locks: five prose fields on four tracks were locked on live from earlier
+  pushes, so they were unlocked first, then re-locked by the push.
+- Direct live fixes the import route cannot express: the Pierce the Veil track
+  identity changed from the label to `Pierce the Veil` / `She Makes Dirty Words
+  Sound Pretty`, and Engelbert's *Quando Quando* ISRC was cleared.
+- Batch 29 covered the 2005-2006 tribute and original editions (Itchyworms,
+  Kamikazee, Kjwan, Siakol, Tito Mina, Kenny Rankin). Batch 30 covered Brownman
+  Revival's new facts, Drip, both Kapatid albums, the Deftones US dates, Grin
+  Department, Siakol's *Gabay* and Engelbert's 1970 Decca album.
+- Live now has 903 tracks and details against 895 local: the eight extra live
+  tracks are standalone songs (Ozzy Osbourne, Mr. Mister, The Outfield, three
+  Rolling Stones tracks, Wolfgang and The Story So Far) that postdate the last
+  local pull. Both libraries have 8 playlists and 345 locked-prose tracks.
+- Local totals are 93 tracks with no prose and 428 with no story; live is 96 and
+  431 because three of the standalone tracks have no prose.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on `false`.
+- **Verification:**
+  - All forty reviewed ids match on facts, prose, sources, locks and track
+    identity; only the order of `locked_fields` can differ.
+  - Public `/api/tracks` spot checks returned Engelbert's *A Man Without Love* /
+  1968 / Decca / track 6 with a blank ISRC, Orient Pearl's *Orient Pearl 1* /
+  1995 / Tone Def / track 4, and Brownman Revival's *Ayos Din* / 2007 / track 2 /
+  ISRC PHBO10700886.
+  - Live and local both have 8 unique playlists; memberships are 936 live and
+  929 local, all unique, with no duplicates. `/api/schedule/today` matches.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-06 - review batches 27-30 and correct local facts
 
 Ran eight read-only reviewer agents over the forty tracks in batches 27-30 and
