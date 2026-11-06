@@ -3,6 +3,84 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - compose twenty-ninth story batch locally
+
+Composed batch twenty-nine in the local library only. The batch is not reviewed
+and has not been pushed; the review will run when batch thirty starts.
+
+- Facts: no fact fields changed; every track already had an album, year, label,
+  ISRC and credits.
+- Prose: 10 tracks gained summaries and 6 gained stories. Kamikazee, Glitch,
+  Siakol and Tito Mina have no story because no source gave a song-specific
+  origin anecdote.
+- Known edition items for the review: Itchyworms' 2012 *Kami Napo Muna The
+  Collection* against the 2006 *Kami nAPO Muna*; Kamikazee's 2014 reissue
+  against *Maharot* (2006); Kjwan's 2015 reissue against 2004 and `Kjwan Music`
+  against Sony Music Philippines; Deftones' *Diamond Eyes (Deluxe)* against the
+  standard album; Glitch's PolyEast label against OctoArts EMI; Siakol's 2005
+  digital date against the 1996 original; Tito Mina's 2009 *SCE: Both in Love*
+  against the 1983 *Tito O. Mina* LP on Blackgold; and Kenny Rankin's 2009 Rhino
+  Atlantic reissue against the 1980 Atlantic original. The Francis M and Kitchie
+  Nadal tribute placements are correct.
+- Local totals: 895 tracks, 895 details, 103 tracks with no prose, 435 with no
+  story and 335 with locked prose. Live is unchanged at 113 / 441 / 325.
+- Batch twenty-nine ids: `YcnkTNBksb4`, `EiR87BGeiAE`, `qEDxfghgSOE`,
+  `y52jDU7Vl9E`, `zdTiI3rtbP4`, `-1mH96_bVM0`, `4tzPTNcBuUA`,
+  `8ytpdC-Hn1g`, `oydXQThKkO4`, `q3fbglFvBN8`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - All ten records show a locked summary with a source URL; six also show a
+    locked story with a source URL.
+  - Pre-review backup:
+    `C:\Users\SD\nakout-backups\local-radio-pre-batch29-review-20261106.db`.
+  - No live change was made and the live import route remains `false`.
+
+## 2026-11-06 - push twenty-eighth story batch to live
+
+Pushed batch twenty-eight to production without a separate reviewer pass; the
+track details/story review is still pending. `LIBRARY_IMPORT_ENABLED` was
+enabled on the live backend for the push and restored to `false` afterwards;
+the live backend was recreated to toggle the flag and is healthy.
+
+- Facts: no fact fields changed; every track already had an album, year, label,
+  ISRC and credits.
+- Prose: 10 tracks updated (10 summaries and 7 stories); 315 previously locked
+  tracks were already current on live.
+- Known review items: Hilera's 2014 reissue against the 2006 original (date and
+  genre also differ); Join The Club's 2016 reissue against 2005; Kamikazee's
+  *Their Greatest Hits* 2015 against *Maharot* (2006, track 5); Itchyworms'
+  2019 soundtrack against the 2016 PhilPop compilation and a Janine Teñoso
+  album artist; Glitch's PolyEast label and Pop genre against the 2000 OctoArts
+  EMI credit; Greyhoundz's `Greyhoundz` label and 2024 Dutch ISRC; Grin
+  Department's 2009 date against 2001 and the `2NAH Ahgen` casing; Eugene
+  Wilde's *Hits Anthology* against the 1985 *Rappin'* soundtrack; and
+  Engelbert's 2023 *Dance Album* metadata against the 1968 *A Man Without Love*
+  recording. Glitch, Greyhoundz and Grin Department have no story.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 113 tracks with no prose, 441 with no
+  story and 325 with locked prose. Batch twenty-eight ids: `qsH59dPs6TE`,
+  `uB7T72AfxBQ`, `v52-Acb-rvg`, `rBUuKRXFknQ`, `kJhW-QXFpHM`,
+  `_21qeXs3i5Y`, `nC9o8Djv_sw`, `mPuClJykoSI`, `XQPrywW28x8`,
+  `j2etakoV-rg`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match apart from `generated_at`.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, sources and locks; only the order of `locked_fields`
+    differs.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-06 - push twenty-seventh story batch to live
 
 Pushed batch twenty-seven to production without a separate reviewer pass; the
