@@ -3,6 +3,60 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - review batches 27-30 and correct local facts
+
+Ran eight read-only reviewer agents over the forty tracks in batches 27-30 and
+applied the findings in the local library. Nothing was pushed; live still has
+the pre-review values. Every corrected field is locked with a source URL.
+
+- 33 tracks corrected: 100 fact fields, 9 credit entries, 7 prose fields, one
+  ISRC cleared and two library identity fields fixed.
+- Batch 27: Itchyworms to *Noontime Show* / 2005-10-11; Deftones' CMND/CTRL to
+  2010-05-04; Limp Bizkit to nu metal, rap rock and alternative metal with five
+  songwriter credits; Orient Pearl to *Orient Pearl 1* / 1995-05-22 / Tone Def /
+  track 4; Jose Mari Chan to 1985 WEA with reachable-source prose; Pierce the
+  Veil's artist and title identity fixed, plus 2010-06-22 and bonus track 13;
+  Gloc-9 gained two songwriter credits.
+- Batch 28: Hilera to 2006-10-30 and punk rock; Join The Club to 2005 on Redrum;
+  Kamikazee to *Maharot* / 2006 / track 5; Itchyworms' *Di Na Muli* album artist
+  to Various Artists; Glitch to OctoArts EMI and nu metal/rapcore; Greyhoundz to
+  EMI Music Philippines; Grin Department to *2Nah Ahgen* / 2001; Eugene Wilde to
+  the 1985 *Rappin'* soundtrack; Engelbert's *Quando Quando* to the 1968 *A Man
+  Without Love* with the 1998 ISRC cleared.
+- Batch 29: Itchyworms to *Kami nAPO Muna* / 2006; Kamikazee to *Maharot* /
+  2006; Kjwan to 2004 on Sony Music Philippines; Deftones' *Risk* to the standard
+  *Diamond Eyes*; Glitch to OctoArts EMI; Siakol to 1996; Tito Mina to *Tito O.
+  Mina* / 1983 on Blackgold; Kenny Rankin to 1980 on Atlantic.
+- Batch 30: Brownman Revival gained track 2, 2007-02-22, ISRC PHBO10700886, the
+  reggae genre and an album artist; Drip to *Kami nAPO Muna* / 2006 with a story
+  naming the band; Kapatid to the 2006 EMI *Luha* and 2003 Sony debut; Deftones'
+  *Royal* and *When Girls Telephone Boys* to the standard US dates; Grin
+  Department to *2Nah Ahgen* / 2001; Siakol to 2005 on Alpha; Engelbert to the
+  1970 Decca *We Made It Happen*.
+- Open annotations: the FR-prefixed ISRCs on Itchyworms, Kamikazee and Jose Mari
+  Chan are digital-era codes; several pre-1990 albums have no documented release
+  day, so year-only dates are stored. No chart claims were found on any of the
+  forty tracks.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - Every changed field and every locked field carries a source URL; no locked
+    field was left unsourced.
+  - Summary lengths are 108-172 characters and story lengths 157-369.
+  - Local totals are unchanged: 895 tracks, 895 details, 93 with no prose, 428
+    with no story and 345 with locked prose. Live is unchanged at 113 / 441 /
+    325.
+  - Pre-review backups:
+    `C:\Users\SD\nakout-backups\local-radio-pre-batch27-review-20261106.db`,
+    `...pre-batch28...`, `...pre-batch29...` and `...pre-batch30...`.
+    Post-review backup:
+    `C:\Users\SD\nakout-backups\local-radio-post-review-27-30-20261106.db`;
+    change report:
+    `C:\Users\SD\nakout-backups\review-corrections-27-30-20261106.json`.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-06 - compose thirtieth story batch locally
 
 Composed batch thirty in the local library only. The batch is not reviewed and
