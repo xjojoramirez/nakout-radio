@@ -3,6 +3,104 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - push twenty-seventh story batch to live
+
+Pushed batch twenty-seven to production without a separate reviewer pass; the
+track details/story review is still pending. `LIBRARY_IMPORT_ENABLED` was
+enabled on the live backend for the push and restored to `false` afterwards;
+the live backend was recreated to toggle the flag and is healthy.
+
+- Facts: 3 tracks, 11 changed fields.
+- Prose: 10 tracks updated (10 summaries and 5 stories); 305 previously locked
+  tracks were already current on live.
+- Restored batch seventeen entries: Boldstar — *Kumot At Unan*, Brownman
+  Revival — *Dahan Dahan* and Dicta License — *Ang Ating Araw*.
+- Fact changes: Boldstar to *Kami nAPO Muna* (2006, Universal Records, track 8,
+  PH, Songwriter Danny Javier); Dicta License's release date to 2005-09-21; and
+  Pierce The Veil's *Selfish Machines* (2010, Equal Vision Records) with
+  songwriter credits Vic Fuentes and Jonny Craig.
+- Known review items: Gloc-9's release date (2007-03-16 against 2007-05-20) and
+  missing songwriter credits; Itchyworms' *Noon Time Show* / 2014 against the
+  original *Noontime Show* / 2005; Deftones' 2010-04-23 date against 2010-05-04;
+  Limp Bizkit's Pop/Rock genres and `ZZ` ISRC prefix; Orient Pearl's 2020
+  compilation against *Orient Pearl 1* (1994/1995, track 4) and a 2020 ISRC;
+  Jose Mari Chan's 2019 Universal reissue against the 1985 WEA original, with a
+  login-gated Scribd songbook source; and Pierce The Veil's library artist/title
+  mismatch, missing ISRC and *Selfish Machines* placement.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 123 tracks with no prose, 448 with no
+  story and 315 with locked prose. Batch twenty-seven ids: `FP75Ps4DuwA`,
+  `YVNIhxP80GA`, `QSj3gaMJ5Mw`, `B1ZpqEFCAoQ`, `HEZ2E_nkMhY`,
+  `QY2Izgkku0Q`, `2i6-xwzCs0k`, `eAGF_t9Cb8A`, `Gsm_8mdKsoA`,
+  `EhJoM1PKGhw`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match apart from `generated_at`.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, sources and locks; only the order of `locked_fields`
+    differs.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
+## 2026-11-06 - push twenty-sixth story batch to live
+
+Pushed batch twenty-six to production. `LIBRARY_IMPORT_ENABLED` was enabled on
+the live backend for the push and restored to `false` afterwards; the live
+backend was recreated to toggle the flag and is healthy.
+
+- Facts: 10 tracks, 25 changed fields.
+- Prose: 10 tracks updated (10 summaries and 8 stories); 295 previously locked
+  tracks were already current on live.
+- Edition, label and genre corrections: Rico Blanco's *Bye Bye Na* to *Himig
+  Handog Love Songs 2: Love The 2nd Time* (2003-12-01, Star Records, track 1),
+  not the 2016 digital single; Parokya Ni Edgar's release date and year to
+  2003, not the 2014 digital reissue; Rivermaya's *Awit Ng Kabataan* to the
+  self-titled *Rivermaya* (1994-11, track 10), not *Greatest Hits* 2001;
+  Teeth's *Laklak* to the self-titled *Teeth* (1995, track 6) with alternative
+  rock/grunge genres, not *Dogs Can Fly* 2003; Brownman Revival's genres to
+  reggae; Deftones' *Street Carp* to *White Pony* (2000-06-20, Maverick, track
+  5) with the original ISRC USMV20000034, not the 2020 deluxe edition; Limp
+  Bizkit's genres to nu metal/grunge; Siakol's label to Synergy Music
+  Corporation; Karen Wyman's label to Columbia; and Larusso's label to EMI
+  Music France.
+- Prose fixes: Parokya Ni Edgar's summary dropped the unsupported "instead of
+  frontman Chito Miranda" clause and its story now names the song and band;
+  Teeth's story says the re-recording crossed over into the mainstream rather
+  than "for mainstream radio"; Brownman Revival's story source now points at
+  the Rey Valera page for the authorship; Larusso's story now names *On ne
+  s'aimera plus jamais* and leads with its origin; and Karen Wyman's summary
+  and story were restored from the pre-live-mirror backup because the live
+  mirror had cleared them. Limp Bizkit and Siakol have no story because no
+  source gave a song-specific origin anecdote.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 133 tracks with no prose, 453 with no
+  story and 305 with locked prose. Batch twenty-six ids: `LIuXKqwozeU`,
+  `w2pVa1NJaEQ`, `41OKPv-i7hk`, `rEc7z_SHDQA`, `gMftByc4cJ0`,
+  `yt86EOxIgwE`, `_Ss4KLVTirw`, `vfJRLQdzHgg`, `JFE-cVPrVAQ`,
+  `Z3rBpv7Wdgw`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match apart from `generated_at`.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, sources and locks; only the order of `locked_fields`
+    differs.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-05 - push twenty-fifth story batch to live
 
 Pushed batch twenty-five to production. `LIBRARY_IMPORT_ENABLED` was enabled on
