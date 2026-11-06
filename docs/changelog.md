@@ -3,6 +3,82 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - compose thirty-second story batch locally
+
+Composed batch thirty-two in the local library only. The batch is not reviewed
+and has not been pushed; live is byte-identical to before this batch.
+
+- Facts: all ten tracks changed, each changed field locked with its source URL.
+  - Siakol — Akala Ko'y Langit: label `Siakol` → `Synergy Music Corporation`
+    (Discogs CD-3025). *Haymabu* has its own label, not *Tropa*'s.
+  - Siakol — Ituloy Mo Lang, Siakol — Gawign Langit Ang Mundo and Siakol — P.I.:
+    label `Siakol` → `ABS-CBN Film Productions, Inc.` and genres `Rock` →
+    Pinoy rock / Alternative rock, matching the sibling already reconciled on
+    this album. The stored `Siakol` label was the artist name in the label
+    field, copied from an `℗ 2010 Siakol` line.
+  - Rocksteddy — Magpakailanman: 2016-07-25 / 2016 → 2005-05-11 / 2005, the
+    original *Tsubtsatagilidakeyn*; 2016 was the digital re-date.
+  - Sponge Cola — Pasubali: *Transit Deluxe* / 2008 → *Transit* / 2006-09-08 /
+    2006. The deluxe was a 2008 reissue of the 2006 original, and ISRC
+    PHU010609880's `06` year code confirms the original.
+  - Rivermaya — Panahon Na Naman: *Greatest Hits* / 2001 → *Trip* /
+    1996-02-14 / 1996 and track 9 → 13. The compilation placement was wrong;
+    the song closes *Trip* as track 13 with Rico Blanco on lead vocals.
+  - Parokya Ni Edgar — Wag Mo Na Sana: 2014-03-17 / 2014 → 1999-08 / 1999, the
+    original *Gulong Itlog Gulong*.
+  - Parokya Ni Edgar — Para Sayo: *Inuman Sessions, Vol. 2 (Live)* / 2014 →
+    *Halina Sa Parokya* / 2005-05-26 / 2005, plus the studio album cover. This
+    is the studio recording of *Para Sa 'Yo* — ISRC PHU010509018 maps to
+    MusicBrainz's 253,000 ms studio take, and the video runs 253s while the
+    live cut is 266s.
+  - Rizal Underground — Bilanggo (Acoustic Version): ISRC `PHP171000181` →
+    `PHP171000189`, track 4 → 12 and genres Pop → Rock / Alternative rock. The
+    acoustic is a genuinely distinct master (own ISRC, own official lyric
+    video, 256s against 259s); the stored code belonged to the non-acoustic
+    take.
+- Prose: 10 tracks gained summaries and 4 gained stories. Six have no story
+  because no source gave a song-specific origin anecdote: Siakol's Akala Ko'y
+  Langit, Ituloy Mo Lang and P.I., Rocksteddy's Magpakailanman, Parokya's Para
+  Sayo and Rizal Underground's Bilanggo.
+- Open items for the review:
+  - `dNYFGxsndyU` is the same recording as `MDuWK9BmWNg` (identical ISRC and
+    track, two distributor deliveries) and its library title `Gawign Langit
+    Ang Mundo` is a typo for `Gawing Langit Ang Mundo`. The typo is faithful to
+    the YouTube upload; fixing it is a library-level `title` change, not a
+    detail field, so it was left alone.
+  - Rizal Underground's acoustic placement is unsettled: Discogs' 1994
+    Polycosmic cassette lists it at track 12 while the 1994 CD has only 10
+    tracks, so the verified 2010 Polyeast placement was kept.
+  - ISRCs that are digital-era codes on original-release facts: Rivermaya's
+    PHBO10100046 (2001 compilation block, *Trip* has no ISRC), Parokya's
+    FR6V82353214 (2023 assignment) and Rocksteddy's FR59R1644972 (2016 batch).
+    None was cleared because no source proves a different recording.
+  - Songwriter/producer credits are still missing on Siakol's tracks (Noel
+    Palomo), Sponge Cola's Pasubali (Gosh Dilay) and Rivermaya's Panahon Na
+    Naman (Rico Blanco).
+  - Parokya and Sponge Cola keep Deezer's International Pop / Pop / Rock tags
+    against the albums' alternative rock / novelty classification.
+  - Siakol's P.I. summary is sourced to azlyrics for its lyrical theme; flag if
+    a stronger source is wanted.
+- Local totals: 903 tracks, 903 details, 76 tracks with no prose, 419 with no
+  story and 365 with locked prose. Live is unchanged at 96 / 431 / 345.
+- Batch thirty-two ids: `-iZg7wyrhpY`, `B7xMFdx1NsA`, `S_SslJ7QdSE`,
+  `O7nl9n6zsjg`, `dNYFGxsndyU`, `Looe5xph3jY`, `o2FZEQyw__c`, `ejVqbIQ5Pvw`,
+  `A4YyTy6R13E`, `Qa-O3q-CZi0`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No. Only local database content changed; no
+  code or configuration was edited.
+- **Verification:**
+  - All ten records show a locked summary with a source URL; four also show a
+    locked story with a source URL. Every locked field has a source entry and
+    every lock name is in `LOCKABLE_FIELDS`.
+  - Summary lengths are 112-164 characters and story lengths 223-287.
+  - A live export comparison confirms none of the ten carries any prose on
+    live, so nothing was pushed; live totals are unchanged at 96 / 431 / 345.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-06 - compose thirty-first story batch locally
 
 Composed batch thirty-one in the local library only. The batch is not reviewed

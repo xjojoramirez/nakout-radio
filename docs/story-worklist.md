@@ -511,10 +511,10 @@ Status of the local track-story composition work.
   question.
 - Every composed prose field is locked with its source URL. After the 2026-11-06
   pull from live, local held 903 tracks, 903 details, 8 playlists, 8 genres, 9
-  schedule slots and 6130 chart rows, matching production exactly. Batch thirty-
-  one then moved local ahead of live: local now has 86 tracks with no prose, 423
-  with no story and 355 with locked prose, while live stays at 96 / 431 / 345
-  until the batch is reviewed and pushed.
+  schedule slots and 6130 chart rows, matching production exactly. Batches
+  thirty-one and thirty-two then moved local ahead of live: local now has 76
+  tracks with no prose, 419 with no story and 365 with locked prose, while live
+  stays at 96 / 431 / 345 until the batches are reviewed and pushed.
 - Batch thirty ids: `IhthDnQWrZw`, `8gSxdKK2Bz4`, `8Hl1eNn5rHQ`,
   `9CWSKyy4p7Q`, `xQciT9ZXbgQ`, `Tx9svogMLlk`, `oPvWJFbiakI`,
   `m14z8PirD2w`, `iE3mRENrmZg`, `blhEVJkgAtQ`.
@@ -529,6 +529,19 @@ Status of the local track-story composition work.
 - Batch thirty-one ids: `DDv81CuLTm0`, `ukJHVEz_FzQ`, `9mh66TFjQG0`,
   `F3FZBfCLWYc`, `3Rdzqc51cEY`, `P0B4FmRWYik`, `ZEZh2MGlkw4`, `VBhXO8Tm8g4`,
   `MDuWK9BmWNg`, `T2qofeyGaLg`.
+- Batch thirty-two was composed locally on 2026-11-06 and has not been reviewed
+  or pushed. It adds 10 summaries and 4 stories. All ten tracks also gained fact
+  corrections: Siakol's *Haymabu* label to Synergy Music Corporation; three
+  Siakol *Tropa* tracks to ABS-CBN Film Productions with Pinoy rock / alternative
+  rock genres; Rocksteddy to 2005-05-11; Sponge Cola from *Transit Deluxe* 2008
+  back to *Transit* 2006; Rivermaya from *Greatest Hits* 2001 back to *Trip*
+  1996-02-14 at track 13; Parokya's *Wag Mo Na Sana* to 1999-08; Parokya's *Para
+  Sayo* from the 2014 live album back to *Halina Sa Parokya* 2005; and Rizal
+  Underground's acoustic take to its own ISRC and track 12. Six tracks have no
+  story.
+- Batch thirty-two ids: `-iZg7wyrhpY`, `B7xMFdx1NsA`, `S_SslJ7QdSE`,
+  `O7nl9n6zsjg`, `dNYFGxsndyU`, `Looe5xph3jY`, `o2FZEQyw__c`, `ejVqbIQ5Pvw`,
+  `A4YyTy6R13E`, `Qa-O3q-CZi0`.
 
 ## Review of batches 27-30
 
@@ -572,14 +585,14 @@ same day.
 
 ## Remaining
 
-- 86 tracks still have neither summary nor story.
-- 423 tracks still have no story at all.
-- 355 tracks have locked prose.
+- 76 tracks still have neither summary nor story.
+- 419 tracks still have no story at all.
+- 365 tracks have locked prose.
 
 The 2026-11-06 pull from live added three tracks to the no-prose backlog:
 Wolfgang's *Halik Ni Hudas* (OPM Tunog Kalye), The Outfield's *Talk To Me*
-(Classic Rock) and The Story So Far's *Nerve* (Emo Night). Batch thirty-one
-then removed ten from it.
+(Classic Rock) and The Story So Far's *Nerve* (Emo Night). Batches thirty-one
+and thirty-two then removed twenty from it, all OPM Tunog Kalye.
 
 ### Remaining by genre (no prose at all)
 
@@ -588,7 +601,7 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 65 |
+| OPM Tunog Kalye | 55 |
 | NU Metal | 4 |
 | Pinoy Bato | 11 |
 | Classic Love Songs | 2 |
@@ -603,16 +616,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Siakol — Akala Ko'y Langit | OPM Tunog Kalye | *Haymabu* / 2015 | `-iZg7wyrhpY` | verify original album/year |
-| Siakol — Ituloy Mo Lang | OPM Tunog Kalye | *Tropa* / 2010 | `B7xMFdx1NsA` | verify original album/year |
-| Rocksteddy — Magpakailanman | OPM Tunog Kalye | *Tsubtsatagilidakeyn* / 2016 | `S_SslJ7QdSE` | verify original album/year |
-| Sponge Cola — Pasubali | OPM Tunog Kalye | *Transit Deluxe* / 2008 | `O7nl9n6zsjg` | *Transit Deluxe* may be a reissue of *Transit* |
-| Siakol — Gawign Langit Ang Mundo | OPM Tunog Kalye | *Tropa* / 2010 | `dNYFGxsndyU` | title looks typo'd; may duplicate `MDuWK9BmWNg` |
-| Rivermaya — Panahon Na Naman | OPM Tunog Kalye | *Greatest Hits* / 2001 | `Looe5xph3jY` | *Greatest Hits* is a compilation; find the original |
-| Parokya Ni Edgar — Wag Mo Na Sana | OPM Tunog Kalye | *Gulong Itlog Gulong* / 2014 | `o2FZEQyw__c` | verify original album/year |
-| Parokya Ni Edgar — Para Sayo | OPM Tunog Kalye | *Inuman Sessions, Vol. 2 (Live)* / 2014 | `ejVqbIQ5Pvw` | live album; find the original studio version |
-| Rizal Underground — Bilanggo (Acoustic Version) | OPM Tunog Kalye | *Polyeast Gold Series: Rizal Underground* / 2010 | `A4YyTy6R13E` | acoustic on a compilation; find the original |
-| Siakol — P.I. | OPM Tunog Kalye | *Tropa* / 2010 | `Qa-O3q-CZi0` | verify original album/year |
+| Yano — Tsinelas | OPM Tunog Kalye | *The 2-In-1 Series: Yano* / 2024 | `2w38yiiMg0M` | 2024 series repackage; find the original |
+| The Speaks — High | OPM Tunog Kalye | *Life's A Joke (Import)* / 2005 | `skCX-0qx6Tk` | "(Import)" edition; verify the original |
+| Silent Sanctuary — Ikaw Lamang | OPM Tunog Kalye | *Fuchsiang Pag-Ibig* / 2014 | `AeT721ZZOLU` | verify original album/year |
+| Parokya Ni Edgar — Alumni Homecoming | OPM Tunog Kalye | *Bigotilyo* / 2014 | `vHK-esptjpw` | *Bigotilyo* is 2003; 2014 is a reissue |
+| Rivermaya — If | OPM Tunog Kalye | *Greatest Hits* / 2001 | `Sjritw30Vpg` | compilation; find the original |
+| Parokya Ni Edgar — Bagsakan | OPM Tunog Kalye | *Inuman Sessions, Vol. 2 (Live)* / 2014 | `7O1sd_FOGbI` | live album; find the original |
+| Sponge Cola — Pag-ibig | OPM Tunog Kalye | *Sinag Tala* / 2016 | `Fq3zEALJpkI` | verify original album/year |
+| Warlock — Padre Damaso | OPM Tunog Kalye | *Rock Revolution: The Tone Def Collection, Vol. 1* / 2017 | `R3nV-oboQJg` | compilation; find the original |
+| Wolfgang — Arise | OPM Tunog Kalye | *The Legends Series: Wolfgang* / 2013 | `pASJyCLCRkc` | compilation; find the original |
+| Soapdish — Tensionado | OPM Tunog Kalye | *Soapdish Reloaded* / 2019 | `YVwqBjpgMgY` | "Reloaded" may be a reissue; verify |
 
 ## Resume workflow
 
@@ -937,3 +950,25 @@ These are still empty and are the recommended next batch.
   `needs_review` stays set; and `PROVIDER_LABELS` has no `lastfm` entry so that
   source renders as `Lastfm`. Loonie, Mojofly and WilaBaliw verified clean. Grin
   Department's Skin and Siakol's Gawing Langit Ang Mundo have no story.
+- Batch thirty-two was composed locally on 2026-11-06 and is not yet reviewed or
+  pushed. Findings: three Siakol *Tropa* tracks carried the artist name as their
+  label and a generic Rock genre, so they now match the sibling reconciled in
+  batch thirty-one (ABS-CBN Film Productions, Pinoy rock / alternative rock);
+  *Haymabu* has its own label, Synergy Music Corporation. Rocksteddy's 2016
+  Deezer date is the digital re-date against the 2005 original. Sponge Cola's
+  *Transit Deluxe* is a 2008 reissue of *Transit* (2006-09-08), confirmed by the
+  ISRC's `06` year code. Rivermaya's *Greatest Hits* placement goes back to
+  *Trip* (1996-02-14, track 13). Parokya's *Wag Mo Na Sana* is 1999-08 on
+  *Gulong Itlog Gulong*, and *Para Sayo* is the 2005 studio *Para Sa 'Yo*, not
+  the 2014 live album — ISRC PHU010509018 resolves to MusicBrainz's 253,000 ms
+  studio take and the video runs 253s against the live cut's 266s. Rizal
+  Underground's acoustic is a distinct master, so its ISRC moved to
+  PHP171000189 and its position to track 12. Open: `dNYFGxsndyU` duplicates
+  `MDuWK9BmWNg` and its library title `Gawign Langit Ang Mundo` is a typo for
+  `Gawing`, which is a library-level `title` fix rather than a detail field;
+  Rizal Underground's 1994 cassette lists the acoustic at track 12 while the
+  1994 CD has only 10, so the verified 2010 placement stands; Rivermaya,
+  Parokya and Rocksteddy keep digital-era ISRCs because no original code is
+  sourced; songwriter credits are still missing on Siakol, Sponge Cola and
+  Rivermaya; and Siakol's P.I. summary is sourced to azlyrics for its lyrical
+  theme. Six tracks have no story.
