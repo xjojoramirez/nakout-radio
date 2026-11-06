@@ -512,36 +512,42 @@ Status of the local track-story composition work.
 - Every composed prose field is locked with its source URL. After the 2026-11-06
   pull from live, local held 903 tracks, 903 details, 8 playlists, 8 genres, 9
   schedule slots and 6130 chart rows, matching production exactly. Batches
-  thirty-one and thirty-two then moved local ahead of live: local now has 76
-  tracks with no prose, 419 with no story and 365 with locked prose, while live
-  stays at 96 / 431 / 345 until the batches are reviewed and pushed.
+  thirty-one and thirty-two moved local to 76 tracks with no prose, 419 with no
+  story and 365 with locked prose, and both were pushed to live the same day, so
+  local and live now report identical totals.
 - Batch thirty ids: `IhthDnQWrZw`, `8gSxdKK2Bz4`, `8Hl1eNn5rHQ`,
   `9CWSKyy4p7Q`, `xQciT9ZXbgQ`, `Tx9svogMLlk`, `oPvWJFbiakI`,
   `m14z8PirD2w`, `iE3mRENrmZg`, `blhEVJkgAtQ`.
-- Batch thirty-one was composed locally on 2026-11-06 and has not been reviewed
-  or pushed. It adds 10 summaries and 8 stories. Seven tracks also gained fact
-  corrections: Kjwan's label to MCA Music Philippines; Moonstar 88 to 2007 with
-  Pinoy rock / alternative rock / pop rock genres; Parokya Ni Edgar to
-  2005-05-26 and ISRC PHU010509019; Glitch's record filled from empty; Grin
-  Department to 1995; Siakol's album artist, track 5, disc 1 and genres; and
+- Batch thirty-one was composed and pushed to live on 2026-11-06 and has not yet
+  had a separate reviewer pass. It adds 10 summaries and 8 stories. Seven tracks
+  also gained fact corrections: Kjwan's label to MCA Music Philippines; Moonstar
+  88 to 2007 with Pinoy rock / alternative rock / pop rock genres; Parokya Ni
+  Edgar to 2005-05-26 and ISRC PHU010509019; Glitch's record filled from empty;
+  Grin Department to 1995; Siakol's album artist, track 5, disc 1 and genres; and
   Joe LaMont to 1985-05. Loonie, Mojofly and WilaBaliw verified clean. Grin
   Department's Skin and Siakol's Gawing Langit Ang Mundo have no story.
 - Batch thirty-one ids: `DDv81CuLTm0`, `ukJHVEz_FzQ`, `9mh66TFjQG0`,
   `F3FZBfCLWYc`, `3Rdzqc51cEY`, `P0B4FmRWYik`, `ZEZh2MGlkw4`, `VBhXO8Tm8g4`,
   `MDuWK9BmWNg`, `T2qofeyGaLg`.
-- Batch thirty-two was composed locally on 2026-11-06 and has not been reviewed
-  or pushed. It adds 10 summaries and 4 stories. All ten tracks also gained fact
-  corrections: Siakol's *Haymabu* label to Synergy Music Corporation; three
-  Siakol *Tropa* tracks to ABS-CBN Film Productions with Pinoy rock / alternative
-  rock genres; Rocksteddy to 2005-05-11; Sponge Cola from *Transit Deluxe* 2008
-  back to *Transit* 2006; Rivermaya from *Greatest Hits* 2001 back to *Trip*
-  1996-02-14 at track 13; Parokya's *Wag Mo Na Sana* to 1999-08; Parokya's *Para
-  Sayo* from the 2014 live album back to *Halina Sa Parokya* 2005; and Rizal
-  Underground's acoustic take to its own ISRC and track 12. Six tracks have no
-  story.
+- Batch thirty-two was composed and pushed to live on 2026-11-06 and has not yet
+  had a separate reviewer pass. It adds 10 summaries and 4 stories. All ten
+  tracks also gained fact corrections: Siakol's *Haymabu* label to Synergy Music
+  Corporation; three Siakol *Tropa* tracks to ABS-CBN Film Productions with
+  Pinoy rock / alternative rock genres; Rocksteddy to 2005-05-11; Sponge Cola
+  from *Transit Deluxe* 2008 back to *Transit* 2006; Rivermaya from *Greatest
+  Hits* 2001 back to *Trip* 1996-02-14 at track 13; Parokya's *Wag Mo Na Sana* to
+  1999-08; Parokya's *Para Sayo* from the 2014 live album back to *Halina Sa
+  Parokya* 2005; and Rizal Underground's acoustic take to its own ISRC and track
+  12. Six tracks have no story.
 - Batch thirty-two ids: `-iZg7wyrhpY`, `B7xMFdx1NsA`, `S_SslJ7QdSE`,
   `O7nl9n6zsjg`, `dNYFGxsndyU`, `Looe5xph3jY`, `o2FZEQyw__c`, `ejVqbIQ5Pvw`,
   `A4YyTy6R13E`, `Qa-O3q-CZi0`.
+- Push of 2026-11-06: batches thirty-one and thirty-two went to live in one
+  window. `push_facts.py` sent 53 changed fields on 17 tracks (Loonie, Mojofly and
+  WilaBaliw had no locked facts) and `push_stories.py` updated 20 tracks against
+  345 unchanged. No memberships or charts were touched. `ejVqbIQ5Pvw`'s studio
+  cover was locked and pushed in a second facts pass because it had been set
+  without a lock. Local and live are now value-identical for all 903 tracks.
 
 ## Review of batches 27-30
 
@@ -932,8 +938,8 @@ These are still empty and are the recommended next batch.
   Deftones' When Girls Telephone Boys and Grin Department's Picture Mo Inday
   have no story. Brownman Revival's Paniwalaan Mo gained album *Ayos Din*, 2007
   and Sony BMG, with track number 2 unwritable and no ISRC.
-- Batch thirty-one was composed locally on 2026-11-06 and is not yet reviewed or
-  pushed. Findings: Kjwan's `Kjwan Music` label is the 2017 digital reissue
+- Batch thirty-one was composed and pushed on 2026-11-06 without a separate
+  reviewer pass. Findings: Kjwan's `Kjwan Music` label is the 2017 digital reissue
   imprint against MCA Music Philippines for the 2009 original; Moonstar 88's 2008
   Deezer date against the 2007 *Todo Combo*, plus a bad Rap/Hip Hop genre tag;
   Parokya Ni Edgar's 2014 digital reissue against the 2005 *Halina Sa Parokya*,
@@ -950,10 +956,10 @@ These are still empty and are the recommended next batch.
   `needs_review` stays set; and `PROVIDER_LABELS` has no `lastfm` entry so that
   source renders as `Lastfm`. Loonie, Mojofly and WilaBaliw verified clean. Grin
   Department's Skin and Siakol's Gawing Langit Ang Mundo have no story.
-- Batch thirty-two was composed locally on 2026-11-06 and is not yet reviewed or
-  pushed. Findings: three Siakol *Tropa* tracks carried the artist name as their
-  label and a generic Rock genre, so they now match the sibling reconciled in
-  batch thirty-one (ABS-CBN Film Productions, Pinoy rock / alternative rock);
+- Batch thirty-two was composed and pushed on 2026-11-06 without a separate
+  reviewer pass. Findings: three Siakol *Tropa* tracks carried the artist name as
+  their label and a generic Rock genre, so they now match the sibling reconciled
+  in batch thirty-one (ABS-CBN Film Productions, Pinoy rock / alternative rock);
   *Haymabu* has its own label, Synergy Music Corporation. Rocksteddy's 2016
   Deezer date is the digital re-date against the 2005 original. Sponge Cola's
   *Transit Deluxe* is a 2008 reissue of *Transit* (2006-09-08), confirmed by the

@@ -3,6 +3,47 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - push story batches 31-32 to live
+
+Pushed the reviewed-so-far local work for batches thirty-one and thirty-two to
+the live library. Local and live are now value-identical across all 903 tracks
+and details.
+
+- Live database backed up before the push to
+  `/opt/projects/nakout-radio/backups/live-radio-pre-push-20261106.db` and to
+  `C:\Users\SD\nakout-backups\live-radio-pre-push-20261106.db`, plus a copy at
+  `/data/radio.db.pre-push-20261106` inside the container.
+- The live import route was enabled only for the push window and is back to
+  `LIBRARY_IMPORT_ENABLED=false`.
+- Facts: `scripts/push_facts.py` pushed 53 changed fields across 17 of the 20
+  tracks (Loonie, Mojofly and WilaBaliw had no locked facts). Album, date/year,
+  label, ISRC, track number, genres, credits and cover all moved, including the
+  edition corrections: Sponge Cola *Transit Deluxe* → *Transit*, Rivermaya
+  *Greatest Hits* → *Trip* track 13, Parokya *Para Sayo* live → *Halina Sa
+  Parokya*, Rocksteddy 2016 → 2005, Grin Department 2008 → 1995, Joe LaMont
+  2017 → 1985, Moonstar 88 2008 → 2007, Parokya *Wag Mo Na Sana* → 1999, and
+  Rizal Underground's acoustic ISRC `PHP171000181` → `PHP171000189` at track 12.
+  Three Siakol tracks and Siakol's *Haymabu* also received their real labels.
+- Prose: `scripts/push_stories.py` pushed 20 updated tracks (363 summaries and
+  225 stories sent in total; 345 tracks were unchanged). Batches 31 and 32 added
+  20 summaries and 12 stories.
+- Follow-up in the same window: `ejVqbIQ5Pvw` had its *Halina Sa Parokya* cover
+  set locally without a lock, so it was skipped by the fact push. `cover_url`
+  was locked to the Deezer album 391262627 source and pushed separately.
+- Verification: an export diff of all 903 tracks reports 0 residual value
+  differences and matching lock sets for the 20 pushed tracks. Both sides now
+  read 903 tracks / 903 details / 76 no prose / 419 no story / 365 locked
+  prose / 8 playlists. `backend/.venv/Scripts/python.exe -m pytest -q
+  backend/tests`: 487 passed. Live health is `ok` and the import flag is
+  `false`.
+- Files touched:
+  - `docs/changelog.md`
+  - `docs/story-worklist.md`
+- **Container restart required?** Yes — no rebuild, but the live `backend` was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` (`docker compose up -d
+  backend`). No source changed, so no image rebuild and no `caddy`/`frontend`
+  restart.
+
 ## 2026-11-06 - compose thirty-second story batch locally
 
 Composed batch thirty-two in the local library only. The batch is not reviewed
