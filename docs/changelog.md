@@ -3,6 +3,43 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - compose thirtieth story batch locally
+
+Composed batch thirty in the local library only. The batch is not reviewed and
+has not been pushed.
+
+- Facts: Brownman Revival's Paniwalaan Mo gained album *Ayos Din*, year 2007
+  and label Sony BMG Music Entertainment (3 locked fields). Its track number 2
+  is verified but not writable through `detail_tools`, and the recording has no
+  ISRC. No other fact fields changed.
+- Prose: 10 tracks gained summaries and 7 gained stories. Kapatid's Prayer,
+  Deftones' When Girls Telephone Boys and Grin Department's Picture Mo Inday
+  have no story because no source gave a song-specific origin anecdote.
+- Known edition items for the review: Drip's 2012 collection against the 2006
+  *Kami nAPO Muna*; Introvoys' 2010 reissue against 1994 and the misleading
+  `(Live)` tag; Kapatid's *Luha* 2021 against 2006 and *KAPATID* 2021 against
+  2003, both with Universal Philippines against the original EMI/Sony credits;
+  Grin Department's 2009 date against 2001; Siakol's *Kabilang Mundo* 2006
+  against a possible 2005 CD; and Engelbert's 2017 Decca reissue against the
+  1970 *We Made It Happen*. Deftones' Royal and When Girls Telephone Boys
+  verify clean, though the 2010-04-23 date remains a canonical-date question.
+- Local totals: 895 tracks, 895 details, 93 tracks with no prose, 428 with no
+  story and 345 with locked prose. Live is unchanged at 113 / 441 / 325.
+- Batch thirty ids: `IhthDnQWrZw`, `8gSxdKK2Bz4`, `8Hl1eNn5rHQ`,
+  `9CWSKyy4p7Q`, `xQciT9ZXbgQ`, `Tx9svogMLlk`, `oPvWJFbiakI`,
+  `m14z8PirD2w`, `iE3mRENrmZg`, `blhEVJkgAtQ`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - All ten records show a locked summary with a source URL; seven also show a
+    locked story with a source URL; Brownman Revival's three new facts carry the
+    MusicBrainz release URL.
+  - Pre-review backup:
+    `C:\Users\SD\nakout-backups\local-radio-pre-batch30-review-20261106.db`.
+  - No live change was made and the live import route remains `false`.
+
 ## 2026-11-06 - compose twenty-ninth story batch locally
 
 Composed batch twenty-nine in the local library only. The batch is not reviewed

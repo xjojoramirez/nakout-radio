@@ -6,13 +6,13 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 290 tracks composed across twenty-nine batches. Batches one to sixteen and
+- 300 tracks composed across thirty batches. Batches one to sixteen and
   eighteen to twenty-eight are live; batch seventeen was overwritten by the
   live mirror, though four of its entries were restored in batches twenty-six
   and twenty-seven. Batches twenty-seven and twenty-eight were pushed without a
-  separate reviewer pass; their reviews are pending. Batch twenty-nine is
-  composed locally but has not been reviewed or pushed.
-- 335 tracks currently have `summary` and/or `story` locked in both libraries.
+  separate reviewer pass. Batches twenty-nine and thirty are composed locally
+  but have not been reviewed or pushed.
+- 345 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -492,12 +492,37 @@ Status of the local track-story composition work.
 - Batch twenty-nine ids: `YcnkTNBksb4`, `EiR87BGeiAE`, `qEDxfghgSOE`,
   `y52jDU7Vl9E`, `zdTiI3rtbP4`, `-1mH96_bVM0`, `4tzPTNcBuUA`,
   `8ytpdC-Hn1g`, `oydXQThKkO4`, `q3fbglFvBN8`.
+- Batch thirty was composed locally on 2026-11-06 and has not been reviewed or
+  pushed. It adds 10 summaries and 7 stories. Kapatid's Prayer, Deftones' When
+  Girls Telephone Boys and Grin Department's Picture Mo Inday have no story
+  because no source gave a song-specific origin anecdote.
+- Batch thirty made the first fact changes since batch twenty-seven: Brownman
+  Revival's Paniwalaan Mo gained album *Ayos Din*, year 2007 and label Sony BMG
+  Music Entertainment (3 fields, all locked). Track number 2 is verified but
+  `detail_tools apply` cannot write it, and no ISRC exists for that recording.
+  Known edition items for the review: Drip's 2012 *Kami Napo Muna The
+  Collection* against the 2006 *Kami nAPO Muna*; Introvoys' 2010 reissue against
+  the 1994 *Line to Heaven* (the `(Live)` tag also conflicts with the studio
+  timing); Kapatid's *Luha* 2021 reissue against 2006; Kapatid's *KAPATID* 2021
+  reissue against 2003, both with `Universal Music Philippines Inc.` against
+  the original EMI/Sony credits; Grin Department's 2009 date against 2001;
+  Siakol's *Kabilang Mundo* 2006 against a possible 2005 CD; and Engelbert's
+  2017 Decca reissue against the 1970 *We Made It Happen*. Deftones' two tracks
+  have no conflicts, though the 2010-04-23 date remains a canonical-date
+  question.
+- Every composed prose field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 93 tracks with no prose, 428 with no story and 345 with
+  locked prose.
+- Batch thirty ids: `IhthDnQWrZw`, `8gSxdKK2Bz4`, `8Hl1eNn5rHQ`,
+  `9CWSKyy4p7Q`, `xQciT9ZXbgQ`, `Tx9svogMLlk`, `oPvWJFbiakI`,
+  `m14z8PirD2w`, `iE3mRENrmZg`, `blhEVJkgAtQ`.
 
 ## Remaining
 
-- 103 tracks still have neither summary nor story.
-- 435 tracks still have no story at all.
-- 335 tracks have locked prose.
+- 93 tracks still have neither summary nor story.
+- 428 tracks still have no story at all.
+- 345 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
@@ -506,10 +531,10 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 74 |
-| NU Metal | 8 |
-| Pinoy Bato | 15 |
-| Classic Love Songs | 4 |
+| OPM Tunog Kalye | 69 |
+| NU Metal | 6 |
+| Pinoy Bato | 13 |
+| Classic Love Songs | 3 |
 | New Wave | 2 |
 | Emo Night | 0 |
 | Classic Rock | 0 |
@@ -521,16 +546,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Brownman Revival — Paniwalaan Mo | OPM Tunog Kalye | *None* / None | `IhthDnQWrZw` | missing album/year; verify release |
-| Drip — Kabilugan Ng Buwan | OPM Tunog Kalye | *Kami Napo Muna The Collection* / 2012 | `8gSxdKK2Bz4` | use original album/year; the 2012 set is a tribute compilation |
-| Introvoys — Line to Heaven (Live) | OPM Tunog Kalye | *Polyeast Gold Series: Line to Heaven* / 2010 | `8Hl1eNn5rHQ` | use original studio album/year; the 2010 set is a compilation |
-| Kapatid — Luha | OPM Tunog Kalye | *Luha* / 2021 | `9CWSKyy4p7Q` | verify original album/year |
-| Kapatid — Prayer | OPM Tunog Kalye | *KAPATID* / 2021 | `xQciT9ZXbgQ` | verify original album/year |
-| Deftones — Royal | NU Metal | *Diamond Eyes* / 2010 | `Tx9svogMLlk` | verify track/label |
-| Deftones — When Girls Telephone Boys | NU Metal | *Deftones* / 2003 | `oPvWJFbiakI` | verify track/label |
-| Grin Department — Picture Mo Inday | Pinoy Bato | *2NAH Ahgen* / 2009 | `m14z8PirD2w` | use 2001 original *2Nah Ahgen* |
-| Siakol — Gabay | Pinoy Bato | *Kabilang Mundo* / 2006 | `iE3mRENrmZg` | verify original album/year |
-| Engelbert Humperdinck — Love Me With All Your Heart (Cuando Calienta El Sol) | Classic Love Songs | *We Made It Happen* / 2017 | `blhEVJkgAtQ` | use original album/year; the 2017 set is a reissue |
+| Kjwan — Nasilayan | OPM Tunog Kalye | *13 Seconds To Love* / 2009 | `DDv81CuLTm0` | verify original album/year |
+| Loonie — Tao Lang | OPM Tunog Kalye | *Tao Lang* / 2012 | `ukJHVEz_FzQ` | verify original album/year |
+| Mojofly — Mata | OPM Tunog Kalye | *Now* / 2005 | `9mh66TFjQG0` | verify original album/year |
+| Moonstar 88 — Migraine | OPM Tunog Kalye | *Todo Combo* / 2008 | `F3FZBfCLWYc` | verify original album/year |
+| Parokya Ni Edgar — Gitara | OPM Tunog Kalye | *Halina Sa Parokya* / 2014 | `3Rdzqc51cEY` | use original album/year; 2014 is a reissue |
+| Glitch — Flower | NU Metal | *None* / None | `P0B4FmRWYik` | missing album/year; verify release |
+| WilaBaliw — Hindi Na Makita | NU Metal | *Aurum* / 2019 | `ZEZh2MGlkw4` | verify track/label |
+| Grin Department — Skin | Pinoy Bato | *Grin Department* / 2008 | `VBhXO8Tm8g4` | verify original album/year |
+| Siakol — Gawing Langit Ang Mundo | Pinoy Bato | *Tropa* / 2010 | `MDuWK9BmWNg` | verify original album/year |
+| Joe LaMont — Victims of Love | Classic Love Songs | *Secrets You Keep* / 2017 | `T2qofeyGaLg` | verify original album/year; 2017 may be a reissue |
 
 ## Resume workflow
 
@@ -823,3 +848,14 @@ These are still empty and are the recommended next batch.
   Rankin's 2009 Rhino Atlantic reissue against the 1980 Atlantic original. The
   Francis M and Kitchie Nadal tribute placements are correct. Kamikazee, Glitch,
   Siakol and Tito Mina have no story.
+- Batch thirty was composed on 2026-11-06 but is not reviewed or pushed. Known
+  items: Drip's 2012 collection against the 2006 *Kami nAPO Muna*; Introvoys'
+  2010 reissue against 1994 and the misleading `(Live)` tag; Kapatid's *Luha*
+  2021 against 2006 and *KAPATID* 2021 against 2003, both with Universal
+  Philippines against the original EMI/Sony credits; Grin Department's 2009
+  date against 2001; Siakol's *Kabilang Mundo* 2006 against a possible 2005 CD;
+  and Engelbert's 2017 Decca reissue against the 1970 *We Made It Happen*.
+  Deftones' Royal and When Girls Telephone Boys verify clean. Kapatid's Prayer,
+  Deftones' When Girls Telephone Boys and Grin Department's Picture Mo Inday
+  have no story. Brownman Revival's Paniwalaan Mo gained album *Ayos Din*, 2007
+  and Sony BMG, with track number 2 unwritable and no ISRC.
