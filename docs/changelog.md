@@ -3,6 +3,40 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - pull live library into local (903 tracks)
+
+Pulled the production library into the local deployment with
+`scripts/pull_library.py` so both sides are back in sync. Live was eight
+standalone tracks ahead of local; the pull created those tracks and their
+details and reconciled playlist membership, title, artist, position and
+duration. No detail row was overwritten: the import merge is fill-only and
+skips locally locked fields, so every composed fact, prose field and lock was
+preserved.
+
+- Local now has 903 tracks and 903 details against live's 903/903: 96 with no
+  prose, 431 with no story and 345 with locked prose on both sides.
+- The eight added tracks are Ozzy Osbourne, Mr. Mister, The Outfield, three
+  Rolling Stones songs, Wolfgang and The Story So Far.
+- One source entry was copied by hand because `charts` is locked locally and
+  the import skips locked fields: Release — *State Of The Nation* gained the
+  live Wikipedia chart source URL.
+- Playlists are 8 on both sides with 936 memberships each, all unique.
+- The batch 27-30 review is untouched: all forty reviewed ids still match live.
+- Files touched:
+  - `docs/changelog.md`
+- **Container restart required?** No. Only the local database changed; no image
+  rebuild and no service recreation.
+- **Verification:**
+  - Full export comparison: 903 tracks and 903 details on both sides, zero
+    live-only or local-only tracks, and zero field differences across every
+    shared id.
+  - All forty batch 27-30 reviewed ids match live on facts, prose, sources,
+    locks and identity.
+  - Local backup saved to
+    `C:\Users\SD\nakout-backups\local-radio-pre-pull-20261106.db`.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+  - `GET /api/health` returns `{"status":"ok"}`.
+
 ## 2026-11-06 - push batches 29-30 and the 27-30 review corrections to live
 
 Pushed the batch 29-30 prose and every reviewed fact correction from batches

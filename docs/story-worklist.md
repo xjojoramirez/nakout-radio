@@ -509,12 +509,10 @@ Status of the local track-story composition work.
   2017 Decca reissue against the 1970 *We Made It Happen*. Deftones' two tracks
   have no conflicts, though the 2010-04-23 date remains a canonical-date
   question.
-- Every composed prose field is locked with its source URL. Local totals: 895
-  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
-  rows. Remaining locally: 93 tracks with no prose, 428 with no story and 345
-  with locked prose. Live now has 903 tracks and details because eight standalone
-  songs were added since the last local pull; both sides have 345 locked-prose
-  tracks, while live has 96 with no prose and 431 with no story.
+- Every composed prose field is locked with its source URL. After the 2026-11-06
+  pull from live, local totals match production: 903 tracks, 903 details, 8
+  playlists, 8 genres, 9 schedule slots and 6130 chart rows. Remaining on both
+  sides: 96 tracks with no prose, 431 with no story and 345 with locked prose.
 - Batch thirty ids: `IhthDnQWrZw`, `8gSxdKK2Bz4`, `8Hl1eNn5rHQ`,
   `9CWSKyy4p7Q`, `xQciT9ZXbgQ`, `Tx9svogMLlk`, `oPvWJFbiakI`,
   `m14z8PirD2w`, `iE3mRENrmZg`, `blhEVJkgAtQ`.
@@ -557,13 +555,17 @@ same day.
 - Verification: every changed field has a source and every locked field has a
   source; summary lengths are 108-172 characters and story lengths 157-369; all
   forty ids match live on facts, prose, sources, locks and identity; local totals
-  are 93 tracks with no prose, 428 with no story and 345 with locked prose.
+  are 96 tracks with no prose, 431 with no story and 345 with locked prose.
 
 ## Remaining
 
-- 93 tracks still have neither summary nor story.
-- 428 tracks still have no story at all.
+- 96 tracks still have neither summary nor story.
+- 431 tracks still have no story at all.
 - 345 tracks have locked prose.
+
+The 2026-11-06 pull from live added three tracks to the no-prose backlog:
+Wolfgang's *Halik Ni Hudas* (OPM Tunog Kalye), The Outfield's *Talk To Me*
+(Classic Rock) and The Story So Far's *Nerve* (Emo Night).
 
 ### Remaining by genre (no prose at all)
 
@@ -572,13 +574,13 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 69 |
+| OPM Tunog Kalye | 70 |
 | NU Metal | 6 |
 | Pinoy Bato | 13 |
 | Classic Love Songs | 3 |
 | New Wave | 2 |
-| Emo Night | 0 |
-| Classic Rock | 0 |
+| Emo Night | 1 |
+| Classic Rock | 1 |
 | Traffic Jam | 0 |
 
 ## Next batch (10)
