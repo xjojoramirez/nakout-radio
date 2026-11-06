@@ -6,12 +6,13 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 270 tracks composed across twenty-seven batches. Batches one to sixteen and
-  eighteen to twenty-seven are live; batch seventeen was overwritten by the
+- 300 tracks composed across thirty batches. Batches one to sixteen and
+  eighteen to twenty-eight are live; batch seventeen was overwritten by the
   live mirror, though four of its entries were restored in batches twenty-six
-  and twenty-seven. Batch twenty-seven was pushed without a separate reviewer
-  pass; its review is pending.
-- 315 tracks currently have `summary` and/or `story` locked in both libraries.
+  and twenty-seven. Batches twenty-seven to thirty have had a separate reviewer
+  pass and are live, including the corrections. Batches twenty-nine and thirty
+  were published on 2026-11-06.
+- 345 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -410,9 +411,9 @@ Status of the local track-story composition work.
 - Batch twenty-six ids: `LIuXKqwozeU`, `w2pVa1NJaEQ`, `41OKPv-i7hk`,
   `rEc7z_SHDQA`, `gMftByc4cJ0`, `yt86EOxIgwE`, `_Ss4KLVTirw`,
   `vfJRLQdzHgg`, `JFE-cVPrVAQ`, `Z3rBpv7Wdgw`.
-- Batch twenty-seven was composed locally on 2026-11-06 and pushed to live the
-  same day without a separate reviewer pass; the track details/story review is
-  pending. It adds 10 summaries and 5 stories. Brownman Revival, Dicta License,
+- Batch twenty-seven was composed and pushed to live on 2026-11-06 without a
+  separate reviewer pass, then reviewed the same day; its corrections were
+  pushed too. It adds 10 summaries and 5 stories. Brownman Revival, Dicta License,
   Deftones, Limp Bizkit and Orient Pearl have no story because no source gave a
   song-specific origin anecdote.
 - Three entries are restored batch seventeen prose/facts: Boldstar — Kumot At
@@ -442,12 +443,127 @@ Status of the local track-story composition work.
 - Batch twenty-seven ids: `FP75Ps4DuwA`, `YVNIhxP80GA`, `QSj3gaMJ5Mw`,
   `B1ZpqEFCAoQ`, `HEZ2E_nkMhY`, `QY2Izgkku0Q`, `2i6-xwzCs0k`,
   `eAGF_t9Cb8A`, `Gsm_8mdKsoA`, `EhJoM1PKGhw`.
+- Batch twenty-eight was composed and pushed to live on 2026-11-06 without a
+  separate reviewer pass, then reviewed the same day; its corrections were
+  pushed too. It adds 10 summaries and 7 stories. Glitch, Greyhoundz and Grin
+  Department have no story because no source gave a song-specific origin
+  anecdote.
+- No fact fields were changed in batch twenty-eight: every track already had an
+  album, year, label, ISRC and credits, so the composer wrote prose only. The
+  edition corrections resolved at review: Hilera's 2014 reissue
+  against the 2006 original; Join The Club's 2016 reissue against 2005;
+  Kamikazee's 2015 compilation against *Maharot* (2006); Itchyworms' 2019
+  soundtrack against the 2016 PhilPop compilation; Glitch's PolyEast label and
+  Pop genre against the 2000 OctoArts EMI credit; Greyhoundz's label and 2024
+  ISRC; Grin Department's 2009 date against 2001; Eugene Wilde's *Hits
+  Anthology* against the 1985 *Rappin'* soundtrack; and Engelbert's 2023
+  *Dance Album* metadata against the 1968 *A Man Without Love* recording.
+- Every composed prose field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 113 tracks with no prose, 441 with no story and 325 with
+  locked prose.
+- Batch twenty-eight live push on 2026-11-06: 10 tracks of prose (10 summaries,
+  7 stories); the other 315 locked-prose tracks were already current on live.
+  No fact fields were pushed. The import route was disabled again after the
+  push. Live and local match on all ten ids, including sources and locks.
+- Batch twenty-eight ids: `qsH59dPs6TE`, `uB7T72AfxBQ`, `v52-Acb-rvg`,
+  `rBUuKRXFknQ`, `kJhW-QXFpHM`, `_21qeXs3i5Y`, `nC9o8Djv_sw`,
+  `mPuClJykoSI`, `XQPrywW28x8`, `j2etakoV-rg`.
+- Batch twenty-nine was composed and reviewed on 2026-11-06, then pushed to live
+  the same day with its corrections. It adds 10 summaries and 6 stories. Kamikazee, Glitch, Siakol and Tito Mina have no
+  story because no source gave a song-specific origin anecdote.
+- No fact fields were changed in batch twenty-nine: every track already had an
+  album, year, label, ISRC and credits, so the composer wrote prose only. Known
+  edition items for the review: Itchyworms' 2012 *Kami Napo Muna The
+  Collection* against the 2006 *Kami nAPO Muna* tribute; Kamikazee's 2014
+  reissue against *Maharot* (2006); Kjwan's 2015 reissue against 2004 and the
+  `Kjwan Music` label against Sony Music Philippines; Deftones' *Diamond Eyes
+  (Deluxe)* against the standard 2010 album; Glitch's PolyEast label against
+  the 2000 OctoArts EMI credit; Siakol's 2005 digital date against the 1996
+  original *Tayo Na Sa Paraiso*; Tito Mina's 2009 *SCE: Both in Love* against
+  the 1983 *Tito O. Mina* LP on Blackgold; and Kenny Rankin's 2009 Rhino
+  Atlantic reissue against the 1980 Atlantic original. Francis M's Superproxy
+  2K6 and Kitchie Nadal's Ligaya are correctly placed on the 2005 tribute.
+- Every composed prose field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 103 tracks with no prose, 435 with no story and 335 with
+  locked prose.
+- Batch twenty-nine ids: `YcnkTNBksb4`, `EiR87BGeiAE`, `qEDxfghgSOE`,
+  `y52jDU7Vl9E`, `zdTiI3rtbP4`, `-1mH96_bVM0`, `4tzPTNcBuUA`,
+  `8ytpdC-Hn1g`, `oydXQThKkO4`, `q3fbglFvBN8`.
+- Batch thirty was composed and reviewed on 2026-11-06, then pushed to live the
+  same day with its corrections. It adds 10 summaries and 7 stories. Kapatid's Prayer, Deftones' When Girls Telephone Boys and Grin
+  Department's Picture Mo Inday have no story
+  because no source gave a song-specific origin anecdote.
+- Batch thirty made the first fact changes since batch twenty-seven: Brownman
+  Revival's Paniwalaan Mo gained album *Ayos Din*, year 2007 and label Sony BMG
+  Music Entertainment (3 fields, all locked). Track number 2 is verified but
+  `detail_tools apply` cannot write it, and no ISRC exists for that recording.
+  Known edition items for the review: Drip's 2012 *Kami Napo Muna The
+  Collection* against the 2006 *Kami nAPO Muna*; Introvoys' 2010 reissue against
+  the 1994 *Line to Heaven* (the `(Live)` tag also conflicts with the studio
+  timing); Kapatid's *Luha* 2021 reissue against 2006; Kapatid's *KAPATID* 2021
+  reissue against 2003, both with `Universal Music Philippines Inc.` against
+  the original EMI/Sony credits; Grin Department's 2009 date against 2001;
+  Siakol's *Kabilang Mundo* 2006 against a possible 2005 CD; and Engelbert's
+  2017 Decca reissue against the 1970 *We Made It Happen*. Deftones' two tracks
+  have no conflicts, though the 2010-04-23 date remains a canonical-date
+  question.
+- Every composed prose field is locked with its source URL. Local totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining locally: 93 tracks with no prose, 428 with no story and 345
+  with locked prose. Live now has 903 tracks and details because eight standalone
+  songs were added since the last local pull; both sides have 345 locked-prose
+  tracks, while live has 96 with no prose and 431 with no story.
+- Batch thirty ids: `IhthDnQWrZw`, `8gSxdKK2Bz4`, `8Hl1eNn5rHQ`,
+  `9CWSKyy4p7Q`, `xQciT9ZXbgQ`, `Tx9svogMLlk`, `oPvWJFbiakI`,
+  `m14z8PirD2w`, `iE3mRENrmZg`, `blhEVJkgAtQ`.
+
+## Review of batches 27-30
+
+Eight read-only reviewer agents covered the forty tracks on 2026-11-06. The
+corrections below were applied with sources and locks and pushed to live the
+same day.
+
+- 33 tracks corrected: 100 fact fields, 9 credit entries, 7 prose fields, one
+  ISRC cleared and two library identity fields fixed. Every corrected field is
+  locked with a source URL.
+- Batch 27: Itchyworms to *Noontime Show* / 2005-10-11; Deftones' CMND/CTRL to
+  2010-05-04; Limp Bizkit to nu metal, rap rock and alternative metal with five
+  songwriter credits; Orient Pearl to *Orient Pearl 1* / 1995-05-22 / Tone Def /
+  track 4; Jose Mari Chan to 1985 WEA with reachable-source prose; Pierce the
+  Veil's artist and title identity fixed, plus 2010-06-22 and bonus track 13;
+  Gloc-9 gained two songwriter credits.
+- Batch 28: Hilera to 2006-10-30 and punk rock; Join The Club to 2005 on Redrum;
+  Kamikazee to *Maharot* / 2006 / track 5; Itchyworms' *Di Na Muli* album artist
+  to Various Artists; Glitch to OctoArts EMI and nu metal/rapcore; Greyhoundz to
+  EMI Music Philippines; Grin Department to *2Nah Ahgen* / 2001; Eugene Wilde to
+  the 1985 *Rappin'* soundtrack; Engelbert's *Quando Quando* to the 1968 *A Man
+  Without Love* with the 1998 ISRC cleared.
+- Batch 29: Itchyworms to *Kami nAPO Muna* / 2006; Kamikazee to *Maharot* /
+  2006; Kjwan to 2004 on Sony Music Philippines; Deftones' *Risk* to the standard
+  *Diamond Eyes*; Glitch to OctoArts EMI; Siakol to 1996; Tito Mina to *Tito O.
+  Mina* / 1983 on Blackgold; Kenny Rankin to 1980 on Atlantic.
+- Batch 30: Brownman Revival gained track 2, 2007-02-22, ISRC PHBO10700886, the
+  reggae genre and an album artist; Drip to *Kami nAPO Muna* / 2006 with a story
+  naming the band; Kapatid to the 2006 EMI *Luha* and 2003 Sony debut; Deftones'
+  *Royal* and *When Girls Telephone Boys* to the standard US dates; Grin
+  Department to *2Nah Ahgen* / 2001; Siakol to 2005 on Alpha; Engelbert to the
+  1970 Decca *We Made It Happen*.
+- Open annotations: the FR-prefixed ISRCs on Itchyworms, Kamikazee and Jose Mari
+  Chan are digital-era codes; several pre-1990 albums have no documented release
+  day, so year-only dates are stored. No chart claims were found on any of the
+  forty tracks.
+- Verification: every changed field has a source and every locked field has a
+  source; summary lengths are 108-172 characters and story lengths 157-369; all
+  forty ids match live on facts, prose, sources, locks and identity; local totals
+  are 93 tracks with no prose, 428 with no story and 345 with locked prose.
 
 ## Remaining
 
-- 123 tracks still have neither summary nor story.
-- 448 tracks still have no story at all.
-- 315 tracks have locked prose.
+- 93 tracks still have neither summary nor story.
+- 428 tracks still have no story at all.
+- 345 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
@@ -456,10 +572,10 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 84 |
-| NU Metal | 12 |
-| Pinoy Bato | 17 |
-| Classic Love Songs | 8 |
+| OPM Tunog Kalye | 69 |
+| NU Metal | 6 |
+| Pinoy Bato | 13 |
+| Classic Love Songs | 3 |
 | New Wave | 2 |
 | Emo Night | 0 |
 | Classic Rock | 0 |
@@ -471,16 +587,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Frio — Alive | OPM Tunog Kalye | *Frio* / 2006 | `qsH59dPs6TE` | verify track/label |
-| Hilera — Define | OPM Tunog Kalye | *Hilera* / 2014 | `uB7T72AfxBQ` | verify original album/year |
-| Join The Club — Lunes | OPM Tunog Kalye | *Nobela* / 2016 | `v52-Acb-rvg` | verify original album/year |
-| Kamikazee — Chiksilog | OPM Tunog Kalye | *Kamikazee (Their Greatest Hits)* / 2015 | `rBUuKRXFknQ` | use original album/year; the 2015 set is a compilation |
-| Itchyworms — Di Na Muli | OPM Tunog Kalye | *Sid & Aya (Not a Love Story) (Original Movie Soundtrack)* / 2019 | `kJhW-QXFpHM` | verify original soundtrack release |
-| Glitch — Faceplant | NU Metal | *Illementz* / 2000 | `_21qeXs3i5Y` | verify track/label |
-| Greyhoundz — 1s 3s 6s | NU Metal | *Apoy* / 2005 | `nC9o8Djv_sw` | verify original album/year |
-| Grin Department — 8 Pa | Pinoy Bato | *2NAH Ahgen* / 2009 | `mPuClJykoSI` | verify track/label |
-| Eugene Wilde — First Love Never Dies | Classic Love Songs | *Hits Anthology* / 2007 | `XQPrywW28x8` | use original album/year; the 2007 set is an anthology |
-| Engelbert Humperdinck — Quando Quando Quando | Classic Love Songs | *The Dance Album* / 2023 | `j2etakoV-rg` | verify original recording/edition |
+| Kjwan — Nasilayan | OPM Tunog Kalye | *13 Seconds To Love* / 2009 | `DDv81CuLTm0` | verify original album/year |
+| Loonie — Tao Lang | OPM Tunog Kalye | *Tao Lang* / 2012 | `ukJHVEz_FzQ` | verify original album/year |
+| Mojofly — Mata | OPM Tunog Kalye | *Now* / 2005 | `9mh66TFjQG0` | verify original album/year |
+| Moonstar 88 — Migraine | OPM Tunog Kalye | *Todo Combo* / 2008 | `F3FZBfCLWYc` | verify original album/year |
+| Parokya Ni Edgar — Gitara | OPM Tunog Kalye | *Halina Sa Parokya* / 2014 | `3Rdzqc51cEY` | use original album/year; 2014 is a reissue |
+| Glitch — Flower | NU Metal | *None* / None | `P0B4FmRWYik` | missing album/year; verify release |
+| WilaBaliw — Hindi Na Makita | NU Metal | *Aurum* / 2019 | `ZEZh2MGlkw4` | verify track/label |
+| Grin Department — Skin | Pinoy Bato | *Grin Department* / 2008 | `VBhXO8Tm8g4` | verify original album/year |
+| Siakol — Gawing Langit Ang Mundo | Pinoy Bato | *Tropa* / 2010 | `MDuWK9BmWNg` | verify original album/year |
+| Joe LaMont — Victims of Love | Classic Love Songs | *Secrets You Keep* / 2017 | `T2qofeyGaLg` | verify original album/year; 2017 may be a reissue |
 
 ## Resume workflow
 
@@ -738,8 +854,9 @@ These are still empty and are the recommended next batch.
   rows were imported, and its credits only carry Main without Dessca/Hillman.
   The two remaining New Wave rows are cover/compilation acts (Equinox Stars,
   Party Tyme); verify identity before composing.
-- Batch twenty-seven was composed and pushed without a separate reviewer pass;
-  the track details/story review is pending. Known items for that review:
+- Batch twenty-seven was composed and pushed without a separate reviewer pass,
+  then reviewed on 2026-11-06; the corrections are in the review section above.
+  Findings that drove the corrections:
   Gloc-9's release date (2007-03-16 against 2007-05-20) and missing songwriter
   credits; Itchyworms' *Noon Time Show* / 2014 against the original *Noontime
   Show* / 2005; Deftones' 2010-04-23 date against 2010-05-04; Limp Bizkit's
@@ -750,3 +867,39 @@ These are still empty and are the recommended next batch.
   ISRC and *Selfish Machines* placement. Boldstar's restored ISRC
   PHU012116031 is a 2021 digital code; Brownman Revival and Dicta License have
   no story.
+- Batch twenty-eight was composed and pushed without a separate reviewer pass,
+  then reviewed on 2026-11-06; the corrections are in the review section above.
+  Findings that drove the corrections:
+  Hilera's 2014 reissue against the 2006 original (date and genre also differ);
+  Join The Club's 2016 reissue against 2005; Kamikazee's *Their Greatest Hits*
+  2015 against *Maharot* (2006, track 5); Itchyworms' 2019 soundtrack against
+  the 2016 PhilPop compilation and a Janine Teñoso album artist; Glitch's
+  PolyEast label and Pop genre against the 2000 OctoArts EMI credit; Greyhoundz's
+  `Greyhoundz` label and 2024 Dutch ISRC; Grin Department's 2009 date against
+  2001 and the `2NAH Ahgen` casing; Eugene Wilde's *Hits Anthology* against the
+  1985 *Rappin'* soundtrack; and Engelbert's 2023 *Dance Album* metadata
+  against the 1968 *A Man Without Love* recording. Glitch, Greyhoundz and Grin
+  Department have no story.
+- Batch twenty-nine was composed, reviewed and pushed on 2026-11-06. Findings
+  that drove the corrections: Itchyworms' 2012 *Kami Napo Muna The Collection*
+  against the 2006 *Kami nAPO Muna*; Kamikazee's 2014 reissue against *Maharot*
+  (2006); Kjwan's 2015 reissue against 2004 and
+  `Kjwan Music` against Sony Music Philippines; Deftones' *Diamond Eyes
+  (Deluxe)* against the standard album; Glitch's PolyEast label against OctoArts
+  EMI; Siakol's 2005 digital date against the 1996 original; Tito Mina's 2009
+  *SCE: Both in Love* against the 1983 *Tito O. Mina* LP on Blackgold; and Kenny
+  Rankin's 2009 Rhino Atlantic reissue against the 1980 Atlantic original. The
+  Francis M and Kitchie Nadal tribute placements are correct. Kamikazee, Glitch,
+  Siakol and Tito Mina have no story.
+- Batch thirty was composed, reviewed and pushed on 2026-11-06. Findings that
+  drove the corrections: Drip's 2012
+  collection against the 2006 *Kami nAPO Muna*; Introvoys'
+  2010 reissue against 1994 and the misleading `(Live)` tag; Kapatid's *Luha*
+  2021 against 2006 and *KAPATID* 2021 against 2003, both with Universal
+  Philippines against the original EMI/Sony credits; Grin Department's 2009
+  date against 2001; Siakol's *Kabilang Mundo* 2006 against a possible 2005 CD;
+  and Engelbert's 2017 Decca reissue against the 1970 *We Made It Happen*.
+  Deftones' Royal and When Girls Telephone Boys verify clean. Kapatid's Prayer,
+  Deftones' When Girls Telephone Boys and Grin Department's Picture Mo Inday
+  have no story. Brownman Revival's Paniwalaan Mo gained album *Ayos Din*, 2007
+  and Sony BMG, with track number 2 unwritable and no ISRC.

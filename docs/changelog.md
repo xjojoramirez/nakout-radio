@@ -3,6 +3,218 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-06 - push batches 29-30 and the 27-30 review corrections to live
+
+Pushed the batch 29-30 prose and every reviewed fact correction from batches
+27-30 to production. `LIBRARY_IMPORT_ENABLED` was enabled for the pushes and
+restored to `false` afterwards; the live backend was recreated to toggle the
+flag and is healthy.
+
+- Facts: 33 tracks, 106 changed fields (album, dates, label, track number, ISRC,
+  genres, credits and album artist).
+- Prose: 24 tracks updated: the 20 batch 29-30 tracks plus four reviewed tracks
+  whose summaries or stories changed (Deftones' CMND/CTRL, Jose Mari Chan,
+  Kamikazee's Chiksilog and Eugene Wilde).
+- Live locks: five prose fields on four tracks were locked on live from earlier
+  pushes, so they were unlocked first, then re-locked by the push.
+- Direct live fixes the import route cannot express: the Pierce the Veil track
+  identity changed from the label to `Pierce the Veil` / `She Makes Dirty Words
+  Sound Pretty`, and Engelbert's *Quando Quando* ISRC was cleared.
+- Batch 29 covered the 2005-2006 tribute and original editions (Itchyworms,
+  Kamikazee, Kjwan, Siakol, Tito Mina, Kenny Rankin). Batch 30 covered Brownman
+  Revival's new facts, Drip, both Kapatid albums, the Deftones US dates, Grin
+  Department, Siakol's *Gabay* and Engelbert's 1970 Decca album.
+- Live now has 903 tracks and details against 895 local: the eight extra live
+  tracks are standalone songs (Ozzy Osbourne, Mr. Mister, The Outfield, three
+  Rolling Stones tracks, Wolfgang and The Story So Far) that postdate the last
+  local pull. Both libraries have 8 playlists and 345 locked-prose tracks.
+- Local totals are 93 tracks with no prose and 428 with no story; live is 96 and
+  431 because three of the standalone tracks have no prose.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on `false`.
+- **Verification:**
+  - All forty reviewed ids match on facts, prose, sources, locks and track
+    identity; only the order of `locked_fields` can differ.
+  - Public `/api/tracks` spot checks returned Engelbert's *A Man Without Love* /
+  1968 / Decca / track 6 with a blank ISRC, Orient Pearl's *Orient Pearl 1* /
+  1995 / Tone Def / track 4, and Brownman Revival's *Ayos Din* / 2007 / track 2 /
+  ISRC PHBO10700886.
+  - Live and local both have 8 unique playlists; memberships are 936 live and
+  929 local, all unique, with no duplicates. `/api/schedule/today` matches.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
+## 2026-11-06 - review batches 27-30 and correct local facts
+
+Ran eight read-only reviewer agents over the forty tracks in batches 27-30 and
+applied the findings in the local library. Nothing was pushed; live still has
+the pre-review values. Every corrected field is locked with a source URL.
+
+- 33 tracks corrected: 100 fact fields, 9 credit entries, 7 prose fields, one
+  ISRC cleared and two library identity fields fixed.
+- Batch 27: Itchyworms to *Noontime Show* / 2005-10-11; Deftones' CMND/CTRL to
+  2010-05-04; Limp Bizkit to nu metal, rap rock and alternative metal with five
+  songwriter credits; Orient Pearl to *Orient Pearl 1* / 1995-05-22 / Tone Def /
+  track 4; Jose Mari Chan to 1985 WEA with reachable-source prose; Pierce the
+  Veil's artist and title identity fixed, plus 2010-06-22 and bonus track 13;
+  Gloc-9 gained two songwriter credits.
+- Batch 28: Hilera to 2006-10-30 and punk rock; Join The Club to 2005 on Redrum;
+  Kamikazee to *Maharot* / 2006 / track 5; Itchyworms' *Di Na Muli* album artist
+  to Various Artists; Glitch to OctoArts EMI and nu metal/rapcore; Greyhoundz to
+  EMI Music Philippines; Grin Department to *2Nah Ahgen* / 2001; Eugene Wilde to
+  the 1985 *Rappin'* soundtrack; Engelbert's *Quando Quando* to the 1968 *A Man
+  Without Love* with the 1998 ISRC cleared.
+- Batch 29: Itchyworms to *Kami nAPO Muna* / 2006; Kamikazee to *Maharot* /
+  2006; Kjwan to 2004 on Sony Music Philippines; Deftones' *Risk* to the standard
+  *Diamond Eyes*; Glitch to OctoArts EMI; Siakol to 1996; Tito Mina to *Tito O.
+  Mina* / 1983 on Blackgold; Kenny Rankin to 1980 on Atlantic.
+- Batch 30: Brownman Revival gained track 2, 2007-02-22, ISRC PHBO10700886, the
+  reggae genre and an album artist; Drip to *Kami nAPO Muna* / 2006 with a story
+  naming the band; Kapatid to the 2006 EMI *Luha* and 2003 Sony debut; Deftones'
+  *Royal* and *When Girls Telephone Boys* to the standard US dates; Grin
+  Department to *2Nah Ahgen* / 2001; Siakol to 2005 on Alpha; Engelbert to the
+  1970 Decca *We Made It Happen*.
+- Open annotations: the FR-prefixed ISRCs on Itchyworms, Kamikazee and Jose Mari
+  Chan are digital-era codes; several pre-1990 albums have no documented release
+  day, so year-only dates are stored. No chart claims were found on any of the
+  forty tracks.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - Every changed field and every locked field carries a source URL; no locked
+    field was left unsourced.
+  - Summary lengths are 108-172 characters and story lengths 157-369.
+  - Local totals are unchanged: 895 tracks, 895 details, 93 with no prose, 428
+    with no story and 345 with locked prose. Live is unchanged at 113 / 441 /
+    325.
+  - Pre-review backups:
+    `C:\Users\SD\nakout-backups\local-radio-pre-batch27-review-20261106.db`,
+    `...pre-batch28...`, `...pre-batch29...` and `...pre-batch30...`.
+    Post-review backup:
+    `C:\Users\SD\nakout-backups\local-radio-post-review-27-30-20261106.db`;
+    change report:
+    `C:\Users\SD\nakout-backups\review-corrections-27-30-20261106.json`.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
+## 2026-11-06 - compose thirtieth story batch locally
+
+Composed batch thirty in the local library only. The batch is not reviewed and
+has not been pushed.
+
+- Facts: Brownman Revival's Paniwalaan Mo gained album *Ayos Din*, year 2007
+  and label Sony BMG Music Entertainment (3 locked fields). Its track number 2
+  is verified but not writable through `detail_tools`, and the recording has no
+  ISRC. No other fact fields changed.
+- Prose: 10 tracks gained summaries and 7 gained stories. Kapatid's Prayer,
+  Deftones' When Girls Telephone Boys and Grin Department's Picture Mo Inday
+  have no story because no source gave a song-specific origin anecdote.
+- Known edition items for the review: Drip's 2012 collection against the 2006
+  *Kami nAPO Muna*; Introvoys' 2010 reissue against 1994 and the misleading
+  `(Live)` tag; Kapatid's *Luha* 2021 against 2006 and *KAPATID* 2021 against
+  2003, both with Universal Philippines against the original EMI/Sony credits;
+  Grin Department's 2009 date against 2001; Siakol's *Kabilang Mundo* 2006
+  against a possible 2005 CD; and Engelbert's 2017 Decca reissue against the
+  1970 *We Made It Happen*. Deftones' Royal and When Girls Telephone Boys
+  verify clean, though the 2010-04-23 date remains a canonical-date question.
+- Local totals: 895 tracks, 895 details, 93 tracks with no prose, 428 with no
+  story and 345 with locked prose. Live is unchanged at 113 / 441 / 325.
+- Batch thirty ids: `IhthDnQWrZw`, `8gSxdKK2Bz4`, `8Hl1eNn5rHQ`,
+  `9CWSKyy4p7Q`, `xQciT9ZXbgQ`, `Tx9svogMLlk`, `oPvWJFbiakI`,
+  `m14z8PirD2w`, `iE3mRENrmZg`, `blhEVJkgAtQ`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - All ten records show a locked summary with a source URL; seven also show a
+    locked story with a source URL; Brownman Revival's three new facts carry the
+    MusicBrainz release URL.
+  - Pre-review backup:
+    `C:\Users\SD\nakout-backups\local-radio-pre-batch30-review-20261106.db`.
+  - No live change was made and the live import route remains `false`.
+
+## 2026-11-06 - compose twenty-ninth story batch locally
+
+Composed batch twenty-nine in the local library only. The batch is not reviewed
+and has not been pushed; the review will run when batch thirty starts.
+
+- Facts: no fact fields changed; every track already had an album, year, label,
+  ISRC and credits.
+- Prose: 10 tracks gained summaries and 6 gained stories. Kamikazee, Glitch,
+  Siakol and Tito Mina have no story because no source gave a song-specific
+  origin anecdote.
+- Known edition items for the review: Itchyworms' 2012 *Kami Napo Muna The
+  Collection* against the 2006 *Kami nAPO Muna*; Kamikazee's 2014 reissue
+  against *Maharot* (2006); Kjwan's 2015 reissue against 2004 and `Kjwan Music`
+  against Sony Music Philippines; Deftones' *Diamond Eyes (Deluxe)* against the
+  standard album; Glitch's PolyEast label against OctoArts EMI; Siakol's 2005
+  digital date against the 1996 original; Tito Mina's 2009 *SCE: Both in Love*
+  against the 1983 *Tito O. Mina* LP on Blackgold; and Kenny Rankin's 2009 Rhino
+  Atlantic reissue against the 1980 Atlantic original. The Francis M and Kitchie
+  Nadal tribute placements are correct.
+- Local totals: 895 tracks, 895 details, 103 tracks with no prose, 435 with no
+  story and 335 with locked prose. Live is unchanged at 113 / 441 / 325.
+- Batch twenty-nine ids: `YcnkTNBksb4`, `EiR87BGeiAE`, `qEDxfghgSOE`,
+  `y52jDU7Vl9E`, `zdTiI3rtbP4`, `-1mH96_bVM0`, `4tzPTNcBuUA`,
+  `8ytpdC-Hn1g`, `oydXQThKkO4`, `q3fbglFvBN8`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - All ten records show a locked summary with a source URL; six also show a
+    locked story with a source URL.
+  - Pre-review backup:
+    `C:\Users\SD\nakout-backups\local-radio-pre-batch29-review-20261106.db`.
+  - No live change was made and the live import route remains `false`.
+
+## 2026-11-06 - push twenty-eighth story batch to live
+
+Pushed batch twenty-eight to production without a separate reviewer pass; the
+track details/story review is still pending. `LIBRARY_IMPORT_ENABLED` was
+enabled on the live backend for the push and restored to `false` afterwards;
+the live backend was recreated to toggle the flag and is healthy.
+
+- Facts: no fact fields changed; every track already had an album, year, label,
+  ISRC and credits.
+- Prose: 10 tracks updated (10 summaries and 7 stories); 315 previously locked
+  tracks were already current on live.
+- Known review items: Hilera's 2014 reissue against the 2006 original (date and
+  genre also differ); Join The Club's 2016 reissue against 2005; Kamikazee's
+  *Their Greatest Hits* 2015 against *Maharot* (2006, track 5); Itchyworms'
+  2019 soundtrack against the 2016 PhilPop compilation and a Janine Teñoso
+  album artist; Glitch's PolyEast label and Pop genre against the 2000 OctoArts
+  EMI credit; Greyhoundz's `Greyhoundz` label and 2024 Dutch ISRC; Grin
+  Department's 2009 date against 2001 and the `2NAH Ahgen` casing; Eugene
+  Wilde's *Hits Anthology* against the 1985 *Rappin'* soundtrack; and
+  Engelbert's 2023 *Dance Album* metadata against the 1968 *A Man Without Love*
+  recording. Glitch, Greyhoundz and Grin Department have no story.
+- Live and local now both have 895 tracks, 895 details, 8 playlists, 8 genres,
+  9 schedule slots, 6066 chart rows, 113 tracks with no prose, 441 with no
+  story and 325 with locked prose. Batch twenty-eight ids: `qsH59dPs6TE`,
+  `uB7T72AfxBQ`, `v52-Acb-rvg`, `rBUuKRXFknQ`, `kJhW-QXFpHM`,
+  `_21qeXs3i5Y`, `nC9o8Djv_sw`, `mPuClJykoSI`, `XQPrywW28x8`,
+  `j2etakoV-rg`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice to toggle `LIBRARY_IMPORT_ENABLED` and is now back on
+  `false`.
+- **Verification:**
+  - Live and local exports both return 895 tracks and 8 playlists.
+  - Live and local `/api/library/meta` match apart from `generated_at`.
+  - Live and local `/api/schedule/today` match.
+  - All ten batch tracks match on album, release facts, genres, country,
+    credits, prose, sources and locks; only the order of `locked_fields`
+    differs.
+  - Playlist ids and the 929 track memberships are unique in both exports.
+  - `backend/.venv/Scripts/python.exe -m pytest -q backend/tests`: 487 passed.
+
 ## 2026-11-06 - push twenty-seventh story batch to live
 
 Pushed batch twenty-seven to production without a separate reviewer pass; the
