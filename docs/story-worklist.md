@@ -6,12 +6,12 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 270 tracks composed across twenty-seven batches. Batches one to sixteen and
-  eighteen to twenty-seven are live; batch seventeen was overwritten by the
+- 280 tracks composed across twenty-eight batches. Batches one to sixteen and
+  eighteen to twenty-eight are live; batch seventeen was overwritten by the
   live mirror, though four of its entries were restored in batches twenty-six
-  and twenty-seven. Batch twenty-seven was pushed without a separate reviewer
-  pass; its review is pending.
-- 315 tracks currently have `summary` and/or `story` locked in both libraries.
+  and twenty-seven. Batches twenty-seven and twenty-eight were pushed without a
+  separate reviewer pass; their reviews are pending.
+- 325 tracks currently have `summary` and/or `story` locked in both libraries.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -442,12 +442,38 @@ Status of the local track-story composition work.
 - Batch twenty-seven ids: `FP75Ps4DuwA`, `YVNIhxP80GA`, `QSj3gaMJ5Mw`,
   `B1ZpqEFCAoQ`, `HEZ2E_nkMhY`, `QY2Izgkku0Q`, `2i6-xwzCs0k`,
   `eAGF_t9Cb8A`, `Gsm_8mdKsoA`, `EhJoM1PKGhw`.
+- Batch twenty-eight was composed locally on 2026-11-06 and pushed to live the
+  same day without a separate reviewer pass; the track details/story review is
+  pending. It adds 10 summaries and 7 stories. Glitch, Greyhoundz and Grin
+  Department have no story because no source gave a song-specific origin
+  anecdote.
+- No fact fields were changed in batch twenty-eight: every track already had an
+  album, year, label, ISRC and credits, so the composer wrote prose only. The
+  known edition corrections are still pending review: Hilera's 2014 reissue
+  against the 2006 original; Join The Club's 2016 reissue against 2005;
+  Kamikazee's 2015 compilation against *Maharot* (2006); Itchyworms' 2019
+  soundtrack against the 2016 PhilPop compilation; Glitch's PolyEast label and
+  Pop genre against the 2000 OctoArts EMI credit; Greyhoundz's label and 2024
+  ISRC; Grin Department's 2009 date against 2001; Eugene Wilde's *Hits
+  Anthology* against the 1985 *Rappin'* soundtrack; and Engelbert's 2023
+  *Dance Album* metadata against the 1968 *A Man Without Love* recording.
+- Every composed prose field is locked with its source URL. Current totals: 895
+  tracks, 895 details, 8 playlists, 8 genres, 9 schedule slots and 6066 chart
+  rows. Remaining: 113 tracks with no prose, 441 with no story and 325 with
+  locked prose.
+- Batch twenty-eight live push on 2026-11-06: 10 tracks of prose (10 summaries,
+  7 stories); the other 315 locked-prose tracks were already current on live.
+  No fact fields were pushed. The import route was disabled again after the
+  push. Live and local match on all ten ids, including sources and locks.
+- Batch twenty-eight ids: `qsH59dPs6TE`, `uB7T72AfxBQ`, `v52-Acb-rvg`,
+  `rBUuKRXFknQ`, `kJhW-QXFpHM`, `_21qeXs3i5Y`, `nC9o8Djv_sw`,
+  `mPuClJykoSI`, `XQPrywW28x8`, `j2etakoV-rg`.
 
 ## Remaining
 
-- 123 tracks still have neither summary nor story.
-- 448 tracks still have no story at all.
-- 315 tracks have locked prose.
+- 113 tracks still have neither summary nor story.
+- 441 tracks still have no story at all.
+- 325 tracks have locked prose.
 
 ### Remaining by genre (no prose at all)
 
@@ -456,10 +482,10 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 84 |
-| NU Metal | 12 |
-| Pinoy Bato | 17 |
-| Classic Love Songs | 8 |
+| OPM Tunog Kalye | 79 |
+| NU Metal | 10 |
+| Pinoy Bato | 16 |
+| Classic Love Songs | 6 |
 | New Wave | 2 |
 | Emo Night | 0 |
 | Classic Rock | 0 |
@@ -471,16 +497,16 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Frio — Alive | OPM Tunog Kalye | *Frio* / 2006 | `qsH59dPs6TE` | verify track/label |
-| Hilera — Define | OPM Tunog Kalye | *Hilera* / 2014 | `uB7T72AfxBQ` | verify original album/year |
-| Join The Club — Lunes | OPM Tunog Kalye | *Nobela* / 2016 | `v52-Acb-rvg` | verify original album/year |
-| Kamikazee — Chiksilog | OPM Tunog Kalye | *Kamikazee (Their Greatest Hits)* / 2015 | `rBUuKRXFknQ` | use original album/year; the 2015 set is a compilation |
-| Itchyworms — Di Na Muli | OPM Tunog Kalye | *Sid & Aya (Not a Love Story) (Original Movie Soundtrack)* / 2019 | `kJhW-QXFpHM` | verify original soundtrack release |
-| Glitch — Faceplant | NU Metal | *Illementz* / 2000 | `_21qeXs3i5Y` | verify track/label |
-| Greyhoundz — 1s 3s 6s | NU Metal | *Apoy* / 2005 | `nC9o8Djv_sw` | verify original album/year |
-| Grin Department — 8 Pa | Pinoy Bato | *2NAH Ahgen* / 2009 | `mPuClJykoSI` | verify track/label |
-| Eugene Wilde — First Love Never Dies | Classic Love Songs | *Hits Anthology* / 2007 | `XQPrywW28x8` | use original album/year; the 2007 set is an anthology |
-| Engelbert Humperdinck — Quando Quando Quando | Classic Love Songs | *The Dance Album* / 2023 | `j2etakoV-rg` | verify original recording/edition |
+| Francis M — Superproxy 2K6 | OPM Tunog Kalye | *Ultraelectromagnetic Jam* / 2005 | `YcnkTNBksb4` | verify original album/year; the 2005 set is a tribute compilation |
+| Itchyworms — Awit Ng Barkada | OPM Tunog Kalye | *Kami Napo Muna The Collection* / 2012 | `EiR87BGeiAE` | use original album/year; the 2012 set is a tribute compilation |
+| Kamikazee — Director's Cut | OPM Tunog Kalye | *Maharot* / 2014 | `qEDxfghgSOE` | verify original album/year |
+| Kitchie Nadal — Ligaya | OPM Tunog Kalye | *Ultraelectromagnetic Jam* / 2005 | `y52jDU7Vl9E` | verify original album/year; the 2005 set is a tribute compilation |
+| Kjwan — Daliri | OPM Tunog Kalye | *Kjwan* / 2015 | `zdTiI3rtbP4` | verify original album/year |
+| Deftones — Risk | NU Metal | *Diamond Eyes (Deluxe)* / 2010 | `-1mH96_bVM0` | use original *Diamond Eyes* / 2010 |
+| Glitch — Shiver | NU Metal | *Illementz* / 2000 | `4tzPTNcBuUA` | verify track/label |
+| Siakol — Biyaheng Impyerno | Pinoy Bato | *Tayo Na Sa Paraiso* / 2005 | `8ytpdC-Hn1g` | verify original album/year |
+| Tito Mina — Both in Love | Classic Love Songs | *SCE: Both in Love* / 2009 | `oydXQThKkO4` | use original album/year |
+| Kenny Rankin — What Matters Most | Classic Love Songs | *After The Roses* / 2009 | `q3fbglFvBN8` | use original album/year |
 
 ## Resume workflow
 
@@ -750,3 +776,15 @@ These are still empty and are the recommended next batch.
   ISRC and *Selfish Machines* placement. Boldstar's restored ISRC
   PHU012116031 is a 2021 digital code; Brownman Revival and Dicta License have
   no story.
+- Batch twenty-eight was composed and pushed without a separate reviewer pass;
+  the track details/story review is pending. Known items for that review:
+  Hilera's 2014 reissue against the 2006 original (date and genre also differ);
+  Join The Club's 2016 reissue against 2005; Kamikazee's *Their Greatest Hits*
+  2015 against *Maharot* (2006, track 5); Itchyworms' 2019 soundtrack against
+  the 2016 PhilPop compilation and a Janine Teñoso album artist; Glitch's
+  PolyEast label and Pop genre against the 2000 OctoArts EMI credit; Greyhoundz's
+  `Greyhoundz` label and 2024 Dutch ISRC; Grin Department's 2009 date against
+  2001 and the `2NAH Ahgen` casing; Eugene Wilde's *Hits Anthology* against the
+  1985 *Rappin'* soundtrack; and Engelbert's 2023 *Dance Album* metadata
+  against the 1968 *A Man Without Love* recording. Glitch, Greyhoundz and Grin
+  Department have no story.
