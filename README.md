@@ -262,6 +262,17 @@ but reports a sync error — fix the URL or API key, then use
 
 Data is stored in the `radio_data` Docker volume.
 
+### CI/CD pipeline
+
+Every pull request runs staged quality gates: lint, typecheck, unit tests,
+dependency audits, image builds, a real compose integration stack and a
+Chromium end-to-end test. Green `main` commits publish SHA-tagged images to
+GHCR and then move `latest` to the same digest. Deployment stays manual.
+
+See [`docs/ci-cd.md`](docs/ci-cd.md) for the stage-by-stage explanation,
+build-once promotion, the nightly load test, and how to operate or roll back
+the pipeline.
+
 ### Container images
 
 CI builds `backend` and `frontend` once per commit and pushes them, tagged with

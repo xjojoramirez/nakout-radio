@@ -33,6 +33,8 @@ Every time code or configuration is changed, add an entry to `docs/changelog.md`
   `ghcr.io/xjojoramirez/nakout-radio-frontend` on green `main` runs.
   `IMAGE_TAG=<sha> docker compose pull && docker compose up -d --no-build`
   deploys a published artifact instead of rebuilding on the host.
+- The full pipeline (stages, build-once promotion, nightly load test, deploy
+  and rollback) is documented in `docs/ci-cd.md`.
 - After restarting the frontend, hard-refresh the browser (Ctrl+Shift+R).
 
 ## Git & GitHub accounts
