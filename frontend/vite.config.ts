@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+import { configDefaults } from "vitest/config";
 
 const DESCRIPTION =
   "Nakout Radio is a personal, always-on internet radio station playing a curated mix of genres on a time-of-day schedule.";
@@ -102,6 +103,7 @@ export default defineConfig(({ mode }) => {
       environment: "jsdom",
       setupFiles: ["./src/test/setup.ts"],
       globals: true,
+      exclude: [...configDefaults.exclude, "e2e/**"],
     },
   };
 });

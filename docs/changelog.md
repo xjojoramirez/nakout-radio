@@ -17,7 +17,8 @@ A new `e2e` CI job starts the compose stack, installs Chromium with
 `--with-deps`, runs `npm run test:e2e`, uploads the Playwright report and trace
 on failure, and always tears the stack down with `down -v`. The frontend job
 also typechecks the E2E sources through `tsconfig.e2e.json`, and oxlint now
-covers `e2e/` and the Playwright config.
+covers `e2e/` and the Playwright config. Vitest excludes `e2e/**` so it does
+not try to run Playwright specs as unit tests.
 
 - Files touched:
   - `frontend/package.json`
@@ -25,16 +26,18 @@ covers `e2e/` and the Playwright config.
   - `frontend/playwright.config.ts`
   - `frontend/tsconfig.e2e.json`
   - `frontend/e2e/app.spec.ts`
+  - `frontend/vite.config.ts`
   - `frontend/.dockerignore`
   - `.gitignore`
   - `.github/workflows/ci.yml`
   - `docs/changelog.md`
 - **Container restart required?** No - tests, tooling and docs only.
 - **Verification:** `npm run lint`, `npm run typecheck`,
-  `npm run typecheck:e2e` and `npm run build` passed; the E2E suite passed
-  locally against a throwaway compose project (`nakout-ci-local`, ports
-  18011/18012) from a freshly migrated empty database, twice, in about 2s per
-  run; the project was then torn down with `down -v`.
+  `npm run typecheck:e2e`, `npm test` (355 unit tests) and `npm run build`
+  passed; the E2E suite passed locally against a throwaway compose project
+  (`nakout-ci-local`, ports 18011/18012) from a freshly migrated empty
+  database, twice, in about 2s per run; the project was then torn down with
+  `down -v`.
 
 ## 2026-11-09 - add an integration smoke test to CI
 
