@@ -3,6 +3,39 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - add Playwright E2E smoke test to CI
+
+Added Playwright 1.65 with a single Chromium smoke test that drives the real
+compose stack in a browser: the public homepage on an empty station (including
+the WebSocket listener count), the studio login with a wrong and then the
+correct password, creating a genre, scheduling it every day, seeing it on the
+public schedule, and logging out. External requests (fonts, the YouTube iframe
+API) are aborted so the run is deterministic and offline; loudness and
+enrichment are disabled in the CI environment.
+
+A new `e2e` CI job starts the compose stack, installs Chromium with
+`--with-deps`, runs `npm run test:e2e`, uploads the Playwright report and trace
+on failure, and always tears the stack down with `down -v`. The frontend job
+also typechecks the E2E sources through `tsconfig.e2e.json`, and oxlint now
+covers `e2e/` and the Playwright config.
+
+- Files touched:
+  - `frontend/package.json`
+  - `frontend/package-lock.json`
+  - `frontend/playwright.config.ts`
+  - `frontend/tsconfig.e2e.json`
+  - `frontend/e2e/app.spec.ts`
+  - `frontend/.dockerignore`
+  - `.gitignore`
+  - `.github/workflows/ci.yml`
+  - `docs/changelog.md`
+- **Container restart required?** No - tests, tooling and docs only.
+- **Verification:** `npm run lint`, `npm run typecheck`,
+  `npm run typecheck:e2e` and `npm run build` passed; the E2E suite passed
+  locally against a throwaway compose project (`nakout-ci-local`, ports
+  18011/18012) from a freshly migrated empty database, twice, in about 2s per
+  run; the project was then torn down with `down -v`.
+
 ## 2026-11-09 - add an integration smoke test to CI
 
 Added an `integration` job to `.github/workflows/ci.yml` that runs after the
