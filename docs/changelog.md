@@ -3,6 +3,36 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - upgrade backend dependencies and audit them in CI
+
+Upgraded the backend security surface: FastAPI 0.115.0 to 0.162.2, Starlette
+0.38.6 to 1.10.0, PyJWT 2.9.0 to 2.15.1, pytest 8.3.3 to 9.2.0 and
+pytest-asyncio 0.24.0 to 1.4.1.post1. Starlette's TestClient now uses
+`httpx2`, and the test HMAC keys are at least 32 bytes so PyJWT's
+`InsecureKeyLengthWarning` stays meaningful. `pip-audit` is now part of the
+backend CI job, gating on `requirements-dev.txt`, and reports no known
+vulnerabilities. The frontend runtime base image also moved from
+`nginx:1.27-alpine` to `nginx:1.28-alpine`.
+
+Production `SECRET_KEY` should be at least 32 bytes; PyJWT 2.15 warns below
+that length.
+
+- Files touched:
+  - `backend/requirements.txt`
+  - `backend/requirements-dev.txt`
+  - `backend/tests/conftest.py`
+  - `backend/tests/test_auth.py`
+  - `backend/tests/test_changelog.py`
+  - `backend/tests/test_queue.py`
+  - `frontend/Dockerfile`
+  - `.github/workflows/ci.yml`
+  - `docs/changelog.md`
+- **Container restart required?** Yes - backend and frontend:
+  `docker compose up -d --build backend frontend`
+- **Verification:** Ruff clean; 487 tests passed with no warnings;
+  `pip-audit` reports no known vulnerabilities; backend and frontend images
+  build locally (65.1 MB and 26.1 MB).
+
 ## 2026-11-09 - build Docker images in CI
 
 Added an `images` job to `.github/workflows/ci.yml` that runs after lint and
