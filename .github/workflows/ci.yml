@@ -9,8 +9,10 @@ permissions:
   contents: read
 
 concurrency:
+  # Pull request runs supersede each other; pushes to main queue so every
+  # merged commit finishes the pipeline (and no promote is cancelled midway).
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   frontend:
@@ -86,6 +88,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [frontend, backend]
     timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -97,7 +102,10 @@ jobs:
           - service: frontend
             context: ./frontend
             image: nakout-radio-frontend
-            build_args: VITE_SITE_URL=https://example.invalid
+            # Baked into the bundle (canonical URL, sitemap, Open Graph).
+            build_args: VITE_SITE_URL=https://nakout.com
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -105,19 +113,37 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build image
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.context }}
-          push: false
-          load: true
-          tags: ${{ matrix.image }}:${{ github.sha }}
+          push: ${{ github.event_name == 'push' }}
+          load: ${{ github.event_name != 'push' }}
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ github.sha }}
+            org.opencontainers.image.title=${{ matrix.image }}
           build-args: ${{ matrix.build_args }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
-      - name: Verify image tag
-        run: docker image inspect "${{ matrix.image }}:${{ github.sha }}" --format '{{.Id}}'
+      - name: Verify local image
+        if: github.event_name != 'push'
+        run: docker image inspect "${{ env.IMAGE }}:${{ github.sha }}" --format '{{.Id}}'
+
+      - name: Verify published image
+        if: github.event_name == 'push'
+        run: docker buildx imagetools inspect "${{ env.IMAGE }}:${{ github.sha }}"
 
   integration:
     name: Integration - docker compose
@@ -302,3 +328,39 @@ jobs:
       - name: Tear down
         if: always()
         run: docker compose -p nakout-ci down -v --remove-orphans
+
+  promote:
+    name: Promote - ${{ matrix.service }}
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: [images, integration, e2e]
+    timeout-minutes: 10
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: backend
+            image: nakout-radio-backend
+          - service: frontend
+            image: nakout-radio-frontend
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Retags the exact image the images job pushed, so `latest` only ever
+      # points at a commit that passed every CI stage. No rebuild.
+      - name: Move latest to the tested commit
+        run: |
+          set -euo pipefail
+          docker buildx imagetools create \
+            --tag "$IMAGE:latest" \
+            "$IMAGE:${{ github.sha }}"
+          docker buildx imagetools inspect "$IMAGE:latest"

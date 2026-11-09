@@ -244,7 +244,13 @@ payload. The tool reports any live-locked field it refuses to overwrite.
    `YT_API_KEY`, `ADMIN_PASSWORD`, `SECRET_KEY`;
    `FRONTEND_ORIGIN=https://<your-domain>`; `COOKIE_SECURE=true`.
    Create a root `.env` with `DOMAIN=<your-domain>`.
-4. Run `docker compose up -d --build`.
+4. Pull the images CI published and start the stack:
+
+   ```bash
+   docker compose pull
+   docker compose up -d --no-build
+   ```
+
 5. Caddy obtains and renews TLS certificates automatically.
 6. Visit `https://<your-domain>/studio`, log in, add genres and YouTube
    playlist URLs, then add schedule slots. Adding a playlist fetches and caches
@@ -256,11 +262,40 @@ but reports a sync error — fix the URL or API key, then use
 
 Data is stored in the `radio_data` Docker volume.
 
+### Container images
+
+CI builds `backend` and `frontend` once per commit and pushes them, tagged with
+the full commit SHA, to the public GHCR packages:
+
+- `ghcr.io/xjojoramirez/nakout-radio-backend`
+- `ghcr.io/xjojoramirez/nakout-radio-frontend`
+
+Both images target `linux/amd64`, the CI runner's platform.
+
+The frontend image is built with `VITE_SITE_URL=https://nakout.com`, so
+canonical URLs, the sitemap and Open Graph tags point at the production site.
+No registry login is needed because the packages are public.
+
+`docker-compose.yml` uses `${IMAGE_TAG:-latest}` for both services. `latest`
+is only moved after the commit passes lint, unit tests, the image build, the
+compose integration checks and the browser E2E suite. To run a specific
+commit instead:
+
+```bash
+export IMAGE_TAG=<full-git-sha>
+docker compose pull
+docker compose up -d --no-build
+```
+
+Local development and tests still build from source with
+`docker compose up -d --build`.
+
 ### Updating
 
 ```bash
 git pull
-docker compose up -d --build
+docker compose pull
+docker compose up -d --no-build
 ```
 
 Database migrations run automatically on backend start (`backend/entrypoint.sh`).

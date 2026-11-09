@@ -28,6 +28,11 @@ Every time code or configuration is changed, add an entry to `docs/changelog.md`
   code changes never take effect until the image is rebuilt and the container
   recreated.
 - The `frontend` image bakes the built `dist/` bundle in at build time.
+- CI publishes SHA-tagged images to the public GHCR packages
+  `ghcr.io/xjojoramirez/nakout-radio-backend` and
+  `ghcr.io/xjojoramirez/nakout-radio-frontend` on green `main` runs.
+  `IMAGE_TAG=<sha> docker compose pull && docker compose up -d --no-build`
+  deploys a published artifact instead of rebuilding on the host.
 - After restarting the frontend, hard-refresh the browser (Ctrl+Shift+R).
 
 ## Git & GitHub accounts
