@@ -3,6 +3,40 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - add a nightly k6 load test
+
+Added `.github/workflows/load.yml`, a scheduled (03:17 UTC) and manually
+dispatchable load canary. It builds the checked-out commit into a throwaway
+compose project (`nakout-load`), waits for health, installs k6 on the runner
+and runs `load/k6/listener-load.js`:
+
+- 20 virtual users ramping up over 60s against `/api/health`, `/api/genres`,
+  `/api/schedule/today` and the frontend through nginx
+- 5 listeners holding real WebSocket connections to `/api/ws/listeners`
+- thresholds: checks > 99%, failed requests < 1%, p95 < 500 ms, WebSocket
+  handshake p95 < 2s and at least one listener message
+
+The summary is uploaded as the `k6-summary` artifact (14 days), container logs
+are dumped on failure and the stack is always torn down with `down -v`.
+Threshold failures fail the run, so GitHub's default failure notifications
+apply; successful nights stay quiet. It never touches production and is not a
+pull request gate.
+
+- Files touched:
+  - `.github/workflows/load.yml`
+  - `load/k6/listener-load.js`
+  - `.gitignore`
+  - `docs/changelog.md`
+- **Container restart required?** No - CI only.
+- **Verification:** k6 2.3.0 was run locally against a throwaway compose stack
+  (ports 18011/18012): 3,960 requests, 0.00% failed, p95 11 ms, 100% checks,
+  35 WebSocket sessions and 155 listener messages, exit 0. The first run
+  exposed a reconnect loop in the WebSocket scenario - closing on the first
+  broadcast made each VU reconnect about a thousand times per second - fixed
+  by holding each connection for 8s. A containerised run failed about 1.2% of
+  frontend requests because Docker Desktop's `host.docker.internal` proxy
+  refused connections; running k6 on the host, as CI does, passes cleanly.
+
 ## 2026-11-09 - fail pull requests that grow the frontend bundle
 
 Added `frontend/scripts/check-bundle-size.mjs` and an `npm run check:bundle`

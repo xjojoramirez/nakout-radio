@@ -1,0 +1,80 @@
+name: Nightly load test
+
+on:
+  schedule:
+    # 03:17 UTC, off the hour so it does not queue with other cron jobs.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: load-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  load:
+    name: k6 - 20 virtual users
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DOMAIN: example.invalid
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Write test environment
+        working-directory: backend
+        run: |
+          cat > .env <<'EOF'
+          YT_API_KEY=test-youtube-key
+          ADMIN_PASSWORD=test-admin-password
+          SECRET_KEY=test-secret-key-0123456789abcdef0123456789
+          COOKIE_SECURE=false
+          LOUDNESS_LOOKUP_ENABLED=false
+          ENRICHMENT_ENABLED=false
+          EOF
+
+      # Builds the checked-out commit, so the nightly run covers main even
+      # when the latest published image has not been promoted yet.
+      - name: Build and start stack
+        run: docker compose -p nakout-load up -d --build backend frontend
+
+      - name: Wait for backend health
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8011/api/health > /dev/null; then
+              echo "Backend healthy after ${attempt} attempt(s)"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend did not become healthy within 120s"
+          docker compose -p nakout-load ps
+          docker compose -p nakout-load logs backend
+          exit 1
+
+      - name: Install k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run load test
+        working-directory: load/k6
+        run: k6 run listener-load.js
+
+      - name: Upload k6 summary
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: k6-summary
+          path: load/k6/summary.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Dump logs
+        if: failure()
+        run: docker compose -p nakout-load logs --no-color
+
+      - name: Tear down
+        if: always()
+        run: docker compose -p nakout-load down -v --remove-orphans
