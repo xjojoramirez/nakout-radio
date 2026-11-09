@@ -48,6 +48,12 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Build
+        run: npm run build
+
+      - name: Check bundle size
+        run: npm run check:bundle
+
       - name: Audit dependencies
         run: npm audit --audit-level=high
 

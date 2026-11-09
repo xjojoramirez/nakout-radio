@@ -3,6 +3,35 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - fail pull requests that grow the frontend bundle
+
+Added `frontend/scripts/check-bundle-size.mjs` and an `npm run check:bundle`
+script. After a production build it sums the gzipped JS and CSS in `dist/`
+(gzip level 9, kB) and exits non-zero when either budget is exceeded:
+
+| Type | Current | Budget |
+| --- | --- | --- |
+| JS | 86.3 kB | 95 kB |
+| CSS | 10.9 kB | 13 kB |
+
+The frontend CI job now runs `npm run build` followed by
+`npm run check:bundle`, so a feature or dependency that inflates the bundle
+fails the pull request with the actual and allowed sizes. Raising a budget is
+a one-line change in the script and therefore visible in review;
+`BUNDLE_JS_BUDGET_KB` and `BUNDLE_CSS_BUDGET_KB` override the budgets for
+local experiments.
+
+- Files touched:
+  - `frontend/scripts/check-bundle-size.mjs`
+  - `frontend/package.json`
+  - `.github/workflows/ci.yml`
+  - `docs/changelog.md`
+- **Container restart required?** No - CI and tooling only.
+- **Verification:** `npm run build` passed; `npm run check:bundle` reports
+  JS 86.3 kB / 95 kB and CSS 10.9 kB / 13 kB; forcing
+  `BUNDLE_JS_BUDGET_KB=10` exits 1 with the expected overage. The frontend CI
+  job runs the same build and check steps on every pull request.
+
 ## 2026-11-09 - publish and promote container images on GHCR
 
 CI now publishes the `backend` and `frontend` images to public GitHub
