@@ -3,6 +3,34 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - add an integration smoke test to CI
+
+Added an `integration` job to `.github/workflows/ci.yml` that runs after the
+frontend and backend jobs. It writes a throwaway `backend/.env`, builds the
+compose stack with `docker compose -p nakout-ci up -d --build backend
+frontend`, and then verifies the real system:
+
+- `/api/health`, `/api/genres` and `/api/schedule/today` on the backend
+- the built frontend `index.html`
+- the nginx `/api/` reverse proxy through the frontend container
+- the admin login/session flow using the real JWT secret from the env file
+- Alembic is at `head` and `alembic check` reports no pending model changes
+- a WebSocket handshake through nginx to `/api/ws/listeners` (expects
+  `{"count": 1}`)
+
+The stack is torn down with `docker compose down -v` even when a step fails,
+and container logs are dumped on failure. Loudness and enrichment are disabled
+in CI so the job makes no outbound calls.
+
+- Files touched:
+  - `.github/workflows/ci.yml`
+  - `docs/changelog.md`
+- **Container restart required?** No - CI workflow and docs only.
+- **Verification:** workflow YAML parses; the same flow was run locally with a
+  throwaway compose project (`nakout-ci-local`, ports 18011/18012): all HTTP,
+  proxy, admin-session, migration and WebSocket checks passed, then the
+  project was torn down with `down -v`.
+
 ## 2026-11-09 - upgrade backend dependencies and audit them in CI
 
 Upgraded the backend security surface: FastAPI 0.115.0 to 0.162.2, Starlette

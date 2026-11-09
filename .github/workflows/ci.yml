@@ -115,3 +115,102 @@ jobs:
 
       - name: Verify image tag
         run: docker image inspect "${{ matrix.image }}:${{ github.sha }}" --format '{{.Id}}'
+
+  integration:
+    name: Integration - docker compose
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    timeout-minutes: 25
+    env:
+      DOMAIN: example.invalid
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Write test environment
+        working-directory: backend
+        run: |
+          cat > .env <<'EOF'
+          YT_API_KEY=test-youtube-key
+          ADMIN_PASSWORD=test-admin-password
+          SECRET_KEY=test-secret-key-0123456789abcdef0123456789
+          COOKIE_SECURE=false
+          LOUDNESS_LOOKUP_ENABLED=false
+          ENRICHMENT_ENABLED=false
+          EOF
+
+      - name: Build and start stack
+        run: docker compose -p nakout-ci up -d --build backend frontend
+
+      - name: Wait for backend health
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8011/api/health > /dev/null; then
+              echo "Backend healthy after ${attempt} attempt(s)"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend did not become healthy within 120s"
+          docker compose -p nakout-ci ps
+          docker compose -p nakout-ci logs backend
+          exit 1
+
+      - name: Check public endpoints
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error http://127.0.0.1:8011/api/health | grep -q '"status":"ok"'
+          curl --fail --silent --show-error http://127.0.0.1:8011/api/genres > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8011/api/schedule/today > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8012/ | grep -q '<div id="root"></div>'
+
+      - name: Check reverse proxy
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error http://127.0.0.1:8012/api/health | grep -q '"status":"ok"'
+
+      - name: Check admin session
+        run: |
+          set -euo pipefail
+          cookie_jar="$(mktemp)"
+          curl --fail --silent --show-error --cookie-jar "$cookie_jar" \
+            --header 'Content-Type: application/json' \
+            --data '{"password":"test-admin-password"}' \
+            http://127.0.0.1:8011/api/studio/login | grep -q '"status":"ok"'
+          curl --fail --silent --show-error --cookie "$cookie_jar" \
+            http://127.0.0.1:8011/api/studio/session | grep -q '"status":"ok"'
+
+      - name: Check migrations
+        run: |
+          set -euo pipefail
+          current="$(docker compose -p nakout-ci exec -T backend alembic current 2>/dev/null)"
+          echo "$current"
+          grep -q '(head)' <<<"$current"
+          docker compose -p nakout-ci exec -T backend alembic check
+
+      - name: Check WebSocket
+        run: |
+          docker compose -p nakout-ci exec -T backend python - <<'PY'
+          import asyncio
+          import json
+
+          from websockets.asyncio.client import connect
+
+
+          async def main() -> None:
+              async with connect("ws://frontend/api/ws/listeners") as socket:
+                  payload = json.loads(await asyncio.wait_for(socket.recv(), timeout=10))
+                  assert payload == {"count": 1}, payload
+                  print(f"WebSocket listener count: {payload['count']}")
+
+
+          asyncio.run(main())
+          PY
+
+      - name: Dump logs
+        if: failure()
+        run: docker compose -p nakout-ci logs --no-color
+
+      - name: Tear down
+        if: always()
+        run: docker compose -p nakout-ci down -v --remove-orphans
