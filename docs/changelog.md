@@ -3,6 +3,58 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - publish and promote container images on GHCR
+
+CI now publishes the `backend` and `frontend` images to public GitHub
+Container Registry packages on every green `main` run:
+
+- `ghcr.io/xjojoramirez/nakout-radio-backend`
+- `ghcr.io/xjojoramirez/nakout-radio-frontend`
+
+The `images` job builds once per commit and pushes a tag with the full commit
+SHA, using the workflow `GITHUB_TOKEN` (no new secrets) plus OCI source and
+revision labels. Pull requests still build and inspect the image locally
+without pushing. The frontend image is built with
+`VITE_SITE_URL=https://nakout.com`, so the canonical URL, sitemap and Open
+Graph tags are correct in production (the old placeholder was
+`https://example.invalid`).
+
+A new `promote` job runs after `integration` and `e2e` and retags the exact
+pushed image as `latest` with `docker buildx imagetools create`, so `latest`
+only ever points at a commit that passed lint, unit tests, the image build,
+the compose checks and the browser suite - no rebuild and no new digest.
+Workflow concurrency now cancels superseded pull request runs but queues
+`main` runs, so a promote is never cancelled halfway.
+
+`docker-compose.yml` gained `image:` entries using `${IMAGE_TAG:-latest}`.
+Deploys can pull the artifact CI tested instead of rebuilding on the host:
+
+```bash
+IMAGE_TAG=<sha> docker compose pull
+IMAGE_TAG=<sha> docker compose up -d --no-build
+```
+
+Local development and the CI `integration`/`e2e` jobs still build from source
+through `build:` and are unchanged. Deployment stays manual.
+
+- Files touched:
+  - `.github/workflows/ci.yml`
+  - `docker-compose.yml`
+  - `README.md`
+  - `AGENTS.md`
+  - `docs/changelog.md`
+- **Container restart required?** Not for this PR itself, but the compose file
+  changed: the first deploy recreates `backend` and `frontend` from the
+  published images with
+  `IMAGE_TAG=<sha> docker compose pull && docker compose up -d --no-build`.
+  `caddy` is unchanged.
+- **Verification:** `actionlint` passed; `docker compose config` interpolates
+  both images correctly with and without `IMAGE_TAG`; YAML parses. A local
+  compose stack built and started with the new image names, the backend
+  healthcheck passed and the Playwright E2E suite passed against it. The
+  PR-run CI builds and verifies both images without pushing; the `main` run
+  after merge verifies the GHCR push and `latest` promotion.
+
 ## 2026-11-09 - add Playwright E2E smoke test to CI
 
 Added Playwright 1.65 with a single Chromium smoke test that drives the real
