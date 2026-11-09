@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "check:bundle": "node scripts/check-bundle-size.mjs",
     "preview": "vite preview",
     "render:icons": "node scripts/render-icons.mjs",
     "test": "vitest run",
