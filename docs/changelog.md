@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - document the CI/CD pipeline
+
+Added `docs/ci-cd.md`, a single reference for how a commit travels from a pull
+request to production: the stage table and why checks run cheapest-first,
+build-once artifact promotion to GHCR, the nightly k6 canary, operating notes
+for red runs and budget/threshold changes, deploy and rollback commands, the
+terminology (continuous delivery rather than GitOps) and a file map.
+
+Linked it from the README's Production deploy section and the `AGENTS.md`
+runtime notes. Removed the stale "add a CI workflow" entry from
+`docs/follow-ups.md`, which had already landed.
+
+- Files touched:
+  - `docs/ci-cd.md`
+  - `README.md`
+  - `AGENTS.md`
+  - `docs/follow-ups.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - documentation only.
+- **Verification:** every referenced path, workflow job and step was checked
+  against `.github/workflows/ci.yml` and `.github/workflows/load.yml`. No code
+  or served configuration changed, so no tests were run.
+
 ## 2026-11-09 - add a nightly k6 load test
 
 Added `.github/workflows/load.yml`, a scheduled (03:17 UTC) and manually
