@@ -9,8 +9,10 @@
     "preview": "vite preview",
     "render:icons": "node scripts/render-icons.mjs",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
-    "lint": "oxlint --deny-warnings src"
+    "typecheck:e2e": "tsc -p tsconfig.e2e.json --noEmit",
+    "lint": "oxlint --deny-warnings src e2e playwright.config.ts"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -18,9 +20,11 @@
     "react-router-dom": "^7.18.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@resvg/resvg-js": "^2.6.2",
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
+    "@types/node": "^24.19.2",
     "@types/react": "^18.3.10",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^6.2.1",

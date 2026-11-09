@@ -40,6 +40,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Typecheck E2E
+        run: npm run typecheck:e2e
+
       - name: Unit tests
         run: npm test
 
@@ -206,6 +209,91 @@ jobs:
 
           asyncio.run(main())
           PY
+
+      - name: Dump logs
+        if: failure()
+        run: docker compose -p nakout-ci logs --no-color
+
+      - name: Tear down
+        if: always()
+        run: docker compose -p nakout-ci down -v --remove-orphans
+
+  e2e:
+    name: E2E - playwright chromium
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    timeout-minutes: 25
+    env:
+      DOMAIN: example.invalid
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Write test environment
+        working-directory: backend
+        run: |
+          cat > .env <<'EOF'
+          YT_API_KEY=test-youtube-key
+          ADMIN_PASSWORD=test-admin-password
+          SECRET_KEY=test-secret-key-0123456789abcdef0123456789
+          COOKIE_SECURE=false
+          LOUDNESS_LOOKUP_ENABLED=false
+          ENRICHMENT_ENABLED=false
+          EOF
+
+      - name: Build and start stack
+        run: docker compose -p nakout-ci up -d --build backend frontend
+
+      - name: Wait for backend health
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8011/api/health > /dev/null; then
+              echo "Backend healthy after ${attempt} attempt(s)"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend did not become healthy within 120s"
+          docker compose -p nakout-ci ps
+          docker compose -p nakout-ci logs backend
+          exit 1
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E
+        working-directory: frontend
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+          retention-days: 7
 
       - name: Dump logs
         if: failure()
