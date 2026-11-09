@@ -3,6 +3,24 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - add GitHub Actions CI for unit tests
+
+Added `.github/workflows/ci.yml` running two parallel jobs on every pull
+request and on pushes to `main`: the frontend job installs from the lockfile
+and runs `tsc --noEmit` plus Vitest, and the backend job runs pytest on Python
+3.12. The frontend job gates on production high/critical advisories with
+`npm audit --omit=dev --audit-level=high` and prints the full audit without
+blocking, so the two deferred dependency upgrades stay visible but do not turn
+CI red.
+
+- Files touched:
+  - `.github/workflows/ci.yml`
+  - `docs/changelog.md`
+- **Container restart required?** No - CI and docs only.
+- **Verification:** local baseline `npm run typecheck` clean, `npm test` 355
+  passed, `pytest -q` 487 passed. The first CI run on this branch is the
+  end-to-end check for the workflow itself.
+
 ## 2026-11-06 - push batches 29-30 and the 27-30 review corrections to live
 
 Pushed the batch 29-30 prose and every reviewed fact correction from batches
