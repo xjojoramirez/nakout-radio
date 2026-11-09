@@ -3,6 +3,27 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - upgrade frontend build and test toolchain
+
+Upgraded Vite 5.4.21 to 8.3.6, Vitest 2.1.9 to 5.1.0,
+`@vitejs/plugin-react` 4.7.0 to 6.2.1 and jsdom 25.0.1 to 29.1.1. Vitest 5
+provides the jest-dom matcher types through its own entry point, so the test
+setup now imports `@testing-library/jest-dom/vitest` and the tsconfig `types`
+array drops the generic jest-dom entry. A full `npm audit` now reports 0
+vulnerabilities, including the dev-only `tinypool` critical.
+
+- Files touched:
+  - `frontend/package.json`
+  - `frontend/package-lock.json`
+  - `frontend/src/test/setup.ts`
+  - `frontend/tsconfig.json`
+  - `docs/changelog.md`
+- **Container restart required?** Yes - frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:** `npm run typecheck` clean; `npm test` 355 passed;
+  `npm run build` succeeded on Vite 8 (288.73 kB JS / 87.40 kB gzip);
+  `npm audit` reports 0 vulnerabilities.
+
 ## 2026-11-09 - upgrade react-router-dom to 7
 
 Upgraded `react-router-dom` from 6.30.6 to 7.18.5. The app only uses
