@@ -2,7 +2,7 @@ from sqlmodel import Session, SQLModel, create_engine, delete, select
 
 from app.db import get_session
 from app.main import create_app
-from app.models import Playlist, ScheduleSlot, Setting, Genre, TrackCache
+from app.models import Genre, Playlist, ScheduleSlot, Setting, TrackCache
 from app.routers.genres import ordered_tracks_for_genre, tracks_for_genre
 
 

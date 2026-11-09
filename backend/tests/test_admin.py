@@ -7,7 +7,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.db import get_session
 from app.main import create_app
-from app.models import Playlist, ScheduleSlot, Genre, TrackCache, TrackPlay
+from app.models import Genre, Playlist, ScheduleSlot, TrackCache, TrackPlay
 from app.youtube import TrackData
 
 
@@ -1234,7 +1234,7 @@ def test_delete_playlist_leaves_other_playlists_tracks(tmp_path, monkeypatch):
 
 
 def _seed_genre_with_tracks(engine, slug="chill", vids=("a", "b", "c")):
-    from app.models import Playlist, Genre, TrackCache
+    from app.models import Genre, Playlist, TrackCache
 
     with Session(engine) as s:
         st = Genre(name=slug.title(), slug=slug, is_default=True)

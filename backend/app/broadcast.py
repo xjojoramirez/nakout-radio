@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 from sqlmodel import Session, select
 
 from app.config import get_settings
-from app.models import ScheduleSlot, Setting, Genre, TrackCache
+from app.models import Genre, ScheduleSlot, Setting, TrackCache
 from app.rotation import (
     RotationEntry,
     build_rotation_order,

@@ -10,8 +10,8 @@ A track is a permanent library record. Playlist membership is optional, so
 from typing import Sequence, Union
 
 import sqlalchemy as sa
-from alembic import op
 
+from alembic import op
 
 revision: str = "b7c1d2e3f4a5"
 down_revision: Union[str, None] = "d8e9f0a1b2c3"

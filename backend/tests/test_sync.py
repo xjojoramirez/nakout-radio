@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from sqlmodel import Session, SQLModel, create_engine, select
 
-from app.models import Playlist, Genre, TrackCache
+from app.models import Genre, Playlist, TrackCache
 from app.sync import sync_playlist
 from app.youtube import TrackData
 
@@ -28,10 +28,11 @@ def _genre_and_playlist(engine, slug="a", yt_id="PL1") -> None:
 def test_sync_detaches_removed_tracks():
     engine = _engine()
     _genre_and_playlist(engine)
-    fetch = lambda pl_id: [
-        TrackData("v1", "One", "Art", "u1", 0),
-        TrackData("v2", "Two", "Art", "u2", 1),
-    ]
+    def fetch(pl_id):
+        return [
+            TrackData("v1", "One", "Art", "u1", 0),
+            TrackData("v2", "Two", "Art", "u2", 1),
+        ]
 
     with Session(engine) as s:
         pl = s.exec(select(Playlist)).one()

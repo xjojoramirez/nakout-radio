@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 
 from app.config import get_settings
 from app.db import get_session
-from app.models import Playlist, Setting, Genre, TrackCache
+from app.models import Genre, Playlist, Setting, TrackCache
 from app.queue import encode_cursor
 from app.schemas import GenreDetail, GenreOut, TrackOut
 

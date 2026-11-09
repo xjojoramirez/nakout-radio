@@ -11,8 +11,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func
 from sqlmodel import Session, col, delete, select, update
 
-from app import ratelimit
-from app import enrichment
+from app import enrichment, ratelimit
 from app.auth import (
     COOKIE_NAME,
     create_session_token,
@@ -36,22 +35,23 @@ from app.db import get_session
 from app.library import detach_membership
 from app.loudness import ensure_backfill
 from app.models import (
+    GENRE_PALETTE,
+    Genre,
     Playlist,
     ScheduleSlot,
     Setting,
-    Genre,
     TrackCache,
     TrackPlay,
-    GENRE_PALETTE,
 )
 from app.routers.genres import ordered_tracks_for_genre
 from app.routers.now import build_now
 from app.routers.ws import notify_radio
 from app.schemas import (
+    ChangelogEntryOut,
     ChannelIn,
     ChannelOut,
     ChannelPlaylistOut,
-    ChangelogEntryOut,
+    GenreRefIn,
     OrderIn,
     PlayIn,
     PlaylistIn,
@@ -60,7 +60,6 @@ from app.schemas import (
     SlotIn,
     SlotOut,
     SlotUpdate,
-    GenreRefIn,
     TrackOut,
 )
 from app.sync import sync_playlist

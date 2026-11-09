@@ -1,5 +1,6 @@
-import jwt
 from datetime import datetime, timedelta, timezone
+
+import jwt
 
 from app.auth import (
     create_session_token,

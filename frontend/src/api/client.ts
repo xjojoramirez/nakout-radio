@@ -10,7 +10,6 @@ import type {
   QueueState,
   ScheduleSlot,
   ScheduleToday,
-  SlotToday,
   Track,
   TrackDetail,
   TrackDetailInput,

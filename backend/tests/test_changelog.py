@@ -9,6 +9,7 @@ from app.db import get_session
 from app.main import create_app
 from app.routers import admin
 
+
 def _many_entries(count: int = 12) -> str:
     return "\n\n".join(
         f"## 2026-01-{day:02d} — Entry {day}\n\nSummary {day}."

@@ -2,9 +2,6 @@ import sys
 from logging.config import fileConfig
 from pathlib import Path
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -20,9 +17,10 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app.config import get_settings
 from sqlmodel import SQLModel
+
 import app.models  # noqa: F401  (register tables on metadata)
+from app.config import get_settings
 
 target_metadata = SQLModel.metadata
 

@@ -69,11 +69,6 @@ const nowPayload = (): CurrentGenre => ({
   server_time: "2026-10-09T04:00:00+00:00",
 });
 
-/** App weekday int (0 = Monday .. 6 = Sunday) from the browser's clock. */
-function appToday(): number {
-  return (new Date().getDay() + 6) % 7;
-}
-
 const SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const browserToday = new Date().getDay();
 
