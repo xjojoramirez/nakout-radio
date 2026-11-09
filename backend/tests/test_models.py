@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, SQLModel, create_engine, select
 
-from app.models import Playlist, ScheduleSlot, Setting, Genre, TrackCache
+from app.models import Genre, Playlist, ScheduleSlot, Setting, TrackCache
 
 
 @pytest.fixture

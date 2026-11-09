@@ -7,7 +7,7 @@ from app.broadcast import get_current, utcnow
 from app.config import get_settings
 from app.db import get_session
 from app.routers.genres import tracks_for_genre
-from app.schemas import NowOut, GenreOut, TrackOut
+from app.schemas import GenreOut, NowOut, TrackOut
 
 router = APIRouter(prefix="/api", tags=["now"])
 

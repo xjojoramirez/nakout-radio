@@ -20,9 +20,9 @@ from sqlmodel import Session, delete, select
 
 from app.config import get_settings
 from app.enrichment.base import (
+    USER_AGENT,
     ProviderData,
     ProviderError,
-    USER_AGENT,
     apply_provider_data,
     is_empty,
 )

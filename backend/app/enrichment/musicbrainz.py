@@ -15,9 +15,9 @@ from collections.abc import Callable
 import httpx
 
 from app.enrichment.base import (
+    USER_AGENT,
     ProviderData,
     ProviderError,
-    USER_AGENT,
     is_empty,
     year_from_date,
 )

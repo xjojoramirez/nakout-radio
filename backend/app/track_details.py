@@ -3,6 +3,7 @@
 from sqlalchemy import func
 from sqlmodel import Session, delete, select
 
+from app.enrichment.base import metadata_sources
 from app.models import (
     Genre,
     Playlist,
@@ -11,7 +12,6 @@ from app.models import (
     TrackDetail,
     _utcnow,
 )
-from app.enrichment.base import metadata_sources
 from app.schemas import (
     ChartEntryOut,
     SimilarTrackOut,

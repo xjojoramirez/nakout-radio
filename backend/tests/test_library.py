@@ -1,7 +1,6 @@
-from datetime import datetime, timezone
 
 import pytest
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import Session, SQLModel, create_engine
 
 from app.config import get_settings
 from app.db import get_session

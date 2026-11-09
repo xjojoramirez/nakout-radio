@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatClock, hourLabel, slotRange, todayScheduleRows } from "./deck";
+import { formatClock, hourLabel, todayScheduleRows } from "./deck";
 
 const today = {
   current_id: 2,

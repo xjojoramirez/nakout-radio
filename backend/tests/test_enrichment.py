@@ -20,7 +20,6 @@ from app.enrichment.musicbrainz import lookup_musicbrainz
 from app.enrichment.pipeline import enrich_pending, enrich_track, progress
 from app.models import Genre, Playlist, TrackCache, TrackDetail
 
-
 # --- provider parsing ------------------------------------------------------
 
 

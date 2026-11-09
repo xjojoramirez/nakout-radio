@@ -2,7 +2,7 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from app.db import get_session
 from app.main import create_app
-from app.models import Playlist, Genre, TrackCache
+from app.models import Genre, Playlist, TrackCache
 from app.queue import decode_cursor, encode_cursor
 
 

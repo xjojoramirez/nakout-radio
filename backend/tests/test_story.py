@@ -1098,9 +1098,9 @@ def test_progress_counts_stories(tmp_path):
 def _api_client(tmp_path):
     from fastapi.testclient import TestClient
 
+    from app import enrichment
     from app.db import get_session
     from app.main import create_app
-    from app import enrichment
 
     engine = create_engine(
         f"sqlite:///{tmp_path}/story-api.db",

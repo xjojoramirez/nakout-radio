@@ -7,7 +7,7 @@ from app.broadcast import _load, get_current, play_now
 from app.config import get_settings
 from app.db import get_session
 from app.main import create_app
-from app.models import Playlist, ScheduleSlot, Setting, Genre, TrackCache
+from app.models import Genre, Playlist, ScheduleSlot, Setting, TrackCache
 
 
 def _engine(tmp_path):

@@ -3,6 +3,40 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - add static checks to CI
+
+Added backend Ruff 0.17.4 with `ruff.toml` selecting `E4`, `E7`, `E9`, `F`
+and `I`; `E402` is ignored in `alembic/env.py` and `tests/test_ws.py`, which
+adjust `sys.path` before importing app modules. Ruff fixed 41 findings, mostly
+import ordering plus a few unused imports and one lambda assignment.
+
+Added frontend oxlint 1.92.0 via `npm run lint`, with warnings treated as
+errors. It found four unused symbols, all removed. Oxlint was chosen over
+ESLint because ESLint 10 currently pulls a dev-only `minimatch` advisory with
+no non-breaking fix, which would have regressed the audit gate; oxlint is a
+zero-dependency binary.
+
+CI now runs lint before tests in both jobs, and the frontend audit step gates
+the full dependency tree now that it reports 0 vulnerabilities.
+
+- Files touched:
+  - `.github/workflows/ci.yml`
+  - `backend/ruff.toml`
+  - `backend/requirements-dev.txt`
+  - backend Python files (import ordering, unused imports, one lambda)
+  - `frontend/package.json`
+  - `frontend/package-lock.json`
+  - `frontend/src/api/client.ts`
+  - `frontend/src/components/admin/ChangelogDialog.dom.test.tsx`
+  - `frontend/src/components/admin/SchedulePanel.dom.test.tsx`
+  - `frontend/src/utils/deck.unit.test.ts`
+  - `docs/changelog.md`
+- **Container restart required?** Yes - backend and frontend:
+  `docker compose up -d --build backend frontend`
+- **Verification:** `ruff check .` clean; `npm run lint` clean;
+  `npm run typecheck` clean; 355 frontend tests and 487 backend tests passed;
+  `npm audit` reports 0 vulnerabilities.
+
 ## 2026-11-09 - upgrade frontend build and test toolchain
 
 Upgraded Vite 5.4.21 to 8.3.6, Vitest 2.1.9 to 5.1.0,

@@ -9,8 +9,8 @@ from typing import Sequence, Union
 
 import sqlalchemy as sa
 import sqlmodel
-from alembic import op
 
+from alembic import op
 
 revision: str = "d8e9f0a1b2c3"
 down_revision: Union[str, None] = "c9d8e7f6a5b4"

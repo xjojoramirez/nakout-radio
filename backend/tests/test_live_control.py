@@ -17,7 +17,7 @@ from app.broadcast import (
     skip,
     stop,
 )
-from app.models import Playlist, Genre, TrackCache, TrackPlay
+from app.models import Genre, Playlist, TrackCache, TrackPlay
 
 
 def _engine(tmp_path):
