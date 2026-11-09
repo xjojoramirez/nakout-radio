@@ -3,6 +3,22 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - fix flaky TrackLibraryPanel count assertion
+
+The new CI run on `main` exposed a timing race in
+`TrackLibraryPanel.dom.test.tsx`: the test asserted `onCountChange` had been
+called immediately after `findByText`, but the component reports the count in a
+`useEffect`, so under runner contention the assertion could run before React
+flushed passive effects. Wrapped the assertion in `waitFor`, matching the
+existing `PlaylistsPanel` and `SchedulePanel` tests.
+
+- Files touched:
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `docs/changelog.md`
+- **Container restart required?** No - test and docs only.
+- **Verification:** reproduced 2 failures in 40 contention runs before the
+  change; after the change, repeat runs plus the full suite must stay green.
+
 ## 2026-11-09 - add GitHub Actions CI for unit tests
 
 Added `.github/workflows/ci.yml` running two parallel jobs on every pull

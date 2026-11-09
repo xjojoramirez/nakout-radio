@@ -149,7 +149,7 @@ describe("TrackLibraryPanel", () => {
     expect(
       screen.getByLabelText("Details status: Curated"),
     ).toBeInTheDocument();
-    expect(onCountChange).toHaveBeenCalledWith(1);
+    await waitFor(() => expect(onCountChange).toHaveBeenCalledWith(1));
   });
 
   it("searches by title or artist", async () => {
