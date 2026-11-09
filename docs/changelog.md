@@ -3,6 +3,24 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - build Docker images in CI
+
+Added an `images` job to `.github/workflows/ci.yml` that runs after lint and
+tests, builds the backend and frontend images with Buildx, tags each with the
+commit SHA, and verifies the loaded image. The GitHub Actions build cache is
+kept per service. The frontend build stage moved from the EOL `node:20-alpine`
+to `node:24-alpine`, matching CI and Vite 8's Node requirement.
+
+- Files touched:
+  - `.github/workflows/ci.yml`
+  - `frontend/Dockerfile`
+  - `docs/changelog.md`
+- **Container restart required?** Yes - frontend only (Dockerfile base image):
+  `docker compose up -d --build frontend`
+- **Verification:** workflow YAML parses; local `npm run build` passed on
+  Node 24; backend and frontend images build locally, and the CI run on this
+  branch validates the tagged images.
+
 ## 2026-11-09 - add static checks to CI
 
 Added backend Ruff 0.17.4 with `ruff.toml` selecting `E4`, `E7`, `E9`, `F`
