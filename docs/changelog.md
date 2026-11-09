@@ -3,6 +3,24 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-09 - upgrade react-router-dom to 7
+
+Upgraded `react-router-dom` from 6.30.6 to 7.18.5. The app only uses
+`BrowserRouter`, `Routes` and `Route`, which are unchanged in v7, so no
+application code changed. This clears the only advisory in a shipped
+dependency; `npm audit --omit=dev` now reports 0 vulnerabilities. The six
+remaining findings are all dev tooling (Vitest/Vite/esbuild) and are handled
+in the next toolchain upgrade.
+
+- Files touched:
+  - `frontend/package.json`
+  - `frontend/package-lock.json`
+  - `docs/changelog.md`
+- **Container restart required?** Yes - frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:** `npm run typecheck` clean; `npm test` 355 passed;
+  `npm run build` succeeded; `npm audit --omit=dev` reports 0.
+
 ## 2026-11-09 - fix flaky TrackLibraryPanel count assertion
 
 The new CI run on `main` exposed a timing race in
