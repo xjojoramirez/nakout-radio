@@ -4,7 +4,7 @@ import pytest
 
 os.environ.setdefault("YT_API_KEY", "test-key")
 os.environ.setdefault("ADMIN_PASSWORD", "test-pass")
-os.environ.setdefault("SECRET_KEY", "test-secret")
+os.environ.setdefault("SECRET_KEY", "test-secret-0123456789abcdef0123456789")
 os.environ.setdefault("COOKIE_SECURE", "false")
 # Tests that exercise the schedule assume Manila local time (UTC+8). Override
 # any ambient GENRE_TZ so the result does not depend on the developer's env.

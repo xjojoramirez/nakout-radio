@@ -86,7 +86,7 @@ def test_advance_invalid_cursor_400(tmp_path):
 
 def test_advance_unknown_genre_404(tmp_path):
     client = _client(tmp_path)
-    token = encode_cursor("test-secret", "nope", 0)
+    token = encode_cursor("test-secret-0123456789abcdef0123456789", "nope", 0)
     resp = client.post(
         "/api/queue/advance", json={"cursor": token, "direction": "next"}
     )
@@ -139,7 +139,7 @@ def test_advance_empty_genre_returns_no_track(tmp_path):
     from fastapi.testclient import TestClient
 
     client = TestClient(app)
-    token = encode_cursor("test-secret", "empty", 0)
+    token = encode_cursor("test-secret-0123456789abcdef0123456789", "empty", 0)
     resp = client.post(
         "/api/queue/advance", json={"cursor": token, "direction": "next"}
     )

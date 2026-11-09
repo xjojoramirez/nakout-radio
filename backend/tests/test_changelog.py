@@ -164,7 +164,7 @@ def test_changelog_returns_entries(tmp_path, monkeypatch):
         admin,
         "get_settings",
         lambda: SimpleNamespace(
-            secret_key="test-secret", changelog_path=str(changelog)
+            secret_key="test-secret-0123456789abcdef0123456789", changelog_path=str(changelog)
         ),
     )
 
@@ -192,7 +192,7 @@ def test_changelog_defaults_to_ten_entries(tmp_path, monkeypatch):
         admin,
         "get_settings",
         lambda: SimpleNamespace(
-            secret_key="test-secret", changelog_path=str(changelog)
+            secret_key="test-secret-0123456789abcdef0123456789", changelog_path=str(changelog)
         ),
     )
 
@@ -209,7 +209,7 @@ def test_changelog_returns_503_when_file_is_missing(tmp_path, monkeypatch):
         admin,
         "get_settings",
         lambda: SimpleNamespace(
-            secret_key="test-secret",
+            secret_key="test-secret-0123456789abcdef0123456789",
             changelog_path=str(tmp_path / "missing.md"),
         ),
     )
