@@ -3,6 +3,42 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-11 - pull live, compose batch 37 and push the one-by-one cleanup
+
+Pulled live into local (903 to 917 tracks, 14 new), resolved the remaining
+"Release" identities, composed the six eligible tracks, reviewed them and pushed
+nine records to live.
+
+- Identity fixes: the two "Release" uploads are Teri DeSario's Fallin'
+  (*Moonlight Madness*, 1979) and Mcoy Fundales' Salawikain (*Kami nAPO Muna
+  Ulit*, 2007); the New Wave "Release" entry is Industry's State Of The Nation.
+  All three artist labels were corrected locally and pushed.
+- One-by-one pass: Wolfgang's OPM playlist copy gained a 130-character summary,
+  Teeth's Sorry gained a 146-character summary, and Sandwich's Masilungan gained
+  a 296-character story. Their duplicates stay empty with no playlist.
+- Batch 37: 6 summaries and 5 stories for Teri DeSario, Mcoy Fundales, Paramore,
+  Knuckle Puck, LANY and Alesana. Alesana has no story.
+- Review fixes: Salawikain's story no longer implies a co-write; Alesana moved
+  from 2011 to the 2006 Tragic Hero original; Paramore's label to Fueled by
+  Ramen; Knuckle Puck's genres to Rock / Pop Punk.
+- Push: 5 tracks and 14 fact fields, 9 prose records (443 unchanged) and 3
+  artist names. The import route was enabled only for the push and disabled
+  afterwards.
+- Local and live: 917 tracks and details, 5 with no prose, 373 with no story and
+  452 with locked prose.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - documentation only; the live backend was
+  recreated twice only to toggle `LIBRARY_IMPORT_ENABLED`.
+- **Verification:**
+  - Live export after the push matches local; spot checks include Teri DeSario's
+    *Moonlight Madness* facts, the Mcoy Fundales credit, Alesana's 2006 Tragic
+    Hero row and the Industry artist label.
+  - `POST /api/library/import` returns 404 after disabling the route.
+  - Post-push live snapshot:
+    `C:\Users\SD\nakout-backups\live-snapshot-post-push-20261111-b.json`.
+
 ## 2026-11-11 - push batches 34-36 to live
 
 Enabled the live import route, pushed the reviewed facts and locked prose, then

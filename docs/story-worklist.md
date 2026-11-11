@@ -6,13 +6,13 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 367 tracks composed across thirty-six batches. Batches one to sixteen and
-  eighteen to thirty-six are live; batch seventeen was overwritten by the live
-  mirror, though four of its entries were restored in batches twenty-six and
-  twenty-seven. Batches twenty-seven to thirty-six have had a separate reviewer
-  pass, with the corrections below; batches thirty-four to thirty-six were
-  pushed on 2026-11-11.
-- 444 tracks currently have `summary` and/or `story` locked locally and on live.
+- 373 tracks composed across thirty-seven batches. Batches one to sixteen and
+  eighteen to thirty-seven are live; batch seventeen was overwritten by the
+  live mirror, though four of its entries were restored in batches twenty-six
+  and twenty-seven. Batches twenty-seven to thirty-seven have had a separate
+  reviewer pass, with the corrections below; batches thirty-four to
+  thirty-seven were pushed on 2026-11-11.
+- 452 tracks currently have `summary` and/or `story` locked locally and on live.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -606,6 +606,44 @@ Status of the local track-story composition work.
   OctoArts EMI credit.
 - Batch thirty-six ids: `wEfOsYN5MPU`, `8mZpW7_kdmw`, `kItYg1tVvIU`,
   `_NnwjTR2u1w`, `mH3_NV7AK94`, `icH2Zz2Ta_8`, `5L2YT6d16aI`.
+- Batch thirty-seven was composed, reviewed and pushed on 2026-11-11: 6
+  summaries and 5 stories. Teri DeSario's Fallin' and Mcoy Fundales' Salawikain
+  had been stuck as the mislabeled "Release" uploads; the artist labels were
+  corrected before composing. Paramore's Conspiracy, Knuckle Puck's Groundhog
+  Day, LANY's ILYSB (Stripped) and Alesana's This Conversation is Over came from
+  the fourteen-track live sync that day. Alesana has no story because no source
+  gave a song-specific origin anecdote.
+- Batch thirty-seven facts: Teri DeSario gained *Moonlight Madness* / 1979 /
+  Casablanca and the Sager-Hamlisch-Casey credits; Mcoy Fundales gained *Kami
+  nAPO Muna Ulit* / 2007 / Universal, the Danny Javier and producer credits and
+  the ISRC; Alesana moved from the unsupported 2011 date to the 2006 Tragic
+  Hero original; Paramore's label was corrected to Fueled by Ramen; Knuckle
+  Puck's genres to Rock / Pop Punk. All are locked.
+- Batch thirty-seven ids: `Fxl1mQLRKpc`, `sHYDD6_hIjg`, `7cVXDRiNixA`,
+  `x6-w9Ko4euM`, `95HlilRpVFk`, `K3JH0IA1j1w`.
+
+## One-by-one cleanup and batch 37 review
+
+The 2026-11-11 one-by-one pass resolved the remaining duplicates and identities
+and pushed nine records to live:
+
+- Wolfgang's Halik Ni Hudas: the OPM playlist copy `c5TPAYKvL64` gained a
+  130-character summary; the Pinoy Bato copy already had one.
+- Teeth's Sorry: the OPM playlist copy `ow_huCIxbqU` gained a 146-character
+  summary; the duplicate `xddfFA5JGJs` was removed from the playlist.
+- Sandwich's Masilungan: the OPM entry `OMyjALB1J_w` gained a 296-character
+  story about Mike Dizon being pressed to write it; the duplicate
+  `JUz9TxUsXJM` has no playlist.
+- The two "Release" uploads were identified from their video descriptions and
+  corrected to Teri DeSario and Mcoy Fundales; the New Wave entry
+  `pWTUc_nZKG8` was corrected to Industry.
+- Batch 37 review: Salawikain's story was rewritten to remove an implied
+  co-write; Alesana moved to 2006; Paramore's label and Knuckle Puck's genres
+  were corrected.
+- Push: 5 tracks and 14 fact fields, 9 prose records (443 unchanged) and 3
+  artist names. The import route was disabled afterwards.
+- Local and live now match at 917 tracks and details, 452 locked-prose tracks,
+  5 with no prose and 373 with no story.
 
 ## Review of batches 27-30
 
@@ -702,16 +740,16 @@ changed field now has a source URL and a lock.
   Star, The Outfield's Talk To Me and Glitch's Last Laugh, and were left for a
   later composition pass. Genre tags remain provider values on several tracks.
 - Verification: the corrections were applied through `save_detail` and the
-  reviewed facts and prose were pushed to live the same day; local and live now
-  match at 9 tracks with no prose, 371 with no story and 444 with locked prose.
+  reviewed facts and prose were pushed to live the same day; local and live then
+  matched at 9 tracks with no prose, 371 with no story and 444 with locked prose.
   No charts were touched. Pre-fix backup:
   `C:\Users\SD\nakout-backups\local-radio-pre-review-fixes-20261111.db`.
 
 ## Remaining
 
-- 9 tracks still have neither summary nor story.
-- 371 tracks still have no story at all.
-- 444 tracks have locked prose locally and on live.
+- 5 tracks still have neither summary nor story.
+- 373 tracks still have no story at all.
+- 452 tracks have locked prose locally and on live.
 
 ### Remaining by genre (no prose at all)
 
@@ -720,28 +758,24 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 4 |
+| OPM Tunog Kalye | 0 |
 | NU Metal | 0 |
 | Pinoy Bato | 1 |
-| Classic Love Songs | 1 |
-| New Wave | 2 |
+| Classic Love Songs | 0 |
+| New Wave | 1 |
 | Emo Night | 0 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
-| No playlist | 1 |
+| No playlist | 3 |
 
 ## Next batch (0)
 
-No new batch can be composed: the nine remaining empty tracks are all excluded
-until their identity is resolved. Equinox Stars, Party Tyme and Famous or
-Forgotten Music are cover/karaoke uploads; `JUz9TxUsXJM` (SANDWICH — Masilungan),
-the two Teeth — Sorry ids and the 2013 *Legends Series* Wolfgang — Halik Ni
-Hudas are duplicate uploads; Release — Fallin' and Salawikain have no
-album/year and an unresolved artist identity.
-
-Resolving those nine identities is the remaining story work; a further batch
-needs new tracks added to the library or a decision on the duplicates and cover
-uploads.
+No new batch can be composed: the five remaining empty tracks are all excluded.
+Famous or Forgotten Music and Party Tyme are cover/karaoke uploads;
+`JUz9TxUsXJM` (SANDWICH — Masilungan), `xddfFA5JGJs` (Teeth — Sorry) and
+`nnqzQpsDlGk` (Equinox Stars — Let's Groove) are duplicate uploads with no
+playlist. A further batch needs new tracks added to the library or a decision on
+the remaining covers and duplicates.
 
 ## Resume workflow
 
@@ -1074,11 +1108,16 @@ uploads.
   *Doobie Nights* compilation with a rewritten summary; True Faith to the 1994
   OctoArts EMI label. Glitch's Parasite lost the 2021 digital-edition ISRC.
   Optional stories remain available for Shooting Star.
-- The 2026-11-11 live pull moved 12 details and kept 17 locked fields local.
-  Live had 417 locked-prose tracks before the push; the pull carried no new field
-  values because live last changed on 2026-11-10 with the review push.
-- Duplicate uploads still empty and not recommended until the canonical video is
-  chosen: `JUz9TxUsXJM` (SANDWICH — Masilungan), the two Teeth — Sorry ids
-  (`ow_huCIxbqU` and `xddfFA5JGJs`) and `c5TPAYKvL64` (Wolfgang — Halik Ni Hudas
-  on *The Legends Series*). The two Release tracks and the Equinox Stars, Party
-  Tyme and Famous or Forgotten Music uploads need identity checks first.
+- Batch thirty-seven follow-ups: the two "Release" identities are resolved as
+  Teri DeSario and Mcoy Fundales, and the New Wave "Release" entry is Industry;
+  all three artist labels were corrected. Alesana now uses the 2006 Tragic Hero
+  original rather than the unsupported 2011 date; Paramore's label is Fueled by
+  Ramen and Knuckle Puck's genres are Rock / Pop Punk. Salawikain's story keeps
+  Danny Javier as the sole composer. Alesana has no story.
+- The 2026-11-11 pulls: the first moved 12 details and kept 17 locked fields
+  local; the second added the 14 tracks that had appeared on live and kept the
+  three local one-by-one edits. Live grew from 903 to 917 tracks.
+- Remaining duplicate or cover uploads: `JUz9TxUsXJM` (SANDWICH — Masilungan),
+  `xddfFA5JGJs` (Teeth — Sorry) and `nnqzQpsDlGk` (Equinox Stars — Let's
+  Groove) have no playlist; Famous or Forgotten Music and Party Tyme are
+  cover/karaoke uploads still on playlists.
