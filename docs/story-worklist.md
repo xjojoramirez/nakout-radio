@@ -7,14 +7,12 @@ Status of the local track-story composition work.
 ## Completed
 
 - 367 tracks composed across thirty-six batches. Batches one to sixteen and
-  eighteen to thirty-three are live; batch seventeen was overwritten by the
-  live mirror, though four of its entries were restored in batches twenty-six
-  and twenty-seven. Batches twenty-seven to thirty-six have had a separate
-  reviewer pass, with the corrections below; batches thirty-four to thirty-six
-  are composed locally and await push. Batches thirty-one to thirty-three were
-  published on 2026-11-10.
-- 444 tracks currently have `summary` and/or `story` locked locally; live has
-  417 because batches thirty-four to thirty-six have not been pushed yet.
+  eighteen to thirty-six are live; batch seventeen was overwritten by the live
+  mirror, though four of its entries were restored in batches twenty-six and
+  twenty-seven. Batches twenty-seven to thirty-six have had a separate reviewer
+  pass, with the corrections below; batches thirty-four to thirty-six were
+  pushed on 2026-11-11.
+- 444 tracks currently have `summary` and/or `story` locked locally and on live.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -590,13 +588,14 @@ Status of the local track-story composition work.
 - Batch thirty-five ids: `B_6jVnl1MEI`, `DGoQCwFCILg`, `S-097hSJqXk`,
   `7jP02y0wrkk`, `O1s-xVnvC-8`, `OMyjALB1J_w`, `bes56enRMvs`,
   `7TQa9aGybi4`, `TENnDeu2lqo`, `lhng-216UQ4`.
-- Batch thirty-six was composed locally on 2026-11-11 and reviewed with batches
-  thirty-four and thirty-five: 7 summaries and 2 stories. Teeth's Darating,
-  Shooting Star and Tampo, The Chongkeys' Diksyonaryo and Glitch's Parasite have
-  no story because no source gave a song-specific origin anecdote. Glitch's
-  Parasite gained album *Illementz*, year 2000 and label OctoArts EMI Music,
-  Inc. from the original Philippine CD (3 locked fields plus the digital-edition
-  ISRC, which the review cleared). The other six tracks already had every fact.
+- Batch thirty-six was composed locally on 2026-11-11 and was reviewed with
+  batches 34 and 35 in the same session: 7 summaries and 2 stories. Teeth's
+  Darating, Shooting Star and Tampo, The Chongkeys' Diksyonaryo and Glitch's
+  Parasite have no story because no source gave a song-specific origin
+  anecdote. Glitch's Parasite gained album *Illementz*, year 2000 and label
+  OctoArts EMI Music, Inc. from the original Philippine CD (3 locked fields plus
+  the digital-edition ISRC, which the review cleared). The other six tracks
+  already had every fact.
 - Batch thirty-six edition items for the review (all corrected in the 34-36
   review): Sugarfree stored 2021 against the 2006 *Kami nAPO Muna* tribute;
   Teeth's Darating and Shooting Star stored the 2003 compilation *Dogs Can Fly
@@ -702,17 +701,17 @@ changed field now has a source URL and a lock.
   Manomano's Nene, Sandwich's Young Stunna, Teeth's Baga at Usok and Shooting
   Star, The Outfield's Talk To Me and Glitch's Last Laugh, and were left for a
   later composition pass. Genre tags remain provider values on several tracks.
-- Verification: the corrections were applied through `save_detail`; local totals
-  are 9 tracks with no prose, 371 with no story and 444 with locked prose. No
-  charts were touched and no live change was made. Pre-fix backup:
+- Verification: the corrections were applied through `save_detail` and the
+  reviewed facts and prose were pushed to live the same day; local and live now
+  match at 9 tracks with no prose, 371 with no story and 444 with locked prose.
+  No charts were touched. Pre-fix backup:
   `C:\Users\SD\nakout-backups\local-radio-pre-review-fixes-20261111.db`.
 
 ## Remaining
 
 - 9 tracks still have neither summary nor story.
 - 371 tracks still have no story at all.
-- 444 tracks have locked prose locally; live has 417 until batches thirty-four
-  to thirty-six are pushed.
+- 444 tracks have locked prose locally and on live.
 
 ### Remaining by genre (no prose at all)
 
@@ -1076,9 +1075,8 @@ uploads.
   OctoArts EMI label. Glitch's Parasite lost the 2021 digital-edition ISRC.
   Optional stories remain available for Shooting Star.
 - The 2026-11-11 live pull moved 12 details and kept 17 locked fields local.
-  Live still has 417 locked-prose tracks and no batch thirty-four to thirty-six
-  prose; the pull carried no new field values because live last changed on
-  2026-11-10 with the review push.
+  Live had 417 locked-prose tracks before the push; the pull carried no new field
+  values because live last changed on 2026-11-10 with the review push.
 - Duplicate uploads still empty and not recommended until the canonical video is
   chosen: `JUz9TxUsXJM` (SANDWICH — Masilungan), the two Teeth — Sorry ids
   (`ow_huCIxbqU` and `xddfFA5JGJs`) and `c5TPAYKvL64` (Wolfgang — Halik Ni Hudas

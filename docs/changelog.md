@@ -3,11 +3,38 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-11 - push batches 34-36 to live
+
+Enabled the live import route, pushed the reviewed facts and locked prose, then
+disabled the route again.
+
+- Facts: 22 tracks updated, 74 fields. Five tracks (Manomano, Pupil, Butterfly
+  Carnival, Stonefree, Young Stunna) had no locked facts and only needed prose.
+- Prose: 444 tracks selected (442 summaries, 279 stories), 27 updated and 417
+  unchanged.
+- Live totals after the push: 903 tracks and details, 9 with no prose, 371 with
+  no story and 444 with locked prose.
+- Verification:
+  - The live export after the push matches local on the corrected ids; spot
+    checks include Session Road's 2004 *Suntok Sa Buwan*, Sponge Cola's 2007
+    *Kami nAPO Muna ULIT*, The Outfield's 1985 *Play Deep*, The Chongkeys' 2006
+    *Doobie Nights*, True Faith's OctoArts EMI label and both Glitch *Illementz*
+    rows.
+  - `POST /api/library/import` returns 404 after disabling the route; the live
+    backend was recreated twice only to toggle `LIBRARY_IMPORT_ENABLED`.
+  - Post-push live snapshot:
+    `C:\Users\SD\nakout-backups\live-snapshot-post-push-20261111.json`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - documentation only; no application code
+  or configuration changed.
+
 ## 2026-11-11 - review batches 34-36 and correct local facts
 
 Audited the 27 tracks composed in batches thirty-four to thirty-six with six
 read-only reviewer agents and applied 23 record corrections in the local
-library. The batches remain local and unpushed.
+library. The corrections were pushed to live later the same day.
 
 - Edition fixes: both Kjwan tracks to *2StepMarv* / 2006-11-06 / Barnyard Music
   Philippines / EMI Philippines; Rivermaya to *Tuloy Ang Ligaya* / 2001-10-15;
