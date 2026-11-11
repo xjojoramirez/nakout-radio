@@ -3,6 +3,81 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-11 - review batches 34-36 and correct local facts
+
+Audited the 27 tracks composed in batches thirty-four to thirty-six with six
+read-only reviewer agents and applied 23 record corrections in the local
+library. The batches remain local and unpushed.
+
+- Edition fixes: both Kjwan tracks to *2StepMarv* / 2006-11-06 / Barnyard Music
+  Philippines / EMI Philippines; Rivermaya to *Tuloy Ang Ligaya* / 2001-10-15;
+  Rocksteddy's Leslie to 2008 and Superhero to 2007; Sandwich's Selos to
+  2008-02-12; both Session Road tracks to *Suntok Sa Buwan* / 2004-09-22, tracks
+  7 and 5; Sponge Cola's Tambay to 2011-09-16 and Barkada to *Kami nAPO Muna
+  ULIT* / 2007-08-24, disc 1; both Sandwich tracks to 2003, with catalog P4S 001
+  on 2 Trick Pony; The Outfield to 1985-11-12; Sugarfree to 2006 *Kami nAPO
+  Muna*; Teeth's Darating and Shooting Star to 1999 *I Was a Teenage Tree* and
+  Tampo to 1997 *Time Machine*; The Chongkeys' Diksyonaryo to 2006 *Doobie
+  Nights* / Galaxy Records; True Faith to the 1994 OctoArts EMI label.
+- Prose fixes: Kjwan's Pintura story dropped the MYX award claim; Sandwich's
+  Butterfly Carnival story now spells Raimund; The Chongkeys' Diksyonaryo
+  summary now describes the 2006 compilation edition.
+- Credits: Sponge Cola's Barkada gained Songwriter Jim Paredes; Teeth's Baga at
+  Usok gained the band's vocals, guitar, drums, bass and composer credits.
+- Cleared or corrected identifiers: The Chongkeys' and Glitch's Parasite ISRCs
+  were cleared as later-edition codes; Parasite and Last Laugh gained their CD
+  track numbers; Cool Off's stale story timestamp was cleared.
+- Open items: Stonefree's Anghel keeps 2006 against Wikipedia's 2007 album date
+  and needs a human decision; optional stories for Manomano's Nene, Sandwich's
+  Young Stunna, Teeth's Baga at Usok and Shooting Star, The Outfield's Talk To
+  Me and Glitch's Last Laugh were left for a later composition pass.
+- Local totals: 903 tracks and details, 9 tracks with no prose, 371 with no
+  story and 444 with locked prose. Live stays at 417 locked-prose tracks.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - Every corrected field carries an editor source URL and a lock; the applied
+    script is `C:\Users\SD\nakout-backups\review-fixes-20261111-batches34-36.py`.
+  - Pre-fix backup:
+    `C:\Users\SD\nakout-backups\local-radio-pre-review-fixes-20261111.db`.
+  - No chart rows were touched, no live change was made and the live import
+    route remains `false`.
+
+## 2026-11-11 - compose thirty-sixth story batch locally
+
+Composed the last batch of currently eligible empty tracks in the local
+library: 7 summaries and 2 stories. The batch was reviewed with batches 34 and
+35 in the same session and remains unpushed.
+
+- Facts: Glitch's Parasite gained album *Illementz*, year 2000 and label
+  OctoArts EMI Music, Inc. from the original Philippine CD (3 locked fields).
+  Its digital-edition ISRC was written by the composer and cleared by the
+  review. The other six tracks already had every fact.
+- Prose: 7 summaries; Sugarfree's Batang-Bata Ka Pa and True Faith's Huwag Na
+  Lang Kaya (Acoustic Version) also gained stories. Teeth's Darating, Shooting
+  Star and Tampo, The Chongkeys' Diksyonaryo and Glitch's Parasite have no story
+  because no source gave a song-specific origin anecdote.
+- Edition items for the review: Sugarfree's 2021 against the 2006 *Kami nAPO
+  Muna*; Teeth's three tracks against the 1999 *I Was a Teenage Tree* and 1997
+  *Time Machine*; The Chongkeys' 2023 DistroKid edition against the 2006
+  *Doobie Nights*; True Faith's PolyEast label against the 1994 OctoArts EMI
+  credit.
+- Local totals after composition: 903 tracks and details, 9 tracks with no
+  prose, 371 with no story and 444 with locked prose.
+- Batch thirty-six ids: `wEfOsYN5MPU`, `8mZpW7_kdmw`, `kItYg1tVvIU`,
+  `_NnwjTR2u1w`, `mH3_NV7AK94`, `icH2Zz2Ta_8`, `5L2YT6d16aI`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - All seven records show a locked summary with a source URL; two also show a
+    locked story with a source URL; Glitch's three new facts carry the Discogs
+    release URL.
+  - No contemporary chart rows were added and no live change was made.
+
 ## 2026-11-11 - pull live and compose thirty-fifth story batch locally
 
 Pulled the live library into local and composed batch thirty-five in the local
