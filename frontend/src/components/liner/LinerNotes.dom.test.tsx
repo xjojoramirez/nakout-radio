@@ -140,6 +140,44 @@ describe("LinerNotes", () => {
     expect(screen.getByText("Bamboo (The Band)")).toBeInTheDocument();
   });
 
+  it("hides album artist and Main when they repeat the on-air artist", () => {
+    render(
+      <LinerNotes
+        status="ready"
+        detail={detail({
+          artist: "Bamboo (The Band)",
+          album_artist: "Bamboo (The Band)",
+          credits: [{ role: "Main", name: "Bamboo (The Band)" }],
+        })}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: "Details" }));
+
+    expect(screen.queryByText("Album artist")).not.toBeInTheDocument();
+    expect(screen.queryByText("Main artist")).not.toBeInTheDocument();
+  });
+
+  it("keeps album artist when it differs from the on-air artist", () => {
+    render(
+      <LinerNotes
+        status="ready"
+        detail={detail({
+          artist: "Frankie Valli",
+          album_artist: "Frankie Valli & The Four Seasons",
+          credits: [],
+        })}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: "Details" }));
+
+    expect(screen.getByText("Album artist")).toBeInTheDocument();
+    expect(
+      screen.getByText("Frankie Valli & The Four Seasons"),
+    ).toBeInTheDocument();
+  });
+
   it("switches to the chart history tab", () => {
     render(<LinerNotes status="ready" detail={detail()} />);
 

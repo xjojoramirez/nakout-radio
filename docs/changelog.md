@@ -10,7 +10,9 @@ number; album, album artist, release, label, catalog, genre, BPM, key, country
 and language remain. Credits now put the name in readable cream text with the
 role in quiet mono type right beside it, separated by thin rules instead of
 tiny cramped columns; the source role "Main" is displayed as "Main artist".
-Fact labels and section headings got a small legibility bump too.
+Album artist and a Main credit that repeat the on-air artist are hidden, so
+only differing credits such as soundtracks and compilations remain. Fact labels
+and section headings got a small legibility bump too.
 
 - Files touched:
   - `frontend/src/components/liner/LinerNotes.tsx`
@@ -20,7 +22,7 @@ Fact labels and section headings got a small legibility bump too.
 - **Container restart required?** Yes - frontend only:
   `docker compose up -d --build frontend`
 - **Verification:** `npm run typecheck` clean; `npm run lint` clean; full
-  frontend suite passed (356 tests).
+  frontend suite passed (358 tests).
 
 ## 2026-11-10 - document story batches 31-34
 

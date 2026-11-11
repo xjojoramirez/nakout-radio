@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
-import type { TrackDetail, TrackDetailStatus } from "../../types";
+import type { TrackCredit, TrackDetail, TrackDetailStatus } from "../../types";
 
 type TabId = "story" | "details" | "charts";
 
@@ -39,15 +39,52 @@ const CREDIT_ROLE_LABELS: Record<string, string> = {
   main: "Main artist",
 };
 
+const MAIN_CREDIT_ROLES = new Set(["main", "main artist"]);
+
 /** Roles come from the metadata providers; "Main" alone reads like a heading. */
 function creditRoleLabel(role: string): string {
   return CREDIT_ROLE_LABELS[role.trim().toLowerCase()] ?? role;
 }
 
+function normalizeName(value: string | null | undefined): string {
+  return (value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+function sameName(
+  left: string | null | undefined,
+  right: string | null | undefined,
+): boolean {
+  const name = normalizeName(left);
+  return Boolean(name) && name === normalizeName(right);
+}
+
+/** The header already names the on-air artist, so a matching "Main" is noise. */
+function isRedundantMainCredit(
+  credit: TrackCredit,
+  detail: TrackDetail,
+): boolean {
+  if (!MAIN_CREDIT_ROLES.has(normalizeName(credit.role))) return false;
+  return (
+    sameName(credit.name, detail.artist) ||
+    sameName(credit.name, detail.album_artist)
+  );
+}
+
+function visibleCredits(detail: TrackDetail): TrackCredit[] {
+  return detail.credits.filter(
+    (credit) => !isRedundantMainCredit(credit, detail),
+  );
+}
+
 function hasFacts(detail: TrackDetail): boolean {
   return Boolean(
     detail.album ||
-      detail.album_artist ||
+      (detail.album_artist &&
+        !sameName(detail.album_artist, detail.artist)) ||
       detail.release_date ||
       detail.release_year ||
       detail.label ||
@@ -57,7 +94,7 @@ function hasFacts(detail: TrackDetail): boolean {
       detail.musical_key ||
       detail.country ||
       detail.language ||
-      detail.credits.length ||
+      visibleCredits(detail).length ||
       detail.moods.length ||
       detail.links.length ||
       detail.similar.some((track) => track.title),
@@ -122,7 +159,9 @@ function FactsPanel({ detail }: { detail: TrackDetail }) {
   };
 
   add("Album", detail.album);
-  add("Album artist", detail.album_artist);
+  if (detail.album_artist && !sameName(detail.album_artist, detail.artist)) {
+    add("Album artist", detail.album_artist);
+  }
   add("Released", detail.release_date || detail.release_year);
   add("Label", detail.label);
   add("Catalog", detail.catalog_number);
@@ -132,7 +171,8 @@ function FactsPanel({ detail }: { detail: TrackDetail }) {
   add("Country", detail.country);
   add("Language", detail.language);
 
-  const hasCredits = detail.credits.length > 0;
+  const credits = visibleCredits(detail);
+  const hasCredits = credits.length > 0;
   const hasMoods = detail.moods.length > 0;
   const hasLinks = detail.links.length > 0;
   const similar = detail.similar.filter((item) => item.title);
@@ -164,7 +204,7 @@ function FactsPanel({ detail }: { detail: TrackDetail }) {
         <section className="liner-block">
           <h3>Credits</h3>
           <dl className="liner-credits">
-            {detail.credits.map((credit, index) => (
+            {credits.map((credit, index) => (
               <div key={`${credit.role}-${credit.name}-${index}`}>
                 <dt>{creditRoleLabel(credit.role)}</dt>
                 <dd>{credit.name}</dd>
