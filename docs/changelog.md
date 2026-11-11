@@ -3,6 +3,25 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-11 - trim home details and simplify credits
+
+The homepage liner-notes Details tab no longer shows ISRC, track number or disc
+number; album, album artist, release, label, catalog, genre, BPM, key, country
+and language remain. Credits now put the name in readable cream text with the
+role in quiet mono type right beside it, separated by thin rules instead of
+tiny cramped columns; the source role "Main" is displayed as "Main artist".
+Fact labels and section headings got a small legibility bump too.
+
+- Files touched:
+  - `frontend/src/components/liner/LinerNotes.tsx`
+  - `frontend/src/components/liner/LinerNotes.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md`
+- **Container restart required?** Yes - frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:** `npm run typecheck` clean; `npm run lint` clean; full
+  frontend suite passed (356 tests).
+
 ## 2026-11-10 - document story batches 31-34
 
 Brought `docs/story-worklist.md` up to date with the 2026-11-10 story work:

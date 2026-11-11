@@ -35,6 +35,15 @@ function hasStory(detail: TrackDetail): boolean {
   );
 }
 
+const CREDIT_ROLE_LABELS: Record<string, string> = {
+  main: "Main artist",
+};
+
+/** Roles come from the metadata providers; "Main" alone reads like a heading. */
+function creditRoleLabel(role: string): string {
+  return CREDIT_ROLE_LABELS[role.trim().toLowerCase()] ?? role;
+}
+
 function hasFacts(detail: TrackDetail): boolean {
   return Boolean(
     detail.album ||
@@ -43,9 +52,6 @@ function hasFacts(detail: TrackDetail): boolean {
       detail.release_year ||
       detail.label ||
       detail.catalog_number ||
-      detail.isrc ||
-      detail.track_number ||
-      detail.disc_number ||
       detail.genres.length ||
       detail.bpm ||
       detail.musical_key ||
@@ -120,9 +126,6 @@ function FactsPanel({ detail }: { detail: TrackDetail }) {
   add("Released", detail.release_date || detail.release_year);
   add("Label", detail.label);
   add("Catalog", detail.catalog_number);
-  add("ISRC", detail.isrc);
-  add("Track", detail.track_number);
-  add("Disc", detail.disc_number);
   add("Genre", detail.genres.join(", "));
   add("BPM", detail.bpm);
   add("Key", detail.musical_key);
@@ -163,7 +166,7 @@ function FactsPanel({ detail }: { detail: TrackDetail }) {
           <dl className="liner-credits">
             {detail.credits.map((credit, index) => (
               <div key={`${credit.role}-${credit.name}-${index}`}>
-                <dt>{credit.role}</dt>
+                <dt>{creditRoleLabel(credit.role)}</dt>
                 <dd>{credit.name}</dd>
               </div>
             ))}

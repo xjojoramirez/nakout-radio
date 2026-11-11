@@ -115,10 +115,29 @@ describe("LinerNotes", () => {
 
     expect(screen.getByText("Kind of Blue")).toBeInTheDocument();
     expect(screen.getByText("Columbia")).toBeInTheDocument();
-    expect(screen.getByText("USSM15900001")).toBeInTheDocument();
+    expect(screen.queryByText("USSM15900001")).not.toBeInTheDocument();
+    expect(screen.queryByText("Track")).not.toBeInTheDocument();
+    expect(screen.queryByText("Disc")).not.toBeInTheDocument();
+    expect(screen.getByText("Bill Evans")).toBeInTheDocument();
     expect(screen.getByText("Trumpet")).toBeInTheDocument();
     expect(screen.getByText("late night")).toBeInTheDocument();
     expect(screen.getByText("So What")).toBeInTheDocument();
+  });
+
+  it("labels the source role Main as Main artist", () => {
+    render(
+      <LinerNotes
+        status="ready"
+        detail={detail({
+          credits: [{ role: "Main", name: "Bamboo (The Band)" }],
+        })}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: "Details" }));
+
+    expect(screen.getByText("Main artist")).toBeInTheDocument();
+    expect(screen.getByText("Bamboo (The Band)")).toBeInTheDocument();
   });
 
   it("switches to the chart history tab", () => {
