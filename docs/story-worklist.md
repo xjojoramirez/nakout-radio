@@ -6,13 +6,15 @@ Status of the local track-story composition work.
 
 ## Completed
 
-- 300 tracks composed across thirty batches. Batches one to sixteen and
-  eighteen to twenty-eight are live; batch seventeen was overwritten by the
+- 350 tracks composed across thirty-four batches. Batches one to sixteen and
+  eighteen to thirty-three are live; batch seventeen was overwritten by the
   live mirror, though four of its entries were restored in batches twenty-six
-  and twenty-seven. Batches twenty-seven to thirty have had a separate reviewer
-  pass and are live, including the corrections. Batches twenty-nine and thirty
-  were published on 2026-11-06.
-- 345 tracks currently have `summary` and/or `story` locked in both libraries.
+  and twenty-seven. Batches twenty-seven to thirty-three have had a separate
+  reviewer pass and are live, including the corrections. Batches thirty-one to
+  thirty-three were published on 2026-11-10; batch thirty-four is composed
+  locally and awaits review.
+- 427 tracks currently have `summary` and/or `story` locked locally; live has
+  417 because batch thirty-four has not been pushed yet.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -518,6 +520,48 @@ Status of the local track-story composition work.
 - Batch thirty ids: `IhthDnQWrZw`, `8gSxdKK2Bz4`, `8Hl1eNn5rHQ`,
   `9CWSKyy4p7Q`, `xQciT9ZXbgQ`, `Tx9svogMLlk`, `oPvWJFbiakI`,
   `m14z8PirD2w`, `iE3mRENrmZg`, `blhEVJkgAtQ`.
+- Batch thirty-one was composed and pushed to live on 2026-11-10: 20 summaries
+  and 17 stories. Soapdish's Tensionado, The Youth's Multo Sa Paningin and The
+  Chongkeys' Gabi ng Lagim have no story because no source gave a song-specific
+  origin anecdote. The composer changed no fact fields; the review corrections
+  below did.
+- Batch thirty-one ids: `2w38yiiMg0M`, `4NfPff7B39A`, `7O1sd_FOGbI`,
+  `AeT721ZZOLU`, `Fq3zEALJpkI`, `Pv937xEb6-8`, `QRVDIuTJBuI`,
+  `R3nV-oboQJg`, `Sjritw30Vpg`, `VvuZS4JfFJM`, `Vy-mGmWrWzY`,
+  `YVwqBjpgMgY`, `ZxQxRjlXMvw`, `d-3r52Hgy6c`, `oXlp9xZ7ytc`,
+  `pASJyCLCRkc`, `sk2m697mIKI`, `skCX-0qx6Tk`, `uvUCX4KBvYE`,
+  `vHK-esptjpw`.
+- Batch thirty-two was composed and pushed to live on 2026-11-10: 10 summaries
+  and 9 stories. Tropical Depression's Kapayapaan has no story.
+- Batch thirty-two ids: `1EAHsj4P3xU`, `60bg7JAGNcU`, `IjgxkaP1nGY`,
+  `MPLGUsUOfnU`, `TK5kdvxfQ1w`, `bDKRJtDeMG8`, `h9M2uHLikT4`,
+  `iZUbmmupOmg`, `kB5pANVXx_4`, `sMaU9d9xGjQ`.
+- Batch thirty-three was composed and pushed to live on 2026-11-10: 10
+  summaries and 8 stories. Deftones' cut hands and Glitch's Wriggler have no
+  story.
+- Batch thirty-three ids: `1aRFFcu6Moc`, `4Udl0gqcZyo`, `AVoT4ngKgJ8`,
+  `BC4GS7y9aWk`, `BSnZENC4eTA`, `DorY-v_1nLk`, `JCBGJQAWwkk`,
+  `ckMr29NLzOI`, `hGxPaI1MyFY`, `qTv0rgxGngw`.
+- Batch thirty-four was composed locally on 2026-11-10 and is awaiting review:
+  10 summaries and 7 stories. Manomano's Nene, Rivermaya's Wag Na Init Ulo Baby
+  and Rocksteddy's Leslie have no story because no source gave a song-specific
+  origin anecdote. The composer changed no fact fields: every track already had
+  album, year, label, ISRC and credits.
+- Batch thirty-four edition items for the review: both Kjwan tracks use the 2015
+  digital reissue of *2StepMarv* against the 2006 original on Barnyard/EMI;
+  Rivermaya's year is 2002 against the 2001-10-25 album; Rocksteddy's Leslie is
+  2016 against 2008-09-17; Rocksteddy's Superhero is 2016 against 2007 and the
+  album is stored as *Patipatotpanabla* against *Patipatopanabla*; Sandwich's
+  Selos is 2014 against 2008-02-12; Stonefree's 2006 year conflicts with
+  Wikipedia's 2007 album date. Sandwich's Butterfly Carnival only has
+  day-level date variants within 1999.
+- Batch thirty-four prose items for the review: Sandwich's Butterfly Carnival
+  story spells the frontman Raymund, while the artist credit and other stories
+  use Raimund; Kjwan's Pintura story cites an MYX award, which the composer
+  rules normally drop.
+- Batch thirty-four ids: `LoTuaGuzpT0`, `dcJ4jXBHXu0`, `UQh7RJDeQto`,
+  `dx2GOqybgCg`, `eE9Xm8_5dy0`, `wcO7WR2Q2OQ`, `O0cbMZ99zMA`,
+  `MinVaJXI5mk`, `Wdj_Dme484U`, `HUi6JftmEK8`.
 
 ## Review of batches 27-30
 
@@ -559,11 +603,35 @@ same day.
   forty ids match live on facts, prose, sources, locks and identity; local totals
   are 93 tracks with no prose, 428 with no story and 345 with locked prose.
 
+## Review of batches 31-33
+
+A 27-track review pass on 2026-11-10 corrected 91 fact fields and 51 prose
+fields, added or replaced weekly chart rows, and pushed the result to live the
+same day. Every changed field has a source URL and a lock.
+
+- Edition, date and label fixes included Natalie Cole to *Good to Be Back*, The
+  Animals to *The Best of The Animals*, Mr. Big to *Lean into It*, Southern Sons
+  to *Nothing But the Truth*, Andy Williams to *Love Story*, Yellowcard to
+  *Lights and Sounds* and Funeral for a Friend to the *She Drove Me to Daytime
+  Television/Bullet Theory* single, alongside Yano, Siakol, Parokya Ni Edgar,
+  Sponge Cola, Rivermaya, Orange & Lemons, Sampaguita, Orient Pearl, Rizal
+  Underground and Glitch.
+- Credit and identity fixes included Warlock's Padre Damaso and Orient Pearl's
+  Pagsubok.
+- Chart rows were cleaned or replaced on the Pink Floyd, Natalie Cole, Animals,
+  Mr. Big and Southern Sons entries; local chart rows rose from 6066 to 6148.
+- Push: 27 tracks of facts and 30 tracks of prose. Live and local then matched
+  at 903 tracks and details and 417 locked-prose tracks.
+- Open annotations: the FRX/FR59 ISRCs on several 2015-2016 digital reissues
+  remain provider codes rather than original-release codes, and several
+  pre-1990 albums still store year-only dates.
+
 ## Remaining
 
-- 93 tracks still have neither summary nor story.
-- 428 tracks still have no story at all.
-- 345 tracks have locked prose.
+- 26 tracks still have neither summary nor story.
+- 377 tracks still have no story at all.
+- 427 tracks have locked prose locally; live has 417 until batch thirty-four
+  is pushed.
 
 ### Remaining by genre (no prose at all)
 
@@ -572,14 +640,15 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 69 |
-| NU Metal | 6 |
-| Pinoy Bato | 13 |
-| Classic Love Songs | 3 |
+| OPM Tunog Kalye | 18 |
+| NU Metal | 2 |
+| Pinoy Bato | 1 |
+| Classic Love Songs | 1 |
 | New Wave | 2 |
 | Emo Night | 0 |
-| Classic Rock | 0 |
+| Classic Rock | 1 |
 | Traffic Jam | 0 |
+| No playlist | 1 |
 
 ## Next batch (10)
 
@@ -587,16 +656,22 @@ These are still empty and are the recommended next batch.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Kjwan — Nasilayan | OPM Tunog Kalye | *13 Seconds To Love* / 2009 | `DDv81CuLTm0` | verify original album/year |
-| Loonie — Tao Lang | OPM Tunog Kalye | *Tao Lang* / 2012 | `ukJHVEz_FzQ` | verify original album/year |
-| Mojofly — Mata | OPM Tunog Kalye | *Now* / 2005 | `9mh66TFjQG0` | verify original album/year |
-| Moonstar 88 — Migraine | OPM Tunog Kalye | *Todo Combo* / 2008 | `F3FZBfCLWYc` | verify original album/year |
-| Parokya Ni Edgar — Gitara | OPM Tunog Kalye | *Halina Sa Parokya* / 2014 | `3Rdzqc51cEY` | use original album/year; 2014 is a reissue |
-| Glitch — Flower | NU Metal | *None* / None | `P0B4FmRWYik` | missing album/year; verify release |
-| WilaBaliw — Hindi Na Makita | NU Metal | *Aurum* / 2019 | `ZEZh2MGlkw4` | verify track/label |
-| Grin Department — Skin | Pinoy Bato | *Grin Department* / 2008 | `VBhXO8Tm8g4` | verify original album/year |
-| Siakol — Gawing Langit Ang Mundo | Pinoy Bato | *Tropa* / 2010 | `MDuWK9BmWNg` | verify original album/year |
-| Joe LaMont — Victims of Love | Classic Love Songs | *Secrets You Keep* / 2017 | `T2qofeyGaLg` | verify original album/year; 2017 may be a reissue |
+| Session Road — Suntok Sa Buwan | OPM Tunog Kalye | *Session Road* / 2017 | `B_6jVnl1MEI` | verify against the 2004 original |
+| Session Road — Cool Off | OPM Tunog Kalye | *Session Road* / 2017 | `DGoQCwFCILg` | verify against the 2004 original |
+| Sponge Cola — Tambay | OPM Tunog Kalye | *Araw Oras Tagpuan* / 2014 | `S-097hSJqXk` | verify track/label |
+| Sponge Cola — Saan Na Nga Ba'ng Barkada | OPM Tunog Kalye | *Kami Napo Muna The Collection* / 2012 | `7jP02y0wrkk` | use the 2006 *Kami nAPO Muna* original |
+| Sandwich — 2 Trick Pony | OPM Tunog Kalye | *Thanks to the Moon's Gravitational Pull* / 2017 | `O1s-xVnvC-8` | verify track/label |
+| Sandwich — Masilungan | OPM Tunog Kalye | *Thanks to the Moon's Gravitational Pull* / 2017 | `OMyjALB1J_w` | verify track/label |
+| Sandwich — Young Stunna | OPM Tunog Kalye | *Young Stunna* / 2026 | `bes56enRMvs` | verify single release |
+| Teeth — Baga at Usok | OPM Tunog Kalye | *Baga at Usok* / 2019 | `7TQa9aGybi4` | verify track/label |
+| The Outfield — Talk To Me | Classic Rock | *Play Deep* / 1986 | `TENnDeu2lqo` | verify track/label |
+| Glitch — Last Laugh | NU Metal | *None* / None | `lhng-216UQ4` | missing album/year; verify release |
+
+Excluded from the recommendation until their identity is resolved: Equinox
+Stars, Party Tyme and Famous or Forgotten Music are cover/karaoke uploads;
+`JUz9TxUsXJM` (SANDWICH — Masilungan), the two Teeth — Sorry ids and the 2013
+*Legends Series* Wolfgang — Halik Ni Hudas are duplicate uploads; Release —
+Fallin' and Salawikain have no album/year and an unresolved artist identity.
 
 ## Resume workflow
 
@@ -903,3 +978,24 @@ These are still empty and are the recommended next batch.
   Deftones' When Girls Telephone Boys and Grin Department's Picture Mo Inday
   have no story. Brownman Revival's Paniwalaan Mo gained album *Ayos Din*, 2007
   and Sony BMG, with track number 2 unwritable and no ISRC.
+- Batches thirty-one to thirty-three were composed and pushed on 2026-11-10.
+  The review pass corrected 91 fact fields and 51 prose fields on 27 tracks and
+  lifted the chart rows from 6066 to 6148. The FRX/FR59 ISRCs on several
+  2015-2016 digital reissues remain provider codes, and the pre-1990 entries
+  still use year-only dates where no release day is documented.
+- Batch thirty-four follow-ups: both Kjwan tracks keep the 2015 *2StepMarv*
+  digital reissue fields against the 2006 Barnyard/EMI original; Rivermaya's
+  2002 against 2001-10-25; Rocksteddy's Leslie 2016 against 2008-09-17;
+  Rocksteddy's Superhero 2016 against 2007 and *Patipatotpanabla* against
+  *Patipatopanabla*; Sandwich's Selos 2014 against 2008-02-12; Stonefree's 2006
+  against Wikipedia's 2007 album date. Pupil's credits still carry only Main,
+  so the sourced Diane Ventura songwriter credit needs a Studio edit.
+- Batch thirty-four prose review: Sandwich's Butterfly Carnival story spells the
+  frontman Raymund while the artist credit and other stories use Raimund; Kjwan's
+  Pintura story cites an MYX award. Manomano, Rivermaya's Wag Na Init Ulo Baby
+  and Rocksteddy's Leslie have no story.
+- Duplicate uploads still empty and not recommended until the canonical video is
+  chosen: `JUz9TxUsXJM` (SANDWICH — Masilungan), the two Teeth — Sorry ids
+  (`ow_huCIxbqU` and `xddfFA5JGJs`) and `c5TPAYKvL64` (Wolfgang — Halik Ni Hudas
+  on *The Legends Series*). The two Release tracks and the Equinox Stars, Party
+  Tyme and Famous or Forgotten Music uploads need identity checks first.
