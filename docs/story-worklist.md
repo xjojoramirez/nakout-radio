@@ -1,20 +1,18 @@
 # Story worklist
 
-Date: 2026-11-06
+Date: 2026-11-11
 
 Status of the local track-story composition work.
 
 ## Completed
 
-- 350 tracks composed across thirty-four batches. Batches one to sixteen and
-  eighteen to thirty-three are live; batch seventeen was overwritten by the
+- 373 tracks composed across thirty-seven batches. Batches one to sixteen and
+  eighteen to thirty-seven are live; batch seventeen was overwritten by the
   live mirror, though four of its entries were restored in batches twenty-six
-  and twenty-seven. Batches twenty-seven to thirty-three have had a separate
-  reviewer pass and are live, including the corrections. Batches thirty-one to
-  thirty-three were published on 2026-11-10; batch thirty-four is composed
-  locally and awaits review.
-- 427 tracks currently have `summary` and/or `story` locked locally; live has
-  417 because batch thirty-four has not been pushed yet.
+  and twenty-seven. Batches twenty-seven to thirty-seven have had a separate
+  reviewer pass, with the corrections below; batches thirty-four to
+  thirty-seven were pushed on 2026-11-11.
+- 452 tracks currently have `summary` and/or `story` locked locally and on live.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -542,26 +540,110 @@ Status of the local track-story composition work.
 - Batch thirty-three ids: `1aRFFcu6Moc`, `4Udl0gqcZyo`, `AVoT4ngKgJ8`,
   `BC4GS7y9aWk`, `BSnZENC4eTA`, `DorY-v_1nLk`, `JCBGJQAWwkk`,
   `ckMr29NLzOI`, `hGxPaI1MyFY`, `qTv0rgxGngw`.
-- Batch thirty-four was composed locally on 2026-11-10 and is awaiting review:
-  10 summaries and 7 stories. Manomano's Nene, Rivermaya's Wag Na Init Ulo Baby
-  and Rocksteddy's Leslie have no story because no source gave a song-specific
-  origin anecdote. The composer changed no fact fields: every track already had
-  album, year, label, ISRC and credits.
-- Batch thirty-four edition items for the review: both Kjwan tracks use the 2015
-  digital reissue of *2StepMarv* against the 2006 original on Barnyard/EMI;
-  Rivermaya's year is 2002 against the 2001-10-25 album; Rocksteddy's Leslie is
-  2016 against 2008-09-17; Rocksteddy's Superhero is 2016 against 2007 and the
-  album is stored as *Patipatotpanabla* against *Patipatopanabla*; Sandwich's
-  Selos is 2014 against 2008-02-12; Stonefree's 2006 year conflicts with
-  Wikipedia's 2007 album date. Sandwich's Butterfly Carnival only has
-  day-level date variants within 1999.
-- Batch thirty-four prose items for the review: Sandwich's Butterfly Carnival
-  story spells the frontman Raymund, while the artist credit and other stories
-  use Raimund; Kjwan's Pintura story cites an MYX award, which the composer
-  rules normally drop.
+- Batch thirty-four was composed locally on 2026-11-10 and was reviewed with
+  batches 35 and 36 on 2026-11-11: 10 summaries and 7 stories. Manomano's Nene,
+  Rivermaya's Wag Na Init Ulo Baby and Rocksteddy's Leslie have no story because
+  no source gave a song-specific origin anecdote. The composer changed no fact
+  fields: every track already had album, year, label, ISRC and credits.
+- Batch thirty-four edition items found for the review (all corrected in the
+  34-36 review): both Kjwan tracks used the 2015 digital reissue of *2StepMarv*
+  against the 2006 original on Barnyard/EMI; Rivermaya's year was 2002 against
+  the 2001-10-25 album; Rocksteddy's Leslie was 2016 against 2008-09-17;
+  Rocksteddy's Superhero was 2016 against 2007 and the album is stored as
+  *Patipatotpanabla* against *Patipatopanabla*; Sandwich's Selos was 2014
+  against 2008-02-12; Stonefree's 2006 year conflicts with Wikipedia's 2007
+  album date. Sandwich's Butterfly Carnival only has day-level date variants
+  within 1999.
+- Batch thirty-four prose items found for the review (corrected in the 34-36
+  review): Sandwich's Butterfly Carnival story spelled the frontman Raymund,
+  while the artist credit and other stories use Raimund; Kjwan's Pintura story
+  cited an MYX award, which the composer rules normally drop.
 - Batch thirty-four ids: `LoTuaGuzpT0`, `dcJ4jXBHXu0`, `UQh7RJDeQto`,
   `dx2GOqybgCg`, `eE9Xm8_5dy0`, `wcO7WR2Q2OQ`, `O0cbMZ99zMA`,
   `MinVaJXI5mk`, `Wdj_Dme484U`, `HUi6JftmEK8`.
+- Batch thirty-five was composed locally on 2026-11-11 and was reviewed with
+  batches 34 and 36: 10 summaries and 4 stories. Session Road's Cool Off,
+  Sandwich's Masilungan, Sandwich's Young Stunna, Teeth's Baga at Usok, The
+  Outfield's Talk To Me and Glitch's Last Laugh have no story because no source
+  gave a song-specific origin anecdote. Glitch's Last Laugh gained album
+  *Illementz*, year 2000 and label OctoArts EMI Music, Inc. from the original
+  Philippine CD (3 locked fields); the digital-reissue ISRC was not stored. The
+  other nine tracks already had every fact.
+- Batch thirty-five edition items found for the review (all corrected in the
+  34-36 review): both Session Road tracks stored *Session Road* / 2017 against
+  the 2004 *Suntok Sa Buwan* (Alpha Records); Sponge Cola's Tambay stored the
+  2014 digital edition against the 2011-09-16 *Araw Oras Tagpuan*; Sponge Cola's
+  Barkada stored the 2012 collection against the 2007 *Kami nAPO Muna ULIT*
+  (the 2006 first tribute carries Nakapagtataka, not this song); Sandwich's 2
+  Trick Pony and Masilungan stored 2017 against the 2003 *Thanks to the Moon's
+  Gravitational Pull* (Play For Serve, cat P4S 001); The Outfield's Talk To Me
+  stored 1986 against the 1985-11-12 *Play Deep*. Glitch's Last Laugh label
+  follows the 2000 OctoArts EMI CD while Deezer lists the current PolyEast name,
+  and its release date is only year-level.
+- Batch thirty-five credit items found for the review (added in the 34-36
+  review): Sponge Cola's Barkada has a sourced Jim Paredes songwriter credit and
+  Teeth's Baga at Usok has sourced Mike Dizon composer/lyricist and band
+  performance credits; both fields were populated with only Main, so `apply`
+  could not add them and the review did.
+- Batch thirty-five ids: `B_6jVnl1MEI`, `DGoQCwFCILg`, `S-097hSJqXk`,
+  `7jP02y0wrkk`, `O1s-xVnvC-8`, `OMyjALB1J_w`, `bes56enRMvs`,
+  `7TQa9aGybi4`, `TENnDeu2lqo`, `lhng-216UQ4`.
+- Batch thirty-six was composed locally on 2026-11-11 and was reviewed with
+  batches 34 and 35 in the same session: 7 summaries and 2 stories. Teeth's
+  Darating, Shooting Star and Tampo, The Chongkeys' Diksyonaryo and Glitch's
+  Parasite have no story because no source gave a song-specific origin
+  anecdote. Glitch's Parasite gained album *Illementz*, year 2000 and label
+  OctoArts EMI Music, Inc. from the original Philippine CD (3 locked fields plus
+  the digital-edition ISRC, which the review cleared). The other six tracks
+  already had every fact.
+- Batch thirty-six edition items for the review (all corrected in the 34-36
+  review): Sugarfree stored 2021 against the 2006 *Kami nAPO Muna* tribute;
+  Teeth's Darating and Shooting Star stored the 2003 compilation *Dogs Can Fly
+  (Teeth's Finest)* against the 1999 *I Was a Teenage Tree*, and Tampo against
+  the 1997 *Time Machine*; The Chongkeys' Diksyonaryo stored the 2023 DistroKid
+  self-titled edition against the 2006 Galaxy Records compilation *Doobie
+  Nights*; True Faith stored the PolyEast reissue label against the 1994
+  OctoArts EMI credit.
+- Batch thirty-six ids: `wEfOsYN5MPU`, `8mZpW7_kdmw`, `kItYg1tVvIU`,
+  `_NnwjTR2u1w`, `mH3_NV7AK94`, `icH2Zz2Ta_8`, `5L2YT6d16aI`.
+- Batch thirty-seven was composed, reviewed and pushed on 2026-11-11: 6
+  summaries and 5 stories. Teri DeSario's Fallin' and Mcoy Fundales' Salawikain
+  had been stuck as the mislabeled "Release" uploads; the artist labels were
+  corrected before composing. Paramore's Conspiracy, Knuckle Puck's Groundhog
+  Day, LANY's ILYSB (Stripped) and Alesana's This Conversation is Over came from
+  the fourteen-track live sync that day. Alesana has no story because no source
+  gave a song-specific origin anecdote.
+- Batch thirty-seven facts: Teri DeSario gained *Moonlight Madness* / 1979 /
+  Casablanca and the Sager-Hamlisch-Casey credits; Mcoy Fundales gained *Kami
+  nAPO Muna Ulit* / 2007 / Universal, the Danny Javier and producer credits and
+  the ISRC; Alesana moved from the unsupported 2011 date to the 2006 Tragic
+  Hero original; Paramore's label was corrected to Fueled by Ramen; Knuckle
+  Puck's genres to Rock / Pop Punk. All are locked.
+- Batch thirty-seven ids: `Fxl1mQLRKpc`, `sHYDD6_hIjg`, `7cVXDRiNixA`,
+  `x6-w9Ko4euM`, `95HlilRpVFk`, `K3JH0IA1j1w`.
+
+## One-by-one cleanup and batch 37 review
+
+The 2026-11-11 one-by-one pass resolved the remaining duplicates and identities
+and pushed nine records to live:
+
+- Wolfgang's Halik Ni Hudas: the OPM playlist copy `c5TPAYKvL64` gained a
+  130-character summary; the Pinoy Bato copy already had one.
+- Teeth's Sorry: the OPM playlist copy `ow_huCIxbqU` gained a 146-character
+  summary; the duplicate `xddfFA5JGJs` was removed from the playlist.
+- Sandwich's Masilungan: the OPM entry `OMyjALB1J_w` gained a 296-character
+  story about Mike Dizon being pressed to write it; the duplicate
+  `JUz9TxUsXJM` has no playlist.
+- The two "Release" uploads were identified from their video descriptions and
+  corrected to Teri DeSario and Mcoy Fundales; the New Wave entry
+  `pWTUc_nZKG8` was corrected to Industry.
+- Batch 37 review: Salawikain's story was rewritten to remove an implied
+  co-write; Alesana moved to 2006; Paramore's label and Knuckle Puck's genres
+  were corrected.
+- Push: 5 tracks and 14 fact fields, 9 prose records (443 unchanged) and 3
+  artist names. The import route was disabled afterwards.
+- Local and live now match at 917 tracks and details, 452 locked-prose tracks,
+  5 with no prose and 373 with no story.
 
 ## Review of batches 27-30
 
@@ -626,12 +708,48 @@ same day. Every changed field has a source URL and a lock.
   remain provider codes rather than original-release codes, and several
   pre-1990 albums still store year-only dates.
 
+## Review of batches 34-36
+
+A 27-track review pass on 2026-11-11 audited the three composed batches with six
+read-only reviewer agents. Twenty-three records needed corrections; every
+changed field now has a source URL and a lock.
+
+- Edition fixes: both Kjwan tracks to *2StepMarv* / 2006-11-06 / Barnyard Music
+  Philippines / EMI Philippines; Rivermaya to *Tuloy Ang Ligaya* / 2001-10-15;
+  Rocksteddy's Leslie to 2008 and Superhero to 2007; Sandwich's Selos to
+  2008-02-12; both Session Road tracks to *Suntok Sa Buwan* / 2004-09-22, tracks
+  7 and 5; Sponge Cola's Tambay to 2011-09-16 and Barkada to *Kami nAPO Muna
+  ULIT* / 2007-08-24, disc 1; both Sandwich tracks to 2003, with catalog P4S 001
+  on 2 Trick Pony; The Outfield to 1985-11-12; Sugarfree to 2006 *Kami nAPO
+  Muna*; Teeth's Darating and Shooting Star to 1999 *I Was a Teenage Tree* and
+  Tampo to 1997 *Time Machine*; The Chongkeys' Diksyonaryo to 2006 *Doobie
+  Nights* / Galaxy Records; True Faith to the 1994 OctoArts EMI label.
+- Prose fixes: Kjwan's Pintura story dropped the MYX award claim; Sandwich's
+  Butterfly Carnival story now spells Raimund; The Chongkeys' Diksyonaryo
+  summary now describes the 2006 compilation edition. All three keep their locks
+  and source URLs.
+- Credit fixes: Sponge Cola's Barkada gained Songwriter Jim Paredes and Teeth's
+  Baga at Usok gained the band's vocals, guitar, drums, bass and composer
+  credits from the official upload.
+- Cleared or corrected identifiers: The Chongkeys' and Glitch's Parasite ISRCs
+  were cleared as later-edition codes; Parasite and Last Laugh gained their CD
+  track numbers; Cool Off's stale story timestamp was cleared.
+- Open items: Stonefree's Anghel keeps 2006 against Wikipedia's 2007 album date
+  and needs a human decision. Optional story additions were proposed for
+  Manomano's Nene, Sandwich's Young Stunna, Teeth's Baga at Usok and Shooting
+  Star, The Outfield's Talk To Me and Glitch's Last Laugh, and were left for a
+  later composition pass. Genre tags remain provider values on several tracks.
+- Verification: the corrections were applied through `save_detail` and the
+  reviewed facts and prose were pushed to live the same day; local and live then
+  matched at 9 tracks with no prose, 371 with no story and 444 with locked prose.
+  No charts were touched. Pre-fix backup:
+  `C:\Users\SD\nakout-backups\local-radio-pre-review-fixes-20261111.db`.
+
 ## Remaining
 
-- 26 tracks still have neither summary nor story.
-- 377 tracks still have no story at all.
-- 427 tracks have locked prose locally; live has 417 until batch thirty-four
-  is pushed.
+- 5 tracks still have neither summary nor story.
+- 373 tracks still have no story at all.
+- 452 tracks have locked prose locally and on live.
 
 ### Remaining by genre (no prose at all)
 
@@ -640,38 +758,24 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 18 |
-| NU Metal | 2 |
+| OPM Tunog Kalye | 0 |
+| NU Metal | 0 |
 | Pinoy Bato | 1 |
-| Classic Love Songs | 1 |
-| New Wave | 2 |
+| Classic Love Songs | 0 |
+| New Wave | 1 |
 | Emo Night | 0 |
-| Classic Rock | 1 |
+| Classic Rock | 0 |
 | Traffic Jam | 0 |
-| No playlist | 1 |
+| No playlist | 3 |
 
-## Next batch (10)
+## Next batch (0)
 
-These are still empty and are the recommended next batch.
-
-| Track | Genre | Album / year | Video ID | Note |
-|---|---|---|---|---|
-| Session Road — Suntok Sa Buwan | OPM Tunog Kalye | *Session Road* / 2017 | `B_6jVnl1MEI` | verify against the 2004 original |
-| Session Road — Cool Off | OPM Tunog Kalye | *Session Road* / 2017 | `DGoQCwFCILg` | verify against the 2004 original |
-| Sponge Cola — Tambay | OPM Tunog Kalye | *Araw Oras Tagpuan* / 2014 | `S-097hSJqXk` | verify track/label |
-| Sponge Cola — Saan Na Nga Ba'ng Barkada | OPM Tunog Kalye | *Kami Napo Muna The Collection* / 2012 | `7jP02y0wrkk` | use the 2006 *Kami nAPO Muna* original |
-| Sandwich — 2 Trick Pony | OPM Tunog Kalye | *Thanks to the Moon's Gravitational Pull* / 2017 | `O1s-xVnvC-8` | verify track/label |
-| Sandwich — Masilungan | OPM Tunog Kalye | *Thanks to the Moon's Gravitational Pull* / 2017 | `OMyjALB1J_w` | verify track/label |
-| Sandwich — Young Stunna | OPM Tunog Kalye | *Young Stunna* / 2026 | `bes56enRMvs` | verify single release |
-| Teeth — Baga at Usok | OPM Tunog Kalye | *Baga at Usok* / 2019 | `7TQa9aGybi4` | verify track/label |
-| The Outfield — Talk To Me | Classic Rock | *Play Deep* / 1986 | `TENnDeu2lqo` | verify track/label |
-| Glitch — Last Laugh | NU Metal | *None* / None | `lhng-216UQ4` | missing album/year; verify release |
-
-Excluded from the recommendation until their identity is resolved: Equinox
-Stars, Party Tyme and Famous or Forgotten Music are cover/karaoke uploads;
-`JUz9TxUsXJM` (SANDWICH — Masilungan), the two Teeth — Sorry ids and the 2013
-*Legends Series* Wolfgang — Halik Ni Hudas are duplicate uploads; Release —
-Fallin' and Salawikain have no album/year and an unresolved artist identity.
+No new batch can be composed: the five remaining empty tracks are all excluded.
+Famous or Forgotten Music and Party Tyme are cover/karaoke uploads;
+`JUz9TxUsXJM` (SANDWICH — Masilungan), `xddfFA5JGJs` (Teeth — Sorry) and
+`nnqzQpsDlGk` (Equinox Stars — Let's Groove) are duplicate uploads with no
+playlist. A further batch needs new tracks added to the library or a decision on
+the remaining covers and duplicates.
 
 ## Resume workflow
 
@@ -983,19 +1087,37 @@ Fallin' and Salawikain have no album/year and an unresolved artist identity.
   lifted the chart rows from 6066 to 6148. The FRX/FR59 ISRCs on several
   2015-2016 digital reissues remain provider codes, and the pre-1990 entries
   still use year-only dates where no release day is documented.
-- Batch thirty-four follow-ups: both Kjwan tracks keep the 2015 *2StepMarv*
-  digital reissue fields against the 2006 Barnyard/EMI original; Rivermaya's
-  2002 against 2001-10-25; Rocksteddy's Leslie 2016 against 2008-09-17;
-  Rocksteddy's Superhero 2016 against 2007 and *Patipatotpanabla* against
-  *Patipatopanabla*; Sandwich's Selos 2014 against 2008-02-12; Stonefree's 2006
-  against Wikipedia's 2007 album date. Pupil's credits still carry only Main,
-  so the sourced Diane Ventura songwriter credit needs a Studio edit.
-- Batch thirty-four prose review: Sandwich's Butterfly Carnival story spells the
-  frontman Raymund while the artist credit and other stories use Raimund; Kjwan's
-  Pintura story cites an MYX award. Manomano, Rivermaya's Wag Na Init Ulo Baby
-  and Rocksteddy's Leslie have no story.
-- Duplicate uploads still empty and not recommended until the canonical video is
-  chosen: `JUz9TxUsXJM` (SANDWICH — Masilungan), the two Teeth — Sorry ids
-  (`ow_huCIxbqU` and `xddfFA5JGJs`) and `c5TPAYKvL64` (Wolfgang — Halik Ni Hudas
-  on *The Legends Series*). The two Release tracks and the Equinox Stars, Party
-  Tyme and Famous or Forgotten Music uploads need identity checks first.
+- Batch thirty-four follow-ups after the 2026-11-11 review: both Kjwan tracks
+  moved to the 2006 *2StepMarv* (Barnyard/EMI) and Pintura's story dropped the
+  MYX award; Rivermaya to 2001-10-15; Rocksteddy's Leslie to 2008 and Superhero
+  to 2007; Sandwich's Selos to 2008-02-12; Butterfly Carnival now spells
+  Raimund. Stonefree's Anghel still carries 2006 against Wikipedia's 2007 album
+  date and needs a human decision. Pupil's credits still carry only Main, so the
+  sourced Diane Ventura songwriter credit needs a Studio edit. Manomano,
+  Rivermaya's Wag Na Init Ulo Baby and Rocksteddy's Leslie have no story.
+- Batch thirty-five follow-ups after the review: both Session Road tracks moved
+  to *Suntok Sa Buwan* / 2004-09-22 with tracks 7 and 5; Sponge Cola's Tambay to
+  2011-09-16 and Barkada to *Kami nAPO Muna ULIT* / 2007-08-24 with the Jim
+  Paredes songwriter credit; Sandwich's 2 Trick Pony and Masilungan to 2003 with
+  catalog P4S 001; The Outfield to 1985-11-12. Glitch's Last Laugh keeps the
+  2000 OctoArts EMI CD facts and gained track number 4. Optional stories remain
+  available for Young Stunna, Baga at Usok, Talk To Me and Last Laugh.
+- Batch thirty-six follow-ups after the review: Sugarfree moved to 2006 *Kami
+  nAPO Muna*; Teeth's Darating and Shooting Star to 1999 *I Was a Teenage Tree*
+  and Tampo to 1997 *Time Machine*; The Chongkeys' Diksyonaryo to the 2006
+  *Doobie Nights* compilation with a rewritten summary; True Faith to the 1994
+  OctoArts EMI label. Glitch's Parasite lost the 2021 digital-edition ISRC.
+  Optional stories remain available for Shooting Star.
+- Batch thirty-seven follow-ups: the two "Release" identities are resolved as
+  Teri DeSario and Mcoy Fundales, and the New Wave "Release" entry is Industry;
+  all three artist labels were corrected. Alesana now uses the 2006 Tragic Hero
+  original rather than the unsupported 2011 date; Paramore's label is Fueled by
+  Ramen and Knuckle Puck's genres are Rock / Pop Punk. Salawikain's story keeps
+  Danny Javier as the sole composer. Alesana has no story.
+- The 2026-11-11 pulls: the first moved 12 details and kept 17 locked fields
+  local; the second added the 14 tracks that had appeared on live and kept the
+  three local one-by-one edits. Live grew from 903 to 917 tracks.
+- Remaining duplicate or cover uploads: `JUz9TxUsXJM` (SANDWICH — Masilungan),
+  `xddfFA5JGJs` (Teeth — Sorry) and `nnqzQpsDlGk` (Equinox Stars — Let's
+  Groove) have no playlist; Famous or Forgotten Music and Party Tyme are
+  cover/karaoke uploads still on playlists.
