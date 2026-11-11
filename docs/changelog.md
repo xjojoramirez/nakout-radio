@@ -24,6 +24,186 @@ and section headings got a small legibility bump too.
 - **Verification:** `npm run typecheck` clean; `npm run lint` clean; full
   frontend suite passed (358 tests).
 
+## 2026-11-11 - pull live, compose batch 37 and push the one-by-one cleanup
+
+Pulled live into local (903 to 917 tracks, 14 new), resolved the remaining
+"Release" identities, composed the six eligible tracks, reviewed them and pushed
+nine records to live.
+
+- Identity fixes: the two "Release" uploads are Teri DeSario's Fallin'
+  (*Moonlight Madness*, 1979) and Mcoy Fundales' Salawikain (*Kami nAPO Muna
+  Ulit*, 2007); the New Wave "Release" entry is Industry's State Of The Nation.
+  All three artist labels were corrected locally and pushed.
+- One-by-one pass: Wolfgang's OPM playlist copy gained a 130-character summary,
+  Teeth's Sorry gained a 146-character summary, and Sandwich's Masilungan gained
+  a 296-character story. Their duplicates stay empty with no playlist.
+- Batch 37: 6 summaries and 5 stories for Teri DeSario, Mcoy Fundales, Paramore,
+  Knuckle Puck, LANY and Alesana. Alesana has no story.
+- Review fixes: Salawikain's story no longer implies a co-write; Alesana moved
+  from 2011 to the 2006 Tragic Hero original; Paramore's label to Fueled by
+  Ramen; Knuckle Puck's genres to Rock / Pop Punk.
+- Push: 5 tracks and 14 fact fields, 9 prose records (443 unchanged) and 3
+  artist names. The import route was enabled only for the push and disabled
+  afterwards.
+- Local and live: 917 tracks and details, 5 with no prose, 373 with no story and
+  452 with locked prose.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - documentation only; the live backend was
+  recreated twice only to toggle `LIBRARY_IMPORT_ENABLED`.
+- **Verification:**
+  - Live export after the push matches local; spot checks include Teri DeSario's
+    *Moonlight Madness* facts, the Mcoy Fundales credit, Alesana's 2006 Tragic
+    Hero row and the Industry artist label.
+  - `POST /api/library/import` returns 404 after disabling the route.
+  - Post-push live snapshot:
+    `C:\Users\SD\nakout-backups\live-snapshot-post-push-20261111-b.json`.
+
+## 2026-11-11 - push batches 34-36 to live
+
+Enabled the live import route, pushed the reviewed facts and locked prose, then
+disabled the route again.
+
+- Facts: 22 tracks updated, 74 fields. Five tracks (Manomano, Pupil, Butterfly
+  Carnival, Stonefree, Young Stunna) had no locked facts and only needed prose.
+- Prose: 444 tracks selected (442 summaries, 279 stories), 27 updated and 417
+  unchanged.
+- Live totals after the push: 903 tracks and details, 9 with no prose, 371 with
+  no story and 444 with locked prose.
+- Verification:
+  - The live export after the push matches local on the corrected ids; spot
+    checks include Session Road's 2004 *Suntok Sa Buwan*, Sponge Cola's 2007
+    *Kami nAPO Muna ULIT*, The Outfield's 1985 *Play Deep*, The Chongkeys' 2006
+    *Doobie Nights*, True Faith's OctoArts EMI label and both Glitch *Illementz*
+    rows.
+  - `POST /api/library/import` returns 404 after disabling the route; the live
+    backend was recreated twice only to toggle `LIBRARY_IMPORT_ENABLED`.
+  - Post-push live snapshot:
+    `C:\Users\SD\nakout-backups\live-snapshot-post-push-20261111.json`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - documentation only; no application code
+  or configuration changed.
+
+## 2026-11-11 - review batches 34-36 and correct local facts
+
+Audited the 27 tracks composed in batches thirty-four to thirty-six with six
+read-only reviewer agents and applied 23 record corrections in the local
+library. The corrections were pushed to live later the same day.
+
+- Edition fixes: both Kjwan tracks to *2StepMarv* / 2006-11-06 / Barnyard Music
+  Philippines / EMI Philippines; Rivermaya to *Tuloy Ang Ligaya* / 2001-10-15;
+  Rocksteddy's Leslie to 2008 and Superhero to 2007; Sandwich's Selos to
+  2008-02-12; both Session Road tracks to *Suntok Sa Buwan* / 2004-09-22, tracks
+  7 and 5; Sponge Cola's Tambay to 2011-09-16 and Barkada to *Kami nAPO Muna
+  ULIT* / 2007-08-24, disc 1; both Sandwich tracks to 2003, with catalog P4S 001
+  on 2 Trick Pony; The Outfield to 1985-11-12; Sugarfree to 2006 *Kami nAPO
+  Muna*; Teeth's Darating and Shooting Star to 1999 *I Was a Teenage Tree* and
+  Tampo to 1997 *Time Machine*; The Chongkeys' Diksyonaryo to 2006 *Doobie
+  Nights* / Galaxy Records; True Faith to the 1994 OctoArts EMI label.
+- Prose fixes: Kjwan's Pintura story dropped the MYX award claim; Sandwich's
+  Butterfly Carnival story now spells Raimund; The Chongkeys' Diksyonaryo
+  summary now describes the 2006 compilation edition.
+- Credits: Sponge Cola's Barkada gained Songwriter Jim Paredes; Teeth's Baga at
+  Usok gained the band's vocals, guitar, drums, bass and composer credits.
+- Cleared or corrected identifiers: The Chongkeys' and Glitch's Parasite ISRCs
+  were cleared as later-edition codes; Parasite and Last Laugh gained their CD
+  track numbers; Cool Off's stale story timestamp was cleared.
+- Open items: Stonefree's Anghel keeps 2006 against Wikipedia's 2007 album date
+  and needs a human decision; optional stories for Manomano's Nene, Sandwich's
+  Young Stunna, Teeth's Baga at Usok and Shooting Star, The Outfield's Talk To
+  Me and Glitch's Last Laugh were left for a later composition pass.
+- Local totals: 903 tracks and details, 9 tracks with no prose, 371 with no
+  story and 444 with locked prose. Live stays at 417 locked-prose tracks.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - Every corrected field carries an editor source URL and a lock; the applied
+    script is `C:\Users\SD\nakout-backups\review-fixes-20261111-batches34-36.py`.
+  - Pre-fix backup:
+    `C:\Users\SD\nakout-backups\local-radio-pre-review-fixes-20261111.db`.
+  - No chart rows were touched, no live change was made and the live import
+    route remains `false`.
+
+## 2026-11-11 - compose thirty-sixth story batch locally
+
+Composed the last batch of currently eligible empty tracks in the local
+library: 7 summaries and 2 stories. The batch was reviewed with batches 34 and
+35 in the same session and remains unpushed.
+
+- Facts: Glitch's Parasite gained album *Illementz*, year 2000 and label
+  OctoArts EMI Music, Inc. from the original Philippine CD (3 locked fields).
+  Its digital-edition ISRC was written by the composer and cleared by the
+  review. The other six tracks already had every fact.
+- Prose: 7 summaries; Sugarfree's Batang-Bata Ka Pa and True Faith's Huwag Na
+  Lang Kaya (Acoustic Version) also gained stories. Teeth's Darating, Shooting
+  Star and Tampo, The Chongkeys' Diksyonaryo and Glitch's Parasite have no story
+  because no source gave a song-specific origin anecdote.
+- Edition items for the review: Sugarfree's 2021 against the 2006 *Kami nAPO
+  Muna*; Teeth's three tracks against the 1999 *I Was a Teenage Tree* and 1997
+  *Time Machine*; The Chongkeys' 2023 DistroKid edition against the 2006
+  *Doobie Nights*; True Faith's PolyEast label against the 1994 OctoArts EMI
+  credit.
+- Local totals after composition: 903 tracks and details, 9 tracks with no
+  prose, 371 with no story and 444 with locked prose.
+- Batch thirty-six ids: `wEfOsYN5MPU`, `8mZpW7_kdmw`, `kItYg1tVvIU`,
+  `_NnwjTR2u1w`, `mH3_NV7AK94`, `icH2Zz2Ta_8`, `5L2YT6d16aI`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - All seven records show a locked summary with a source URL; two also show a
+    locked story with a source URL; Glitch's three new facts carry the Discogs
+    release URL.
+  - No contemporary chart rows were added and no live change was made.
+
+## 2026-11-11 - pull live and compose thirty-fifth story batch locally
+
+Pulled the live library into local and composed batch thirty-five in the local
+library only. The batch is not reviewed and has not been pushed. Live last
+changed on 2026-11-10 with the review push, so the pull carried no new field
+values: 903 tracks and details on both sides, 12 details updated for metadata
+timestamps and 17 locked fields kept local.
+
+- Facts: Glitch's Last Laugh gained album *Illementz*, year 2000 and label
+  OctoArts EMI Music, Inc. from the original Philippine CD (3 locked fields).
+  Its digital-reissue ISRC was left empty. No other fact fields changed.
+- Prose: 10 tracks gained summaries and 4 gained stories. Session Road's Cool
+  Off, Sandwich's Masilungan, Sandwich's Young Stunna, Teeth's Baga at Usok,
+  The Outfield's Talk To Me and Glitch's Last Laugh have no story because no
+  source gave a song-specific origin anecdote.
+- Known edition items for the review: both Session Road tracks store *Session
+  Road* / 2017 against the 2004 *Suntok Sa Buwan*; Sponge Cola's Tambay stores
+  the 2014 digital edition against the 2011 *Araw Oras Tagpuan*; Sponge Cola's
+  Barkada stores the 2012 collection against the 2007 *Kami nAPO Muna ULIT*;
+  Sandwich's 2 Trick Pony and Masilungan store 2017 against the 2003 *Thanks to
+  the Moon's Gravitational Pull*; The Outfield's Talk To Me stores 1986 against
+  the 1985-11-12 *Play Deep*. Glitch's Last Laugh follows the 2000 OctoArts EMI
+  CD while Deezer lists the current PolyEast name.
+- Local totals: 903 tracks, 903 details, 16 tracks with no prose, 373 with no
+  story and 437 with locked prose. Live is unchanged at 417 locked-prose tracks.
+- Batch thirty-five ids: `B_6jVnl1MEI`, `DGoQCwFCILg`, `S-097hSJqXk`,
+  `7jP02y0wrkk`, `O1s-xVnvC-8`, `OMyjALB1J_w`, `bes56enRMvs`,
+  `7TQa9aGybi4`, `TENnDeu2lqo`, `lhng-216UQ4`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - All ten records show a locked summary with a source URL; four also show a
+    locked story with a source URL; Glitch's three new facts carry the Discogs
+    release URL.
+  - Live pull before composition: 903 tracks, 0 created, 12 updated, 891
+    unchanged, 0 membership and 0 chart changes, 17 locked fields kept local.
+  - Pre-pull backup:
+    `C:\Users\SD\nakout-backups\local-radio-pre-live-pull-20261111.db`.
+  - No live change was made and the live import route remains `false`.
+
 ## 2026-11-10 - document story batches 31-34
 
 Brought `docs/story-worklist.md` up to date with the 2026-11-10 story work:
