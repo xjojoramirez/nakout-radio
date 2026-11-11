@@ -1,20 +1,20 @@
 # Story worklist
 
-Date: 2026-11-06
+Date: 2026-11-11
 
 Status of the local track-story composition work.
 
 ## Completed
 
-- 350 tracks composed across thirty-four batches. Batches one to sixteen and
+- 360 tracks composed across thirty-five batches. Batches one to sixteen and
   eighteen to thirty-three are live; batch seventeen was overwritten by the
   live mirror, though four of its entries were restored in batches twenty-six
   and twenty-seven. Batches twenty-seven to thirty-three have had a separate
   reviewer pass and are live, including the corrections. Batches thirty-one to
-  thirty-three were published on 2026-11-10; batch thirty-four is composed
-  locally and awaits review.
-- 427 tracks currently have `summary` and/or `story` locked locally; live has
-  417 because batch thirty-four has not been pushed yet.
+  thirty-three were published on 2026-11-10; batches thirty-four and thirty-five
+  are composed locally and await review.
+- 437 tracks currently have `summary` and/or `story` locked locally; live has
+  417 because batches thirty-four and thirty-five have not been pushed yet.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -562,6 +562,31 @@ Status of the local track-story composition work.
 - Batch thirty-four ids: `LoTuaGuzpT0`, `dcJ4jXBHXu0`, `UQh7RJDeQto`,
   `dx2GOqybgCg`, `eE9Xm8_5dy0`, `wcO7WR2Q2OQ`, `O0cbMZ99zMA`,
   `MinVaJXI5mk`, `Wdj_Dme484U`, `HUi6JftmEK8`.
+- Batch thirty-five was composed locally on 2026-11-11 and is awaiting review:
+  10 summaries and 4 stories. Session Road's Cool Off, Sandwich's Masilungan,
+  Sandwich's Young Stunna, Teeth's Baga at Usok, The Outfield's Talk To Me and
+  Glitch's Last Laugh have no story because no source gave a song-specific
+  origin anecdote. Glitch's Last Laugh gained album *Illementz*, year 2000 and
+  label OctoArts EMI Music, Inc. from the original Philippine CD (3 locked
+  fields); the digital-reissue ISRC was not stored. The other nine tracks
+  already had every fact.
+- Batch thirty-five edition items for the review: both Session Road tracks store
+  *Session Road* / 2017 against the 2004 *Suntok Sa Buwan* (Alpha Records);
+  Sponge Cola's Tambay stores the 2014 digital edition against the 2011-09-16
+  *Araw Oras Tagpuan*; Sponge Cola's Barkada stores the 2012 collection against
+  the 2007 *Kami nAPO Muna ULIT* (the 2006 first tribute carries Nakapagtataka,
+  not this song); Sandwich's 2 Trick Pony and Masilungan store 2017 against the
+  2003 *Thanks to the Moon's Gravitational Pull* (Play For Serve, cat P4S 001);
+  The Outfield's Talk To Me stores 1986 against the 1985-11-12 *Play Deep*.
+  Glitch's Last Laugh label follows the 2000 OctoArts EMI CD while Deezer lists
+  the current PolyEast name, and its release date is only year-level.
+- Batch thirty-five credit items for the review: Sponge Cola's Barkada has a
+  sourced Jim Paredes songwriter credit and Teeth's Baga at Usok has sourced
+  Mike Dizon composer/lyricist and band performance credits; both fields are
+  already populated with only Main, so `apply` could not add them.
+- Batch thirty-five ids: `B_6jVnl1MEI`, `DGoQCwFCILg`, `S-097hSJqXk`,
+  `7jP02y0wrkk`, `O1s-xVnvC-8`, `OMyjALB1J_w`, `bes56enRMvs`,
+  `7TQa9aGybi4`, `TENnDeu2lqo`, `lhng-216UQ4`.
 
 ## Review of batches 27-30
 
@@ -628,10 +653,10 @@ same day. Every changed field has a source URL and a lock.
 
 ## Remaining
 
-- 26 tracks still have neither summary nor story.
-- 377 tracks still have no story at all.
-- 427 tracks have locked prose locally; live has 417 until batch thirty-four
-  is pushed.
+- 16 tracks still have neither summary nor story.
+- 373 tracks still have no story at all.
+- 437 tracks have locked prose locally; live has 417 until batches thirty-four
+  and thirty-five are pushed.
 
 ### Remaining by genre (no prose at all)
 
@@ -640,32 +665,31 @@ Bato.
 
 | Genre | Tracks |
 |---|---|
-| OPM Tunog Kalye | 18 |
-| NU Metal | 2 |
+| OPM Tunog Kalye | 10 |
+| NU Metal | 1 |
 | Pinoy Bato | 1 |
 | Classic Love Songs | 1 |
 | New Wave | 2 |
 | Emo Night | 0 |
-| Classic Rock | 1 |
+| Classic Rock | 0 |
 | Traffic Jam | 0 |
 | No playlist | 1 |
 
-## Next batch (10)
+## Next batch (7)
 
-These are still empty and are the recommended next batch.
+These are still empty and are the recommended next batch. Only seven of the
+sixteen empties are eligible; the rest are duplicates, cover/karaoke uploads or
+unresolved identities.
 
 | Track | Genre | Album / year | Video ID | Note |
 |---|---|---|---|---|
-| Session Road — Suntok Sa Buwan | OPM Tunog Kalye | *Session Road* / 2017 | `B_6jVnl1MEI` | verify against the 2004 original |
-| Session Road — Cool Off | OPM Tunog Kalye | *Session Road* / 2017 | `DGoQCwFCILg` | verify against the 2004 original |
-| Sponge Cola — Tambay | OPM Tunog Kalye | *Araw Oras Tagpuan* / 2014 | `S-097hSJqXk` | verify track/label |
-| Sponge Cola — Saan Na Nga Ba'ng Barkada | OPM Tunog Kalye | *Kami Napo Muna The Collection* / 2012 | `7jP02y0wrkk` | use the 2006 *Kami nAPO Muna* original |
-| Sandwich — 2 Trick Pony | OPM Tunog Kalye | *Thanks to the Moon's Gravitational Pull* / 2017 | `O1s-xVnvC-8` | verify track/label |
-| Sandwich — Masilungan | OPM Tunog Kalye | *Thanks to the Moon's Gravitational Pull* / 2017 | `OMyjALB1J_w` | verify track/label |
-| Sandwich — Young Stunna | OPM Tunog Kalye | *Young Stunna* / 2026 | `bes56enRMvs` | verify single release |
-| Teeth — Baga at Usok | OPM Tunog Kalye | *Baga at Usok* / 2019 | `7TQa9aGybi4` | verify track/label |
-| The Outfield — Talk To Me | Classic Rock | *Play Deep* / 1986 | `TENnDeu2lqo` | verify track/label |
-| Glitch — Last Laugh | NU Metal | *None* / None | `lhng-216UQ4` | missing album/year; verify release |
+| Sugarfree — Batang-Bata Ka Pa | OPM Tunog Kalye | *Kami Napo Muna* / 2021 | `wEfOsYN5MPU` | verify the 2021 tribute release and APO original |
+| Teeth — Darating | OPM Tunog Kalye | *Dogs Can Fly (Teeth's Finest)* / 2003 | `8mZpW7_kdmw` | verify original album/year |
+| Teeth — Shooting Star | OPM Tunog Kalye | *Dogs Can Fly (Teeth's Finest)* / 2003 | `kItYg1tVvIU` | verify original album/year |
+| Teeth — Tampo | OPM Tunog Kalye | *Dogs Can Fly (Teeth's Finest)* / 2003 | `_NnwjTR2u1w` | verify original album/year |
+| The Chongkeys — Diksyonaryo | OPM Tunog Kalye | *The Chongkeys* / 2023 | `mH3_NV7AK94` | verify album and DistroKid label |
+| True Faith — Huwag Na Lang Kaya (Acoustic Version) | OPM Tunog Kalye | *Beyond Doubt* / 1994 | `icH2Zz2Ta_8` | verify the acoustic version identity |
+| Glitch — Parasite | NU Metal | *None* / None | `5L2YT6d16aI` | missing album/year; check *Illementz* like Last Laugh |
 
 Excluded from the recommendation until their identity is resolved: Equinox
 Stars, Party Tyme and Famous or Forgotten Music are cover/karaoke uploads;
@@ -994,6 +1018,23 @@ Fallin' and Salawikain have no album/year and an unresolved artist identity.
   frontman Raymund while the artist credit and other stories use Raimund; Kjwan's
   Pintura story cites an MYX award. Manomano, Rivermaya's Wag Na Init Ulo Baby
   and Rocksteddy's Leslie have no story.
+- Batch thirty-five follow-ups: both Session Road tracks keep the 2017 *Session
+  Road* fields against the 2004 *Suntok Sa Buwan* (Alpha Records), with track
+  number 6 and 8 against 7 and 5 on the original; Sponge Cola's Tambay keeps the
+  2014 digital edition against the 2011-09-16 album; Sponge Cola's Barkada keeps
+  the 2012 collection against the 2007 *Kami nAPO Muna ULIT*; Sandwich's 2 Trick
+  Pony and Masilungan keep 2017 against the 2003 *Thanks to the Moon's
+  Gravitational Pull*; The Outfield's Talk To Me keeps 1986 against the
+  1985-11-12 *Play Deep*. Glitch's Last Laugh now carries *Illementz* / 2000 /
+  OctoArts EMI Music, Inc. from the original CD, while Deezer lists PolyEast and
+  dates 2000-01-10; its FRX digital-reissue ISRC was left empty. Sponge Cola's
+  Barkada needs the sourced Jim Paredes songwriter credit and Teeth's Baga at
+  Usok the sourced Mike Dizon composer/lyricist credit, both blocked by the
+  existing Main-only credits.
+- The 2026-11-11 live pull moved 12 details and kept 17 locked fields local.
+  Live still has 417 locked-prose tracks and no batch thirty-four or thirty-five
+  prose; the pull carried no new field values because live last changed on
+  2026-11-10 with the review push.
 - Duplicate uploads still empty and not recommended until the canonical video is
   chosen: `JUz9TxUsXJM` (SANDWICH — Masilungan), the two Teeth — Sorry ids
   (`ow_huCIxbqU` and `xddfFA5JGJs`) and `c5TPAYKvL64` (Wolfgang — Halik Ni Hudas
