@@ -3,6 +3,26 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-10 - document story batches 31-34
+
+Brought `docs/story-worklist.md` up to date with the 2026-11-10 story work:
+batches 31-33 (40 tracks) composed, reviewed and pushed to live, including the
+27-track review pass (91 fact fields, 51 prose fields and 82 chart rows), and
+batch 34 (10 tracks) composed locally with 10 summaries and 7 stories. The
+worklist now records the batch 34 edition conflicts, the remaining 26 empty
+tracks, and a refreshed next-batch table that excludes the cover/karaoke and
+duplicate uploads.
+
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - documentation only.
+- **Verification:** local counts queried through `docker compose exec -T backend`
+  after composition: 903 tracks and details, 26 with no prose, 377 with no story
+  and 427 with locked prose; the ten batch 34 ids all have locked summaries and
+  seven have locked stories. Live still has 417 locked-prose tracks because
+  batch 34 has not been pushed.
+
 ## 2026-11-09 - document the CI/CD pipeline
 
 Added `docs/ci-cd.md`, a single reference for how a commit travels from a pull
