@@ -4,7 +4,7 @@ Details are keyed by YouTube video id so they survive playlist re-syncs (which
 delete and recreate ``TrackCache`` rows).
 """
 
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.db import get_session
 from app.main import create_app
@@ -206,6 +206,61 @@ def test_studio_get_returns_an_empty_shell_for_a_known_track(tmp_path):
     assert body["completeness"] == 0
     assert body["album"] is None
     assert body["charts"] == []
+
+
+def test_studio_detail_lists_each_nakout_playlist_once(tmp_path):
+    client, engine = _seed(tmp_path)
+    with Session(engine) as s:
+        jazz = s.exec(select(Genre).where(Genre.slug == "jazz")).one()
+        jazz.color = "#f2a33a"
+        zydeco = Genre(
+            name="Zydeco",
+            slug="zydeco",
+            sort_order=-1,
+        )
+        s.add(zydeco)
+        s.commit()
+        s.refresh(zydeco)
+        playlist = Playlist(genre_id=zydeco.id, youtube_playlist_id="PL3")
+        s.add(playlist)
+        s.commit()
+        s.refresh(playlist)
+        s.add(
+            TrackCache(
+                playlist_id=playlist.id,
+                youtube_video_id="vid1",
+                title="Blue in Green",
+                artist="Miles Davis",
+                position=0,
+            )
+        )
+        s.commit()
+
+    body = client.get("/api/studio/tracks/vid1").json()
+
+    assert body["nakout_playlists"] == [
+        {"slug": "zydeco", "name": "Zydeco", "color": ""},
+        {"slug": "jazz", "name": "Jazz", "color": "#f2a33a"},
+    ]
+
+
+def test_studio_detail_has_no_nakout_playlist_for_standalone_track(tmp_path):
+    client, engine = _seed(tmp_path)
+    with Session(engine) as s:
+        s.add(
+            TrackCache(
+                playlist_id=None,
+                youtube_video_id="solo",
+                title="Solo",
+                artist="Nobody",
+                position=0,
+            )
+        )
+        s.commit()
+
+    body = client.get("/api/studio/tracks/solo").json()
+
+    assert body["nakout_playlists"] == []
 
 
 def test_studio_rejects_unknown_video_id(tmp_path):

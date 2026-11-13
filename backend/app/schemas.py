@@ -388,6 +388,12 @@ class SimilarTrackOut(BaseModel):
     artist: str = ""
 
 
+class NakoutPlaylistOut(BaseModel):
+    slug: str
+    name: str
+    color: str = ""
+
+
 class TrackDetailBase(BaseModel):
     youtube_video_id: str
     title: str = ""
@@ -435,6 +441,7 @@ class TrackDetailOut(TrackDetailBase):
     updated_at: datetime | None = None
     status: Literal["empty", "auto", "curated"] = "empty"
     completeness: int = 0
+    nakout_playlists: list[NakoutPlaylistOut] = Field(default_factory=list)
 
 
 class TrackLibraryItem(BaseModel):

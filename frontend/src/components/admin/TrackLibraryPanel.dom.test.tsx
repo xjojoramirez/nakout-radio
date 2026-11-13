@@ -106,6 +106,7 @@ function detail(
     status: "curated",
     completeness: 4,
     metadata_sources: [],
+    nakout_playlists: [],
     ...overrides,
   };
 }
@@ -233,6 +234,56 @@ describe("TrackLibraryPanel", () => {
     expect(payload.locked_fields).toContain("album");
     expect(payload.locked_fields).toContain("dj_note");
     expect(onNotice).toHaveBeenCalledWith("Track details saved");
+  });
+
+  it("shows the Nakout playlists a track belongs to", async () => {
+    mocked.studioTrack.mockResolvedValue(
+      detail({
+        genres: ["jazz", "modal jazz"],
+        nakout_playlists: [
+          { slug: "jazz", name: "Jazz", color: "#f2a33a" },
+          { slug: "opm", name: "OPM", color: "#5fb3b3" },
+          { slug: "blues", name: "Blues", color: "" },
+        ],
+      }),
+    );
+    renderPanel();
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Blue in Green/ }),
+    );
+
+    const section = await screen.findByRole("group", {
+      name: "Nakout playlist",
+    });
+    expect(within(section).getByText("Jazz")).toBeInTheDocument();
+    expect(within(section).getByText("OPM")).toBeInTheDocument();
+    expect(within(section).getByText("Blues")).toBeInTheDocument();
+    expect(
+      within(section).getByText("Genre queue used in Now Playing."),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Genres")).toHaveValue(
+      "jazz, modal jazz",
+    );
+
+    const items = within(section).getAllByRole("listitem");
+    expect(items).toHaveLength(3);
+    expect(items[0].style.getPropertyValue("--gc")).toBe("#f2a33a");
+    expect(items[1].style.getPropertyValue("--gc")).toBe("#5fb3b3");
+    expect(items[2].style.getPropertyValue("--gc")).toBe("var(--amber)");
+  });
+
+  it("says when a track is not on a Nakout playlist", async () => {
+    mocked.studioTrack.mockResolvedValue(detail({ nakout_playlists: [] }));
+    renderPanel();
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Blue in Green/ }),
+    );
+
+    expect(
+      await screen.findByText("Not on a Nakout playlist."),
+    ).toBeInTheDocument();
   });
 
   it("refuses to save a chart without a peak", async () => {

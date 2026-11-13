@@ -3908,6 +3908,21 @@ body:has(.player-dock) {
   gap: 10px 12px;
 }
 
+.te-nakout-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.te-nakout-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
 .te-row {
   display: grid;
   grid-template-columns: 1fr 1.4fr auto;

@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-13 - show Nakout playlist in library track details
+
+The Studio library's track-details modal now has a read-only **Nakout
+playlist** section listing the genre queue(s) used in Now Playing that
+include the track, with each genre's colour. YouTube source playlist labels
+are not shown, and the editable **Genres** field still holds the track's
+original editorial genres.
+
+- Files touched:
+  - `backend/app/schemas.py`
+  - `backend/app/track_details.py`
+  - `backend/tests/test_track_details.py`
+  - `frontend/src/types.ts`
+  - `frontend/src/components/admin/TrackDetailEditor.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md`
+- **Container restart required?** Yes - frontend and backend:
+  `docker compose up -d --build backend frontend`
+- **Verification:** backend suite passed (489 tests; `ruff check app tests`
+  clean); frontend suite passed (360 tests across 34 files), `npm run
+  typecheck` and `npm run lint` both clean.
+
 ## 2026-11-11 - trim home details and simplify credits
 
 The homepage liner-notes Details tab no longer shows ISRC, track number or disc
