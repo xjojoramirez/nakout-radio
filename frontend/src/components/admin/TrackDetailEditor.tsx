@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { api } from "../../api/client";
 import type { StudioTrackDetail, TrackDetailInput } from "../../types";
@@ -534,6 +535,30 @@ export function TrackDetailEditor({
               submit();
             }}
           >
+            <fieldset className="track-editor-section">
+              <legend>Nakout playlist</legend>
+              {detail && detail.nakout_playlists.length > 0 ? (
+                <ul className="te-nakout-list">
+                  {detail.nakout_playlists.map((playlist) => (
+                    <li
+                      key={playlist.slug}
+                      style={
+                        {
+                          "--gc": playlist.color || "var(--amber)",
+                        } as CSSProperties
+                      }
+                    >
+                      <i className="dot" aria-hidden="true" />
+                      <span>{playlist.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="hint">Not on a Nakout playlist.</p>
+              )}
+              <p className="hint">Genre queue used in Now Playing.</p>
+            </fieldset>
+
             <fieldset className="track-editor-section">
               <legend>Facts</legend>
               <div className="te-grid">

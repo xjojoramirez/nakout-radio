@@ -136,6 +136,12 @@ export interface SimilarTrack {
   artist: string;
 }
 
+export interface NakoutPlaylist {
+  slug: string;
+  name: string;
+  color: string;
+}
+
 export interface TrackDetail {
   youtube_video_id: string;
   title: string;
@@ -188,6 +194,7 @@ export interface StudioTrackDetail extends TrackDetail {
   updated_at: string | null;
   status: "empty" | "auto" | "curated";
   completeness: number;
+  nakout_playlists: NakoutPlaylist[];
 }
 
 export interface TrackLibraryItem {
@@ -231,6 +238,7 @@ export type TrackDetailInput = Omit<
   | "similar"
   | "sources"
   | "metadata_sources"
+  | "nakout_playlists"
   | "needs_review"
   | "enriched_at"
   | "enrich_error"
