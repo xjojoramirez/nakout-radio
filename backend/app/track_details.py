@@ -14,6 +14,7 @@ from app.models import (
 )
 from app.schemas import (
     ChartEntryOut,
+    NakoutPlaylistOut,
     SimilarTrackOut,
     TrackDetailBase,
     TrackDetailIn,
@@ -154,6 +155,27 @@ def _similar_tracks(
     return out
 
 
+def _nakout_playlists(
+    session: Session, video_id: str
+) -> list[NakoutPlaylistOut]:
+    genres = session.exec(
+        select(Genre)
+        .join(Playlist, Playlist.genre_id == Genre.id)
+        .join(TrackCache, TrackCache.playlist_id == Playlist.id)
+        .where(TrackCache.youtube_video_id == video_id)
+        .distinct()
+        .order_by(Genre.sort_order, Genre.name, Genre.slug)
+    ).all()
+    return [
+        NakoutPlaylistOut(
+            slug=genre.slug,
+            name=genre.name,
+            color=genre.color or "",
+        )
+        for genre in genres
+    ]
+
+
 def _base_payload(
     session: Session, video_id: str, row: TrackDetail | None
 ) -> dict:
@@ -236,6 +258,7 @@ def admin_detail(session: Session, video_id: str) -> TrackDetailOut | None:
             "updated_at": row.updated_at if row else None,
             "status": status_for(row, chart_total),
             "completeness": completeness_for(row, chart_total),
+            "nakout_playlists": _nakout_playlists(session, video_id),
         }
     )
     return TrackDetailOut(**payload)
