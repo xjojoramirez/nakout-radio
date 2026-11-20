@@ -77,16 +77,23 @@ export function RadioPage() {
                   )}
                   <div>
                     {genreName ? (
-                      <button
-                        type="button"
-                        className="kicker kicker-btn"
-                        aria-label={`About ${genreName} playlist`}
-                        onClick={() =>
-                          setAboutSlug(state?.genre?.slug ?? null)
-                        }
-                      >
-                        {genreName} · live now
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          className="kicker kicker-btn"
+                          aria-label={`About ${genreName} playlist`}
+                          aria-describedby="kicker-live-context"
+                          aria-haspopup="dialog"
+                          onClick={() =>
+                            setAboutSlug(state?.genre?.slug ?? null)
+                          }
+                        >
+                          {genreName} · live now
+                        </button>
+                        <span id="kicker-live-context" className="sr-only">
+                          Live now
+                        </span>
+                      </>
                     ) : (
                       <div className="kicker">Live now</div>
                     )}
@@ -141,10 +148,12 @@ export function RadioPage() {
                         type="button"
                         className="sched-btn"
                         aria-label={`About ${row.name} playlist`}
+                        aria-describedby={`slot-range-${row.id}`}
+                        aria-haspopup="dialog"
                         onClick={() => setAboutSlug(row.slug)}
                       >
                         <span>{row.name}</span>
-                        <span>{row.range}</span>
+                        <span id={`slot-range-${row.id}`}>{row.range}</span>
                       </button>
                     </li>
                   ))}
@@ -177,6 +186,7 @@ export function RadioPage() {
               type="button"
               className="dj-btn"
               aria-label={`About ${genreName} playlist from the dock`}
+              aria-haspopup="dialog"
               onClick={() => setAboutSlug(state?.genre?.slug ?? null)}
             >
               <strong>{genreName}</strong>

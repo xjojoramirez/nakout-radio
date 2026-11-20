@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SlotToday, Track, TrackDetail } from "../types";
 import { api } from "../api/client";
@@ -267,6 +267,36 @@ describe("RadioPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Top artists in this playlist")).toBeInTheDocument();
     expect(screen.getByText("Paramore")).toBeInTheDocument();
+  });
+
+  it("opens the playlist about modal from the dock", async () => {
+    render(<RadioPage />);
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: "About Morning playlist from the dock",
+      }),
+    );
+    expect(mocked.getGenre).toHaveBeenCalledWith("morning");
+    expect(
+      await screen.findByText("Sunrise songs to start the day."),
+    ).toBeInTheDocument();
+  });
+
+  it("closes the playlist about modal and returns focus to the kicker", async () => {
+    render(<RadioPage />);
+    const kicker = await screen.findByRole("button", {
+      name: "About Morning playlist",
+    });
+    kicker.focus();
+    fireEvent.click(kicker);
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(kicker).toHaveFocus();
   });
 
   it("opens the playlist about modal from a schedule row", async () => {
