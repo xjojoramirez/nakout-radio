@@ -32,7 +32,12 @@ def _client(engine):
 
 
 def _seed_genre(session, slug, *, default=False, video="vid", duration=200):
-    st = Genre(name=slug.title(), slug=slug, is_default=default)
+    st = Genre(
+        name=slug.title(),
+        slug=slug,
+        is_default=default,
+        description=f"{slug} mix.",
+    )
     session.add(st)
     session.commit()
     session.refresh(st)
@@ -68,6 +73,7 @@ def test_now_returns_track_offset_and_server_time(tmp_path):
     body = _client(engine).get("/api/now").json()
     assert body["source"] == "default"
     assert body["genre"]["slug"] == "morning"
+    assert body["genre"]["description"] == "morning mix."
     assert body["track"]["youtube_video_id"] == "vid"
     assert body["track"]["volume_offset_db"] == 0.0  # no loudness data
     assert 0 <= body["offset_seconds"] < 200

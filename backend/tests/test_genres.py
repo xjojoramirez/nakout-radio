@@ -7,7 +7,12 @@ from app.routers.genres import ordered_tracks_for_genre, tracks_for_genre
 
 
 def _seed(session: Session) -> None:
-    genre = Genre(name="Morning", slug="morning", is_default=True)
+    genre = Genre(
+        name="Morning",
+        slug="morning",
+        is_default=True,
+        description="Morning mix.",
+    )
     session.add(genre)
     session.commit()
     session.refresh(genre)
@@ -53,6 +58,7 @@ def test_list_genres(tmp_path):
     assert resp.status_code == 200
     body = resp.json()
     assert body[0]["slug"] == "morning"
+    assert body[0]["description"] == "Morning mix."
     assert body[0]["track_count"] == 1
 
 
@@ -139,7 +145,11 @@ def _client_from_engine(engine):
 def test_schedule_now_uses_matching_slot(tmp_path):
     engine = _engine(tmp_path)
     with Session(engine) as s:
-        night = Genre(name="Night", slug="night")
+        night = Genre(
+            name="Night",
+            slug="night",
+            description="After-hours.",
+        )
         s.add(night)
         s.commit()
         s.refresh(night)
@@ -169,6 +179,7 @@ def test_schedule_now_uses_matching_slot(tmp_path):
     body = client.get("/api/schedule/now").json()
     assert body["source"] == "schedule"
     assert body["genre"]["slug"] == "night"
+    assert body["genre"]["description"] == "After-hours."
     assert body["track"]["youtube_video_id"] == "nv"
     assert "tracks" not in body
 
@@ -347,15 +358,6 @@ def test_top_artists_count_distinct_videos_once(tmp_path):
         )
         s.add(
             TrackCache(
-                playlist_id=first.id,
-                youtube_video_id="a-only",
-                title="A only",
-                artist="A",
-                position=1,
-            )
-        )
-        s.add(
-            TrackCache(
                 playlist_id=second.id,
                 youtube_video_id="shared",
                 title="Shared",
@@ -372,7 +374,18 @@ def test_top_artists_count_distinct_videos_once(tmp_path):
                 position=1,
             )
         )
+        s.add(
+            TrackCache(
+                playlist_id=second.id,
+                youtube_video_id="b2-only",
+                title="B2 only",
+                artist="B",
+                position=2,
+            )
+        )
         s.commit()
         client = _client_from_engine(engine)
         body = client.get("/api/genres/rock").json()
-        assert body["top_artists"] == ["A", "B"]
+        # Deduplicated counts are A=1, B=2; without dedup it would tie at 2-2
+        # and the name tiebreak would wrongly put A first.
+        assert body["top_artists"] == ["B", "A"]
