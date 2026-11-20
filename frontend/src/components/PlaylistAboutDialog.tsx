@@ -69,6 +69,7 @@ export function PlaylistAboutDialog({ slug, onClose }: Props) {
   }, []);
 
   const description = detail?.description?.trim() ?? "";
+  const topArtists = detail?.top_artists ?? [];
 
   return createPortal(
     <div
@@ -122,11 +123,11 @@ export function PlaylistAboutDialog({ slug, onClose }: Props) {
             ) : (
               <p className="pa-empty">No description yet.</p>
             )}
-            {detail && detail.top_artists.length > 0 && (
+            {topArtists.length > 0 && (
               <section className="pa-artists">
                 <h3>Top artists in this playlist</h3>
                 <ul>
-                  {detail.top_artists.map((artist) => (
+                  {topArtists.map((artist) => (
                     <li key={artist} className="chip">
                       {artist}
                     </li>

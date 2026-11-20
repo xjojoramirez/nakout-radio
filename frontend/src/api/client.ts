@@ -56,7 +56,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   listGenres: () => request<Genre[]>("/genres"),
-  getGenre: (slug: string) => request<GenreDetail>(`/genres/${slug}`),
+  getGenre: (slug: string) =>
+    request<GenreDetail>(`/genres/${encodeURIComponent(slug)}`),
   scheduleNow: () => request<CurrentGenre>("/schedule/now"),
   now: () => request<BroadcastNow>("/now"),
   trackDetail: (videoId: string) =>

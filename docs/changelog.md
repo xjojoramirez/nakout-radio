@@ -48,7 +48,7 @@ derived top artists, and never shows a track list.
 - **Container restart required?** Yes - frontend and backend:
   `docker compose up -d --build backend frontend`
 - **Verification:** backend suite passed (497 tests; `ruff check .` clean);
-  frontend suite passed (370 tests across 35 files); `npm run typecheck`,
+  frontend suite passed (371 tests across 35 files); `npm run typecheck`,
   `npm run lint` and `npm run build` clean; `npm run check:bundle` within
   budget (JS 87.4 kB / 95 kB, CSS 11.3 kB / 13 kB).
 

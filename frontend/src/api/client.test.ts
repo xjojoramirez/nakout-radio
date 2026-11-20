@@ -70,6 +70,14 @@ describe("api client", () => {
     expect(spy.mock.calls[0][0]).toBe("/api/studio/youtube/playlists");
   });
 
+  it("encodes genre slugs in the detail path", async () => {
+    const spy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(JSON.stringify({}), { status: 200 }));
+    await api.getGenre("alt/r&b?");
+    expect(spy.mock.calls[0][0]).toBe("/api/genres/alt%2Fr%26b%3F");
+  });
+
   it("GETs added playlists", async () => {
     const spy = vi
       .spyOn(globalThis, "fetch")

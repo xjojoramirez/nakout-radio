@@ -53,9 +53,9 @@ is enforced by the API and the Studio form, not by the database.
 ### API
 
 - `GenreIn` and `GenreUpdate` (`backend/app/routers/admin.py`) gain
-  `description` with `max_length=500`. `GenreIn` defaults to `""`;
-  `GenreUpdate` defaults to `None` so an omitted field stays unchanged and
-  `""` clears the text.
+  `description` with `max_length=500`. Both use a non-optional `str = ""`:
+  an omitted update field stays unchanged via `exclude_unset`, `""` clears
+  the text, and an explicit `null` is a 422 rather than a NULL write.
 - `GenreOut` (`backend/app/schemas.py`) gains `description: str = ""`.
 
 ### UI
