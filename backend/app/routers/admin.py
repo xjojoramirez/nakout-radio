@@ -103,7 +103,7 @@ class GenreUpdate(BaseModel):
     is_default: bool | None = None
     sort_order: int | None = None
     color: str | None = Field(default=None, min_length=1)
-    description: str | None = Field(default=None, max_length=500)
+    description: str = Field(default="", max_length=500)
 
 
 _COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
