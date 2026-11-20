@@ -3,6 +3,73 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-20 - compose and review the 18 new tracks
+
+Composed prose for the 18 tracks that arrived after the 2026-11-11 review, then
+audited every record with five read-only reviewer agents and corrected the
+prose, editions, credits and chart rows they flagged.
+
+- Composition: 17 summaries and 13 stories. For Reverse — Envisioned stays
+  empty because no reputable source exists beyond DSP metadata. Negative Self
+  Talk, Glum, I Won't Quit On You, WILLOW's Flowers and Michael Franks' The Lady
+  Wants to Know have summaries but no story because no sourced song-specific
+  anecdote exists.
+- Edition fixes: the seven Hayley Williams tracks moved to the album's
+  2025-08-28 release date (Good Ol' Days to 2025-10-29); I Won't Quit On You
+  moved from its single metadata to *Ego Death At A Bachelorette Party* track
+  17. Michael Franks moved from the 1998 compilation *The Best Of Michael
+  Franks: A Backward Glance* to *Sleeping Gypsy* (1977-01-22, Warner Bros.
+  Records, track 1) with the original cover.
+- Prose corrections: Glum lost an unsupported slow/acoustic claim; Negative
+  Self Talk lost unsupported soft/mantra wording; Ice In My OJ corrected the
+  Jumping Inside attribution; Kill Me now says they left the city, not the
+  desert; Good Ol' Days and its grandfather voicemail are NME-sourced; Warm
+  Honey dropped the false claim that WILLOW wrote and produced every song on
+  *The 1st*; Paramore's Forgiveness now says first written for *After
+  Laughter*, not track one; Claire Rosinkranz's Backyard Boy dropped an
+  uncited father name and the video crew.
+- Story precision from review: Secondhand Serenade's Broken, Of Mice & Men's
+  This One's for You and Belmont's Pushing Daisies were rewritten to match
+  their interviews; Belmont now credits Jason Inguagiato as engineer, not
+  producer.
+- Charts: Glum gained NZ Hot Singles 32 (2025); Good Ol' Days gained US Hot
+  Rock & Alternative Songs 41 and NZ Hot Singles 27 (2025); Paramore's
+  Forgiveness gained US Hot Rock Songs 35 and NZ Heatseekers 7 (2017). All
+  chart rows are locked with their Wikipedia source.
+- Credits and tags: Secondhand Serenade gained Composer John Vesely; Of Mice &
+  Men gained Producers Joey Sturgis and Nick Sampson; Belmont gained composer,
+  producer, engineer, mixing, mastering and vocal-engineer rows and moved to
+  Pop Punk / Rock; Warm Honey's label is now MSFTSMusic / Roc Nation /
+  Interscope with Soul rock / Pop genres.
+- Totals after the pass: 993 tracks, 987 with a summary, 591 with a story, 6
+  with neither, 471 with locked prose and 2,006 locked fields. Live matches
+  local at the same track, summary, story and locked-prose counts.
+- Push: 12 tracks of facts (21 fields), 17 prose records updated and 3 chart
+  sets replaced. The live import route was enabled only for the pushes and is
+  back on false; live memberships stayed at 1,016.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No - documentation and local SQLite data
+  only; no application code or image changed. The live backend was recreated
+  twice only to toggle `LIBRARY_IMPORT_ENABLED` for the push.
+- **Verification:**
+  - Every one of the 18 records was read back with `detail_tools show`; each
+    prose or corrected fact field has a source URL and a lock, and no field is
+    locked without evidence.
+  - Live export after the push matches local on all 18 records (prose, facts,
+    charts, credits and locks), and live totals are 993 tracks / 987 summaries
+    / 591 stories / 1,016 memberships. `POST /api/library/import` returns 404
+    after the route was disabled.
+  - Public API spot checks: `/api/tracks/M9SP6F2O1Ls` returns *Sleeping Gypsy*
+    / 1977 / Warner Bros. Records / track 1, and `/api/tracks/A3NpYhV7V1w`
+    returns the rewritten Glum summary and the NZ Hot Singles row.
+  - Pre-fix backup:
+    `C:\Users\SD\nakout-backups\local-radio-post-compose-pre-review-20261120.db`;
+    live pre-push backup:
+    `/home/jojo/nakout-backups/live-radio-pre-batch38-20261120.db`; correction
+    script: `C:\Users\SD\nakout-backups\review-fixes-20261120-batch38.py`.
+
 ## 2026-11-20 - tighten the playlist About modal
 
 Narrowed the playlist **About** modal to the standard 440 px card and gave the
