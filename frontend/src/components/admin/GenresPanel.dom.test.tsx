@@ -31,6 +31,7 @@ const genres: Genre[] = [
     slug: "EN",
     is_default: false,
     color: "#f2a33a",
+    description: "Heartbreak anthems for the drive home.",
     track_count: 12,
   },
   {
@@ -105,6 +106,11 @@ describe("GenresPanel", () => {
     expect(within(card as HTMLElement).getByText("/EN")).toBeInTheDocument();
     expect(
       within(card as HTMLElement).getByText("12 tracks"),
+    ).toBeInTheDocument();
+    expect(
+      within(card as HTMLElement).getByText(
+        "Heartbreak anthems for the drive home.",
+      ),
     ).toBeInTheDocument();
     const defaultCard = screen.getByText("Late Night").closest(".gcard");
     expect(defaultCard).not.toBeNull();
@@ -185,12 +191,16 @@ describe("GenresPanel", () => {
     ).toBe("jazz");
     const swatches = screen.getByRole("radiogroup", { name: "Genre colour" });
     fireEvent.click(within(swatches).getAllByRole("radio")[3]);
+    fireEvent.change(screen.getByLabelText("Genre description"), {
+      target: { value: "Rainy-day emo and slow burns." },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Add genre" }));
     await waitFor(() =>
       expect(mocked.createGenre).toHaveBeenCalledWith(
         "Jazz",
         "jazz",
         "#5fb3b3",
+        "Rainy-day emo and slow burns.",
       ),
     );
     expect(onNotice).toHaveBeenCalledWith(
@@ -251,6 +261,29 @@ describe("GenresPanel", () => {
       ).toBe(true),
     );
     expect(screen.getByRole("button", { name: "Edit Emo Night" })).toBeEnabled();
+  });
+
+  it("edits and saves the description", async () => {
+    mocked.updateGenre.mockResolvedValue({
+      ...genres[0],
+      description: "New copy for listeners.",
+    });
+    renderPanel();
+    fireEvent.click(screen.getByRole("button", { name: "Edit Emo Night" }));
+    const box = screen.getByLabelText(
+      "Edit genre description",
+    ) as HTMLTextAreaElement;
+    expect(box.value).toBe("Heartbreak anthems for the drive home.");
+    fireEvent.change(box, {
+      target: { value: "New copy for listeners." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(mocked.updateGenre).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ description: "New copy for listeners." }),
+      ),
+    );
   });
 
   it("Save stays disabled while name or slug is empty and calls nothing", () => {

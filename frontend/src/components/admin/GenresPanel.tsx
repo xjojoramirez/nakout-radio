@@ -23,6 +23,7 @@ interface Draft {
   slug: string;
   color: string;
   is_default: boolean;
+  description: string;
 }
 
 function slugify(value: string): string {
@@ -46,6 +47,7 @@ export function GenresPanel({
 }: Props) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [color, setColor] = useState<string>(GENRE_PALETTE[0]);
   const [editId, setEditId] = useState<number | null>(null);
@@ -54,6 +56,7 @@ export function GenresPanel({
     slug: "",
     color: "",
     is_default: false,
+    description: "",
   });
   const [pendingDelete, setPendingDelete] = useState<Genre | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
@@ -79,9 +82,15 @@ export function GenresPanel({
     const trimmedSlug = slug.trim();
     if (!trimmedName || !trimmedSlug) return;
     try {
-      const created = await api.createGenre(trimmedName, trimmedSlug, color);
+      const created = await api.createGenre(
+        trimmedName,
+        trimmedSlug,
+        color,
+        description.trim(),
+      );
       setName("");
       setSlug("");
+      setDescription("");
       setSlugTouched(false);
       setColor(nextColor([...genres.map((g) => g.color), color]));
       onNotice(
@@ -101,6 +110,7 @@ export function GenresPanel({
       slug: genre.slug,
       color: genre.color,
       is_default: genre.is_default,
+      description: genre.description ?? "",
     });
   };
 
@@ -112,6 +122,7 @@ export function GenresPanel({
         slug: draft.slug,
         is_default: draft.is_default,
         color: draft.color,
+        description: draft.description.trim(),
       });
       setEditId(null);
       flash(updated.id);
@@ -194,6 +205,20 @@ export function GenresPanel({
             </span>
           </label>
         </div>
+        <label className="field">
+          Description
+          <textarea
+            aria-label="Genre description"
+            placeholder="What listeners will hear, in one or two sentences."
+            rows={3}
+            maxLength={500}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </label>
+        <div className="hint">
+          Shown to listeners when they open this playlist.
+        </div>
         <div className="lab">Colour</div>
         <PaletteSwatches label="Genre colour" value={color} onChange={setColor} />
         <div>
@@ -248,6 +273,25 @@ export function GenresPanel({
                       />
                     </span>
                   </label>
+                  <label className="field">
+                    Description
+                    <textarea
+                      aria-label="Edit genre description"
+                      placeholder="What listeners will hear, in one or two sentences."
+                      rows={3}
+                      maxLength={500}
+                      value={draft.description}
+                      onChange={(e) =>
+                        setDraft((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                    />
+                  </label>
+                  <div className="hint">
+                    Shown to listeners when they open this playlist.
+                  </div>
                   <label className="field field-inline">
                     <input
                       type="checkbox"
@@ -304,6 +348,9 @@ export function GenresPanel({
                     <span className="mono">/{g.slug}</span>
                   </div>
                 </div>
+                {g.description?.trim() && (
+                  <p className="gdesc">{g.description}</p>
+                )}
                 <div className="gstats">
                   <span className="chip">{g.track_count} tracks</span>
                   {g.is_default && <span className="chip">default</span>}
