@@ -29,6 +29,7 @@ class Genre(SQLModel, table=True):
     is_default: bool = False
     sort_order: int = 0
     color: str | None = Field(default=None)
+    description: str = ""
 
 
 class Playlist(SQLModel, table=True):
