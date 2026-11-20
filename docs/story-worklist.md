@@ -1,8 +1,12 @@
 # Story worklist
 
-Date: 2026-11-11
+Date: 2026-11-11 (updated 2026-11-20)
 
 Status of the local track-story composition work.
+
+Current status (2026-11-20): 993 tracks, 987 summaries, 591 stories, 6 with no
+prose and 471 with locked prose, matching local and live. The pass was pushed
+on 2026-11-20: 12 tracks of facts, 17 prose records and 3 chart sets.
 
 ## Completed
 
@@ -12,7 +16,8 @@ Status of the local track-story composition work.
   and twenty-seven. Batches twenty-seven to thirty-seven have had a separate
   reviewer pass, with the corrections below; batches thirty-four to
   thirty-seven were pushed on 2026-11-11.
-- 452 tracks currently have `summary` and/or `story` locked locally and on live.
+- 452 tracks had `summary` and/or `story` locked locally and on live at that
+  point; the local count is 471 after the 2026-11-20 pass.
 - Every composed field has a source URL and a lock.
 - Live was pulled into local on 2026-10-30: 27 tracks and 2 details updated,
   with no membership or chart changes. A second pull before batch sixteen
@@ -745,11 +750,58 @@ changed field now has a source URL and a lock.
   No charts were touched. Pre-fix backup:
   `C:\Users\SD\nakout-backups\local-radio-pre-review-fixes-20261111.db`.
 
+## 2026-11-20 review of the 18 tracks added since 2026-11-11
+
+The live pulls between 2026-11-12 and 2026-11-20 brought 18 tracks with empty
+detail prose. All 18 were researched, composed and then audited with five
+read-only reviewer agents: 17 summaries and 13 stories were written. Every
+composed or corrected field now has a source URL and a lock. The pass was
+pushed to live on 2026-11-20; live now matches local.
+
+- New prose: all except For Reverse — Envisioned, which has only DSP metadata
+  and no reputable source. Negative Self Talk, Glum, I Won't Quit On You,
+  WILLOW's Flowers and Michael Franks' The Lady Wants to Know have a summary but
+  no story because no sourced song-specific anecdote exists.
+- Edition fixes: the seven Hayley Williams tracks use the album's first release
+  date, 2025-08-28, instead of the final physical edition's 2025-11-07; Good
+  Ol' Days uses 2025-10-29; I Won't Quit On You moved from its one-track single
+  metadata to Ego Death At A Bachelorette Party, track 17. Michael Franks moved
+  from the 1998 compilation The Best Of Michael Franks: A Backward Glance to
+  Sleeping Gypsy (1977-01-22, Warner Bros. Records, track 1) with the original
+  cover; ISRC USWB17700041 stays.
+- Prose fixes after review: Glum lost the unsupported slow/acoustic claim;
+  Negative Self Talk lost the unsupported soft/mantra wording; Ice In My OJ
+  corrected who pulled up Jumping Inside and how the chorus started; Kill Me
+  now says they left the city, not the desert; Good Ol' Days and its
+  grandfather voicemail are sourced to NME; Warm Honey dropped the false claim
+  that WILLOW wrote and produced every song on The 1st; Paramore's Forgiveness
+  now says first written for After Laughter, not track one; Claire Rosinkranz's
+  Backyard Boy dropped the uncited father name/nationality and the video crew.
+- Story precision from review: Secondhand Serenade's Broken, Of Mice & Men's
+  This One's for You and Belmont's Pushing Daisies were rewritten to match their
+  interviews; Belmont now credits Jason Inguagiato as engineer, not producer.
+- Charts: Glum gained New Zealand Hot Singles 32 (2025); Good Ol' Days gained
+  US Hot Rock & Alternative Songs 41 and NZ Hot Singles 27 (2025); Paramore's
+  Forgiveness gained US Hot Rock Songs 35 and NZ Heatseekers 7 (2017). The
+  chart rows are locked with their Wikipedia source.
+- Credits and tags: Secondhand Serenade gained Composer John Vesely; Of Mice &
+  Men gained Producers Joey Sturgis and Nick Sampson; Belmont gained composer,
+  producer, engineer, mixing, mastering and vocal-engineer rows and moved to
+  Pop Punk / Rock; Warm Honey's label is now MSFTSMusic / Roc Nation /
+  Interscope with Soul rock / Pop genres.
+- Push: facts for 12 tracks (21 fields), 17 prose records updated and chart
+  rows for 3 tracks. The live import route was enabled only for the pushes and
+  is back on false; live memberships stayed at 1,016.
+- Backups: `local-radio-post-compose-pre-review-20261120.db` before the
+  corrections, `/home/jojo/nakout-backups/live-radio-pre-batch38-20261120.db`
+  before the push; the correction script is
+  `C:\Users\SD\nakout-backups\review-fixes-20261120-batch38.py`.
+
 ## Remaining
 
-- 5 tracks still have neither summary nor story.
-- 373 tracks still have no story at all.
-- 452 tracks have locked prose locally and on live.
+- 6 tracks still have neither summary nor story.
+- 402 tracks still have no story at all.
+- 471 tracks have locked prose locally and on live.
 
 ### Remaining by genre (no prose at all)
 
@@ -759,7 +811,7 @@ Bato.
 | Genre | Tracks |
 |---|---|
 | OPM Tunog Kalye | 0 |
-| NU Metal | 0 |
+| NU Metal | 1 |
 | Pinoy Bato | 1 |
 | Classic Love Songs | 0 |
 | New Wave | 1 |
@@ -770,12 +822,13 @@ Bato.
 
 ## Next batch (0)
 
-No new batch can be composed: the five remaining empty tracks are all excluded.
-Famous or Forgotten Music and Party Tyme are cover/karaoke uploads;
+The 18-track batch is complete. The six remaining empty records are excluded or
+blocked: Famous or Forgotten Music and Party Tyme are cover/karaoke uploads;
 `JUz9TxUsXJM` (SANDWICH — Masilungan), `xddfFA5JGJs` (Teeth — Sorry) and
 `nnqzQpsDlGk` (Equinox Stars — Let's Groove) are duplicate uploads with no
-playlist. A further batch needs new tracks added to the library or a decision on
-the remaining covers and duplicates.
+playlist; For Reverse's Envisioned has no reputable source beyond DSP metadata.
+A further batch needs new tracks in the library or a decision on the covers and
+duplicates; For Reverse can be revisited if press coverage appears.
 
 ## Resume workflow
 
