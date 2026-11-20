@@ -758,6 +758,59 @@ a.back:hover {
   flex-wrap: wrap;
 }
 
+.playlist-about {
+  width: min(520px, 100%);
+}
+
+.pa-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pa-head .modal-title {
+  margin: 0;
+}
+
+.pa-desc {
+  margin: 0;
+  color: var(--cream);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.pa-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.pa-artists {
+  display: grid;
+  gap: 8px;
+}
+
+.pa-artists h3 {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pa-artists ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 /* ---------- Changelog dialog ---------- */
 
 .changelog-card {
