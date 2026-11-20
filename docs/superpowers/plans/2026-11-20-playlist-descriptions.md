@@ -270,11 +270,13 @@ class GenreUpdate(BaseModel):
     is_default: bool | None = None
     sort_order: int | None = None
     color: str | None = Field(default=None, min_length=1)
-    description: str | None = Field(default=None, max_length=500)
+    description: str = Field(default="", max_length=500)
 ```
 
-The existing `Genre(**body.model_dump())` and the `updates` loop in
-`update_genre` already persist both fields; no other handler change is needed.
+`description` is deliberately non-optional so an explicit `null` returns 422
+instead of writing NULL into the non-nullable column. The existing
+`Genre(**body.model_dump())` and the `updates` loop in `update_genre` already
+persist both fields; no other handler change is needed.
 
 - [ ] **Step 4: Run the tests**
 
