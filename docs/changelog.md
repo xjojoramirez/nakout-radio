@@ -3,6 +3,58 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-20 - review the six prose-less tracks and push Sikat Na Si Pedro
+
+Reviewed the six records that had no summary or story. Five are cover,
+duplicate or metadata-only rows; only Philippine Violators' Sikat Na Si Pedro
+had enough sourcing for prose, so that record was corrected and composed.
+
+- Sikat Na Si Pedro (`fEWvdubB3Js`): artist was the YouTube channel Famous or
+  Forgotten Music and the album was the Various Artists compilation *Pinoy Bato
+  (Pinoy Rock 90s)*; corrected to Philippine Violators, the 1994 album *Sikat
+  Na Si Pedro* (Akasha Records, track 1, cat. AKCD-944), and dropped the band
+  prefix from the title.
+- Prose: a 183-character summary and a 227-character story from the NoBenta
+  Bong Espiritu interview, with the song's lyrics supporting the Pedro
+  narrative. The summary and corrected edition cite the MusicBrainz release,
+  with the catalog number from Discogs; the story cites the interview.
+- Push: the corrected identity, six edition fields, two prose fields and all
+  eight locks were pushed to live on 2026-11-20. Live memberships stayed at
+  1,016 and the track's charts stayed empty; the live import route was enabled
+  only for the push and is back on false.
+- Review results for the other five: Teeth's Sorry and SANDWICH's Masilungan are
+  duplicates of curated records (`ow_huCIxbqU`, `OMyjALB1J_w`); Party Tyme's
+  Funkytown is a karaoke cover on the New Wave playlist next to the Lipps Inc.
+  original; Equinox Stars' Let's Groove is a licensed Just Dance 2016 cover; For
+  Reverse's Envisioned has no coverage beyond DSP metadata. No prose was written
+  for those five.
+- Totals after the pass: 993 tracks, 988 with a summary, 592 with a story, 5
+  with neither, 472 with locked prose.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+- **Container restart required?** No image rebuild. The live backend was
+  recreated twice only to toggle `LIBRARY_IMPORT_ENABLED` for the push; no
+  application code or image changed, and local services were not restarted.
+- **Verification:**
+  - `detail_tools show fEWvdubB3Js` and `GET /api/tracks/fEWvdubB3Js` return
+    Philippine Violators, *Sikat Na Si Pedro*, 1994, Akasha Records, track 1,
+    AKCD-944, the composed summary and the story.
+  - All eight corrected/composed fields are locked; the summary and edition
+    sources are MusicBrainz, except the Discogs catalog number, and the story
+    source is the NoBenta interview.
+  - Live `GET /api/library/tracks/fEWvdubB3Js` matches local on artist, title,
+    album, album_artist, date/year, label, catalog, track, country, summary,
+    story and all eight locks. Live totals are 993 tracks and 993 details.
+  - `POST /api/library/import` returns 404 after the route was disabled.
+  - Pre-fix backups:
+    `C:\Users\SD\nakout-backups\local-radio-pre-sikat-fix-20261120.db` and
+    `/home/jojo/nakout-backups/live-radio-pre-sikat-20261120.db`;
+    correction scripts:
+    `C:\Users\SD\nakout-backups\sikat-fix-20261120.py`,
+    `C:\Users\SD\nakout-backups\sikat-sources-20261120.py` and
+    `C:\Users\SD\nakout-backups\push-sikat-20261120.py`.
+
 ## 2026-11-20 - compose and review the 18 new tracks
 
 Composed prose for the 18 tracks that arrived after the 2026-11-11 review, then

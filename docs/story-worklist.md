@@ -4,12 +4,18 @@ Date: 2026-11-11 (updated 2026-11-20)
 
 Status of the local track-story composition work.
 
-Current status (2026-11-20): 993 tracks, 987 summaries, 591 stories, 6 with no
-prose and 471 with locked prose, matching local and live. The pass was pushed
-on 2026-11-20: 12 tracks of facts, 17 prose records and 3 chart sets.
+Current status (2026-11-20): 993 tracks, 988 summaries, 592 stories, 5 with no
+prose and 472 with locked prose, matching local and live. The 2026-11-20 pass
+pushed 12 tracks of facts, 17 prose records and 3 chart sets; the Sikat Na Si
+Pedro record was corrected, composed and pushed later the same day.
 
 ## Completed
 
+- The six prose-less records were reviewed on 2026-11-20. Sikat Na Si Pedro
+  was corrected from the YouTube channel/compilation metadata to Philippine
+  Violators' 1994 *Sikat Na Si Pedro* (Akasha Records, track 1), composed with
+  a sourced summary and story, and pushed to live; the other five are
+  duplicates, covers or metadata-only and stay prose-less.
 - 373 tracks composed across thirty-seven batches. Batches one to sixteen and
   eighteen to thirty-seven are live; batch seventeen was overwritten by the
   live mirror, though four of its entries were restored in batches twenty-six
