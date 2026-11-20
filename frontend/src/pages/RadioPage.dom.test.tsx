@@ -67,8 +67,20 @@ function detail(overrides: Partial<TrackDetail> = {}): TrackDetail {
 }
 
 const slots: SlotToday[] = [
-  { id: 1, genre_id: 1, genre_name: "Morning", start_time: "05:00" },
-  { id: 2, genre_id: 2, genre_name: "Evening", start_time: "17:00" },
+  {
+    id: 1,
+    genre_id: 1,
+    genre_name: "Morning",
+    genre_slug: "morning",
+    start_time: "05:00",
+  },
+  {
+    id: 2,
+    genre_id: 2,
+    genre_name: "Evening",
+    genre_slug: "evening",
+    start_time: "17:00",
+  },
 ];
 
 class FakeWebSocket {

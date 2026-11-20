@@ -24,6 +24,7 @@ export function slotRange(times: string[], index: number): string {
 export interface ScheduleRow {
   id: number;
   name: string;
+  slug: string;
   range: string;
   isNow: boolean;
 }
@@ -36,6 +37,7 @@ export function todayScheduleRows(
   const rows = today.slots.map((slot, index) => ({
     id: slot.id,
     name: slot.genre_name,
+    slug: slot.genre_slug,
     range: slotRange(times, index),
     isNow: today.current_id === slot.id,
   }));
@@ -44,6 +46,7 @@ export function todayScheduleRows(
     rows.unshift({
       id: today.carry.id,
       name: today.carry.genre_name,
+      slug: today.carry.genre_slug,
       range: first
         ? `${hourLabel(today.carry.start_time)} – ${hourLabel(first)}`
         : hourLabel(today.carry.start_time),

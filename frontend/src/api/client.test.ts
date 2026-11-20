@@ -234,7 +234,11 @@ describe("api client", () => {
     const [url, init] = spy.mock.calls[0];
     expect(url).toBe("/api/studio/genres");
     expect(init?.method).toBe("POST");
-    expect(JSON.parse(init?.body as string)).toEqual({ name: "a", slug: "b" });
+    expect(JSON.parse(init?.body as string)).toEqual({
+      name: "a",
+      slug: "b",
+      description: "",
+    });
   });
 
   it("createGenre sends colour when supplied", async () => {
@@ -261,6 +265,7 @@ describe("api client", () => {
       name: "a",
       slug: "b",
       color: "#5fb3b3",
+      description: "",
     });
   });
 
