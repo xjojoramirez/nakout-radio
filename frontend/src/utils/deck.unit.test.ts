@@ -4,8 +4,20 @@ import { formatClock, hourLabel, todayScheduleRows } from "./deck";
 const today = {
   current_id: 2,
   slots: [
-    { id: 1, genre_id: 1, genre_name: "Morning", start_time: "05:00" },
-    { id: 2, genre_id: 2, genre_name: "Evening", start_time: "17:00" },
+    {
+      id: 1,
+      genre_id: 1,
+      genre_name: "Morning",
+      genre_slug: "morning",
+      start_time: "05:00",
+    },
+    {
+      id: 2,
+      genre_id: 2,
+      genre_name: "Evening",
+      genre_slug: "evening",
+      start_time: "17:00",
+    },
   ],
 };
 
@@ -27,12 +39,14 @@ describe("deck formatting helpers", () => {
     expect(rows[0]).toEqual({
       id: 1,
       name: "Morning",
+      slug: "morning",
       range: "5 am – 5 pm",
       isNow: false,
     });
     expect(rows[1]).toEqual({
       id: 2,
       name: "Evening",
+      slug: "evening",
       range: "5 pm – 5 am",
       isNow: true,
     });
@@ -45,7 +59,7 @@ describe("deck formatting helpers", () => {
         slots: [today.slots[0]],
       }),
     ).toEqual([
-      { id: 1, name: "Morning", range: "5 am", isNow: false },
+      { id: 1, name: "Morning", slug: "morning", range: "5 am", isNow: false },
     ]);
   });
 
@@ -57,12 +71,19 @@ describe("deck formatting helpers", () => {
         id: 9,
         genre_id: 3,
         genre_name: "Night",
+        genre_slug: "night",
         start_time: "22:00",
       },
     });
     expect(rows).toEqual([
-      { id: 9, name: "Night", range: "10 pm – 5 am", isNow: true },
-      { id: 1, name: "Morning", range: "5 am", isNow: false },
+      {
+        id: 9,
+        name: "Night",
+        slug: "night",
+        range: "10 pm – 5 am",
+        isNow: true,
+      },
+      { id: 1, name: "Morning", slug: "morning", range: "5 am", isNow: false },
     ]);
   });
 
@@ -74,11 +95,12 @@ describe("deck formatting helpers", () => {
         id: 9,
         genre_id: 3,
         genre_name: "Night",
+        genre_slug: "night",
         start_time: "22:00",
       },
     });
     expect(rows).toEqual([
-      { id: 9, name: "Night", range: "10 pm", isNow: true },
+      { id: 9, name: "Night", slug: "night", range: "10 pm", isNow: true },
     ]);
   });
 

@@ -16,6 +16,7 @@ const slot = (id: number): SlotToday => ({
   id,
   genre_id: 1,
   genre_name: "Morning",
+  genre_slug: "morning",
   start_time: "05:00",
 });
 

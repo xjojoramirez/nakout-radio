@@ -207,6 +207,7 @@ describe("AdminPage", () => {
         "Chill",
         "chill",
         "#f2a33a",
+        "",
       ),
     );
     expect(mocked.listGenres).toHaveBeenCalledTimes(2);
@@ -250,6 +251,7 @@ describe("AdminPage", () => {
         slug: "chillhop",
         is_default: true,
         color: "#f2a33a",
+        description: "",
       }),
     );
   });

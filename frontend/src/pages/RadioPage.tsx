@@ -1,7 +1,9 @@
+import { useCallback, useState } from "react";
 import type { CSSProperties } from "react";
 import { LinerNotes } from "../components/liner/LinerNotes";
 import { TrackFacts } from "../components/liner/TrackFacts";
 import { OfflineNotice } from "../components/OfflineNotice";
+import { PlaylistAboutDialog } from "../components/PlaylistAboutDialog";
 import { VUMeter } from "../components/VUMeter";
 import { TurntableDeck } from "../components/deck/TurntableDeck";
 import { VolumeFader } from "../components/deck/VolumeFader";
@@ -14,6 +16,8 @@ import { useYouTubePlayer } from "../hooks/useYouTubePlayer";
 import { formatClock, todayScheduleRows } from "../utils/deck";
 
 export function RadioPage() {
+  const [aboutSlug, setAboutSlug] = useState<string | null>(null);
+  const closeAbout = useCallback(() => setAboutSlug(null), []);
   const listeners = useListenerCount();
   const { today } = useTodaySchedule();
   const { state, refresh } = useBroadcast();
@@ -72,9 +76,27 @@ export function RadioPage() {
                     <img className="np-cover" src={track.thumbnail_url} alt="" />
                   )}
                   <div>
-                    <div className="kicker">
-                      {genreName ? `${genreName} · live now` : "Live now"}
-                    </div>
+                    {genreName ? (
+                      <>
+                        <button
+                          type="button"
+                          className="kicker kicker-btn"
+                          aria-label={`About ${genreName} playlist`}
+                          aria-describedby="kicker-live-context"
+                          aria-haspopup="dialog"
+                          onClick={() =>
+                            setAboutSlug(state?.genre?.slug ?? null)
+                          }
+                        >
+                          {genreName} · live now
+                        </button>
+                        <span id="kicker-live-context" className="sr-only">
+                          Live now
+                        </span>
+                      </>
+                    ) : (
+                      <div className="kicker">Live now</div>
+                    )}
                     <h1
                       className="np-title"
                       title={track?.title ?? undefined}
@@ -122,8 +144,17 @@ export function RadioPage() {
                 <ul>
                   {rows.map((row) => (
                     <li key={row.id} className={row.isNow ? "now" : undefined}>
-                      <span>{row.name}</span>
-                      <span>{row.range}</span>
+                      <button
+                        type="button"
+                        className="sched-btn"
+                        aria-label={`About ${row.name} playlist`}
+                        aria-describedby={`slot-range-${row.id}`}
+                        aria-haspopup="dialog"
+                        onClick={() => setAboutSlug(row.slug)}
+                      >
+                        <span>{row.name}</span>
+                        <span id={`slot-range-${row.id}`}>{row.range}</span>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -150,7 +181,19 @@ export function RadioPage() {
         />
         <div className="dj">
           <small>On the decks</small>
-          <strong>{genreName ?? "Nakout Radio"}</strong>
+          {genreName ? (
+            <button
+              type="button"
+              className="dj-btn"
+              aria-label={`About ${genreName} playlist from the dock`}
+              aria-haspopup="dialog"
+              onClick={() => setAboutSlug(state?.genre?.slug ?? null)}
+            >
+              <strong>{genreName}</strong>
+            </button>
+          ) : (
+            <strong>Nakout Radio</strong>
+          )}
         </div>
         <VUMeter playing={player.playing} />
         <div className="time" aria-hidden="true">
@@ -180,6 +223,10 @@ export function RadioPage() {
           {player.muted ? "Tune in" : "Tune out"}
         </button>
       </div>
+
+      {aboutSlug && (
+        <PlaylistAboutDialog slug={aboutSlug} onClose={closeAbout} />
+      )}
     </>
   );
 }

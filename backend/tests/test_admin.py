@@ -293,6 +293,93 @@ def test_update_genre_sets_exclusive_default(tmp_path):
     assert [g["id"] for g in genres if g["is_default"]] == [second]
 
 
+def test_create_genre_saves_description(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    resp = client.post(
+        "/api/studio/genres",
+        json={
+            "name": "Jazz",
+            "slug": "jazz",
+            "description": "Late-night jazz for slow hours.",
+        },
+    )
+    assert resp.status_code == 201
+    assert resp.json()["description"] == "Late-night jazz for slow hours."
+
+
+def test_update_genre_description_keeps_and_clears(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    gid = client.post(
+        "/api/studio/genres",
+        json={
+            "name": "Jazz",
+            "slug": "jazz",
+            "description": "First copy.",
+        },
+    ).json()["id"]
+
+    untouched = client.put(
+        f"/api/studio/genres/{gid}", json={"name": "Late Jazz"}
+    )
+    assert untouched.status_code == 200
+    assert untouched.json()["description"] == "First copy."
+
+    cleared = client.put(
+        f"/api/studio/genres/{gid}", json={"description": ""}
+    )
+    assert cleared.status_code == 200
+    assert cleared.json()["description"] == ""
+
+
+def test_update_genre_rejects_null_description(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    gid = client.post(
+        "/api/studio/genres",
+        json={"name": "Jazz", "slug": "jazz"},
+    ).json()["id"]
+    resp = client.put(
+        f"/api/studio/genres/{gid}", json={"description": None}
+    )
+    assert resp.status_code == 422
+
+
+def test_genre_description_max_length(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    created = client.post(
+        "/api/studio/genres",
+        json={
+            "name": "Jazz",
+            "slug": "jazz",
+            "description": "x" * 501,
+        },
+    )
+    assert created.status_code == 422
+
+    gid = client.post(
+        "/api/studio/genres",
+        json={"name": "Rock", "slug": "rock"},
+    ).json()["id"]
+    updated = client.put(
+        f"/api/studio/genres/{gid}",
+        json={"description": "x" * 501},
+    )
+    assert updated.status_code == 422
+
+
+def test_create_genre_defaults_description_empty(tmp_path):
+    client, _ = _client(tmp_path)
+    client.post("/api/studio/login", json={"password": "test-pass"})
+    resp = client.post(
+        "/api/studio/genres", json={"name": "Jazz", "slug": "jazz"}
+    )
+    assert resp.status_code == 201
+    assert resp.json()["description"] == ""
+
+
 def test_create_playlist_unknown_genre_404(tmp_path):
     client, _ = _client(tmp_path)
     client.post("/api/studio/login", json={"password": "test-pass"})

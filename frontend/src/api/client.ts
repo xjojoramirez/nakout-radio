@@ -56,7 +56,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   listGenres: () => request<Genre[]>("/genres"),
-  getGenre: (slug: string) => request<GenreDetail>(`/genres/${slug}`),
+  getGenre: (slug: string) =>
+    request<GenreDetail>(`/genres/${encodeURIComponent(slug)}`),
   scheduleNow: () => request<CurrentGenre>("/schedule/now"),
   now: () => request<BroadcastNow>("/now"),
   trackDetail: (videoId: string) =>
@@ -165,14 +166,26 @@ export const api = {
     }),
   listChannelPlaylists: () =>
     request<ChannelPlaylist[]>("/studio/youtube/playlists"),
-  createGenre: (name: string, slug: string, color?: string) =>
+  createGenre: (
+    name: string,
+    slug: string,
+    color?: string,
+    description = "",
+  ) =>
     request<Genre>("/studio/genres", {
       method: "POST",
-      body: JSON.stringify({ name, slug, ...(color ? { color } : {}) }),
+      body: JSON.stringify({
+        name,
+        slug,
+        ...(color ? { color } : {}),
+        description,
+      }),
     }),
   updateGenre: (
     id: number,
-    updates: Partial<Pick<Genre, "name" | "slug" | "is_default" | "color">>,
+    updates: Partial<
+      Pick<Genre, "name" | "slug" | "is_default" | "color" | "description">
+    >,
   ) =>
     request<Genre>(`/studio/genres/${id}`, {
       method: "PUT",

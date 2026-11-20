@@ -70,6 +70,14 @@ describe("api client", () => {
     expect(spy.mock.calls[0][0]).toBe("/api/studio/youtube/playlists");
   });
 
+  it("encodes genre slugs in the detail path", async () => {
+    const spy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(JSON.stringify({}), { status: 200 }));
+    await api.getGenre("alt/r&b?");
+    expect(spy.mock.calls[0][0]).toBe("/api/genres/alt%2Fr%26b%3F");
+  });
+
   it("GETs added playlists", async () => {
     const spy = vi
       .spyOn(globalThis, "fetch")
@@ -234,7 +242,11 @@ describe("api client", () => {
     const [url, init] = spy.mock.calls[0];
     expect(url).toBe("/api/studio/genres");
     expect(init?.method).toBe("POST");
-    expect(JSON.parse(init?.body as string)).toEqual({ name: "a", slug: "b" });
+    expect(JSON.parse(init?.body as string)).toEqual({
+      name: "a",
+      slug: "b",
+      description: "",
+    });
   });
 
   it("createGenre sends colour when supplied", async () => {
@@ -261,6 +273,7 @@ describe("api client", () => {
       name: "a",
       slug: "b",
       color: "#5fb3b3",
+      description: "",
     });
   });
 

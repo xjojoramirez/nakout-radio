@@ -30,12 +30,14 @@ class GenreOut(BaseModel):
     slug: str
     is_default: bool
     color: str = ""
+    description: str = ""
     track_count: int
 
 
 class GenreDetail(GenreOut):
     track: TrackOut | None = None
     cursor: str | None = None
+    top_artists: list[str] = []
 
 
 class CurrentGenreOut(BaseModel):
@@ -184,6 +186,7 @@ class SlotTodayOut(BaseModel):
     id: int
     genre_id: int
     genre_name: str
+    genre_slug: str
     start_time: str
 
 

@@ -44,6 +44,7 @@ def schedule_now(session: Session = Depends(get_session)) -> CurrentGenreOut:
             slug=state.genre.slug,
             is_default=state.genre.is_default,
             color=state.genre.color or "",
+            description=state.genre.description,
             track_count=len(tracks_for_genre(session, state.genre.id)),
         )
     return CurrentGenreOut(
@@ -53,6 +54,17 @@ def schedule_now(session: Session = Depends(get_session)) -> CurrentGenreOut:
         source=state.source,
         offset_seconds=state.offset_seconds,
         server_time=ts.replace(tzinfo=timezone.utc).isoformat(),
+    )
+
+
+def _slot_today(slot: ScheduleSlot, genres: dict[int, Genre]) -> SlotTodayOut:
+    genre = genres.get(slot.genre_id)
+    return SlotTodayOut(
+        id=slot.id,
+        genre_id=slot.genre_id,
+        genre_name=genre.name if genre else "",
+        genre_slug=genre.slug if genre else "",
+        start_time=slot.start_time,
     )
 
 
@@ -70,15 +82,10 @@ def schedule_today(session: Session = Depends(get_session)) -> ScheduleTodayOut:
     now = datetime.now(tz)
     now_str = f"{now.hour:02d}:{now.minute:02d}"
     weekday = now.weekday()
-    genre_names = {g.id: g.name for g in session.exec(select(Genre)).all()}
+    genres = {g.id: g for g in session.exec(select(Genre)).all()}
     all_slots = session.exec(select(ScheduleSlot)).all()
     today = [
-        SlotTodayOut(
-            id=slot.id,
-            genre_id=slot.genre_id,
-            genre_name=genre_names.get(slot.genre_id, ""),
-            start_time=slot.start_time,
-        )
+        _slot_today(slot, genres)
         for slot in all_slots
         if weekday in slot.days_of_week
     ]
@@ -91,12 +98,7 @@ def schedule_today(session: Session = Depends(get_session)) -> ScheduleTodayOut:
         previous = _last_slot_before(all_slots, weekday)
         current_id = previous.id if previous is not None else None
         if previous is not None and all(s.id != previous.id for s in today):
-            carry = SlotTodayOut(
-                id=previous.id,
-                genre_id=previous.genre_id,
-                genre_name=genre_names.get(previous.genre_id, ""),
-                start_time=previous.start_time,
-            )
+            carry = _slot_today(previous, genres)
     return ScheduleTodayOut(
         current_id=current_id,
         slots=today,

@@ -16,11 +16,13 @@ export interface Genre {
   is_default: boolean;
   track_count: number;
   color: string;
+  description?: string;
 }
 
 export interface GenreDetail extends Genre {
   track: Track | null;
   cursor: string | null;
+  top_artists: string[];
 }
 
 export interface CurrentGenre {
@@ -96,6 +98,7 @@ export interface SlotToday {
   id: number;
   genre_id: number;
   genre_name: string;
+  genre_slug: string;
   start_time: string;
 }
 

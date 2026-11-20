@@ -3,6 +3,75 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-20 - tighten the playlist About modal
+
+Narrowed the playlist **About** modal to the standard 440 px card and gave the
+description a looser 1.65 line height. Each non-empty description line now
+renders as its own paragraph, so multi-line editorial copy such as "Best for..."
+and "Listen when..." reads as separate statements instead of one block.
+
+- Files touched:
+  - `frontend/src/components/PlaylistAboutDialog.tsx`
+  - `frontend/src/components/PlaylistAboutDialog.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md`
+- **Container restart required?** Yes - frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm test`: 372 passed across 35 files.
+  - `npm run typecheck`, `npm run lint` and `npm run build` clean.
+  - `npm run check:bundle` within budget (JS 87.4 kB / 95 kB, CSS 11.3 kB /
+    13 kB).
+
+## 2026-11-20 - playlist descriptions for listeners
+
+Every Nakout playlist (genre) now has an optional editorial description of up
+to 500 characters, edited in Studio under Genres. Listeners can open an **About
+this playlist** modal from the live show name, the dock genre and every row in
+Today's schedule. The modal shows the description and the five automatically
+derived top artists, and never shows a track list.
+
+- Files touched:
+  - Backend:
+    - `backend/alembic/versions/e8f9a0b1c2d3_genre_description.py`
+    - `backend/app/models.py`
+    - `backend/app/routers/admin.py`
+    - `backend/app/routers/genres.py`
+    - `backend/app/routers/now.py`
+    - `backend/app/routers/schedule.py`
+    - `backend/app/schemas.py`
+  - Frontend:
+    - `frontend/src/api/client.ts`
+    - `frontend/src/components/PlaylistAboutDialog.tsx`
+    - `frontend/src/components/admin/GenresPanel.tsx`
+    - `frontend/src/pages/RadioPage.tsx`
+    - `frontend/src/styles/vintage.css`
+    - `frontend/src/types.ts`
+    - `frontend/src/utils/deck.ts`
+  - Tests:
+    - `backend/tests/test_admin.py`
+    - `backend/tests/test_genres.py`
+    - `backend/tests/test_migration_genre_description.py`
+    - `backend/tests/test_now.py`
+    - `backend/tests/test_schedule_today.py`
+    - `frontend/src/api/client.test.ts`
+    - `frontend/src/components/PlaylistAboutDialog.dom.test.tsx`
+    - `frontend/src/components/admin/GenresPanel.dom.test.tsx`
+    - `frontend/src/hooks/useTodaySchedule.dom.test.ts`
+    - `frontend/src/pages/AdminPage.dom.test.tsx`
+    - `frontend/src/pages/RadioPage.dom.test.tsx`
+    - `frontend/src/utils/deck.unit.test.ts`
+  - Docs:
+    - `docs/superpowers/specs/2026-11-20-playlist-descriptions-design.md`
+    - `docs/superpowers/plans/2026-11-20-playlist-descriptions.md`
+    - `docs/changelog.md`
+- **Container restart required?** Yes - frontend and backend:
+  `docker compose up -d --build backend frontend`
+- **Verification:** backend suite passed (497 tests; `ruff check .` clean);
+  frontend suite passed (371 tests across 35 files); `npm run typecheck`,
+  `npm run lint` and `npm run build` clean; `npm run check:bundle` within
+  budget (JS 87.4 kB / 95 kB, CSS 11.3 kB / 13 kB).
+
 ## 2026-11-13 - show Nakout playlist in library track details
 
 The Studio library's track-details modal now has a read-only **Nakout

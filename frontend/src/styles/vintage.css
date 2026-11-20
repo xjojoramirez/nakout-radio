@@ -195,6 +195,32 @@ h3 {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.field textarea {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 11px 13px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field);
+  line-height: 1.45;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field textarea::placeholder {
+  color: #75604d;
+}
+
+.field textarea:focus {
+  border-color: var(--amber-strong);
+  box-shadow: 0 0 0 3px var(--amber-soft);
+  outline: none;
+}
+
 .admin input::placeholder {
   color: #75604d;
 }
@@ -730,6 +756,75 @@ a.back:hover {
   justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.playlist-about {
+  width: min(440px, 100%);
+  max-height: min(82vh, 760px);
+  max-height: min(82dvh, 760px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.playlist-about .error.banner {
+  margin: 0;
+  background: var(--danger-soft);
+  border: 1px solid rgba(179, 55, 44, 0.35);
+  color: var(--danger);
+}
+
+.pa-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pa-head .modal-title {
+  margin: 0;
+}
+
+.pa-desc {
+  display: grid;
+  gap: 8px;
+  color: var(--cream);
+  font-size: 1rem;
+  line-height: 1.65;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+.pa-desc p {
+  margin: 0;
+}
+
+.pa-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.pa-artists {
+  display: grid;
+  gap: 8px;
+}
+
+.pa-artists h3 {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pa-artists ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 /* ---------- Changelog dialog ---------- */
@@ -1725,6 +1820,17 @@ h3.sec,
   white-space: nowrap;
 }
 
+.gdesc {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .gstats {
   display: flex;
   gap: 8px;
@@ -2383,6 +2489,29 @@ body:has(.player-dock) {
   white-space: nowrap;
 }
 
+.dj-btn {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dj-btn strong {
+  display: block;
+}
+
+.dj-btn:hover strong,
+.dj-btn:focus-visible strong {
+  color: var(--amber);
+}
+
 .knob-row {
   display: flex;
   gap: 10px;
@@ -2585,6 +2714,26 @@ body:has(.player-dock) {
   white-space: nowrap;
 }
 
+.kicker-btn {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: -4px 0;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kicker-btn:hover,
+.kicker-btn:focus-visible {
+  color: var(--cream);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .np-title {
   margin: 6px 0 4px;
   font-size: clamp(1.6rem, 4.5vw, 2.4rem);
@@ -2686,7 +2835,7 @@ body:has(.player-dock) {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 0;
   border-radius: 10px;
   background: var(--wood);
   color: var(--muted);
@@ -2711,6 +2860,39 @@ body:has(.player-dock) {
   background: var(--wood-light);
   color: var(--cream);
   box-shadow: inset 3px 0 0 var(--amber);
+}
+
+.sched-btn {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sched-btn:hover,
+.sched-btn:focus-visible {
+  background: var(--wood-light);
+  color: var(--cream);
+}
+
+/* The button background covers the li's inset marker, so restore it. */
+.sched li.now .sched-btn:hover,
+.sched li.now .sched-btn:focus-visible {
+  box-shadow: inset 3px 0 0 var(--amber);
+}
+
+.sched-btn:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: -2px;
+  border-radius: 6px;
 }
 
 @media (min-width: 821px) {
@@ -2934,6 +3116,7 @@ body:has(.player-dock) {
   }
 
   .field input:not([type="checkbox"]),
+  .field textarea,
   .admin input:not([type="checkbox"]),
   .admin select {
     font-size: 16px;
