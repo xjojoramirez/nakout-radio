@@ -315,6 +315,9 @@ def test_genre_detail_includes_description_and_top_artists(tmp_path):
             ("v5", "C"),
             ("v6", "D"),
             ("v7", "   "),
+            ("v8", "E"),
+            ("v9", "F"),
+            ("v10", "G"),
         ]
         for position, (video_id, artist) in enumerate(rows):
             s.add(
@@ -330,7 +333,7 @@ def test_genre_detail_includes_description_and_top_artists(tmp_path):
     client = _client_from_engine(engine)
     body = client.get("/api/genres/jazz").json()
     assert body["description"] == "Late-night jazz for slow hours."
-    assert body["top_artists"] == ["A", "B", "C"]
+    assert body["top_artists"] == ["A", "B", "C", "D", "E"]
 
 
 def test_top_artists_count_distinct_videos_once(tmp_path):

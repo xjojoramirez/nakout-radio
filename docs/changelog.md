@@ -8,7 +8,7 @@ restart is required (see `AGENTS.md` for the restart commands).
 Every Nakout playlist (genre) now has an optional editorial description of up
 to 500 characters, edited in Studio under Genres. Listeners can open an **About
 this playlist** modal from the live show name, the dock genre and every row in
-Today's schedule. The modal shows the description and the three automatically
+Today's schedule. The modal shows the description and the five automatically
 derived top artists, and never shows a track list.
 
 - Files touched:

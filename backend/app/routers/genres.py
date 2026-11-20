@@ -58,7 +58,7 @@ def tracks_for_genre(session: Session, genre_id: int) -> list[TrackCache]:
 
 
 def top_artists_for_genre(
-    session: Session, genre_id: int, limit: int = 3
+    session: Session, genre_id: int, limit: int = 5
 ) -> list[str]:
     counts: Counter[str] = Counter()
     display: dict[str, str] = {}

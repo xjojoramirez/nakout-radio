@@ -25,7 +25,7 @@ Give every genre an optional editorial description and let listeners open an
 - the genre shown in the player dock ("On the decks"),
 - every row in Today's schedule.
 
-The modal shows the description plus three automatically chosen top artists.
+The modal shows the description plus five automatically chosen top artists.
 It deliberately shows no track list.
 
 ## Non-goals
@@ -89,7 +89,7 @@ keeps one row per video across source playlists):
 1. Ignore tracks whose artist is empty after trimming.
 2. Count tracks per artist.
 3. Sort by count descending, then artist name ascending (case-insensitive).
-4. Return the first three display names.
+4. Return the first five display names.
 
 No extra table and no editor for this list; it follows playlist syncs.
 
@@ -112,7 +112,7 @@ New `frontend/src/components/PlaylistAboutDialog.tsx`:
 - Header: genre colour dot and name.
 - Description paragraph, preserving line breaks. Empty state: "No description
   yet."
-- "Top artists in this playlist" list of up to three names, hidden when none.
+- "Top artists in this playlist" list of up to five names, hidden when none.
 - No track list.
 
 `frontend/src/styles/vintage.css` gets focus/hover styles for the three
@@ -125,7 +125,7 @@ shift when they become buttons.
 Backend:
 
 - `test_genres.py`: the public detail response includes the description and the
-  top three artists, ordered by count then name; blank artists are ignored;
+  top five artists, ordered by count then name; blank artists are ignored;
   duplicate videos across playlists do not inflate a count.
 - `test_admin.py`: create and update persist a description, update without the
   field leaves it unchanged, and `""` clears it.

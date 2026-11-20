@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Give each Nakout playlist (genre) an editorial description and show it, with three auto-derived top artists, in a listener-facing modal opened from the live show and Today's schedule.
+**Goal:** Give each Nakout playlist (genre) an editorial description and show it, with five auto-derived top artists, in a listener-facing modal opened from the live show and Today's schedule.
 
 **Architecture:** `Genre.description` is the single source of truth. The Studio Genres panel edits it. `GET /api/genres/{slug}` returns the description plus a computed `top_artists` list. The radio page opens a small accessible dialog from clickable genre names; no track list is rendered.
 
@@ -333,6 +333,9 @@ def test_genre_detail_includes_description_and_top_artists(tmp_path):
             ("v5", "C"),
             ("v6", "D"),
             ("v7", "   "),
+            ("v8", "E"),
+            ("v9", "F"),
+            ("v10", "G"),
         ]
         for position, (video_id, artist) in enumerate(rows):
             s.add(
@@ -348,7 +351,7 @@ def test_genre_detail_includes_description_and_top_artists(tmp_path):
     client = _client_from_engine(engine)
     body = client.get("/api/genres/jazz").json()
     assert body["description"] == "Late-night jazz for slow hours."
-    assert body["top_artists"] == ["A", "B", "C"]
+    assert body["top_artists"] == ["A", "B", "C", "D", "E"]
 
 
 def test_top_artists_count_distinct_videos_once(tmp_path):
@@ -478,7 +481,7 @@ Then after `tracks_for_genre` add:
 
 ```python
 def top_artists_for_genre(
-    session: Session, genre_id: int, limit: int = 3
+    session: Session, genre_id: int, limit: int = 5
 ) -> list[str]:
     counts: Counter[str] = Counter()
     display: dict[str, str] = {}
@@ -1734,7 +1737,7 @@ Confirm the GitHub account first:
 gh auth status
 gh auth switch --user xjojoramirez
 git push -u origin feat/playlist-descriptions
-gh pr create --base main --head feat/playlist-descriptions --title "feat: playlist descriptions for listeners" --body "Adds an editorial description to each Nakout playlist (genre) and an **About this playlist** modal with three auto-derived top artists, opened from the live show and Today's schedule. No track list is shown.
+gh pr create --base main --head feat/playlist-descriptions --title "feat: playlist descriptions for listeners" --body "Adds an editorial description to each Nakout playlist (genre) and an **About this playlist** modal with five auto-derived top artists, opened from the live show and Today's schedule. No track list is shown.
 
 ## Container restart
 Yes — both services changed: `docker compose up -d --build backend frontend`"
