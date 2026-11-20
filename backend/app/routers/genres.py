@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
@@ -56,6 +57,22 @@ def tracks_for_genre(session: Session, genre_id: int) -> list[TrackCache]:
     return tracks
 
 
+def top_artists_for_genre(
+    session: Session, genre_id: int, limit: int = 3
+) -> list[str]:
+    counts: Counter[str] = Counter()
+    display: dict[str, str] = {}
+    for track in tracks_for_genre(session, genre_id):
+        name = track.artist.strip()
+        if not name:
+            continue
+        key = name.casefold()
+        counts[key] += 1
+        display.setdefault(key, name)
+    ordered = sorted(counts, key=lambda key: (-counts[key], key))
+    return [display[key] for key in ordered[:limit]]
+
+
 def ordered_tracks_for_genre(session: Session, genre_id: int) -> list[TrackCache]:
     tracks = tracks_for_genre(session, genre_id)
     order = load_order(session, genre_id)
@@ -100,6 +117,7 @@ def list_genres(session: Session = Depends(get_session)) -> list[GenreOut]:
             slug=s.slug,
             is_default=s.is_default,
             color=s.color or "",
+            description=s.description,
             track_count=len(tracks_for_genre(session, s.id)),
         )
         for s in genres
@@ -118,7 +136,9 @@ def get_genre(slug: str, session: Session = Depends(get_session)) -> GenreDetail
         slug=genre.slug,
         is_default=genre.is_default,
         color=genre.color or "",
+        description=genre.description,
         track_count=total,
         track=track,
         cursor=cursor,
+        top_artists=top_artists_for_genre(session, genre.id),
     )

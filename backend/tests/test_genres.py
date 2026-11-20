@@ -279,3 +279,100 @@ def test_order_survives_resync(tmp_path):
         s.commit()
         ids = [t.youtube_video_id for t in ordered_tracks_for_genre(s, genre.id)]
         assert ids == ["c", "a", "d", "b"]
+
+
+def test_genre_detail_includes_description_and_top_artists(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        genre = Genre(
+            name="Jazz",
+            slug="jazz",
+            description="Late-night jazz for slow hours.",
+        )
+        s.add(genre)
+        s.commit()
+        s.refresh(genre)
+        pl = Playlist(genre_id=genre.id, youtube_playlist_id="PLJ")
+        s.add(pl)
+        s.commit()
+        s.refresh(pl)
+        rows = [
+            ("v1", "A"),
+            ("v2", "A"),
+            ("v3", "B"),
+            ("v4", "B"),
+            ("v5", "C"),
+            ("v6", "D"),
+            ("v7", "   "),
+        ]
+        for position, (video_id, artist) in enumerate(rows):
+            s.add(
+                TrackCache(
+                    playlist_id=pl.id,
+                    youtube_video_id=video_id,
+                    title=video_id,
+                    artist=artist,
+                    position=position,
+                )
+            )
+        s.commit()
+    client = _client_from_engine(engine)
+    body = client.get("/api/genres/jazz").json()
+    assert body["description"] == "Late-night jazz for slow hours."
+    assert body["top_artists"] == ["A", "B", "C"]
+
+
+def test_top_artists_count_distinct_videos_once(tmp_path):
+    engine = _engine(tmp_path)
+    with Session(engine) as s:
+        genre = Genre(name="Rock", slug="rock")
+        s.add(genre)
+        s.commit()
+        s.refresh(genre)
+        first = Playlist(genre_id=genre.id, youtube_playlist_id="PL1")
+        second = Playlist(genre_id=genre.id, youtube_playlist_id="PL2")
+        s.add(first)
+        s.add(second)
+        s.commit()
+        s.refresh(first)
+        s.refresh(second)
+        s.add(
+            TrackCache(
+                playlist_id=first.id,
+                youtube_video_id="shared",
+                title="Shared",
+                artist="A",
+                position=0,
+            )
+        )
+        s.add(
+            TrackCache(
+                playlist_id=first.id,
+                youtube_video_id="a-only",
+                title="A only",
+                artist="A",
+                position=1,
+            )
+        )
+        s.add(
+            TrackCache(
+                playlist_id=second.id,
+                youtube_video_id="shared",
+                title="Shared",
+                artist="A",
+                position=0,
+            )
+        )
+        s.add(
+            TrackCache(
+                playlist_id=second.id,
+                youtube_video_id="b-only",
+                title="B only",
+                artist="B",
+                position=1,
+            )
+        )
+        s.commit()
+        client = _client_from_engine(engine)
+        body = client.get("/api/genres/rock").json()
+        assert body["top_artists"] == ["A", "B"]

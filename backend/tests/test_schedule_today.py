@@ -61,6 +61,8 @@ def test_today_lists_todays_slots_sorted_with_current(tmp_path, monkeypatch):
     assert [s["id"] for s in body["slots"]] == [first, second]
     assert body["slots"][0]["genre_name"] == "Morning"
     assert body["slots"][1]["genre_name"] == "Evening"
+    assert body["slots"][0]["genre_slug"] == "morning"
+    assert body["slots"][1]["genre_slug"] == "evening"
     assert body["slots"][0]["start_time"] == "05:00"
 
 
@@ -130,6 +132,7 @@ def test_today_carries_a_previous_day_slot_into_today(tmp_path, monkeypatch):
         "id": night_slot,
         "genre_id": night,
         "genre_name": "Night",
+        "genre_slug": "night",
         "start_time": "22:00",
     }
 
