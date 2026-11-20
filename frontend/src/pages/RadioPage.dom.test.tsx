@@ -9,6 +9,7 @@ vi.mock("../api/client", () => ({
     now: vi.fn(),
     scheduleToday: vi.fn(),
     trackDetail: vi.fn(),
+    getGenre: vi.fn(),
   },
 }));
 
@@ -16,6 +17,7 @@ const mocked = api as unknown as {
   now: ReturnType<typeof vi.fn>;
   scheduleToday: ReturnType<typeof vi.fn>;
   trackDetail: ReturnType<typeof vi.fn>;
+  getGenre: ReturnType<typeof vi.fn>;
 };
 
 function track(id: string): Track {
@@ -153,6 +155,18 @@ beforeEach(() => {
   // Pending by default so tests that do not assert on liner notes do not
   // update state after the test has finished.
   mocked.trackDetail.mockReturnValue(new Promise(() => {}));
+  mocked.getGenre.mockResolvedValue({
+    id: 1,
+    name: "Morning",
+    slug: "morning",
+    is_default: true,
+    color: "#f2a33a",
+    description: "Sunrise songs to start the day.",
+    track_count: 1,
+    track: null,
+    cursor: null,
+    top_artists: ["Paramore", "The Cure"],
+  });
 });
 
 afterEach(() => {
@@ -238,6 +252,45 @@ describe("RadioPage", () => {
     const rows = screen.getAllByRole("listitem");
     expect(rows[0].className).toContain("now");
     expect(rows[1].className).not.toContain("now");
+  });
+
+  it("opens the playlist about modal from the live kicker", async () => {
+    render(<RadioPage />);
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: "About Morning playlist",
+      }),
+    );
+    expect(mocked.getGenre).toHaveBeenCalledWith("morning");
+    expect(
+      await screen.findByText("Sunrise songs to start the day."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Top artists in this playlist")).toBeInTheDocument();
+    expect(screen.getByText("Paramore")).toBeInTheDocument();
+  });
+
+  it("opens the playlist about modal from a schedule row", async () => {
+    mocked.scheduleToday.mockResolvedValue({ current_id: 1, slots });
+    mocked.getGenre.mockResolvedValue({
+      id: 2,
+      name: "Evening",
+      slug: "evening",
+      is_default: false,
+      color: "#e0654a",
+      description: "Wind-down records for the evening.",
+      track_count: 4,
+      track: null,
+      cursor: null,
+      top_artists: ["C"],
+    });
+    render(<RadioPage />);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "About Evening playlist" }),
+    );
+    expect(mocked.getGenre).toHaveBeenCalledWith("evening");
+    expect(
+      await screen.findByText("Wind-down records for the evening."),
+    ).toBeInTheDocument();
   });
 
   it("falls back gracefully when the schedule request fails", async () => {

@@ -2484,6 +2484,23 @@ body:has(.player-dock) {
   white-space: nowrap;
 }
 
+.dj-btn {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dj-btn:hover strong,
+.dj-btn:focus-visible strong {
+  color: var(--amber);
+}
+
 .knob-row {
   display: flex;
   gap: 10px;
@@ -2686,6 +2703,24 @@ body:has(.player-dock) {
   white-space: nowrap;
 }
 
+.kicker-btn {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kicker-btn:hover,
+.kicker-btn:focus-visible {
+  color: var(--cream);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .np-title {
   margin: 6px 0 4px;
   font-size: clamp(1.6rem, 4.5vw, 2.4rem);
@@ -2812,6 +2847,31 @@ body:has(.player-dock) {
   background: var(--wood-light);
   color: var(--cream);
   box-shadow: inset 3px 0 0 var(--amber);
+}
+
+.sched-btn {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sched-btn:hover,
+.sched-btn:focus-visible {
+  color: var(--cream);
+}
+
+.sched-btn:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 @media (min-width: 821px) {
