@@ -14,32 +14,59 @@ export function PlaylistAboutDialog({ slug, onClose }: Props) {
   const [detail, setDetail] = useState<GenreDetail | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const requestId = useRef(0);
   const closeRef = useRef<HTMLButtonElement | null>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   const load = useCallback(async () => {
+    const id = ++requestId.current;
     setLoading(true);
     setError("");
     try {
-      setDetail(await api.getGenre(slug));
+      const latest = await api.getGenre(slug);
+      if (id !== requestId.current) return;
+      setDetail(latest);
     } catch (err) {
+      if (id !== requestId.current) return;
       setError(messageFor(err));
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
   }, [slug]);
 
   useEffect(() => {
+    setDetail(null);
     void load();
+    return () => {
+      requestId.current += 1;
+    };
   }, [load]);
 
   useEffect(() => {
+    returnFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onCloseRef.current();
     };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+      returnFocusRef.current?.focus();
+    };
+  }, []);
 
   const description = detail?.description?.trim() ?? "";
 
@@ -47,7 +74,7 @@ export function PlaylistAboutDialog({ slug, onClose }: Props) {
     <div
       className="modal-overlay"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) onCloseRef.current();
       }}
     >
       <div
@@ -79,7 +106,10 @@ export function PlaylistAboutDialog({ slug, onClose }: Props) {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => void load()}
+                onClick={() => {
+                  closeRef.current?.focus();
+                  void load();
+                }}
               >
                 Retry
               </button>
@@ -112,7 +142,7 @@ export function PlaylistAboutDialog({ slug, onClose }: Props) {
             type="button"
             ref={closeRef}
             className="btn btn-secondary"
-            onClick={onClose}
+            onClick={() => onCloseRef.current()}
           >
             Close
           </button>

@@ -760,6 +760,17 @@ a.back:hover {
 
 .playlist-about {
   width: min(520px, 100%);
+  max-height: min(82vh, 760px);
+  max-height: min(82dvh, 760px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.playlist-about .error.banner {
+  margin: 0;
+  background: var(--danger-soft);
+  border: 1px solid rgba(179, 55, 44, 0.35);
+  color: var(--danger);
 }
 
 .pa-head {

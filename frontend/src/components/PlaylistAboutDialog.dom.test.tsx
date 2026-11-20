@@ -25,7 +25,15 @@ const detail: GenreDetail = {
   color: "#f2a33a",
   description: "Heartbreak anthems for the drive home.",
   track_count: 12,
-  track: null,
+  track: {
+    youtube_video_id: "v1",
+    title: "Misery Business",
+    artist: "Paramore",
+    thumbnail_url: "",
+    duration_seconds: 200,
+    position: 0,
+    volume_offset_db: 0,
+  },
   cursor: null,
   top_artists: ["Paramore", "Taking Back Sunday", "Jimmy Eat World"],
 };
@@ -47,7 +55,27 @@ describe("PlaylistAboutDialog", () => {
     expect(
       screen.getByText("Top artists in this playlist"),
     ).toBeInTheDocument();
-    expect(screen.queryByText("Track list")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("dialog", { name: "Emo Night" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Close" }),
+    ).toHaveFocus();
+    expect(screen.queryByText("Misery Business")).not.toBeInTheDocument();
+  });
+
+  it("shows a loading state before the playlist arrives", async () => {
+    let resolve!: (value: GenreDetail) => void;
+    mocked.getGenre.mockImplementation(
+      () =>
+        new Promise<GenreDetail>((res) => {
+          resolve = res;
+        }),
+    );
+    render(<PlaylistAboutDialog slug="EN" onClose={vi.fn()} />);
+    expect(screen.getByText("Loading playlist…")).toBeInTheDocument();
+    resolve(detail);
+    expect(await screen.findByText("Emo Night")).toBeInTheDocument();
   });
 
   it("shows the empty description state and hides empty artists", async () => {
@@ -72,7 +100,7 @@ describe("PlaylistAboutDialog", () => {
     fireEvent.keyDown(window, { key: "Escape" });
     expect(onClose).toHaveBeenCalledTimes(1);
 
-    const overlay = document.querySelector(".modal-overlay");
+    const overlay = screen.getByRole("dialog").parentElement;
     if (!overlay) throw new Error("overlay not rendered");
     fireEvent.mouseDown(overlay);
     expect(onClose).toHaveBeenCalledTimes(2);
