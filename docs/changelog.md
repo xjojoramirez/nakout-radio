@@ -3,6 +3,26 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-20 - tighten the playlist About modal
+
+Narrowed the playlist **About** modal to the standard 440 px card and gave the
+description a looser 1.65 line height. Each non-empty description line now
+renders as its own paragraph, so multi-line editorial copy such as "Best for..."
+and "Listen when..." reads as separate statements instead of one block.
+
+- Files touched:
+  - `frontend/src/components/PlaylistAboutDialog.tsx`
+  - `frontend/src/components/PlaylistAboutDialog.dom.test.tsx`
+  - `frontend/src/styles/vintage.css`
+  - `docs/changelog.md`
+- **Container restart required?** Yes - frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm test`: 372 passed across 35 files.
+  - `npm run typecheck`, `npm run lint` and `npm run build` clean.
+  - `npm run check:bundle` within budget (JS 87.4 kB / 95 kB, CSS 11.3 kB /
+    13 kB).
+
 ## 2026-11-20 - playlist descriptions for listeners
 
 Every Nakout playlist (genre) now has an optional editorial description of up

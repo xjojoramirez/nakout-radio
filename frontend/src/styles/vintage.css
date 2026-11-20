@@ -759,7 +759,7 @@ a.back:hover {
 }
 
 .playlist-about {
-  width: min(520px, 100%);
+  width: min(440px, 100%);
   max-height: min(82vh, 760px);
   max-height: min(82dvh, 760px);
   overflow-y: auto;
@@ -784,12 +784,17 @@ a.back:hover {
 }
 
 .pa-desc {
-  margin: 0;
+  display: grid;
+  gap: 8px;
   color: var(--cream);
-  font-size: 0.98rem;
-  line-height: 1.55;
-  white-space: pre-line;
+  font-size: 1rem;
+  line-height: 1.65;
+  text-wrap: pretty;
   overflow-wrap: anywhere;
+}
+
+.pa-desc p {
+  margin: 0;
 }
 
 .pa-empty {

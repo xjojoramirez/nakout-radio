@@ -64,6 +64,24 @@ describe("PlaylistAboutDialog", () => {
     expect(screen.queryByText("Misery Business")).not.toBeInTheDocument();
   });
 
+  it("renders each description line as its own paragraph", async () => {
+    mocked.getGenre.mockResolvedValue({
+      ...detail,
+      description:
+        "Heartbreak anthems for the drive home.\nBest for late-night drives.\nListen when the past still has a few songs left.",
+    });
+    render(<PlaylistAboutDialog slug="EN" onClose={vi.fn()} />);
+    await screen.findByText("Emo Night");
+    const paragraphs = Array.from(
+      document.querySelectorAll<HTMLParagraphElement>(".pa-desc p"),
+    ).map((p) => p.textContent);
+    expect(paragraphs).toEqual([
+      "Heartbreak anthems for the drive home.",
+      "Best for late-night drives.",
+      "Listen when the past still has a few songs left.",
+    ]);
+  });
+
   it("shows a loading state before the playlist arrives", async () => {
     let resolve!: (value: GenreDetail) => void;
     mocked.getGenre.mockImplementation(

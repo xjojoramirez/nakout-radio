@@ -68,7 +68,10 @@ export function PlaylistAboutDialog({ slug, onClose }: Props) {
     };
   }, []);
 
-  const description = detail?.description?.trim() ?? "";
+  const descriptionLines = (detail?.description ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
   const topArtists = detail?.top_artists ?? [];
 
   return createPortal(
@@ -118,8 +121,12 @@ export function PlaylistAboutDialog({ slug, onClose }: Props) {
           </>
         ) : (
           <>
-            {description ? (
-              <p className="pa-desc">{description}</p>
+            {descriptionLines.length > 0 ? (
+              <div className="pa-desc">
+                {descriptionLines.map((line, index) => (
+                  <p key={`${index}-${line}`}>{line}</p>
+                ))}
+              </div>
             ) : (
               <p className="pa-empty">No description yet.</p>
             )}
