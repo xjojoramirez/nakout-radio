@@ -3,6 +3,27 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-24 - set the record player on a square plinth
+
+The Listening Room deck is now a square graphite plinth (18px radius,
+hairline edge, soft shadow). The artwork disc sits on a circular platter inset
+8%, with the dashed rotation ring around the platter and the tonearm pivot on
+the plinth's top-right corner. The arm idles at −2° and swings to 24° while
+playing. The Studio Now Playing deck uses the same plinth.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run build` — pass (CSS-only change; typecheck and the 373 tests were
+    unchanged from the previous commit)
+  - Checked in the rebuilt Docker frontend at desktop and 390px: square plinth
+    with 18px radius, platter inset 8%, pivot on the top-right corner, no
+    horizontal overflow. Screenshot captured at 390px.
+
 ## 2026-11-24 - restore the tonearm on the artwork disc
 
 The Listening Room disc reads as a turntable again. It now has a slim cream
