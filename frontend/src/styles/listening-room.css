@@ -29,6 +29,10 @@
   font-family: var(--lr-sans);
 }
 
+html:has(.radio-page.listening-room) {
+  overflow-x: clip;
+}
+
 body:has(.radio-page.listening-room) {
   place-items: start center;
   overflow-x: clip;
@@ -51,13 +55,12 @@ body:has(.radio-page.listening-room) {
 .radio-page.listening-room .lr-ambient {
   position: absolute;
   z-index: -1;
-  inset: -60px -8% auto;
+  inset: -60px 0 auto;
   height: 560px;
   background-position: center;
   background-size: cover;
   filter: blur(90px) saturate(0.75) brightness(0.7);
   opacity: 0.24;
-  transform: scale(1.08);
   pointer-events: none;
   mask-image: linear-gradient(to bottom, #000 0 55%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, #000 0 55%, transparent 100%);
@@ -642,6 +645,20 @@ body:has(.radio-page.listening-room) .player-dock .tune-btn:disabled {
   .radio-page.listening-room .np-col {
     padding-top: 4px;
     gap: 18px;
+  }
+
+  /* display: contents on .np-col makes these flex items; keep the tagline
+     above the liner notes instead of at the top of the stack. */
+  .radio-page.listening-room .lr-note {
+    order: 4;
+  }
+
+  .radio-page.listening-room .liner {
+    order: 5;
+  }
+
+  .radio-page.listening-room .sched {
+    order: 6;
   }
 
   .radio-page.listening-room .np-title {
