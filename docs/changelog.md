@@ -11,12 +11,16 @@ record, with grooves overlaid and a blurred copy tinting the room), the hero
 uses Instrument Serif + Inter + JetBrains Mono, and the schedule, liner notes
 and floating player dock switch to the ink/cream/teal system. Scoped to
 `.radio-page.listening-room`, so the Studio keeps its existing vintage skin.
-The Studio reskin is a follow-up, not part of this change.
+The Studio reskin is a follow-up, not part of this change. The mockup's
+editorial line ("A quiet room, a loud song.") now renders above the liner
+notes; the mobile stack stretches the progress bar and schedule to full width,
+and the ambient artwork layer no longer causes horizontal scrolling.
 
 - Files touched:
   - `frontend/src/styles/listening-room.css` (new theme layer)
   - `frontend/src/main.tsx` (import the new stylesheet after `vintage.css`)
-  - `frontend/src/pages/RadioPage.tsx` (theme class + artwork ambient layer)
+  - `frontend/src/pages/RadioPage.tsx` (theme class, ambient layer, tagline)
+  - `frontend/src/pages/RadioPage.dom.test.tsx` (tagline test)
   - `frontend/src/components/deck/TurntableDeck.tsx` (artwork on the record face)
   - `frontend/index.html` (Instrument Serif, Inter, JetBrains Mono fonts)
   - `docs/superpowers/mockups/2026-11-24-design-directions.html` (reference)
@@ -26,7 +30,7 @@ The Studio reskin is a follow-up, not part of this change.
   `docker compose up -d --build frontend`
 - **Verification:**
   - `npm run typecheck` — pass
-  - `npm test` — 35 files, 372 tests pass
+  - `npm test` — 35 files, 373 tests pass
   - `npm run lint` — pass
   - `npm run build` — pass
 

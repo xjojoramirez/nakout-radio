@@ -33,7 +33,8 @@ reskin is approved.
 - **Header:** wordmark left, live state + listener count right, one hairline
   under it.
 - **Hero:** two columns — a 344px circular disc and the now-playing column
-  (kicker, title, artist, album facts, progress on mobile, liner notes).
+  (kicker, title, artist, album facts, progress on mobile, the editorial line
+  "A quiet room, a loud song.", liner notes).
 - **Schedule:** below the liner notes, two columns of hairline rows; the
   current slot is marked with a teal inset bar and teal time.
 - **Dock:** fixed, inset, translucent bar with cover, "on the decks" label,

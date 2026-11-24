@@ -409,6 +409,13 @@ describe("RadioPage", () => {
     expect(brand?.querySelector("span")).toBeNull();
   });
 
+  it("shows the listening room tagline above the liner notes", async () => {
+    render(<RadioPage />);
+    expect(
+      await screen.findByText("A quiet room, a loud song."),
+    ).toBeInTheDocument();
+  });
+
   it("shows the album facts and liner notes for the on-air track", async () => {
     mocked.trackDetail.mockResolvedValue(detail());
 

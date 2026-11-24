@@ -31,6 +31,7 @@
 
 body:has(.radio-page.listening-room) {
   place-items: start center;
+  overflow-x: clip;
   padding-block: 34px calc(112px + env(safe-area-inset-bottom, 0px));
   background:
     radial-gradient(
@@ -287,6 +288,18 @@ body:has(.radio-page.listening-room) {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   color: var(--lr-muted);
+}
+
+/* Editorial line from the design: a quiet room, a loud song. */
+.radio-page.listening-room .lr-note {
+  margin: 0 0 2px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(121, 199, 184, 0.32);
+  font-family: var(--lr-serif);
+  font-style: italic;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #b9c2c8;
 }
 
 /* ---------- Liner notes ---------- */
@@ -618,6 +631,7 @@ body:has(.radio-page.listening-room) .player-dock .tune-btn:disabled {
 
   .radio-page.listening-room .deck-grid {
     gap: 20px;
+    align-items: stretch;
   }
 
   .radio-page.listening-room .deck {
