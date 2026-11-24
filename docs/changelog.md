@@ -3,6 +3,33 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-24 - add the Listening Room listener theme (design option 3)
+
+Reworked the public radio page into the "Listening Room" direction: the
+turntable becomes an artwork disc (the current track's thumbnail fills the
+record, with grooves overlaid and a blurred copy tinting the room), the hero
+uses Instrument Serif + Inter + JetBrains Mono, and the schedule, liner notes
+and floating player dock switch to the ink/cream/teal system. Scoped to
+`.radio-page.listening-room`, so the Studio keeps its existing vintage skin.
+The Studio reskin is a follow-up, not part of this change.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css` (new theme layer)
+  - `frontend/src/main.tsx` (import the new stylesheet after `vintage.css`)
+  - `frontend/src/pages/RadioPage.tsx` (theme class + artwork ambient layer)
+  - `frontend/src/components/deck/TurntableDeck.tsx` (artwork on the record face)
+  - `frontend/index.html` (Instrument Serif, Inter, JetBrains Mono fonts)
+  - `docs/superpowers/mockups/2026-11-24-design-directions.html` (reference)
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md` (new spec)
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+
 ## 2026-11-20 - review the six prose-less tracks and push Sikat Na Si Pedro
 
 Reviewed the six records that had no summary or story. Five are cover,

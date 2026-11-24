@@ -37,7 +37,22 @@ export function RadioPage() {
 
   return (
     <>
-      <div className={offline ? "radio-page offline" : "radio-page"}>
+      <div
+        className={
+          offline
+            ? "radio-page listening-room offline"
+            : "radio-page listening-room"
+        }
+      >
+        <div
+          className="lr-ambient"
+          aria-hidden="true"
+          style={
+            track?.thumbnail_url
+              ? { backgroundImage: `url(${track.thumbnail_url})` }
+              : undefined
+          }
+        />
         <header className="radio-top">
           <div className="brand">Nakout Radio</div>
           <div className="onair">

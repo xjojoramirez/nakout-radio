@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nakout Radio — Three Design Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Bricolage+Grotesque:wght@400;600;800&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --board: #0b0b0d;
+    --board-ink: #ececee;
+    --board-muted: #8b8b93;
+    --board-line: rgba(255,255,255,.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(1200px 400px at 15% -5%, rgba(242,163,58,.06), transparent 60%),
+      var(--board);
+    color: var(--board-ink);
+    font-family: "Inter", system-ui, "Segoe UI", sans-serif;
+    padding: 34px 38px 30px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .board-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 26px; }
+  .kicker { font: 500 10px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .22em; color: var(--board-muted); text-transform: uppercase; }
+  .board-head h1 { margin: 8px 0 0; font: 600 30px/1.1 "Inter", system-ui, sans-serif; letter-spacing: -.02em; }
+  .board-head p { margin: 0; max-width: 430px; font-size: 12.5px; line-height: 1.5; color: var(--board-muted); }
+  .board-head p b { color: #c9c9cf; font-weight: 500; }
+
+  .concept { margin-top: 24px; }
+  .concept-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px; }
+  .num { font: 500 10px/1 "JetBrains Mono", ui-monospace, monospace; color: var(--board-muted); letter-spacing: .1em; }
+  .concept-head h2 { margin: 0; font: 600 15px/1 "Inter", system-ui, sans-serif; letter-spacing: -.01em; }
+  .concept-head .idea { font-size: 12px; color: var(--board-muted); }
+  .concept-head .idea em { font-style: normal; color: #b9b9c1; }
+  .concept-head .tradeoff { margin-left: auto; font-size: 11.5px; color: #6f6f78; white-space: nowrap; }
+
+  .shot { display: grid; grid-template-columns: 1.72fr 1fr; gap: 14px; }
+  .screen { border-radius: 14px; overflow: hidden; height: 424px; position: relative; box-shadow: 0 18px 44px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.07); }
+
+  /* ============================================================
+     OPTION 1 — REFINED CONSOLE
+     ============================================================ */
+  .o1 { background: radial-gradient(900px 420px at 40% 0%, #2b1a10, #140c07 72%); color: #f1e4d0; font-family: "Bricolage Grotesque", system-ui, sans-serif; }
+  .o1 .top { display: flex; align-items: center; justify-content: space-between; padding: 18px 26px 0; }
+  .o1 .wordmark { font-weight: 800; font-size: 15px; letter-spacing: -.02em; }
+  .o1 .meta { display: flex; gap: 16px; align-items: center; font: 400 9px/1 "DM Mono", ui-monospace, monospace; letter-spacing: .12em; color: #b39a82; text-transform: uppercase; }
+  .o1 .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #f2a33a; margin-right: 6px; }
+  .o1 .dot.off { background: #6b5847; }
+  .o1 .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 16px 26px 0; height: 330px; }
+  .o1 .plinth { position: relative; border-radius: 12px; background: linear-gradient(155deg, #3a2416, #1d120b 65%); box-shadow: inset 0 0 0 1px rgba(242,163,58,.12), inset 0 10px 30px rgba(255,255,255,.04); display: grid; place-items: center; }
+  .o1 .platter { width: 220px; height: 220px; border-radius: 50%; background: repeating-radial-gradient(circle, #0c0807 0 1px, #15100d 1px 3px); box-shadow: 0 20px 40px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.08); display: grid; place-items: center; }
+  .o1 .label { width: 74px; height: 74px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ffc169, #f2a33a 55%, #b56f1c); color: #2b1a10; display: grid; place-items: center; text-align: center; font: 800 7px/1.2 "Bricolage Grotesque", sans-serif; letter-spacing: .14em; }
+  .o1 .arm { position: absolute; right: 30px; top: 34px; width: 4px; height: 200px; background: linear-gradient(#e9d9c4, #8f7a63); border-radius: 4px; transform: rotate(14deg); transform-origin: top center; box-shadow: 0 4px 10px rgba(0,0,0,.5); }
+  .o1 .arm::before { content: ""; position: absolute; top: -14px; left: -11px; width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(145deg, #cdb89c, #6d5945); }
+  .o1 .arm::after { content: ""; position: absolute; bottom: -6px; left: -7px; width: 18px; height: 26px; border-radius: 3px; background: #2a1c12; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+  .o1 .right { padding-top: 6px; }
+  .o1 .eyebrow { font: 500 9px/1 "DM Mono", ui-monospace, monospace; letter-spacing: .2em; color: #f2a33a; text-transform: uppercase; }
+  .o1 h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 46px; line-height: .95; letter-spacing: -.03em; margin: 10px 0 6px; }
+  .o1 .artist { font-size: 12px; color: #c7b19a; margin-bottom: 18px; }
+  .o1 .sched-label { font: 500 8px/1 "DM Mono", ui-monospace, monospace; letter-spacing: .18em; color: #8f7a63; text-transform: uppercase; margin-bottom: 8px; }
+  .o1 ul { list-style: none; margin: 0; padding: 0; }
+  .o1 li { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 7px; font-size: 10.5px; color: #d8c6b2; }
+  .o1 li time { font: 400 9px/1 "DM Mono", monospace; color: #9c8570; }
+  .o1 li.active { background: rgba(242,163,58,.14); box-shadow: inset 2px 0 0 #f2a33a; color: #f1e4d0; }
+  .o1 li.active time { color: #f2a33a; }
+  .o1 .dock { position: absolute; left: 18px; right: 18px; bottom: 14px; height: 58px; border-radius: 12px; background: rgba(20,12,7,.88); backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px rgba(241,228,208,.12), 0 12px 30px rgba(0,0,0,.5); display: flex; align-items: center; gap: 14px; padding: 0 16px; }
+  .o1 .thumb { width: 34px; height: 34px; border-radius: 50%; background: repeating-radial-gradient(circle, #0c0807 0 1px, #1a120d 1px 3px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); flex: none; }
+  .o1 .deck-label { font: 500 7px/1 "DM Mono", monospace; letter-spacing: .16em; color: #8f7a63; text-transform: uppercase; }
+  .o1 .deck-title { font-size: 11px; font-weight: 600; margin-top: 3px; }
+  .o1 .bars { display: flex; align-items: flex-end; gap: 2.5px; height: 18px; flex: 1; justify-content: center; opacity: .8; }
+  .o1 .bars i { width: 2px; background: #f2a33a; border-radius: 2px; display: block; }
+  .o1 .time { font: 400 9px/1 "DM Mono", monospace; color: #c7b19a; white-space: nowrap; }
+  .o1 .knob { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ffe0ab, #8a5b1d); box-shadow: inset 0 0 0 1px rgba(0,0,0,.4); flex: none; }
+  .o1 .fader { width: 74px; height: 3px; background: rgba(241,228,208,.22); border-radius: 3px; position: relative; flex: none; }
+  .o1 .fader::after { content: ""; position: absolute; left: 44%; top: -4px; width: 7px; height: 11px; background: #f2a33a; border-radius: 2px; }
+  .o1 .tune { margin-left: 4px; background: #f2a33a; color: #241609; border-radius: 999px; padding: 10px 18px; font-size: 10px; font-weight: 800; flex: none; }
+
+  /* Studio — option 1 */
+  .o1.s { background: #1c110a; color: #f1e4d0; padding: 16px 18px; }
+  .o1.s .sbar { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(241,228,208,.1); }
+  .o1.s .sbar b { font-size: 11px; letter-spacing: .14em; font-family: "DM Mono", monospace; font-weight: 500; color: #d8c6b2; }
+  .o1.s .tabs { display: flex; gap: 6px; margin-left: auto; }
+  .o1.s .tabs span { font-size: 8.5px; padding: 4px 8px; border-radius: 99px; color: #9c8570; box-shadow: inset 0 0 0 1px rgba(241,228,208,.12); }
+  .o1.s .tabs .on { background: rgba(242,163,58,.16); color: #f2a33a; box-shadow: none; }
+  .o1.s .panel { margin-top: 11px; }
+  .o1.s .plabel { display: flex; justify-content: space-between; align-items: center; font: 500 8px/1 "DM Mono", monospace; letter-spacing: .18em; color: #8f7a63; text-transform: uppercase; margin-bottom: 7px; }
+  .o1.s .plabel span:last-child { color: #f2a33a; letter-spacing: .04em; }
+  .o1.s .row { display: grid; grid-template-columns: 1fr 64px 44px; gap: 8px; align-items: center; padding: 7px 9px; border-radius: 7px; font-size: 9.5px; color: #e2d2bf; background: rgba(241,228,208,.035); margin-bottom: 4px; }
+  .o1.s .row.header { background: none; color: #7f6a56; font: 500 7.5px/1 "DM Mono", monospace; letter-spacing: .1em; text-transform: uppercase; padding-bottom: 4px; }
+  .o1.s .row em { font-style: normal; color: #9c8570; font-size: 8.5px; }
+  .o1.s .pill { display: inline-block; padding: 2px 6px; border-radius: 99px; font-size: 7.5px; background: rgba(143,209,158,.14); color: #8fd19e; width: fit-content; }
+  .o1.s .pill.draft { background: rgba(242,163,58,.12); color: #f2a33a; }
+  .o1.s .card { margin-top: 14px; padding: 12px; border-radius: 10px; background: rgba(241,228,208,.04); box-shadow: inset 0 0 0 1px rgba(241,228,208,.08); }
+  .o1.s .card .live { display: flex; align-items: center; gap: 8px; font-size: 10px; }
+  .o1.s .card .live i { width: 6px; height: 6px; border-radius: 50%; background: #8fd19e; display: inline-block; }
+  .o1.s .card .sub { font: 400 8px/1.4 "DM Mono", monospace; color: #8f7a63; margin-top: 6px; }
+
+  /* ============================================================
+     OPTION 2 — BROADCAST
+     ============================================================ */
+  .o2 { background: #f2efe6; color: #141414; font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; }
+  .o2 .top { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px 12px; border-bottom: 2px solid #141414; }
+  .o2 .mark { font-family: "Anton", Impact, sans-serif; font-size: 22px; letter-spacing: .01em; }
+  .o2 .mark span { color: #ff3b00; }
+  .o2 .meta { display: flex; align-items: center; gap: 14px; font: 500 8.5px/1 "IBM Plex Mono", ui-monospace, monospace; letter-spacing: .1em; }
+  .o2 .live { display: flex; align-items: center; gap: 5px; color: #ff3b00; }
+  .o2 .live i { width: 7px; height: 7px; background: #ff3b00; display: inline-block; }
+  .o2 .studio-link { border: 1px solid #141414; padding: 5px 9px; letter-spacing: .12em; }
+  .o2 .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 0; height: 322px; border-bottom: 2px solid #141414; }
+  .o2 .left { padding: 20px 24px; border-right: 2px solid #141414; position: relative; }
+  .o2 .eyebrow { font: 500 8.5px/1 "IBM Plex Mono", monospace; letter-spacing: .18em; color: #6b675f; }
+  .o2 h3 { font-family: "Anton", Impact, sans-serif; font-weight: 400; font-size: 84px; line-height: .86; letter-spacing: -.01em; margin: 8px 0 0; text-transform: uppercase; }
+  .o2 h3 .red { color: #ff3b00; }
+  .o2 .sub { font-size: 11px; color: #4c4942; max-width: 250px; margin-top: 10px; line-height: 1.45; }
+  .o2 .dial { margin-top: 16px; position: relative; height: 64px; border-top: 1px solid #141414; }
+  .o2 .ticks { position: absolute; inset: 9px 0 auto; height: 18px; background: repeating-linear-gradient(90deg, #141414 0 1px, transparent 1px 9px); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+  .o2 .ticks.big { height: 26px; background: repeating-linear-gradient(90deg, #141414 0 1px, transparent 1px 45px); }
+  .o2 .needle { position: absolute; left: 42%; top: 6px; width: 3px; height: 34px; background: #ff3b00; }
+  .o2 .freq { position: absolute; top: 46px; left: 42%; transform: translateX(-50%); font: 500 8px/1 "IBM Plex Mono", monospace; letter-spacing: .08em; color: #141414; white-space: nowrap; }
+  .o2 .right { padding: 18px 22px 0; }
+  .o2 .sched-label { display: flex; justify-content: space-between; font: 500 8.5px/1 "IBM Plex Mono", monospace; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 8px; }
+  .o2 .sched-label span:last-child { color: #6b675f; }
+  .o2 .slot { display: grid; grid-template-columns: 56px 1fr 46px; align-items: center; gap: 8px; padding: 7px 8px; border-top: 1px solid #d8d2c4; font-size: 10px; }
+  .o2 .slot time { font: 500 8.5px/1 "IBM Plex Mono", monospace; color: #6b675f; }
+  .o2 .slot em { font-style: normal; color: #6b675f; font-size: 8.5px; text-align: right; }
+  .o2 .slot.now { background: #141414; color: #f2efe6; border-top-color: #141414; }
+  .o2 .slot.now time { color: #f2efe6; }
+  .o2 .slot.now em { color: #ff3b00; font-weight: 500; }
+  .o2 .dock { position: absolute; left: 0; right: 0; bottom: 0; height: 64px; background: #141414; color: #f2efe6; display: flex; align-items: center; gap: 14px; padding: 0 20px; }
+  .o2 .play { width: 30px; height: 30px; background: #ff3b00; display: grid; place-items: center; color: #141414; font-size: 11px; flex: none; }
+  .o2 .title { font: 400 16px/1 "Anton", Impact, sans-serif; letter-spacing: .02em; text-transform: uppercase; }
+  .o2 .title small { display: block; font: 400 7.5px/1 "IBM Plex Mono", monospace; color: #8f8c84; letter-spacing: .14em; margin-top: 4px; }
+  .o2 .ticks-line { flex: 1; height: 12px; background: repeating-linear-gradient(90deg, #f2efe6 0 2px, transparent 2px 7px); opacity: .35; }
+  .o2 .time { font: 400 9px/1 "IBM Plex Mono", monospace; color: #b7b3aa; }
+  .o2 .cta { font: 500 8.5px/1 "IBM Plex Mono", monospace; letter-spacing: .12em; border: 1px solid #ff3b00; color: #ff3b00; padding: 9px 12px; }
+
+  /* Studio — option 2 */
+  .o2.s { background: #fff; color: #141414; display: grid; grid-template-columns: 84px 1fr; }
+  .o2.s .rail { background: #141414; color: #f2efe6; padding: 14px 10px; }
+  .o2.s .rail b { font: 500 8px/1 "IBM Plex Mono", monospace; letter-spacing: .16em; color: #ff3b00; }
+  .o2.s .rail ul { list-style: none; margin: 18px 0 0; padding: 0; }
+  .o2.s .rail li { font-size: 8px; padding: 6px 0; color: #8f8c84; letter-spacing: .02em; }
+  .o2.s .rail li.on { color: #f2efe6; font-weight: 600; }
+  .o2.s .main { padding: 14px 16px; }
+  .o2.s .head { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #141414; padding-bottom: 9px; }
+  .o2.s .head h4 { font: 400 11px/1 "Anton", Impact, sans-serif; letter-spacing: .04em; text-transform: uppercase; margin: 0; }
+  .o2.s .head span { font: 500 7.5px/1 "IBM Plex Mono", monospace; color: #6b675f; letter-spacing: .1em; }
+  .o2.s .tbl { margin-top: 10px; }
+  .o2.s .tr { display: grid; grid-template-columns: 22px 1fr 50px 40px; gap: 6px; padding: 7px 4px; border-bottom: 1px solid #e4dfd4; font-size: 8.5px; align-items: center; }
+  .o2.s .tr.h { font: 500 7px/1 "IBM Plex Mono", monospace; letter-spacing: .1em; color: #6b675f; text-transform: uppercase; border-bottom: 1px solid #141414; }
+  .o2.s .tr .sw { width: 14px; height: 14px; background: #ff3b00; }
+  .o2.s .tr .sw.alt { background: #141414; }
+  .o2.s .tr em { font-style: normal; color: #6b675f; font: 400 7.5px/1 "IBM Plex Mono", monospace; }
+  .o2.s .tr .on { color: #ff3b00; font: 500 7.5px/1 "IBM Plex Mono", monospace; letter-spacing: .06em; }
+  .o2.s .btn { margin-top: 12px; background: #ff3b00; color: #fff; font: 500 8px/1 "IBM Plex Mono", monospace; letter-spacing: .1em; padding: 9px 10px; text-align: center; }
+  .o2.s .onair { margin-top: 12px; background: #141414; color: #f2efe6; display: flex; align-items: center; justify-content: space-between; padding: 8px 9px; font: 500 7.5px/1 "IBM Plex Mono", monospace; letter-spacing: .05em; }
+  .o2.s .onair span:first-child { display: flex; align-items: center; gap: 5px; }
+  .o2.s .onair i { width: 6px; height: 6px; background: #ff3b00; display: inline-block; }
+  .o2.s .onair em { font-style: normal; color: #8f8c84; letter-spacing: .1em; }
+  .o2.s .meta-line { margin-top: 10px; display: flex; justify-content: space-between; font: 500 6.5px/1 "IBM Plex Mono", monospace; letter-spacing: .1em; color: #8b877f; }
+
+  /* ============================================================
+     OPTION 3 — LISTENING ROOM
+     ============================================================ */
+  .o3 { background: radial-gradient(700px 500px at 70% 10%, #14262b, #090b0e 62%); color: #e9e4d8; font-family: "Inter", system-ui, sans-serif; }
+  .o3 .top { display: flex; align-items: center; justify-content: space-between; padding: 16px 26px; }
+  .o3 .wordmark { font: 400 11px/1 "Instrument Serif", Georgia, serif; letter-spacing: .16em; color: #e9e4d8; }
+  .o3 .meta { font: 400 8px/1 "JetBrains Mono", monospace; letter-spacing: .14em; color: #7f8790; text-transform: uppercase; }
+  .o3 .hero { display: grid; grid-template-columns: 300px 1fr; gap: 30px; padding: 4px 26px 0; }
+  .o3 .artwrap { position: relative; width: 272px; height: 272px; display: grid; place-items: center; }
+  .o3 .ring { position: absolute; inset: -14px; border-radius: 50%; border: 1px dashed rgba(121,199,184,.35); }
+  .o3 .ring::after { content: ""; position: absolute; top: -3px; left: 50%; width: 5px; height: 5px; border-radius: 50%; background: #79c7b8; }
+  .o3 .art { width: 244px; height: 244px; border-radius: 50%; background: conic-gradient(from 210deg, #1f3a3f, #2f4d4a, #6f4a3a, #2a2226, #14262b, #1f3a3f); box-shadow: 0 30px 60px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.1); display: grid; place-items: center; position: relative; }
+  .o3 .art::before { content: ""; position: absolute; inset: 30px; border-radius: 50%; background: repeating-radial-gradient(circle, rgba(0,0,0,.45) 0 1px, transparent 1px 4px); }
+  .o3 .art b { font: 400 54px/1 "Instrument Serif", Georgia, serif; color: rgba(233,228,216,.9); z-index: 1; }
+  .o3 .right { padding-top: 30px; }
+  .o3 .eyebrow { font: 500 8px/1 "JetBrains Mono", monospace; letter-spacing: .24em; color: #79c7b8; text-transform: uppercase; }
+  .o3 h3 { font: 400 50px/1 "Instrument Serif", Georgia, serif; letter-spacing: -.01em; margin: 12px 0 6px; }
+  .o3 .artist { font-size: 11px; color: #9aa3ab; letter-spacing: .04em; }
+  .o3 .note { margin-top: 18px; max-width: 300px; font: italic 400 11px/1.55 "Instrument Serif", Georgia, serif; color: #b9c2c8; border-left: 1px solid rgba(121,199,184,.4); padding-left: 12px; }
+  .o3 .sched { margin-top: 22px; display: flex; gap: 22px; }
+  .o3 .sched .col { flex: 1; }
+  .o3 .sched-label { font: 500 7.5px/1 "JetBrains Mono", monospace; letter-spacing: .2em; color: #6f7981; text-transform: uppercase; margin-bottom: 8px; }
+  .o3 .srow { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; font-size: 9.5px; color: #c9cfd4; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .o3 .srow time { font: 400 8px/1 "JetBrains Mono", monospace; color: #7f8790; }
+  .o3 .srow.now { color: #e9e4d8; }
+  .o3 .srow.now time { color: #79c7b8; }
+  .o3 .dock { position: absolute; left: 22px; right: 22px; bottom: 16px; height: 58px; border-radius: 10px; background: rgba(20,26,30,.72); backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.09); display: flex; align-items: center; gap: 14px; padding: 0 16px; }
+  .o3 .play { width: 32px; height: 32px; border-radius: 50%; box-shadow: inset 0 0 0 1px #79c7b8; display: grid; place-items: center; color: #79c7b8; font-size: 10px; }
+  .o3 .title { font-size: 10px; font-weight: 500; }
+  .o3 .title small { display: block; font: 400 7.5px/1 "JetBrains Mono", monospace; letter-spacing: .12em; color: #7f8790; margin-top: 4px; text-transform: uppercase; }
+  .o3 .prog { flex: 1; height: 2px; background: rgba(255,255,255,.14); position: relative; }
+  .o3 .prog::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 18%; background: #79c7b8; }
+  .o3 .time { font: 400 10px/1 "JetBrains Mono", monospace; color: #c9cfd4; }
+  .o3 .vol { width: 46px; height: 2px; background: rgba(255,255,255,.16); position: relative; }
+  .o3 .vol::after { content: ""; position: absolute; left: 60%; top: -3px; width: 6px; height: 8px; border-radius: 50%; background: #e9e4d8; }
+
+  /* Studio — option 3 */
+  .o3.s { background: #0c1013; color: #e9e4d8; display: grid; grid-template-columns: 48px 1fr; }
+  .o3.s .rail { padding: 16px 0; display: flex; flex-direction: column; align-items: center; gap: 14px; border-right: 1px solid rgba(255,255,255,.07); }
+  .o3.s .rail i { width: 16px; height: 16px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(233,228,216,.35); display: block; }
+  .o3.s .rail i.on { background: rgba(121,199,184,.2); box-shadow: inset 0 0 0 1px #79c7b8; }
+  .o3.s .main { padding: 16px 18px; }
+  .o3.s .head { display: flex; justify-content: space-between; align-items: center; }
+  .o3.s .head h4 { margin: 0; font: 400 13px/1 "Instrument Serif", Georgia, serif; letter-spacing: .02em; }
+  .o3.s .head span { font: 400 7px/1 "JetBrains Mono", monospace; letter-spacing: .16em; color: #79c7b8; text-transform: uppercase; }
+  .o3.s .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .o3.s .card { background: rgba(255,255,255,.035); border-radius: 8px; padding: 10px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+  .o3.s .card .k { font: 400 6.5px/1 "JetBrains Mono", monospace; letter-spacing: .16em; color: #77828a; text-transform: uppercase; }
+  .o3.s .card .v { font-size: 10px; margin-top: 6px; color: #e9e4d8; }
+  .o3.s .card .v em { font-style: normal; color: #79c7b8; font: 400 8px/1 "JetBrains Mono", monospace; }
+  .o3.s .list { margin-top: 12px; }
+  .o3.s .lrow { display: flex; align-items: center; justify-content: space-between; padding: 9px 2px; border-top: 1px solid rgba(255,255,255,.07); font-size: 9px; color: #c9cfd4; }
+  .o3.s .lrow span { font: 400 7px/1 "JetBrains Mono", monospace; color: #77828a; }
+  .o3.s .lrow b { font-weight: 400; color: #e9e4d8; }
+  .o3.s .ghost { margin-top: 12px; border: 1px solid rgba(121,199,184,.45); color: #79c7b8; font: 400 7.5px/1 "JetBrains Mono", monospace; letter-spacing: .12em; text-align: center; padding: 8px; border-radius: 6px; text-transform: uppercase; }
+  .o3.s .hint { margin-top: 12px; display: flex; justify-content: space-between; font: 400 7px/1 "JetBrains Mono", monospace; letter-spacing: .1em; color: #77828a; text-transform: uppercase; }
+  .o3.s .hint b { color: #c9cfd4; font-weight: 400; }
+
+  .foot { margin-top: 22px; display: flex; justify-content: space-between; font: 400 10px/1.5 "JetBrains Mono", ui-monospace, monospace; color: #6f6f78; letter-spacing: .04em; }
+  .foot b { color: #a7a7af; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="board-head">
+  <div>
+    <div class="kicker">Nakout Radio · design directions</div>
+    <h1>Three ways to grow the station</h1>
+  </div>
+  <p>Same product, three personalities. Each row pairs the <b>listener home</b> with a matching <b>studio</b> slice, so the system is judged as a whole — not just the pretty page.</p>
+</div>
+
+<section class="concept">
+  <div class="concept-head">
+    <span class="num">01</span>
+    <h2>Refined Console</h2>
+    <span class="idea">Keep the ritual, sharpen the craft. <em>Low risk, high polish.</em></span>
+    <span class="tradeoff">Trade-off: least differentiation</span>
+  </div>
+  <div class="shot">
+    <div class="screen o1">
+      <div class="top">
+        <div class="wordmark">Nakout Radio</div>
+        <div class="meta"><span><i class="dot off"></i>Standing by</span><span>1 listening</span></div>
+      </div>
+      <div class="hero">
+        <div class="plinth">
+          <div class="platter"><div class="label">NAKOUT<br>RADIO</div></div>
+          <div class="arm"></div>
+        </div>
+        <div class="right">
+          <div class="eyebrow">Live now</div>
+          <h3>Tune&nbsp;in</h3>
+          <div class="artist">Nakout Radio</div>
+          <div class="sched-label">Today’s schedule</div>
+          <ul>
+            <li><span>NU Metal</span><time>7–8 am</time></li>
+            <li><span>Alt R&amp;B / Neo-soulfunk</span><time>8–10 am</time></li>
+            <li class="active"><span>Classic Love Songs</span><time>10–1:30 pm</time></li>
+            <li><span>Classic Rock</span><time>1:30–3:30 pm</time></li>
+            <li><span>OPM Tunog Kalye</span><time>3:30–5 pm</time></li>
+            <li><span>Emo Night</span><time>7:30–10 pm</time></li>
+          </ul>
+        </div>
+      </div>
+      <div class="dock">
+        <div class="thumb"></div>
+        <div>
+          <div class="deck-label">On the decks</div>
+          <div class="deck-title">Nakout Radio</div>
+        </div>
+        <div class="bars">
+          <i style="height:5px"></i><i style="height:11px"></i><i style="height:8px"></i><i style="height:15px"></i><i style="height:10px"></i><i style="height:17px"></i><i style="height:7px"></i><i style="height:13px"></i><i style="height:9px"></i><i style="height:16px"></i><i style="height:6px"></i><i style="height:12px"></i><i style="height:8px"></i>
+        </div>
+        <div class="time">0:00 / 0:00</div>
+        <div class="knob"></div>
+        <div class="fader"></div>
+        <div class="tune">Tune in</div>
+      </div>
+    </div>
+
+    <div class="screen o1 s">
+      <div class="sbar">
+        <b>STUDIO</b>
+        <div class="tabs"><span class="on">Now</span><span>Genres</span><span>Playlists</span><span>Library</span></div>
+      </div>
+      <div class="card">
+        <div class="live"><i></i> On air · Classic Love Songs</div>
+        <div class="sub">Next: Classic Rock · 1:30 pm</div>
+      </div>
+      <div class="panel">
+        <div class="plabel"><span>Playlists</span><span>+ New</span></div>
+        <div class="row header"><span>Name</span><span>Genre</span><span>State</span></div>
+        <div class="row"><span>Classic Love Songs <em>· 42 tracks</em></span><span>Love</span><span class="pill">Live</span></div>
+        <div class="row"><span>OPM Tunog Kalye <em>· 38 tracks</em></span><span>OPM</span><span class="pill">Live</span></div>
+        <div class="row"><span>Emo Night <em>· 27 tracks</em></span><span>Emo</span><span class="pill draft">Draft</span></div>
+      </div>
+      <div class="panel">
+        <div class="plabel"><span>Today’s slots</span><span>Edit</span></div>
+        <div class="row"><span>10:00 am <em>· Classic Love Songs</em></span><span>Now</span><span class="pill">On</span></div>
+        <div class="row"><span>1:30 pm <em>· Classic Rock</em></span><span>Next</span><span class="pill">On</span></div>
+        <div class="row"><span>3:30 pm <em>· OPM Tunog Kalye</em></span><span>—</span><span class="pill draft">Edit</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="concept">
+  <div class="concept-head">
+    <span class="num">02</span>
+    <h2>Broadcast</h2>
+    <span class="idea">A station that looks <em>on air</em> — Swiss grid, signal red, type as signal. <em>Bold rebrand.</em></span>
+    <span class="tradeoff">Trade-off: loses the cosy vinyl warmth</span>
+  </div>
+  <div class="shot">
+    <div class="screen o2">
+      <div class="top">
+        <div class="mark">NAKOUT<span>.</span>FM</div>
+        <div class="meta"><span class="live"><i></i>ON AIR</span><span>MANILA · 12:41</span><span class="studio-link">STUDIO</span></div>
+      </div>
+      <div class="hero">
+        <div class="left">
+          <div class="eyebrow">Always-on internet radio</div>
+          <h3>Tune<br><span class="red">in.</span></h3>
+          <div class="sub">A curated mix of genres on a time-of-day schedule. No algorithm, just a station.</div>
+          <div class="dial">
+            <div class="ticks"></div>
+            <div class="ticks big"></div>
+            <div class="needle"></div>
+            <div class="freq">NOW · CLASSIC LOVE SONGS</div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="sched-label"><span>Today’s schedule</span><span>9 slots</span></div>
+          <div class="slot"><time>7–8</time><span>NU Metal</span><em>AM</em></div>
+          <div class="slot"><time>8–10</time><span>Alt R&amp;B / Neo-soulfunk</span><em>AM</em></div>
+          <div class="slot now"><time>10–1:30</time><span>Classic Love Songs</span><em>LIVE</em></div>
+          <div class="slot"><time>1:30–3:30</time><span>Classic Rock</span><em>PM</em></div>
+          <div class="slot"><time>3:30–5</time><span>OPM Tunog Kalye</span><em>PM</em></div>
+          <div class="slot"><time>5–5:30</time><span>Pinoy Bato</span><em>PM</em></div>
+        </div>
+      </div>
+      <div class="dock">
+        <div class="play">▶</div>
+        <div class="title">Tune in<small>Nakout Radio</small></div>
+        <div class="ticks-line"></div>
+        <div class="time">0:00 / 0:00</div>
+        <div class="cta">LISTEN →</div>
+      </div>
+    </div>
+
+    <div class="screen o2 s">
+      <div class="rail">
+        <b>STUDIO</b>
+        <ul><li class="on">Schedule</li><li>Genres</li><li>Playlists</li><li>Library</li><li>Now</li></ul>
+      </div>
+      <div class="main">
+        <div class="head"><h4>Schedule</h4><span>WEEKDAY · MANILA</span></div>
+        <div class="tbl">
+          <div class="tr h"><span></span><span>Slot</span><span>From</span><span>State</span></div>
+          <div class="tr"><span class="sw"></span><span>NU Metal</span><em>7:00 am</em><em class="on">ON</em></div>
+          <div class="tr"><span class="sw alt"></span><span>Alt R&amp;B / Neo-soulfunk</span><em>8:00 am</em><em class="on">ON</em></div>
+          <div class="tr"><span class="sw"></span><span>Classic Love Songs</span><em>10:00 am</em><em class="on">ON</em></div>
+          <div class="tr"><span class="sw alt"></span><span>Classic Rock</span><em>1:30 pm</em><em class="on">ON</em></div>
+          <div class="tr"><span class="sw"></span><span>OPM Tunog Kalye</span><em>3:30 pm</em><em class="on">ON</em></div>
+          <div class="tr"><span class="sw alt"></span><span>Pinoy Bato</span><em>5:00 pm</em><em class="on">ON</em></div>
+          <div class="tr"><span class="sw"></span><span>Traffic Jam</span><em>5:30 pm</em><em class="on">ON</em></div>
+          <div class="tr"><span class="sw alt"></span><span>Emo Night</span><em>7:30 pm</em><em class="on">ON</em></div>
+        </div>
+        <div class="btn">PUBLISH CHANGES</div>
+        <div class="onair"><span><i></i>ON AIR · CLASSIC LOVE SONGS</span><em>SINCE 10:00</em></div>
+        <div class="meta-line"><span>AUTO-ADVANCE · ON</span><span>CACHE · 60 MIN</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="concept">
+  <div class="concept-head">
+    <span class="num">03</span>
+    <h2>Listening Room</h2>
+    <span class="idea">The station as a place: art-led, cinematic, quiet chrome. <em>Wildcard.</em></span>
+    <span class="tradeoff">Trade-off: less glanceable at a distance</span>
+  </div>
+  <div class="shot">
+    <div class="screen o3">
+      <div class="top">
+        <div class="wordmark">NAKOUT RADIO</div>
+        <div class="meta">1 listening · Manila</div>
+      </div>
+      <div class="hero">
+        <div class="artwrap">
+          <div class="ring"></div>
+          <div class="art"><b>N</b></div>
+        </div>
+        <div class="right">
+          <div class="eyebrow">Now playing</div>
+          <h3>Tune in</h3>
+          <div class="artist">Nakout Radio · Classic Love Songs</div>
+          <div class="note">“A quiet room, a loud song.” Liner notes for the current block.</div>
+          <div class="sched">
+            <div class="col">
+              <div class="sched-label">Up next</div>
+              <div class="srow now"><span>Classic Love Songs</span><time>now</time></div>
+              <div class="srow"><span>Classic Rock</span><time>1:30</time></div>
+              <div class="srow"><span>OPM Tunog Kalye</span><time>3:30</time></div>
+            </div>
+            <div class="col">
+              <div class="sched-label">Later tonight</div>
+              <div class="srow"><span>Traffic Jam</span><time>5:30</time></div>
+              <div class="srow"><span>Emo Night</span><time>7:30</time></div>
+              <div class="srow"><span>After hours</span><time>10:00</time></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dock">
+        <div class="play">▶</div>
+        <div class="title">Tune in<small>Nakout Radio</small></div>
+        <div class="prog"></div>
+        <div class="time">00:00</div>
+        <div class="vol"></div>
+      </div>
+    </div>
+
+    <div class="screen o3 s">
+      <div class="rail">
+        <i class="on"></i><i></i><i></i><i></i><i></i>
+      </div>
+      <div class="main">
+        <div class="head"><h4>Tonight’s rotation</h4><span>Studio</span></div>
+        <div class="cards">
+          <div class="card"><div class="k">On air</div><div class="v">Classic Love Songs <em>· 42</em></div></div>
+          <div class="card"><div class="k">Next up</div><div class="v">Classic Rock <em>· 1:30 pm</em></div></div>
+        </div>
+        <div class="list">
+          <div class="lrow"><b>Emo Night</b><span>7:30 pm · draft</span></div>
+          <div class="lrow"><b>Traffic Jam</b><span>5:30 pm · ready</span></div>
+          <div class="lrow"><b>OPM Tunog Kalye</b><span>3:30 pm · ready</span></div>
+          <div class="lrow"><b>Pinoy Bato</b><span>5:00 pm · ready</span></div>
+          <div class="lrow"><b>Classic Love Songs</b><span>10:00 pm · ready</span></div>
+        </div>
+        <div class="hint"><span>Next change</span><b>1:30 pm · Classic Rock</b></div>
+        <div class="ghost">Edit rotation</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="foot">
+  <span><b>Directions are illustrative</b> — typography, spacing and color would be tokenised per direction.</span>
+  <span>Shared DNA: one palette, one type scale, listener + studio</span>
+</div>
+
+</body>
+</html>

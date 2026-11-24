@@ -43,7 +43,11 @@ export function TurntableDeck({ playing, artUrl }: Props) {
   return (
     <div className={playing ? "deck playing" : "deck"}>
       <div className="platter">
-        <div className="record" ref={recordRef}>
+        <div
+          className="record"
+          ref={recordRef}
+          style={artUrl ? { backgroundImage: `url(${artUrl})` } : undefined}
+        >
           <div
             className="label"
             style={artUrl ? { backgroundImage: `url(${artUrl})` } : undefined}
