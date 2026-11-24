@@ -39,6 +39,9 @@ Listening Room). It applies to the listener page, the Studio and every popup
   current slot is marked with a teal inset bar and teal time.
 - **Dock:** fixed, inset, translucent bar with cover, "on the decks" label,
   VU bars, timecode, volume and an outlined teal tune control.
+- **Volume:** graphite knob with a glowing teal indicator, and a hairline
+  fader whose teal fill ends in a round dot thumb. On phones the dock swaps
+  the decorative VU for the volume controls so they stay reachable.
 
 ## Artwork disc
 

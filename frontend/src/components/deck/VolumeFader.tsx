@@ -111,11 +111,9 @@ export function VolumeFader({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerCancel}
       onKeyDown={onKeyDown}
+      style={{ "--v": `${(value / 100).toFixed(3)}` } as CSSProperties}
     >
-      <div
-        className="fader-thumb"
-        style={{ "--v": `${(value / 100).toFixed(3)}` } as CSSProperties}
-      />
+      <div className="fader-thumb" />
     </div>
   );
 }

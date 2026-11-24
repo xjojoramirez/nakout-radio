@@ -3,6 +3,33 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-24 - bring the volume controls into the Listening Room
+
+The player dock's volume knob is now a graphite dial with a glowing teal
+indicator, and the horizontal fader is a hairline track with a teal fill and a
+round dot thumb. The fader's `--v` custom property moved from the thumb to the
+fader root so the fill can track the value. On phones the dock now swaps the
+decorative VU meter for the volume controls, keeping them reachable; the dock
+tokens also moved onto `body:has(.radio-page.listening-room)` because the dock
+is a sibling of `.radio-page`.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `frontend/src/components/deck/VolumeFader.tsx`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked in the rebuilt Docker frontend: at desktop the dock resolves the
+    teal tokens, a graphite 36px knob, a 12px teal thumb and a 2px fader
+    track; at 390px the volume controls are visible, the VU meter is hidden
+    and there is no horizontal overflow.
+
 ## 2026-11-24 - apply the Listening Room to the Studio and popups
 
 Extended design option 3 beyond the listener page. The Studio now remaps the
