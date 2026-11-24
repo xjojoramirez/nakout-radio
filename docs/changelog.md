@@ -3,6 +3,34 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-24 - apply the Listening Room to the Studio and popups
+
+Extended design option 3 beyond the listener page. The Studio now remaps the
+vintage tokens inside `.admin-page`: ink background, teal accent, cream text,
+Inter body, JetBrains Mono labels and Instrument Serif headings. The shell uses
+a serif wordmark, hairline header, quiet underline tabs, hairline cards/rows,
+teal primary buttons and focus rings. The Now Playing deck becomes the same
+artwork disc with teal VU bars. All popups (playlist about, confirm, changelog,
+track editor) and toasts use a blurred dark overlay with an ink panel and serif
+title. Mobile keeps the existing responsive layouts: scrolling tabs, a centred
+280px studio deck, a full-height track editor and `dvh`-capped popups.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css` (Studio + popup layer)
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Visual: Studio login and the listener playlist-about popup checked against
+    the running Docker frontend; the computed popup shell is #0f1518 with a
+    hairline border, Instrument Serif title and Inter body. Studio panels behind
+    the login require the admin password, so they were not screenshot-checked.
+
 ## 2026-11-24 - add the Listening Room listener theme (design option 3)
 
 Reworked the public radio page into the "Listening Room" direction: the

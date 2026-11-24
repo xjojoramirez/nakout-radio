@@ -750,3 +750,588 @@ body:has(.radio-page.listening-room) .player-dock .tune-btn:disabled {
     will-change: auto;
   }
 }
+
+/* ============================================================
+   Listening Room — Studio + popups
+
+   The vintage skin is driven almost entirely by its custom
+   properties, so remapping them here re-colours most of the
+   admin UI in one place. The rules below then tighten type,
+   surfaces and the studio deck to match option 3.
+   ============================================================ */
+
+.admin-page,
+.modal-overlay {
+  --bg: #090b0e;
+  --bg-1: #0d1316;
+  --bg-2: #070a0c;
+  --wood: #0f1518;
+  --wood-light: #141c20;
+  --wood-dark: #0a0f12;
+  --wood-edge: #06090a;
+  --cream: #e9e4d8;
+  --cream-soft: #121a1d;
+  --ink: #e9e4d8;
+  --muted: #8f979e;
+  --amber: #79c7b8;
+  --amber-strong: #9ddbd0;
+  --amber-soft: rgba(121, 199, 184, 0.13);
+  --vinyl: #0c1013;
+  --led: #79c7b8;
+  --danger: #ff9d8a;
+  --danger-soft: rgba(255, 157, 138, 0.12);
+  --ok: #9fd9a8;
+  --ok-soft: rgba(159, 217, 168, 0.12);
+  --border: rgba(233, 228, 216, 0.1);
+  --border-strong: rgba(233, 228, 216, 0.2);
+  --field: #0b1114;
+  --line: #233137;
+  --line-strong: #31454d;
+  --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-body: "Inter", system-ui, "Segoe UI", sans-serif;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+html:has(.admin-page) {
+  background: #090b0e;
+}
+
+body:has(.admin-page) {
+  align-items: start;
+  padding: 30px 0 90px;
+  background:
+    radial-gradient(
+      1000px 520px at 76% -10%,
+      rgba(121, 199, 184, 0.09),
+      transparent 62%
+    ),
+    radial-gradient(
+      800px 460px at 0% 24%,
+      rgba(111, 74, 58, 0.13),
+      transparent 58%
+    ),
+    #090b0e;
+}
+
+/* ---------- Studio type + shell ---------- */
+
+.admin-page h1,
+.admin-page h2:not(.sec),
+.admin-page h3:not(.sec),
+.modal-overlay h1,
+.modal-overlay h2:not(.sec),
+.modal-overlay h3:not(.sec) {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.admin-page .admin-top {
+  align-items: center;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-page .admin-top .brand {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.admin-page .admin .brand small {
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+}
+
+.admin-page a.back,
+.admin-page .changelog-btn {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-page a.back:hover,
+.admin-page .changelog-btn:hover {
+  color: var(--cream);
+}
+
+.admin-page .admin-tabs {
+  gap: 24px;
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.admin-page .admin-tabs button {
+  padding: 11px 2px;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-page .admin-tabs button:hover {
+  color: var(--cream);
+}
+
+.admin-page .admin-tabs button.active {
+  background: none;
+  color: var(--cream);
+  border-bottom-color: var(--amber);
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.admin-page .admin-tabs .count {
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-size: 0.56rem;
+}
+
+.admin-page .admin-tabs .active .count {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+/* ---------- Studio surfaces ---------- */
+
+.admin-page .card,
+.admin-page .gcard,
+.admin-page .group,
+.admin-page .pcard,
+.admin-page .srow,
+.modal-overlay .card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: none;
+}
+
+.admin-page .gcard {
+  box-shadow: inset 0 3px 0 var(--gc, var(--amber));
+}
+
+.admin-page .srow {
+  box-shadow: inset 3px 0 0 var(--gc, var(--line));
+}
+
+.admin-page .srow.dim {
+  background: transparent;
+  border: 1px dashed var(--border);
+  box-shadow: none;
+}
+
+.admin-page .pcard {
+  padding: 10px;
+}
+
+.admin-page .card,
+.modal-overlay .card {
+  padding: 18px;
+}
+
+.admin-page .admin-login {
+  width: min(380px, 100%);
+  margin-top: 8vh;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+}
+
+.admin-page .admin-login h1 {
+  font-size: 2.1rem;
+}
+
+.admin-page .admin-login .hint {
+  margin-bottom: 14px;
+}
+
+.admin-page .empty {
+  border-color: var(--border);
+  border-radius: 12px;
+}
+
+/* ---------- Studio controls ---------- */
+
+.admin-page .btn,
+.modal-overlay .btn {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.admin-page .btn-primary,
+.admin-page .btn-danger-solid,
+.modal-overlay .btn-primary,
+.modal-overlay .btn-danger-solid {
+  color: #08110f;
+}
+
+.admin-page .btn-primary:hover:not(:disabled),
+.modal-overlay .btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.admin-page .field,
+.modal-overlay .field {
+  letter-spacing: 0.12em;
+}
+
+.admin-page .field input::placeholder,
+.admin-page .field textarea::placeholder,
+.admin-page .admin input::placeholder,
+.admin-page .admin textarea::placeholder,
+.admin-page .track-editor input::placeholder,
+.admin-page .track-editor textarea::placeholder,
+.modal-overlay input::placeholder,
+.modal-overlay textarea::placeholder {
+  color: #5f6c73;
+}
+
+.admin-page .seg {
+  border: 1px solid var(--border);
+}
+
+.admin-page .seg button[aria-pressed="true"] {
+  font-weight: 500;
+}
+
+.admin-page .btn-link {
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(121, 199, 184, 0.4);
+}
+
+.admin-page .toast {
+  background: rgba(16, 21, 24, 0.92);
+  color: var(--cream);
+  border: 1px solid rgba(121, 199, 184, 0.35);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  font-weight: 500;
+}
+
+/* ---------- Studio deck (Now playing) ---------- */
+
+.admin-page #panel-now .admin-deck {
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.admin-page #panel-now .admin-deck-side {
+  padding-top: 6px;
+}
+
+.admin-page #panel-now .deck {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin-inline: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: none;
+  box-shadow: none;
+}
+
+.admin-page #panel-now .deck::after {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  border: 1px dashed rgba(121, 199, 184, 0.3);
+  pointer-events: none;
+}
+
+.admin-page #panel-now .platter {
+  inset: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  border-radius: 50%;
+  background: none;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.admin-page #panel-now .record {
+  inset: 0;
+  background-color: #101518;
+  background-position: center;
+  background-size: cover;
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(233, 228, 216, 0.12);
+}
+
+.admin-page #panel-now .record::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0.32) 0 1px,
+    transparent 1px 4px
+  );
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.admin-page #panel-now .record::after {
+  inset: 0;
+  background: radial-gradient(
+    circle at 32% 24%,
+    rgba(255, 255, 255, 0.1),
+    transparent 42%
+  );
+}
+
+.admin-page #panel-now .record .label {
+  inset: 41%;
+  background-size: cover;
+  box-shadow:
+    0 0 0 1px rgba(233, 228, 216, 0.22),
+    0 0 0 16px rgba(9, 11, 14, 0.22);
+}
+
+.admin-page #panel-now .sheen {
+  inset: 0;
+  background: conic-gradient(
+    from 210deg,
+    transparent 0 18%,
+    rgba(121, 199, 184, 0.12) 27%,
+    transparent 40% 100%
+  );
+}
+
+.admin-page #panel-now .pivot,
+.admin-page #panel-now .arm,
+.admin-page #panel-now .deck-rpm {
+  display: none;
+}
+
+.admin-page #panel-now .mixer {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.admin-page .vu-bar {
+  background: linear-gradient(var(--amber), rgba(121, 199, 184, 0.24));
+}
+
+.admin-page #panel-now .nowcard {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ---------- Studio lists, chips, timeline ---------- */
+
+.admin-page .chip {
+  padding: 3px 9px;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+}
+
+.admin-page .lib-row {
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-page .lib-row:hover {
+  background: rgba(121, 199, 184, 0.06);
+}
+
+.admin-page .lib-thumb,
+.admin-page .lib-row img {
+  border-radius: 8px;
+}
+
+.admin-page .tl {
+  border-radius: 8px;
+}
+
+.admin-page .wk .blk {
+  border-radius: 6px;
+}
+
+.admin-page .wkbar {
+  border-radius: 8px;
+}
+
+.admin-page .queue-row.current {
+  background: rgba(121, 199, 184, 0.08);
+}
+
+.admin-page .on-air-dot {
+  background: var(--amber);
+  box-shadow: 0 0 10px rgba(121, 199, 184, 0.6);
+}
+
+/* ---------- Popups ---------- */
+
+.modal-overlay {
+  background: rgba(4, 7, 8, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.modal-card {
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: #0f1518;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.modal-message {
+  color: var(--muted);
+}
+
+.modal-overlay .modal-actions .btn {
+  padding: 9px 18px;
+}
+
+.changelog-card {
+  background: #0f1518;
+}
+
+.changelog-sub,
+.changelog-entry p {
+  color: var(--muted);
+}
+
+.changelog-entry h3 {
+  font-weight: 400;
+}
+
+.changelog-date {
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+}
+
+.playlist-about .pa-desc {
+  color: var(--cream);
+}
+
+.playlist-about .pa-artists h3 {
+  letter-spacing: 0.16em;
+}
+
+.track-editor-section {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.track-editor-section legend {
+  font-size: 0.56rem;
+  letter-spacing: 0.16em;
+}
+
+.modal-card.track-editor {
+  max-height: min(92dvh, 900px);
+}
+
+/* ---------- Studio + popup responsive ---------- */
+
+@media (max-width: 820px) {
+  .admin-page #panel-now .admin-deck {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .admin-page #panel-now .deck {
+    max-width: 280px;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  body:has(.admin-page) {
+    padding: 18px 0 72px;
+  }
+
+  .admin-page {
+    width: calc(100% - 24px);
+    gap: 18px;
+  }
+
+  .admin-page .admin-tabs {
+    gap: 18px;
+  }
+
+  .admin-page .admin-tabs button {
+    padding: 10px 0;
+    font-size: 0.58rem;
+  }
+
+  .admin-page .admin-top .brand {
+    font-size: 1.05rem;
+  }
+
+  .admin-page a.back,
+  .admin-page .changelog-btn {
+    font-size: 0.56rem;
+  }
+
+  .admin-page .admin-login {
+    margin-top: 4vh;
+    padding: 22px;
+  }
+
+  .admin-page .admin-login h1 {
+    font-size: 1.8rem;
+  }
+
+  .modal-overlay {
+    padding: 10px;
+  }
+
+  .modal-card {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .modal-title {
+    font-size: 1.3rem;
+  }
+
+  .changelog-head {
+    padding: 16px 16px 10px;
+  }
+
+  .changelog-body {
+    padding: 2px 16px 16px;
+  }
+
+  .modal-card.track-editor {
+    padding: 14px;
+  }
+
+  .admin-page .toast {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .admin-page .admin-tabs {
+    gap: 14px;
+  }
+
+  .admin-page .admin-tabs button {
+    letter-spacing: 0.1em;
+  }
+}

@@ -12,8 +12,8 @@ current track's artwork is the record, the room is tinted by that artwork, and
 the chrome recedes so the music and schedule lead.
 
 Option 3 was chosen from three directions (Refined Console, Broadcast,
-Listening Room). The Studio keeps its existing vintage skin until a separate
-reskin is approved.
+Listening Room). It applies to the listener page, the Studio and every popup
+(playlist about, confirm, changelog, track editor, toast).
 
 ## Visual system
 
@@ -67,9 +67,25 @@ reskin is approved.
 - Decorative layers (ambient, ring, grooves) are `aria-hidden` or CSS-only.
 - Reduced-motion users keep a static record.
 
+## Studio and popups
+
+- The Studio reuses the same tokens by remapping the vintage custom properties
+  inside `.admin-page` (and `.modal-overlay` for dialogs): ink background,
+  teal accent, cream text, Inter body, JetBrains Mono labels, Instrument Serif
+  headings.
+- Shell: serif wordmark, hairline header, quiet underline tabs, hairline cards
+  and rows, outlined secondary buttons, teal primary buttons and focus rings.
+- Now playing keeps the deck but renders it as the same artwork disc, with the
+  mixer on a hairline panel and teal VU bars.
+- Popups: blurred dark overlay, ink panel with hairline border, serif title,
+  Inter body, teal primary action. The playlist-about dialog on the listener
+  page uses the same shell.
+- Mobile: tabs scroll horizontally, the studio deck centres at 280px, the
+  track editor uses the existing full-height mobile layout, and popups keep
+  10–18px padding with `dvh` caps.
+
 ## Non-goals
 
-- Studio reskin (separate change).
 - Dominant-colour extraction from artwork (blurred art is the tint).
 - New playback or scheduling features.
 
