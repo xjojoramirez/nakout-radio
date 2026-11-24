@@ -3,6 +3,26 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-24 - rename the muted-state action to Stop listening
+
+The dock still starts with "Tune in", but the audible/muted-in state now reads
+"Stop listening" instead of "Tune out" — clearer for first-time listeners and
+screen readers, and less likely to be read as "tune out / ignore". The
+underlying action is unchanged: it mutes and unmutes the player.
+
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+
 ## 2026-11-24 - bring the volume controls into the Listening Room
 
 The player dock's volume knob is now a graphite dial with a glowing teal

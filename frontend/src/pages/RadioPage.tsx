@@ -236,7 +236,7 @@ export function RadioPage() {
           onClick={player.toggleMute}
           disabled={offline}
         >
-          {player.muted ? "Tune in" : "Tune out"}
+          {player.muted ? "Tune in" : "Stop listening"}
         </button>
       </div>
 

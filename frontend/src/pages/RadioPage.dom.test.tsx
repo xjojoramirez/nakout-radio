@@ -182,12 +182,12 @@ describe("RadioPage", () => {
     expect(await screen.findByText("Morning · live now")).toBeInTheDocument();
   });
 
-  it("opens with Tune in and flips to Tune out on click", async () => {
+  it("opens with Tune in and flips to Stop listening on click", async () => {
     render(<RadioPage />);
     const tune = await screen.findByRole("button", { name: "Tune in" });
     fireEvent.click(tune);
     expect(
-      await screen.findByRole("button", { name: "Tune out" }),
+      await screen.findByRole("button", { name: "Stop listening" }),
     ).toBeInTheDocument();
   });
 

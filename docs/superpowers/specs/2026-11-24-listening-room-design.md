@@ -38,7 +38,9 @@ Listening Room). It applies to the listener page, the Studio and every popup
 - **Schedule:** below the liner notes, two columns of hairline rows; the
   current slot is marked with a teal inset bar and teal time.
 - **Dock:** fixed, inset, translucent bar with cover, "on the decks" label,
-  VU bars, timecode, volume and an outlined teal tune control.
+  VU bars, timecode, volume and an outlined teal control labelled **Tune in**
+  when muted and **Stop listening** when audible (the action is mute/unmute,
+  so the label describes what the listener experiences).
 - **Volume:** graphite knob with a glowing teal indicator, and a hairline
   fader whose teal fill ends in a round dot thumb. On phones the dock swaps
   the decorative VU for the volume controls so they stay reachable.
@@ -62,7 +64,7 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 ## Accessibility and behavior
 
-- All existing behavior is unchanged: tune in/out, volume knob and fader,
+- All existing behavior is unchanged: tune in / stop listening, volume knob and fader,
   schedule dialogs, playlist-about dialog, liner tabs, offline state and the
   gap phase.
 - Focus rings switch to teal with visible offset; the current schedule row is
