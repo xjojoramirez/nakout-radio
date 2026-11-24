@@ -49,6 +49,9 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 - `track.thumbnail_url` is painted on `.record` (and the small centre label).
 - A groove texture overlays the image so it still reads as vinyl.
+- A slim cream tonearm on a graphite pivot sits just outside the disc, with a
+  teal centre dot and a dark headshell with a teal stylus line. It rests at 4°
+  and swings to 24° while the station is playing (same on the Studio deck).
 - A blurred, low-opacity copy of the same image sits behind the fold as the
   room tint (`mask-image` fades it out). No colour extraction is required.
 - Missing artwork falls back to the existing black vinyl + grooves.

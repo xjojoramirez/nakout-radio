@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-24 - restore the tonearm on the artwork disc
+
+The Listening Room disc reads as a turntable again. It now has a slim cream
+tonearm on a graphite pivot mounted just outside the disc, a teal centre dot,
+and a dark headshell with a teal stylus line. The arm rests at 4° and swings to
+24° while the station is playing; the Studio Now Playing deck uses the same
+treatment. The RPM badges remain hidden.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run build` — pass (CSS-only change; typecheck and the 373 tests were
+    unchanged from the previous commit)
+  - Checked in the rebuilt Docker frontend at desktop and 390px: pivot and arm
+    are visible, the arm swings to 24°, the pivot stays inside the viewport and
+    there is no horizontal overflow.
+  - Screenshot captured at 390px: pivot outside the disc, arm over the artwork,
+    headshell near the centre label.
+
 ## 2026-11-24 - rename the muted-state action to Stop listening
 
 The dock still starts with "Tune in", but the audible/muted-in state now reads
