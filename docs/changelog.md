@@ -3,6 +3,31 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-24 - return the vinyl face to black with the art as the centre label
+
+The record now looks like the original deck again: a black vinyl disc with
+concentric grooves, and the current track's artwork as a round centre label
+(42% of the disc, inset 29%) with a spindle hole and a thin cream ring. The
+artwork no longer fills the whole record. The same change applies to the Studio
+Now Playing deck. The square plinth, tonearm, and blurred room tint remain.
+
+- Files touched:
+  - `frontend/src/components/deck/TurntableDeck.tsx` (art stays on the label)
+  - `frontend/src/styles/listening-room.css` (black vinyl + label sizing)
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked in the rebuilt Docker frontend at 390px: black grooved disc,
+    129px round label (42% of the 308px record), artwork inside the label,
+    square plinth and tonearm unchanged, no horizontal overflow. A Playwright
+    screenshot was captured at 390×844.
+
 ## 2026-11-24 - set the record player on a square plinth
 
 The Listening Room deck is now a square graphite plinth (18px radius,

@@ -171,14 +171,19 @@ body:has(.radio-page.listening-room) {
 
 .radio-page.listening-room .record {
   inset: 0;
-  background-color: #101518;
-  background-position: center;
-  background-size: cover;
-  box-shadow: inset 0 0 0 1px rgba(233, 228, 216, 0.12);
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.032) 0 1px,
+      transparent 1px 3px
+    ),
+    radial-gradient(circle at center, #1b1411 0 40%, #0c0807 41% 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(233, 228, 216, 0.1),
+    0 18px 40px rgba(0, 0, 0, 0.55);
 }
 
-/* Groove texture over the artwork (the inline image replaces the
-   vintage background gradients, so the grooves live here). */
+/* Slightly stronger grooves over the vinyl. */
 .radio-page.listening-room .record::before {
   content: "";
   position: absolute;
@@ -186,10 +191,10 @@ body:has(.radio-page.listening-room) {
   border-radius: 50%;
   background: repeating-radial-gradient(
     circle at center,
-    rgba(0, 0, 0, 0.32) 0 1px,
+    rgba(255, 255, 255, 0.04) 0 1px,
     transparent 1px 4px
   );
-  opacity: 0.55;
+  opacity: 0.7;
   pointer-events: none;
 }
 
@@ -198,28 +203,30 @@ body:has(.radio-page.listening-room) {
   background:
     radial-gradient(
       circle at center,
-      transparent 0 33%,
-      rgba(9, 11, 14, 0.38) 34% 35%,
-      transparent 36%
+      transparent 0 28%,
+      rgba(255, 255, 255, 0.06) 28.5% 29%,
+      transparent 29.5%
     ),
     radial-gradient(
       circle at 32% 24%,
-      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0.1),
       transparent 42%
     );
 }
 
+/* The album art is the round centre label; the vinyl around it stays black. */
 .radio-page.listening-room .record .label {
-  inset: 41%;
+  inset: 29%;
+  background-color: #12100e;
   background-position: center;
-  background-size: cover;
+  background-size: 177.78% auto;
   box-shadow:
-    0 0 0 1px rgba(233, 228, 216, 0.22),
-    0 0 0 16px rgba(9, 11, 14, 0.22);
+    0 0 0 1px rgba(233, 228, 216, 0.24),
+    0 0 0 10px rgba(0, 0, 0, 0.28);
 }
 
 .radio-page.listening-room .record .label::after {
-  width: 13%;
+  width: 10%;
   background: #0b0e10;
   box-shadow: 0 0 0 2px rgba(233, 228, 216, 0.3);
 }
@@ -1264,10 +1271,14 @@ body:has(.admin-page) {
 
 .admin-page #panel-now .record {
   inset: 0;
-  background-color: #101518;
-  background-position: center;
-  background-size: cover;
-  box-shadow: inset 0 0 0 1px rgba(233, 228, 216, 0.12);
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.032) 0 1px,
+      transparent 1px 3px
+    ),
+    radial-gradient(circle at center, #1b1411 0 40%, #0c0807 41% 100%);
+  box-shadow: inset 0 0 0 1px rgba(233, 228, 216, 0.1);
 }
 
 .admin-page #panel-now .record::before {
@@ -1277,28 +1288,43 @@ body:has(.admin-page) {
   border-radius: 50%;
   background: repeating-radial-gradient(
     circle at center,
-    rgba(0, 0, 0, 0.32) 0 1px,
+    rgba(255, 255, 255, 0.04) 0 1px,
     transparent 1px 4px
   );
-  opacity: 0.55;
+  opacity: 0.7;
   pointer-events: none;
 }
 
 .admin-page #panel-now .record::after {
   inset: 0;
-  background: radial-gradient(
-    circle at 32% 24%,
-    rgba(255, 255, 255, 0.1),
-    transparent 42%
-  );
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 0 28%,
+      rgba(255, 255, 255, 0.06) 28.5% 29%,
+      transparent 29.5%
+    ),
+    radial-gradient(
+      circle at 32% 24%,
+      rgba(255, 255, 255, 0.1),
+      transparent 42%
+    );
 }
 
 .admin-page #panel-now .record .label {
-  inset: 41%;
-  background-size: cover;
+  inset: 29%;
+  background-color: #12100e;
+  background-position: center;
+  background-size: 177.78% auto;
   box-shadow:
-    0 0 0 1px rgba(233, 228, 216, 0.22),
-    0 0 0 16px rgba(9, 11, 14, 0.22);
+    0 0 0 1px rgba(233, 228, 216, 0.24),
+    0 0 0 10px rgba(0, 0, 0, 0.28);
+}
+
+.admin-page #panel-now .record .label::after {
+  width: 10%;
+  background: #0b0e10;
+  box-shadow: 0 0 0 2px rgba(233, 228, 216, 0.3);
 }
 
 .admin-page #panel-now .sheen {
