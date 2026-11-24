@@ -3,6 +3,33 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-24 - limit the project to three font families
+
+Removed Bricolage Grotesque and DM Mono from the Google Fonts request and from
+the root tokens. The project now uses three families: Inter (body, controls,
+wordmark), Instrument Serif (track titles and headings) and JetBrains Mono
+(labels, times, metadata). The listener and Studio wordmarks are now Inter with
+wide tracking instead of the serif, per the preview annotation. Un-themed
+vintage elements also resolve to the same three families, so no dead font
+requests remain.
+
+- Files touched:
+  - `frontend/index.html` (font request)
+  - `frontend/src/styles/vintage.css` (root font tokens)
+  - `frontend/src/styles/listening-room.css` (sans wordmarks)
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Desktop (1280×900) and mobile (390×844) screenshots checked against the
+    rebuilt Docker frontend: Inter wordmark, Instrument Serif title, JetBrains
+    Mono labels, no other families requested.
+
 ## 2026-11-24 - return the vinyl face to black with the art as the centre label
 
 The record now looks like the original deck again: a black vinyl disc with

@@ -92,10 +92,10 @@ body:has(.radio-page.listening-room) {
 }
 
 .radio-page.listening-room .brand {
-  font-family: var(--lr-serif);
-  font-weight: 400;
-  font-size: 1.05rem;
-  letter-spacing: 0.18em;
+  font-family: var(--lr-sans);
+  font-weight: 500;
+  font-size: 0.86rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--lr-ink);
 }
@@ -894,8 +894,8 @@ body:has(.radio-page.listening-room) .player-dock .fader:focus-visible {
   }
 
   .radio-page.listening-room .brand {
-    font-size: 0.95rem;
-    letter-spacing: 0.14em;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
   }
 
   .radio-page.listening-room .onair {
@@ -1031,10 +1031,10 @@ body:has(.admin-page) {
 }
 
 .admin-page .admin-top .brand {
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 400;
-  letter-spacing: 0.14em;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
@@ -1559,7 +1559,8 @@ body:has(.admin-page) {
   }
 
   .admin-page .admin-top .brand {
-    font-size: 1.05rem;
+    font-size: 0.92rem;
+    letter-spacing: 0.14em;
   }
 
   .admin-page a.back,
