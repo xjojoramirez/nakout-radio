@@ -512,10 +512,9 @@ describe("AdminPage", () => {
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
     await screen.findByText(/Each slot starts a genre/);
     fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
-    const radioGroup = await screen.findByRole("radiogroup", {
-      name: "Genre",
+    fireEvent.change(await screen.findByLabelText("Genre"), {
+      target: { value: "1" },
     });
-    fireEvent.click(within(radioGroup).getByRole("radio", { name: "Chill" }));
     fireEvent.click(
       within(await screen.findByTestId("slot-form")).getByRole("button", {
         name: "Add slot",
@@ -544,10 +543,9 @@ describe("AdminPage", () => {
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
     await screen.findByText(/Each slot starts a genre/);
     fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
-    const radioGroup = await screen.findByRole("radiogroup", {
-      name: "Genre",
+    fireEvent.change(await screen.findByLabelText("Genre"), {
+      target: { value: "1" },
     });
-    fireEvent.click(within(radioGroup).getByRole("radio", { name: "Chill" }));
     fireEvent.click(
       within(await screen.findByTestId("slot-form")).getByRole("button", {
         name: "Add slot",

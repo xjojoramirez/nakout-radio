@@ -94,6 +94,14 @@ Listening Room). It applies to the listener page, the Studio and every popup
 - Popups: blurred dark overlay, ink panel with hairline border, Inter 600 title,
   Inter body, teal primary action. The playlist-about dialog on the listener
   page uses the same shell.
+- **Setup path:** genre → Nakout playlist → schedule slot. Genre cards expose
+  Add Nakout playlist and Schedule, and the add dialog opens with the genre
+  already locked. No second genre picker.
+- **Schedule:** Week / Day / By genre stay. Week blocks wrap their names and
+  expose the full genre and time on hover/focus. Add/Edit opens a sticky side
+  editor on desktop and a bottom sheet on phones, with a live start → end and
+  duration preview, the next slot, a same-start warning and Delete inside the
+  editor.
 - Mobile: tabs scroll horizontally, the studio deck centres at 280px, the
   track editor uses the existing full-height mobile layout, and popups keep
   10–18px padding with `dvh` caps.

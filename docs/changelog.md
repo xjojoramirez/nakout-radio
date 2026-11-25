@@ -3,6 +3,42 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - studio schedule editor and readable week blocks
+
+The schedule is easier to read and edit without losing any existing controls:
+
+- Add/Edit now opens a sticky side editor on desktop and a bottom sheet on
+  phones. The calendar stays visible beside it.
+- The editor shows the computed start → end time, duration and next slot, warns
+  before saving when another slot starts at the same time, and can delete the
+  slot in place. The genre picker is a compact select instead of a tall chip
+  grid.
+- Week blocks wrap their genre names over two lines instead of truncating to a
+  single letter; every block keeps the full “genre · time” tooltip and an
+  accessible name. The week grid fits the reduced width beside the editor.
+- Opening Schedule from a genre card now opens the editor with that genre
+  already selected.
+
+- Files touched:
+  - `frontend/src/components/admin/SchedulePanel.tsx`
+  - `frontend/src/components/admin/SchedulePanel.dom.test.tsx`
+  - `frontend/src/pages/AdminPage.dom.test.tsx`
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 36 files, 375 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1440×1000 and 390×844: side editor and
+    mobile sheet open with the genre prefilled, the computed preview and
+    same-start warning render, the week grid fits without horizontal scroll at
+    desktop, and there is no page overflow. Screenshots captured of the normal,
+    conflict and mobile states.
+
 ## 2026-11-25 - studio playlist flow: Nakout playlists and genre shortcuts
 
 Renamed the Studio playlist concept to **Nakout playlist** throughout the
