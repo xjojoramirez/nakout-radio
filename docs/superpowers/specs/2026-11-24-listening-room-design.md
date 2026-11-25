@@ -19,10 +19,9 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 - **Palette:** ink `#090b0e`, cream `#e9e4d8`, muted `#8f979e`, teal
   `#79c7b8`, hairlines at ~9% cream.
-- **Type:** three families only - Inter for body, controls, the wordmark,
-  track titles, section headings and popup titles; Instrument Serif for Studio
-  display headings; JetBrains Mono for labels, times and metadata. Bricolage
-  Grotesque and DM Mono were removed.
+- **Type:** two families only - Inter for body, controls, the wordmark, track
+  titles, headings and popup titles; JetBrains Mono for labels, times and
+  metadata. Instrument Serif, Bricolage Grotesque and DM Mono were removed.
 - **Shape:** circular artwork disc, 1px hairlines, one translucent panel
   (liner notes) and one floating dock. No wood, plinth, tonearm or RPM badges
   on the listener page.
@@ -87,8 +86,7 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 - The Studio reuses the same tokens by remapping the vintage custom properties
   inside `.admin-page` (and `.modal-overlay` for dialogs): ink background,
-  teal accent, cream text, Inter body, JetBrains Mono labels, Instrument Serif
-  headings.
+  teal accent, cream text, Inter body and headings, JetBrains Mono labels.
 - Shell: sans wordmark, hairline header, quiet underline tabs, hairline cards
   and rows, outlined secondary buttons, teal primary buttons and focus rings.
 - Now playing keeps the deck but renders it as the same artwork disc, with the

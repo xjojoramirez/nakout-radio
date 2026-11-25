@@ -3,6 +3,32 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - remove Instrument Serif and run on two families
+
+Instrument Serif is gone from the app, including the Studio. The Google Fonts
+request now loads only Inter (400/500/600) and JetBrains Mono (400/500).
+`--font-display` points at Inter, the `--lr-serif` tokens are removed, and the
+Studio headings use Inter 600. No serif references remain in the app source.
+
+- Files touched:
+  - `frontend/index.html` (font request)
+  - `frontend/src/styles/vintage.css` (`--font-display`)
+  - `frontend/src/styles/listening-room.css` (`--lr-serif`, Studio heading weight)
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend: the listener loads only Inter and
+    JetBrains Mono, and the only Google Fonts request contains those two
+    families. Logged into the Studio at 1440×1000: computed families there are
+    only Inter and JetBrains Mono, with Inter 600 headings and no horizontal
+    overflow. Screenshots captured of the listener and Studio.
+
 ## 2026-11-25 - set section and popup titles in Inter
 
 The “Liner notes” section heading and every `.modal-title` (playlist about,
