@@ -344,11 +344,11 @@ body:has(.radio-page.listening-room) {
 
 .radio-page.listening-room .np-title {
   margin: 14px 0 8px;
-  font-family: var(--lr-serif);
-  font-weight: 400;
-  font-size: clamp(2.7rem, 5.1vw, 4.1rem);
-  line-height: 0.98;
-  letter-spacing: -0.015em;
+  font-family: var(--lr-sans);
+  font-weight: 600;
+  font-size: clamp(2.45rem, 4.7vw, 3.7rem);
+  line-height: 1;
+  letter-spacing: -0.038em;
   color: var(--lr-ink);
 }
 

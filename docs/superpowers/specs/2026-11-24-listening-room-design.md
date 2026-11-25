@@ -19,9 +19,9 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 - **Palette:** ink `#090b0e`, cream `#e9e4d8`, muted `#8f979e`, teal
   `#79c7b8`, hairlines at ~9% cream.
-- **Type:** three families only — Inter for body, controls and the wordmark;
-  Instrument Serif for track titles and headings; JetBrains Mono for labels,
-  times and metadata. Bricolage Grotesque and DM Mono were removed.
+- **Type:** three families only - Inter for body, controls, the wordmark and
+  track titles; Instrument Serif for section headings; JetBrains Mono for
+  labels, times and metadata. Bricolage Grotesque and DM Mono were removed.
 - **Shape:** circular artwork disc, 1px hairlines, one translucent panel
   (liner notes) and one floating dock. No wood, plinth, tonearm or RPM badges
   on the listener page.

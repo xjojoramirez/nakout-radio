@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - set track titles in Inter
+
+The now-playing track title now uses Inter at weight 600 (down slightly to
+`clamp(2.45rem, 4.7vw, 3.7rem)`, tracking −0.038em) instead of Instrument
+Serif. No new font was added: the change uses the project's existing Inter
+family and matches the wordmark and Studio deck. Instrument Serif still sets
+the section headings ("Liner notes", "Today's schedule").
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1280×900, 390×844, 360 and 320: the
+    title renders in Inter 600, one line, no clipping and no horizontal
+    overflow. Screenshots captured at desktop and 390px.
+
 ## 2026-11-25 - remove the tagline and enlarge the now-playing kicker
 
 Dropped the editorial “A quiet room, a loud song.” line above the liner notes,
