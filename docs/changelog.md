@@ -3,6 +3,20 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - raise the frontend CSS bundle budget
+
+The Listening Room theme adds a large listener/Studio stylesheet. The gzipped
+CSS bundle is 17.9 kB, so the CSS budget moves from 13 kB to 19 kB; the JS
+budget stays at 95 kB (current 89.2 kB). This is a CI guard only.
+
+- Files touched:
+  - `frontend/scripts/check-bundle-size.mjs`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - `npm run build` — pass
+  - `npm run check:bundle` — pass (JS 89.2/95 kB, CSS 17.9/19 kB)
+
 ## 2026-11-25 - dark theme is the default; switcher removed
 
 - Removed the sun/moon theme switch from the listener header, Studio header
