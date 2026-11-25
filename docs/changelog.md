@@ -3,6 +3,30 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - set section and popup titles in Inter
+
+The “Liner notes” section heading and every `.modal-title` (playlist about,
+confirm, changelog, track editor) now use Inter 600 instead of Instrument
+Serif. The liner heading is 1rem with −0.01em tracking; modal titles stay at
+1.5rem (1.3rem on phones) with −0.025em tracking. No new font was added.
+Instrument Serif remains for the Studio’s display headings.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1280×900 and 390×844: “Liner notes”
+    renders in Inter 600 at 16px, popup titles in Inter 600 at 24px (20.8px on
+    phones), one line, no overflow. Screenshots captured of the page and the
+    playlist popup at both widths.
+
 ## 2026-11-25 - set track titles in Inter
 
 The now-playing track title now uses Inter at weight 600 (down slightly to

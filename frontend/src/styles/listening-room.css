@@ -402,10 +402,10 @@ body:has(.radio-page.listening-room) {
 }
 
 .radio-page.listening-room .liner-head h2 {
-  font-family: var(--lr-serif);
-  font-size: 1.12rem;
-  font-weight: 400;
-  letter-spacing: 0.01em;
+  font-family: var(--lr-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   text-transform: none;
   color: var(--lr-ink);
 }
@@ -1458,8 +1458,13 @@ body:has(.admin-page) {
 }
 
 .modal-title {
+  font-family: var(--font-body);
   font-size: 1.5rem;
-  font-weight: 400;
+}
+
+.modal-overlay h2.modal-title {
+  font-weight: 600;
+  letter-spacing: -0.025em;
 }
 
 .modal-message {

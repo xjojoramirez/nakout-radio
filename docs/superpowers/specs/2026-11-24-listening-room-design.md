@@ -19,9 +19,10 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 - **Palette:** ink `#090b0e`, cream `#e9e4d8`, muted `#8f979e`, teal
   `#79c7b8`, hairlines at ~9% cream.
-- **Type:** three families only - Inter for body, controls, the wordmark and
-  track titles; Instrument Serif for section headings; JetBrains Mono for
-  labels, times and metadata. Bricolage Grotesque and DM Mono were removed.
+- **Type:** three families only - Inter for body, controls, the wordmark,
+  track titles, section headings and popup titles; Instrument Serif for Studio
+  display headings; JetBrains Mono for labels, times and metadata. Bricolage
+  Grotesque and DM Mono were removed.
 - **Shape:** circular artwork disc, 1px hairlines, one translucent panel
   (liner notes) and one floating dock. No wood, plinth, tonearm or RPM badges
   on the listener page.
@@ -88,11 +89,11 @@ Listening Room). It applies to the listener page, the Studio and every popup
   inside `.admin-page` (and `.modal-overlay` for dialogs): ink background,
   teal accent, cream text, Inter body, JetBrains Mono labels, Instrument Serif
   headings.
-- Shell: serif wordmark, hairline header, quiet underline tabs, hairline cards
+- Shell: sans wordmark, hairline header, quiet underline tabs, hairline cards
   and rows, outlined secondary buttons, teal primary buttons and focus rings.
 - Now playing keeps the deck but renders it as the same artwork disc, with the
   mixer on a hairline panel and teal VU bars.
-- Popups: blurred dark overlay, ink panel with hairline border, serif title,
+- Popups: blurred dark overlay, ink panel with hairline border, Inter 600 title,
   Inter body, teal primary action. The playlist-about dialog on the listener
   page uses the same shell.
 - Mobile: tabs scroll horizontally, the studio deck centres at 280px, the
