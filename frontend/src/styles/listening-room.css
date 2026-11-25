@@ -540,13 +540,38 @@ body:has(.radio-page.listening-room) {
 }
 
 .radio-page.listening-room .sched li.now {
-  background: none;
+  border-bottom-color: rgba(121, 199, 184, 0.3);
+  background: linear-gradient(
+    90deg,
+    rgba(121, 199, 184, 0.16),
+    rgba(121, 199, 184, 0.04) 72%,
+    transparent
+  );
   color: var(--lr-ink);
-  box-shadow: none;
+}
+
+.radio-page.listening-room .sched li.now span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+}
+
+.radio-page.listening-room .sched li.now span:first-child::before {
+  content: "";
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--lr-teal);
+  box-shadow:
+    0 0 0 3px rgba(121, 199, 184, 0.14),
+    0 0 10px rgba(121, 199, 184, 0.65);
 }
 
 .radio-page.listening-room .sched li.now span:last-child {
   color: var(--lr-teal);
+  font-weight: 500;
 }
 
 .radio-page.listening-room .sched-btn {
@@ -555,8 +580,8 @@ body:has(.radio-page.listening-room) {
 }
 
 .radio-page.listening-room .sched li.now .sched-btn {
-  padding-left: 10px;
-  box-shadow: inset 2px 0 0 var(--lr-teal);
+  padding-left: 12px;
+  box-shadow: inset 3px 0 0 var(--lr-teal);
 }
 
 .radio-page.listening-room .sched-btn:hover,
@@ -567,7 +592,7 @@ body:has(.radio-page.listening-room) {
 
 .radio-page.listening-room .sched li.now .sched-btn:hover,
 .radio-page.listening-room .sched li.now .sched-btn:focus-visible {
-  box-shadow: inset 2px 0 0 var(--lr-teal);
+  box-shadow: inset 3px 0 0 var(--lr-teal);
 }
 
 .radio-page.listening-room .sched-btn:focus-visible {

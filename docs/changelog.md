@@ -3,6 +3,28 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - make the current schedule row stand out
+
+The active row in Today’s schedule now has a teal wash across the full row, a
+3px teal inset bar, a glowing teal dot before the playlist name, semibold name
+text and a teal time. The bottom hairline also picks up a teal tint. This makes
+the on-air genre easier to spot in the two-column desktop list and the
+single-column mobile list.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1280×900 and 390×844: active row shows
+    the tint, 3px bar, dot, 600 name and teal time; no clipping or horizontal
+    overflow. Screenshots captured at both widths.
+
 ## 2026-11-25 - remove Instrument Serif and run on two families
 
 Instrument Serif is gone from the app, including the Studio. The Google Fonts
