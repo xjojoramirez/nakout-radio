@@ -190,8 +190,10 @@ describe("TrackLibraryPanel", () => {
 
     renderPanel();
 
-    expect(await screen.findByText("no playlist")).toBeInTheDocument();
-    fireEvent.click(screen.getByLabelText("No playlist"));
+    expect(
+      await screen.findByText("no Nakout playlist"),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText("No Nakout playlist"));
     await waitFor(() =>
       expect(mocked.listTracks).toHaveBeenLastCalledWith(
         expect.objectContaining({ unassigned: true }),

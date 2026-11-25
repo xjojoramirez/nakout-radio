@@ -265,7 +265,7 @@ export function TrackLibraryPanel({
               setPage(0);
             }}
           />
-          No playlist
+          No Nakout playlist
         </label>
       </div>
 
@@ -298,7 +298,9 @@ export function TrackLibraryPanel({
                           <span className="lib-review">review</span>
                         )}
                         {!item.has_playlist && (
-                          <span className="lib-noplist">no playlist</span>
+                          <span className="lib-noplist">
+                            no Nakout playlist
+                          </span>
                         )}
                       </small>
                     </span>

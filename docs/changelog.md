@@ -3,6 +3,27 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - studio copy polish
+
+The Auto transport now explains itself with “Follow the schedule at the next
+slot”. Library’s unassigned filter and row badge say “No Nakout playlist” /
+“no Nakout playlist” so the playlist terminology is consistent across the
+Studio.
+
+- Files touched:
+  - `frontend/src/components/admin/NowPlayingPanel.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 36 files, 375 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend at 390px: no horizontal overflow.
+
 ## 2026-11-25 - studio schedule editor and readable week blocks
 
 The schedule is easier to read and edit without losing any existing controls:

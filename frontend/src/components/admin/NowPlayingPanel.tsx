@@ -372,6 +372,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
             <button
               type="button"
               className="btn btn-secondary"
+              title="Follow the schedule at the next slot"
               onClick={goAuto}
               disabled={
                 state == null ||
