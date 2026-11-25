@@ -117,7 +117,10 @@ html:has(.radio-page.listening-room) {
 }
 
 body:has(.radio-page.listening-room) {
-  place-items: center center;
+  /* Stretch #root horizontally so the page does not shrink-wrap to the
+     active liner tab; the page centres itself with margin-inline: auto. */
+  align-items: center;
+  justify-items: stretch;
   overflow-x: clip;
   padding-block: 34px calc(112px + env(safe-area-inset-bottom, 0px));
   background:

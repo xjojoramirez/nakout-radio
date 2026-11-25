@@ -3,6 +3,27 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - keep the liner notes width stable across mobile tabs
+
+- The listener body now stretches `#root` horizontally while keeping its
+  vertical centring. Previously the mobile page shrink-wrapped to the active
+  tab's content, so the liner card changed width when switching from Story to
+  Details or Charts.
+- Story, Details and Charts now share the same 359px liner card and 329px
+  panel at a 390px viewport, with no horizontal overflow.
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 36 files, 375 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend measured at 390×844: Story, Details and Charts
+    each render the liner at 359px / panel at 329px with no horizontal overflow.
+
 ## 2026-11-25 - update the E2E flow for the new Studio
 
 - The end-to-end test now opens the collapsed `+ New genre` form before filling
