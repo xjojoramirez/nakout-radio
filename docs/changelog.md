@@ -3,6 +3,21 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - update the E2E flow for the new Studio
+
+- The end-to-end test now opens the collapsed `+ New genre` form before filling
+  the genre fields, and selects the schedule genre with the new `Genre` select
+  instead of the removed radio chips.
+- Files touched:
+  - `frontend/e2e/app.spec.ts`
+  - `docs/changelog.md`
+- **Container restart required?** No (test-only change).
+- **Verification:**
+  - `npm run typecheck:e2e` — pass
+  - `npm run lint` — pass
+  - Playwright E2E against a fresh compose stack on ports 8031/8032 —
+    1 test passed (2.5s)
+
 ## 2026-11-25 - raise the frontend CSS bundle budget
 
 The Listening Room theme adds a large listener/Studio stylesheet. The gzipped

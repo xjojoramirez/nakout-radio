@@ -48,6 +48,7 @@ test("public radio and studio flows work end to end", async ({ page }) => {
     ).toBeVisible();
 
     await page.getByRole("tab", { name: /Genres/ }).click();
+    await page.getByRole("button", { name: "+ New genre" }).click();
     await page.getByLabel("Genre name").fill(GENRE_NAME);
     await expect(page.getByLabel("Genre slug")).toHaveValue("e2egenre");
     await page.getByRole("button", { name: "Add genre" }).click();
@@ -59,7 +60,7 @@ test("public radio and studio flows work end to end", async ({ page }) => {
     await page.getByRole("button", { name: "Add the first slot" }).click();
 
     const form = page.getByTestId("slot-form");
-    await form.getByRole("radio", { name: GENRE_NAME }).click();
+    await form.getByLabel("Genre").selectOption({ label: GENRE_NAME });
     await form.getByRole("button", { name: "Every day" }).click();
     await expect(form.getByTestId("sentence")).toContainText(GENRE_NAME);
     await form.getByRole("button", { name: "Add slot" }).click();
