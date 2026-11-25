@@ -1628,3 +1628,304 @@ body:has(.admin-page) {
     letter-spacing: 0.1em;
   }
 }
+
+/* ---------- Nakout playlist dialog + genre actions ---------- */
+
+.admin-page .gnext {
+  padding: 8px 10px;
+  border: 1px dashed rgba(121, 199, 184, 0.28);
+  border-radius: 8px;
+  background: rgba(121, 199, 184, 0.06);
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.admin-page .gact {
+  gap: 8px 10px;
+}
+
+.admin-page .gact .sp {
+  flex: 1 1 12px;
+}
+
+.admin-page .btn-link.danger {
+  color: var(--danger);
+}
+
+.admin-page .btn-link.danger:hover,
+.admin-page .btn-link.danger:focus-visible {
+  color: #ffb3a5;
+  text-decoration: underline;
+}
+
+.admin-page .pl-head {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.admin-page .pl-head .sub {
+  max-width: 62ch;
+}
+
+.admin-page .pl-list-head {
+  margin-top: 4px;
+}
+
+.admin-page .pl-list-head .ttl {
+  margin: 0;
+}
+
+.admin-page .pl-list-head .filter-input {
+  margin-left: auto;
+}
+
+.modal-card.addpl-dialog {
+  width: min(680px, calc(100vw - 32px));
+  max-height: min(88dvh, 860px);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.addpl-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.addpl-head .modal-title {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.addpl-sub {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.addpl-close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.addpl-close:hover,
+.addpl-close:focus-visible {
+  color: var(--cream);
+  border-color: var(--border-strong);
+}
+
+.addpl-dialog .seg {
+  margin: 16px 22px 0;
+  align-self: flex-start;
+}
+
+.addpl-form,
+.addpl-channel {
+  display: grid;
+  gap: 12px;
+  padding: 14px 22px 20px;
+  overflow-y: auto;
+}
+
+.addpl-dest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.addpl-dest-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.addpl-dest-chip {
+  pointer-events: none;
+  cursor: default;
+}
+
+.addpl-why {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.addpl-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.addpl-success {
+  display: grid;
+  gap: 14px;
+  padding: 24px 22px;
+}
+
+.addpl-success-mark {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-size: 1.1rem;
+}
+
+.addpl-success b {
+  font-size: 1rem;
+}
+
+.addpl-success p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.addpl-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.addpl-channel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.addpl-channel-head b {
+  display: block;
+}
+
+.addpl-channel-head .mono {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.addpl-channel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.addpl-channel-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--amber-soft);
+  color: var(--cream);
+  font-size: 0.82rem;
+}
+
+.addpl-search {
+  max-width: 320px;
+}
+
+.addpl-browse {
+  margin-top: 2px;
+}
+
+.addpl-channel-setup form {
+  display: grid;
+  gap: 12px;
+}
+
+@media (max-width: 820px) {
+  .modal-card.addpl-dialog {
+    width: calc(100vw - 20px);
+    max-height: 92dvh;
+  }
+
+  .addpl-head {
+    padding: 16px 16px 12px;
+  }
+
+  .addpl-head .modal-title {
+    font-size: 1.2rem;
+  }
+
+  .addpl-dialog .seg {
+    margin: 12px 16px 0;
+  }
+
+  .addpl-form,
+  .addpl-channel {
+    padding: 12px 16px 16px;
+  }
+
+  .addpl-success {
+    padding: 18px 16px;
+  }
+
+  .addpl-success-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .addpl-footer {
+    flex-wrap: wrap;
+  }
+
+  .addpl-footer .btn {
+    flex: 1 1 140px;
+  }
+
+  .addpl-channel-actions {
+    width: 100%;
+  }
+
+  .addpl-channel-actions .btn {
+    flex: 1;
+  }
+
+  .addpl-search {
+    max-width: none;
+  }
+
+  .admin-page .pl-list-head {
+    align-items: stretch;
+  }
+
+  .admin-page .pl-list-head .filter-input {
+    margin-left: 0;
+    max-width: none;
+  }
+}

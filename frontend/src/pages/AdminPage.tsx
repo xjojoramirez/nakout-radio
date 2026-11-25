@@ -31,7 +31,6 @@ export function AdminPage() {
   const [playlistCount, setPlaylistCount] = useState<number | null>(null);
   const [slotCount, setSlotCount] = useState<number | null>(null);
   const [libraryCount, setLibraryCount] = useState<number | null>(null);
-  const [playlistIntent, setPlaylistIntent] = useState<number | null>(null);
   const [scheduleIntent, setScheduleIntent] = useState<number | null>(null);
 
   const loginEpoch = useRef(0);
@@ -39,7 +38,7 @@ export function AdminPage() {
 
   const tabsDef: TabDef[] = [
     { id: "now", label: "Now Playing" },
-    { id: "playlists", label: "Playlists", count: playlistCount },
+    { id: "playlists", label: "Nakout playlists", count: playlistCount },
     { id: "library", label: "Library", count: libraryCount },
     { id: "genres", label: "Genres", count: genres.length },
     { id: "schedule", label: "Schedule", count: slotCount },
@@ -105,7 +104,6 @@ export function AdminPage() {
     setPlaylistCount(null);
     setSlotCount(null);
     setLibraryCount(null);
-    setPlaylistIntent(null);
     setScheduleIntent(null);
   };
 
@@ -124,14 +122,12 @@ export function AdminPage() {
       nextTab: string,
       intent?: { playlistsGenre?: number; scheduleGenre?: number },
     ) => {
-      if (intent?.playlistsGenre != null) setPlaylistIntent(intent.playlistsGenre);
       if (intent?.scheduleGenre != null) setScheduleIntent(intent.scheduleGenre);
       setTab(nextTab);
     },
     [],
   );
 
-  const consumePlaylistIntent = useCallback(() => setPlaylistIntent(null), []);
   const consumeScheduleIntent = useCallback(() => setScheduleIntent(null), []);
 
   if (phase === "checking") {
@@ -156,7 +152,9 @@ export function AdminPage() {
           }}
         >
           <h1>Studio</h1>
-          <p className="hint">Sign in to manage genres and playlists.</p>
+          <p className="hint">
+            Sign in to manage genres and Nakout playlists.
+          </p>
           <label className="field">
             Password
             <input
@@ -262,8 +260,6 @@ export function AdminPage() {
                 onNotice={onNotice}
                 onError={onError}
                 onCountChange={setPlaylistCount}
-                initialGenre={playlistIntent}
-                onIntentConsumed={consumePlaylistIntent}
                 onJump={jump}
               />
             )}

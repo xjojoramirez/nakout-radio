@@ -3,15 +3,9 @@ import type { CSSProperties } from "react";
 import { api } from "../../api/client";
 import { messageFor } from "../../utils/errors";
 import { timeAgo } from "../../utils/format";
-import { cssCover } from "../../utils/profile";
 import { ConfirmDialog } from "../ConfirmDialog";
-import { GenreChipRadio } from "./GenreChipRadio";
-import type {
-  AddedPlaylist,
-  ChannelPlaylist,
-  ChannelSource,
-  Genre,
-} from "../../types";
+import { AddPlaylistDialog } from "./AddPlaylistDialog";
+import type { AddedPlaylist, Genre } from "../../types";
 
 interface Props {
   genres: Genre[];
@@ -19,24 +13,12 @@ interface Props {
   onNotice: (message: string) => void;
   onError: (message: string) => void;
   onCountChange?: (count: number) => void;
-  /** Genre id preset by a cross-tab jump from the Genres panel. */
-  initialGenre?: number | null;
-  /** Fired when the panel has consumed its `initialGenre` intent. */
-  onIntentConsumed?: () => void;
-  /** Cross-tab navigation, mirroring GenresPanel. */
+  /** Cross-tab navigation. */
   onJump?: (
     tab: string,
     intent?: { playlistsGenre?: number; scheduleGenre?: number },
   ) => void;
 }
-
-function parsePlaylistId(value: string): string | null {
-  const match =
-    value.match(/[?&]list=([\w-]+)/) ?? value.match(/^(PL[\w-]{6,})$/);
-  return match ? match[1] : null;
-}
-
-type AddMode = "link" | "channel";
 
 interface Group {
   genre: Genre;
@@ -50,25 +32,10 @@ export function PlaylistsPanel({
   onNotice,
   onError,
   onCountChange,
-  initialGenre,
-  onIntentConsumed,
   onJump,
 }: Props) {
   const [added, setAdded] = useState<AddedPlaylist[]>([]);
   const [addedError, setAddedError] = useState("");
-
-  const [mode, setMode] = useState<AddMode>("link");
-  const [addGenre, setAddGenre] = useState<number | null>(null);
-  const [url, setUrl] = useState("");
-
-  const [channel, setChannel] = useState<ChannelSource | null>(null);
-  const [channelInput, setChannelInput] = useState("");
-  const [channelError, setChannelError] = useState("");
-  const [channelPlaylists, setChannelPlaylists] = useState<ChannelPlaylist[]>(
-    [],
-  );
-  const [playlistError, setPlaylistError] = useState("");
-  const [genreById, setGenreById] = useState<Record<string, number>>({});
   const [filter, setFilter] = useState("");
   const [syncingIds, setSyncingIds] = useState<number[]>([]);
   const [busyGroup, setBusyGroup] = useState<number | null>(null);
@@ -76,9 +43,11 @@ export function PlaylistsPanel({
     null,
   );
   const [flashId, setFlashId] = useState<number | null>(null);
+  const [addDialog, setAddDialog] = useState<{ genreId: number | null } | null>(
+    null,
+  );
 
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const consumedIntent = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -106,96 +75,19 @@ export function PlaylistsPanel({
     }
   }, [onCountChange]);
 
-  const loadChannel = useCallback(async () => {
-    try {
-      const source = await api.getChannelSource();
-      setChannel(source);
-      if (source.channel_id) {
-        setChannelPlaylists(await api.listChannelPlaylists());
-        setPlaylistError("");
-      } else {
-        setChannelPlaylists([]);
-      }
-    } catch (err) {
-      setPlaylistError(messageFor(err));
-    }
-  }, []);
-
   useEffect(() => {
     loadAdded();
-    loadChannel();
-  }, [loadAdded, loadChannel]);
+  }, [loadAdded]);
 
-  useEffect(() => {
-    if (initialGenre != null && !consumedIntent.current) {
-      consumedIntent.current = true;
-      setMode("link");
-      setAddGenre(initialGenre);
-      onIntentConsumed?.();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const reportResult = (result: { synced: number; sync_error: string | null }) => {
-    onNotice(
-      result.sync_error
-        ? `Playlist saved, but sync failed: ${result.sync_error}`
-        : `Playlist synced (${result.synced} tracks).`,
-    );
-  };
-
-  const urlTrimmed = url.trim();
-  const parsedId = urlTrimmed ? parsePlaylistId(urlTrimmed) : null;
-  const addToGenre = parsedId
-    ? added.find((p) => p.youtube_playlist_id === parsedId)
-    : undefined;
-  const hint = (() => {
-    if (!urlTrimmed) {
-      return {
-        className: "hint",
-        text: "Open the playlist on YouTube, copy the address and paste it here.",
-      };
-    }
-    if (!parsedId) {
-      return {
-        className: "hint err",
-        text: "That doesn't look like a playlist link. It should contain list= followed by the playlist ID.",
-      };
-    }
-    if (addToGenre) {
-      return {
-        className: "hint err",
-        text: `This playlist is already added under ${addToGenre.genre_name}.`,
-      };
-    }
-    return { className: "hint ok", text: `Playlist ID found: ${parsedId}` };
-  })();
-
-  const addByUrl = async () => {
-    if (!addGenre || !parsedId || addToGenre) return;
+  const movePlaylist = async (playlist: AddedPlaylist, genreId: number) => {
+    if (genreId === playlist.genre_id) return;
     try {
-      const result = await api.createPlaylist(addGenre, urlTrimmed, "");
-      reportResult(result);
-      setUrl("");
-      setAddGenre(null);
-      const newId = result.id;
-      await onGenresChanged();
-      await loadAdded();
-      flash(newId);
-    } catch (err) {
-      onError(messageFor(err));
-    }
-  };
-
-  const movePlaylist = async (p: AddedPlaylist, genreId: number) => {
-    if (genreId === p.genre_id) return;
-    try {
-      await api.updatePlaylist(p.id, { genre_id: genreId });
+      await api.updatePlaylist(playlist.id, { genre_id: genreId });
       const target = genres.find((g) => g.id === genreId);
       onNotice(`Moved to ${target?.name ?? String(genreId)}.`);
       await loadAdded();
       await onGenresChanged();
-      flash(p.id);
+      flash(playlist.id);
     } catch (err) {
       await loadAdded();
       await onGenresChanged();
@@ -203,12 +95,12 @@ export function PlaylistsPanel({
     }
   };
 
-  const refresh = async (id: number) => {
+  const syncOne = async (id: number) => {
     if (syncingIds.includes(id)) return;
     setSyncingIds((ids) => [...ids, id]);
     try {
       const result = await api.refreshPlaylist(id);
-      onNotice(`Refreshed playlist (${result.synced} tracks).`);
+      onNotice(`Nakout playlist synced (${result.synced} tracks).`);
       await loadAdded();
       await onGenresChanged();
     } catch (err) {
@@ -218,28 +110,30 @@ export function PlaylistsPanel({
     }
   };
 
-  const refreshGroup = async (g: Group) => {
-    if (!g.items.length || busyGroup !== null) return;
-    const ids = g.items.map((p) => p.id);
-    setBusyGroup(g.genre.id);
+  const syncGroup = async (group: Group) => {
+    if (!group.items.length || busyGroup !== null) return;
+    const ids = group.items.map((p) => p.id);
+    setBusyGroup(group.genre.id);
     setSyncingIds((prev) => Array.from(new Set([...prev, ...ids])));
-    onNotice(`Refreshing ${g.genre.name}...`);
+    onNotice(`Syncing ${group.genre.name}…`);
     const settled = await Promise.allSettled(
       ids.map((id) => api.refreshPlaylist(id)),
     );
     const ok = settled.filter(
-      (r): r is PromiseFulfilledResult<{ id: number; synced: number }> =>
-        r.status === "fulfilled",
+      (result): result is PromiseFulfilledResult<{ id: number; synced: number }> =>
+        result.status === "fulfilled",
     );
     const failed = settled.find(
-      (r): r is PromiseRejectedResult => r.status === "rejected",
+      (result): result is PromiseRejectedResult => result.status === "rejected",
     );
     if (failed) {
       onError(messageFor(failed.reason));
     } else {
-      const synced = ok.reduce((acc, r) => acc + r.value.synced, 0);
+      const synced = ok.reduce((acc, result) => acc + result.value.synced, 0);
       onNotice(
-        `Refreshed ${g.genre.name} (${ok.length} ${ok.length === 1 ? "playlist" : "playlists"}, ${synced} tracks).`,
+        `Synced ${group.genre.name} (${ok.length} ${
+          ok.length === 1 ? "Nakout playlist" : "Nakout playlists"
+        }, ${synced} tracks).`,
       );
     }
     setBusyGroup(null);
@@ -251,44 +145,9 @@ export function PlaylistsPanel({
   const remove = async (id: number) => {
     try {
       await api.deletePlaylist(id);
-      onNotice("Playlist removed.");
+      onNotice("Nakout playlist removed.");
       await loadAdded();
       await onGenresChanged();
-    } catch (err) {
-      onError(messageFor(err));
-    }
-  };
-
-  const saveChannel = async () => {
-    try {
-      const source = await api.setChannelSource(channelInput.trim());
-      setChannel(source);
-      setChannelInput("");
-      setChannelPlaylists(await api.listChannelPlaylists());
-      setChannelError("");
-      setPlaylistError("");
-    } catch (err) {
-      setChannelError(messageFor(err));
-    }
-  };
-
-  const addFromChannel = async (playlistId: string) => {
-    const genreId = genreById[playlistId];
-    if (!genreId) {
-      onError("Select a genre first.");
-      return;
-    }
-    try {
-      reportResult(
-        await api.createPlaylist(
-          genreId,
-          `https://www.youtube.com/playlist?list=${playlistId}`,
-          "",
-        ),
-      );
-      await onGenresChanged();
-      await loadAdded();
-      await loadChannel();
     } catch (err) {
       onError(messageFor(err));
     }
@@ -296,233 +155,70 @@ export function PlaylistsPanel({
 
   const groups = useMemo<Group[]>(() => {
     const q = filter.trim().toLowerCase();
-    const matches = (g: Genre, p: AddedPlaylist) =>
+    const matches = (genre: Genre, playlist: AddedPlaylist) =>
       !q ||
-      p.genre_name.toLowerCase().includes(q) ||
-      (p.label || "").toLowerCase().includes(q) ||
-      p.youtube_playlist_id.toLowerCase().includes(q);
+      genre.name.toLowerCase().includes(q) ||
+      (playlist.label || "").toLowerCase().includes(q) ||
+      playlist.youtube_playlist_id.toLowerCase().includes(q);
     const visible = genres.filter(
-      (g) => !q || added.some((p) => p.genre_id === g.id && matches(g, p)),
+      (genre) =>
+        !q ||
+        added.some(
+          (playlist) =>
+            playlist.genre_id === genre.id && matches(genre, playlist),
+        ),
     );
-    return visible.map((g) => {
-      const items = added.filter((p) => p.genre_id === g.id && matches(g, p));
+    return visible.map((genre) => {
+      const items = added.filter(
+        (playlist) =>
+          playlist.genre_id === genre.id && matches(genre, playlist),
+      );
       return {
-        genre: g,
+        genre,
         items,
-        tracks: items.reduce((acc, p) => acc + p.track_count, 0),
+        tracks: items.reduce((acc, playlist) => acc + playlist.track_count, 0),
       };
     });
   }, [genres, added, filter]);
 
   const searching = filter.trim().length > 0;
-  const totalTracks = added.reduce((acc, p) => acc + p.track_count, 0);
+  const totalTracks = added.reduce(
+    (acc, playlist) => acc + playlist.track_count,
+    0,
+  );
   const noMatch = searching && groups.length === 0;
+  const openAdd = (genreId: number | null = null) =>
+    setAddDialog({ genreId });
 
   return (
-    <section className="admin-panel" aria-label="Playlists">
-      <div>
-        <h2 className="sec">Playlists</h2>
-        <p className="sub">
-          {added.length} {added.length === 1 ? "playlist" : "playlists"} ·{" "}
-          {totalTracks} tracks across {genres.length} genres. Playlists are
-          re-synced with YouTube when you refresh them.
-        </p>
-      </div>
-
-      <div className="card">
-        <div className="head">
-          <h3 className="ttl">Add a playlist</h3>
-          <div className="seg" role="group" aria-label="Add mode">
-            <button
-              type="button"
-              aria-pressed={mode === "link"}
-              onClick={() => setMode("link")}
-            >
-              Paste a link
-            </button>
-            <button
-              type="button"
-              aria-pressed={mode === "channel"}
-              onClick={() => setMode("channel")}
-            >
-              From your channel
-            </button>
-          </div>
+    <section className="admin-panel" aria-label="Nakout playlists">
+      <div className="head pl-head">
+        <div>
+          <h2 className="sec">Nakout playlists</h2>
+          <p className="sub">
+            {added.length} {added.length === 1 ? "Nakout playlist" : "Nakout playlists"}{" "}
+            · {totalTracks} tracks across {genres.length} genres. Sync pulls
+            the latest tracks from YouTube.
+          </p>
         </div>
-
-        {mode === "link" ? (
-          <form
-            className="addlink"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void addByUrl();
-            }}
-          >
-            <label className="field">
-              YouTube playlist link
-              <input
-                aria-label="YouTube playlist link"
-                placeholder="Paste a link like youtube.com/playlist?list=…"
-                inputMode="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-            </label>
-            <div className={hint.className}>{hint.text}</div>
-            <div className="lab">Which genre does it belong to?</div>
-            <GenreChipRadio
-              label="Genre"
-              genres={genres}
-              value={addGenre}
-              onChange={setAddGenre}
-            />
-            <div>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={!addGenre || !parsedId || Boolean(addToGenre)}
-              >
-                Add playlist
-              </button>
-            </div>
-          </form>
-        ) : channel?.channel_id ? (
-          <div className="addchannel">
-            <div className="head">
-              <b>{channel.title || channel.channel_id}</b>
-              <span className="mono">channel playlists</span>
-              <span className="sp" />
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => {
-                  setChannel(null);
-                  setChannelError("");
-                }}
-              >
-                Change
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => void loadChannel()}
-              >
-                Refresh list
-              </button>
-            </div>
-            {playlistError && (
-              <p className="error banner" role="alert">
-                {playlistError}
-              </p>
-            )}
-            {channelPlaylists.length === 0 && !playlistError ? (
-              <p className="muted">No playlists found.</p>
-            ) : (
-              <div className="browse">
-                {channelPlaylists.map((p) => {
-                  const addedTo = added.find(
-                    (a) => a.youtube_playlist_id === p.youtube_playlist_id,
-                  );
-                  return (
-                    <div
-                      key={p.youtube_playlist_id}
-                      className="pcard"
-                    >
-                      <div className="pc">
-                        <img
-                          src={p.thumbnail_url}
-                          alt=""
-                          style={
-                            p.thumbnail_url
-                              ? undefined
-                              : { backgroundImage: cssCover(p.title) }
-                          }
-                        />
-                      </div>
-                      <b>{p.title}</b>
-                      <span className="chip">{p.item_count} tracks</span>
-                      {addedTo ? (
-                        <span className="added-badge">
-                          Added to <b>{addedTo.genre_name}</b>
-                        </span>
-                      ) : (
-                        <>
-                          <select
-                            aria-label={`Genre for ${p.title}`}
-                            value={String(genreById[p.youtube_playlist_id] ?? "")}
-                            onChange={(e) =>
-                              setGenreById((prev) => ({
-                                ...prev,
-                                [p.youtube_playlist_id]: Number(
-                                  e.target.value,
-                                ),
-                              }))
-                            }
-                          >
-                            <option value="">Add to a genre…</option>
-                            {genres.map((g) => (
-                              <option key={g.id} value={g.id}>
-                                {g.name}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
-                            onClick={() =>
-                              void addFromChannel(p.youtube_playlist_id)
-                            }
-                            disabled={!genreById[p.youtube_playlist_id]}
-                          >
-                            Add
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="channel-setup">
-            <label className="field">
-              YouTube channel
-              <input
-                aria-label="YouTube channel"
-                placeholder="@handle or channel URL"
-                value={channelInput}
-                onChange={(e) => setChannelInput(e.target.value)}
-              />
-            </label>
-            <div className="form-actions">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => void saveChannel()}
-                disabled={!channelInput.trim()}
-              >
-                Save channel
-              </button>
-            </div>
-            {channelError && (
-              <p className="error banner" role="alert">
-                {channelError}
-              </p>
-            )}
-          </div>
-        )}
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => openAdd()}
+        >
+          + Add Nakout playlist
+        </button>
       </div>
 
-      <div className="head">
-        <h3 className="ttl">Your playlists</h3>
+      <div className="head pl-list-head">
+        <h3 className="ttl">By genre</h3>
         <input
           type="search"
           className="filter-input"
-          aria-label="Search playlists"
-          placeholder="Search playlists…"
+          aria-label="Search Nakout playlists"
+          placeholder="Search Nakout playlists…"
           value={filter}
-          onChange={(e) => setFilter(e.target.value)}
+          onChange={(event) => setFilter(event.target.value)}
         />
       </div>
 
@@ -534,7 +230,7 @@ export function PlaylistsPanel({
 
       {genres.length === 0 ? (
         <div className="empty">
-          Create a genre first, then add playlists to it.{" "}
+          Create a genre first, then add Nakout playlists to it.{" "}
           <button
             type="button"
             className="btn btn-primary"
@@ -544,72 +240,78 @@ export function PlaylistsPanel({
           </button>
         </div>
       ) : noMatch ? (
-        <div className="empty">No playlists match "{filter.trim()}".</div>
+        <div className="empty">
+          No Nakout playlists match “{filter.trim()}”.
+        </div>
       ) : (
         <div className="groups">
-          {groups.map((g) => (
+          {groups.map((group) => (
             <section
-              key={g.genre.id}
+              key={group.genre.id}
               className="group"
               style={
-                { "--gc": g.genre.color || "var(--amber)" } as CSSProperties
+                { "--gc": group.genre.color || "var(--amber)" } as CSSProperties
               }
             >
               <div className="ghead">
                 <i className="dot big" aria-hidden="true" />
-                <b>{g.genre.name}</b>
+                <b>{group.genre.name}</b>
                 <span className="mono">
-                  {g.items.length}{" "}
-                  {g.items.length === 1 ? "playlist" : "playlists"} · {g.tracks}{" "}
-                  tracks
+                  {group.items.length}{" "}
+                  {group.items.length === 1
+                    ? "Nakout playlist"
+                    : "Nakout playlists"}{" "}
+                  · {group.tracks} tracks
                 </span>
                 <span className="sp" />
-                {g.items.length > 0 && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  aria-label={`Add a Nakout playlist to ${group.genre.name}`}
+                  onClick={() => openAdd(group.genre.id)}
+                >
+                  + Add
+                </button>
+                {group.items.length > 0 && (
                   <button
                     type="button"
                     className="btn btn-secondary btn-sm"
-                    disabled={
-                      busyGroup === g.genre.id || syncingIds.length > 0
-                    }
-                    onClick={() => void refreshGroup(g)}
+                    disabled={busyGroup === group.genre.id || syncingIds.length > 0}
+                    onClick={() => void syncGroup(group)}
                   >
-                    Refresh all
+                    Sync all
                   </button>
                 )}
               </div>
-              {g.items.length === 0 ? (
+              {group.items.length === 0 ? (
                 <div className="gempty">
-                  <span>No playlists yet.</span>{" "}
+                  <span>No Nakout playlists yet.</span>{" "}
                   <button
                     type="button"
                     className="btn-link"
-                    onClick={() => {
-                      setMode("link");
-                      setAddGenre(g.genre.id);
-                    }}
+                    onClick={() => openAdd(group.genre.id)}
                   >
                     Add one
                   </button>
                 </div>
               ) : (
-                g.items.map((p) => {
-                  const title = p.label || p.youtube_playlist_id;
-                  const syncing = syncingIds.includes(p.id);
+                group.items.map((playlist) => {
+                  const title = playlist.label || "Nakout playlist";
+                  const syncing = syncingIds.includes(playlist.id);
                   return (
                     <div
-                      key={p.id}
-                      className={flashId === p.id ? "prow flash" : "prow"}
+                      key={playlist.id}
+                      className={flashId === playlist.id ? "prow flash" : "prow"}
                     >
                       <div className="pm">
                         <a
-                          className={
-                            p.label ? "pid" : "pid idonly"
-                          }
+                          className="pid"
                           href={`https://www.youtube.com/playlist?list=${encodeURIComponent(
-                            p.youtube_playlist_id,
+                            playlist.youtube_playlist_id,
                           )}`}
                           target="_blank"
                           rel="noreferrer"
+                          title={`YouTube playlist ${playlist.youtube_playlist_id}`}
                         >
                           {title}
                         </a>
@@ -621,10 +323,10 @@ export function PlaylistsPanel({
                         ) : (
                           <>
                             <span className="chip">
-                              {p.track_count} tracks
+                              {playlist.track_count} tracks
                             </span>
                             <span className="mono">
-                              Synced {timeAgo(p.synced_at)}
+                              Synced {timeAgo(playlist.synced_at)}
                             </span>
                           </>
                         )}
@@ -632,15 +334,18 @@ export function PlaylistsPanel({
                       <div className="act">
                         <select
                           aria-label={`Genre for ${title}`}
-                          value={String(p.genre_id)}
+                          value={String(playlist.genre_id)}
                           disabled={busyGroup !== null}
-                          onChange={(e) =>
-                            void movePlaylist(p, Number(e.target.value))
+                          onChange={(event) =>
+                            void movePlaylist(
+                              playlist,
+                              Number(event.target.value),
+                            )
                           }
                         >
-                          {genres.map((x) => (
-                            <option key={x.id} value={x.id}>
-                              {x.name}
+                          {genres.map((genre) => (
+                            <option key={genre.id} value={genre.id}>
+                              {genre.name}
                             </option>
                           ))}
                         </select>
@@ -648,14 +353,14 @@ export function PlaylistsPanel({
                           type="button"
                           className="btn btn-secondary btn-sm"
                           disabled={syncing || busyGroup !== null}
-                          onClick={() => void refresh(p.id)}
+                          onClick={() => void syncOne(playlist.id)}
                         >
-                          Refresh
+                          Sync
                         </button>
                         <button
                           type="button"
                           className="btn btn-danger btn-sm"
-                          onClick={() => setPendingRemove(p)}
+                          onClick={() => setPendingRemove(playlist)}
                         >
                           Remove
                         </button>
@@ -671,8 +376,10 @@ export function PlaylistsPanel({
 
       {pendingRemove && (
         <ConfirmDialog
-          title="Remove playlist"
-          message={`Remove "${pendingRemove.label || pendingRemove.youtube_playlist_id}" from ${pendingRemove.genre_name}? Its tracks stay in the library.`}
+          title="Remove Nakout playlist"
+          message={`Remove “${
+            pendingRemove.label || "Nakout playlist"
+          }” from ${pendingRemove.genre_name}? Its tracks stay in the Library.`}
           confirmLabel="Remove"
           danger
           onConfirm={() => {
@@ -681,6 +388,23 @@ export function PlaylistsPanel({
             void remove(id);
           }}
           onCancel={() => setPendingRemove(null)}
+        />
+      )}
+
+      {addDialog && (
+        <AddPlaylistDialog
+          key={addDialog.genreId ?? "any"}
+          genres={genres}
+          lockedGenreId={addDialog.genreId}
+          onClose={() => setAddDialog(null)}
+          onAdded={async () => {
+            await loadAdded();
+            await onGenresChanged();
+          }}
+          onSchedule={(genreId) => {
+            setAddDialog(null);
+            onJump?.("schedule", { scheduleGenre: genreId });
+          }}
         />
       )}
     </section>

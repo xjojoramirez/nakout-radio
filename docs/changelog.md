@@ -3,6 +3,48 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - studio playlist flow: Nakout playlists and genre shortcuts
+
+Renamed the Studio playlist concept to **Nakout playlist** throughout the
+Nakout playlists tab, the add dialog, genre cards, sync actions and popup flow.
+Genres now act as the starting point for the station setup:
+
+- Every genre card has the same actions: Add Nakout playlist, Schedule, Play
+  now, Edit and a quiet Delete link.
+- The New genre form is collapsed behind a `+ New genre` button.
+- Add Nakout playlist opens a dialog with the genre already locked, so no
+  second genre selection is needed. It supports pasted links and the Nakout
+  channel browser, shows link/duplicate validation, and offers "Schedule this
+  genre" after a successful add.
+- The Nakout playlists tab gained a header add button, per-genre `+ Add`
+  buttons, a searchable list, `Sync` / `Sync all` wording and friendly
+  “Nakout playlist” row labels instead of raw YouTube IDs (IDs remain in the
+  link tooltip).
+- Now Playing’s global sync is labelled “Sync Nakout playlists”.
+
+- Files touched:
+  - `frontend/src/components/admin/AddPlaylistDialog.tsx` (new)
+  - `frontend/src/components/admin/AddPlaylistDialog.dom.test.tsx` (new)
+  - `frontend/src/utils/playlist.ts` (new)
+  - `frontend/src/components/admin/GenresPanel.tsx`
+  - `frontend/src/components/admin/PlaylistsPanel.tsx`
+  - `frontend/src/components/admin/NowPlayingPanel.tsx`
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/styles/listening-room.css`
+  - the matching DOM tests
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 36 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1440×1000 and 390×844: the genre cards
+    wrap cleanly, the locked-genre dialog fits with 10px mobile side margins,
+    the Nakout playlists tab shows the new labels and per-group add buttons,
+    and there is no horizontal overflow. Screenshots captured.
+
 ## 2026-11-25 - make the current schedule row stand out
 
 The active row in Today’s schedule now has a teal wash across the full row, a
