@@ -3,6 +3,46 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - Sea Glass light theme, framed ambient and balanced page
+
+The approved light direction is now live:
+
+- Light mode is **Sea Glass**: sage mist background, soft green and warm
+  botanical glows, frosted liner notes, dock, Studio cards, rows, login,
+  schedule editor and dialogs with a white glass rim and green shadow. The
+  accent is a deep sea green; the deck and vinyl stay graphite.
+- The `.lr-ambient` div now gets a crisp 1px rounded rim. The artwork moved
+  into a blurred pseudo-element (`--lr-art`) so the border is not blurred, and
+  a bottom mask fades frame and artwork together without cutting through the
+  hero on phones.
+- Vertical spacing is balanced: the listener page uses 24px top/bottom padding
+  (18px on phones) and centres itself when the content is shorter than the
+  viewport, so the gap above the header matches the gap above the dock.
+  Mobile width now uses `100%` plus auto margins instead of `100vw`, giving
+  even side gutters with a scrollbar.
+- Dark mode keeps its existing palette and flat surfaces; the ambient frame
+  and balanced page spacing apply to both themes.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `frontend/src/pages/RadioPage.tsx`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 37 files, 378 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend at 1440×1000 and 390×844: Sea Glass
+    listener, dark listener, Studio genres, schedule and editor, login and the
+    add-playlist dialog. The ambient rim is visible, the frame fades cleanly,
+    the page gaps measure 52px above and 48px above the dock, and there is no
+    horizontal overflow.
+  - Text contrast on the Sea Glass palette: ink 13.2:1, muted 4.8:1, accent
+    5.4:1 on the page background.
+
 ## 2026-11-25 - light theme and a theme switcher
 
 The Listening Room palette is now a dark/light pair, switchable at runtime:

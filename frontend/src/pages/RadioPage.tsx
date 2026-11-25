@@ -50,7 +50,9 @@ export function RadioPage() {
           aria-hidden="true"
           style={
             track?.thumbnail_url
-              ? { backgroundImage: `url(${track.thumbnail_url})` }
+              ? ({
+                  "--lr-art": `url(${track.thumbnail_url})`,
+                } as CSSProperties)
               : undefined
           }
         />

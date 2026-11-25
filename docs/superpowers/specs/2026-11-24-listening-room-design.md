@@ -19,18 +19,20 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 - **Palette (dark, default):** ink `#090b0e`, cream `#e9e4d8`, muted
   `#8f979e`, teal `#79c7b8`, hairlines at ~9% cream.
-- **Palette (light):** paper `#f3efe6`, panel `#fbf8f2`, ink `#172025`,
-  muted `#5f6b72`, teal `#176f63`, hairlines at ~12% ink. The turntable plinth
-  and vinyl stay graphite in both themes.
+- **Palette (light, Sea Glass):** sage mist `#e1eadd`, frosted panel
+  `#f6fbf3` at ~55%, ink `#14231a`, muted `#56695b`, sea-green `#2c6848`,
+  hairlines at ~13% ink. Soft green and warm botanical glows sit behind the
+  glass. The turntable plinth and vinyl stay graphite in both themes.
 - **Theme choice:** first visit follows the OS, an explicit choice is remembered
   in `localStorage`, and a sun/moon switch sits in the listener header, the
   Studio header and the Studio login.
 - **Type:** two families only - Inter for body, controls, the wordmark, track
   titles, headings and popup titles; JetBrains Mono for labels, times and
   metadata. Instrument Serif, Bricolage Grotesque and DM Mono were removed.
-- **Shape:** circular artwork disc, 1px hairlines, one translucent panel
-  (liner notes) and one floating dock. No wood, plinth, tonearm or RPM badges
-  on the listener page.
+- **Shape:** circular artwork disc, 1px hairlines, one frosted panel
+  (liner notes), one frosted dock and, in light mode, translucent glass cards
+  in the Studio. A rounded ambient frame sits behind the listener hero. No
+  wood, plinth, tonearm or RPM badges on the listener page.
 - **Motion:** the record keeps the existing spin-up / spin-down inertia. CSS
   adds a dashed rotation ring and a slow teal sheen; both respect
   `prefers-reduced-motion`.
@@ -42,9 +44,15 @@ Listening Room). It applies to the listener page, the Studio and every popup
 - **Hero:** two columns — a 344px circular disc and the now-playing column
   (kicker, title, artist, album facts, progress on mobile, liner notes). The
   kicker is set a step larger (0.68rem) for legibility.
+- **Ambient frame:** a full-width 560px rounded frame behind the hero holds a
+  blurred copy of the current artwork. The artwork lives in a pseudo-element so
+  the 1px glass rim stays crisp; a bottom mask fades frame and artwork together.
+- **Vertical balance:** the page uses 24px top and bottom padding (18px on
+  phones) and centres itself in the viewport when the content is shorter than
+  the screen, keeping the gap above the header close to the gap above the dock.
 - **Schedule:** below the liner notes, two columns of hairline rows; the
   current slot is marked with a teal inset bar and teal time.
-- **Dock:** fixed, inset, translucent bar with cover, "on the decks" label,
+- **Dock:** fixed, inset, frosted bar with cover, "on the decks" label,
   VU bars, timecode, volume and an outlined teal control labelled **Tune in**
   when muted and **Stop listening** when audible (the action is mute/unmute,
   so the label describes what the listener experiences).
@@ -95,6 +103,8 @@ Listening Room). It applies to the listener page, the Studio and every popup
   teal accent, cream text, Inter body and headings, JetBrains Mono labels.
 - Shell: sans wordmark, hairline header, quiet underline tabs, hairline cards
   and rows, outlined secondary buttons, teal primary buttons and focus rings.
+  In Sea Glass light mode the cards, rows, login panel, schedule editor and
+  dialogs become frosted surfaces with a white rim and soft green shadow.
 - Now playing keeps the deck but renders it as the same artwork disc, with the
   mixer on a hairline panel and teal VU bars.
 - Popups: blurred scrim, panel with hairline border, Inter 600 title, Inter
