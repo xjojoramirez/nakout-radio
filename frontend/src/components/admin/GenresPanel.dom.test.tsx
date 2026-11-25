@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError, api } from "../../api/client";
 import type { Genre, Track } from "../../types";
 import { GenresPanel } from "./GenresPanel";
@@ -18,6 +18,9 @@ vi.mock("../../api/client", async () => {
       deleteGenre: vi.fn(),
       genreTracks: vi.fn(),
       play: vi.fn(),
+      listPlaylists: vi.fn(),
+      getChannelSource: vi.fn(),
+      listChannelPlaylists: vi.fn(),
     },
   };
 });
@@ -73,6 +76,12 @@ const trackFixture: Track[] = [
   },
 ];
 
+beforeEach(() => {
+  mocked.listPlaylists.mockResolvedValue([]);
+  mocked.getChannelSource.mockResolvedValue({ channel_id: null, title: null });
+  mocked.listChannelPlaylists.mockResolvedValue([]);
+});
+
 afterEach(() => {
   vi.clearAllMocks();
 });
@@ -94,6 +103,9 @@ function renderPanel(
   );
   return { onNotice, onError, onJump };
 }
+
+const openNewGenreForm = () =>
+  fireEvent.click(screen.getByRole("button", { name: "+ New genre" }));
 
 describe("GenresPanel", () => {
   it("renders genre cards with colour, slug, track chips and a default pill", () => {
@@ -122,20 +134,31 @@ describe("GenresPanel", () => {
     ).toBeNull();
   });
 
-  it("warns and quick-links an empty genre to playlists and schedule", () => {
+  it("warns an empty genre and opens the add dialog with the genre locked", async () => {
     const onJump = vi.fn();
     renderPanel({ onJump });
     const card = screen.getByText("NU Metal").closest(".gcard");
     expect(card).not.toBeNull();
     expect(
-      within(card as HTMLElement).getByText("No playlists"),
+      within(card as HTMLElement).getByText(
+        "No Nakout playlists yet. Add one to get this genre on air.",
+      ),
     ).toBeInTheDocument();
     fireEvent.click(
       within(card as HTMLElement).getByRole("button", {
         name: "Add playlist to NU Metal",
       }),
     );
-    expect(onJump).toHaveBeenCalledWith("playlists", { playlistsGenre: 2 });
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      within(dialog).getByRole("heading", { name: "Add to NU Metal" }),
+    ).toBeInTheDocument();
+    expect(onJump).not.toHaveBeenCalledWith("playlists", expect.anything());
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: "Close add playlist dialog",
+      }),
+    );
     fireEvent.click(
       within(card as HTMLElement).getByRole("button", {
         name: "Schedule NU Metal",
@@ -144,12 +167,13 @@ describe("GenresPanel", () => {
     expect(onJump).toHaveBeenCalledWith("schedule", { scheduleGenre: 2 });
     const fedCard = screen.getByText("Emo Night").closest(".gcard");
     expect(
-      within(fedCard as HTMLElement).queryByText("Add one"),
+      within(fedCard as HTMLElement).queryByText(/No Nakout playlists yet/),
     ).toBeNull();
   });
 
   it("slug auto-fills from the name until manually edited", () => {
     renderPanel();
+    openNewGenreForm();
     const name = screen.getByLabelText("Genre name") as HTMLInputElement;
     const slug = screen.getByLabelText("Genre slug") as HTMLInputElement;
     fireEvent.change(name, { target: { value: "Sunday Acoustic" } });
@@ -161,6 +185,7 @@ describe("GenresPanel", () => {
 
   it("add button stays disabled until name and slug are filled", () => {
     renderPanel();
+    openNewGenreForm();
     const add = screen.getByRole("button", { name: "Add genre" });
     expect(add).toBeDisabled();
     fireEvent.change(screen.getByLabelText("Genre name"), {
@@ -175,6 +200,7 @@ describe("GenresPanel", () => {
 
   it("add form sends the chosen colour and reports the notice", async () => {
     const { onNotice } = renderPanel();
+    openNewGenreForm();
     mocked.createGenre.mockResolvedValue({
       id: 9,
       name: "Jazz",
@@ -204,7 +230,7 @@ describe("GenresPanel", () => {
       ),
     );
     expect(onNotice).toHaveBeenCalledWith(
-      "Jazz added. Add a playlist and a schedule slot to put it on air.",
+      "Jazz added. Next: add a Nakout playlist.",
     );
   });
 
@@ -232,7 +258,7 @@ describe("GenresPanel", () => {
     await waitFor(() => expect(mocked.genreTracks).toHaveBeenCalledWith(2));
     expect(mocked.play).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledWith(
-      '"NU Metal" has no tracks yet. Add a playlist.',
+      '"NU Metal" has no tracks yet. Add a Nakout playlist.',
     );
     expect(onJump).not.toHaveBeenCalled();
   });
@@ -241,9 +267,9 @@ describe("GenresPanel", () => {
     mocked.updateGenre.mockResolvedValue({ ...genres[0], color: "#d8c18a" });
     renderPanel();
     fireEvent.click(screen.getByRole("button", { name: "Edit Emo Night" }));
-    const swatches = screen.getAllByRole("radiogroup", {
+    const swatches = screen.getByRole("radiogroup", {
       name: "Genre colour",
-    })[1];
+    });
     fireEvent.click(within(swatches).getAllByRole("radio")[7]);
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() =>
@@ -346,7 +372,7 @@ describe("GenresPanel", () => {
   it("shows the empty state when there are no genres", () => {
     renderPanel({ genres: [] });
     expect(
-      screen.getByText("No genres yet. Create your first one above."),
+      screen.getByText("No genres yet. Create your first one."),
     ).toBeInTheDocument();
   });
 });

@@ -37,7 +37,24 @@ export function RadioPage() {
 
   return (
     <>
-      <div className={offline ? "radio-page offline" : "radio-page"}>
+      <div
+        className={
+          offline
+            ? "radio-page listening-room offline"
+            : "radio-page listening-room"
+        }
+      >
+        <div
+          className="lr-ambient"
+          aria-hidden="true"
+          style={
+            track?.thumbnail_url
+              ? ({
+                  "--lr-art": `url(${track.thumbnail_url})`,
+                } as CSSProperties)
+              : undefined
+          }
+        />
         <header className="radio-top">
           <div className="brand">Nakout Radio</div>
           <div className="onair">
@@ -220,7 +237,7 @@ export function RadioPage() {
           onClick={player.toggleMute}
           disabled={offline}
         >
-          {player.muted ? "Tune in" : "Tune out"}
+          {player.muted ? "Tune in" : "Stop listening"}
         </button>
       </div>
 

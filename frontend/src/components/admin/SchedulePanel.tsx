@@ -4,7 +4,6 @@ import { api } from "../../api/client";
 import { messageFor } from "../../utils/errors";
 import { fmtMin, minutesOf, twelveHour } from "../../utils/format";
 import { ConfirmDialog } from "../ConfirmDialog";
-import { GenreChipRadio } from "./GenreChipRadio";
 import { ScheduleTimeline, buildSegs, lastBefore, slotsForDay } from "./ScheduleTimeline";
 import type { CurrentGenre, Genre, ScheduleSlot } from "../../types";
 
@@ -108,6 +107,7 @@ export function SchedulePanel({
   onIntentConsumed,
 }: Props) {
   const [slots, setSlots] = useState<ScheduleSlot[]>([]);
+  const [slotsLoaded, setSlotsLoaded] = useState(false);
   const [slotsError, setSlotsError] = useState("");
   const [onAir, setOnAir] = useState<CurrentGenre | null>(null);
 
@@ -125,6 +125,7 @@ export function SchedulePanel({
   const [intentGenre, setIntentGenre] = useState<number | null>(null);
 
   const consumedIntent = useRef(false);
+  const autoOpenedIntent = useRef(false);
 
   useEffect(() => {
     if (initialGenre != null && !consumedIntent.current) {
@@ -143,6 +144,8 @@ export function SchedulePanel({
       setSlotsError("");
     } catch (err) {
       setSlotsError(messageFor(err));
+    } finally {
+      setSlotsLoaded(true);
     }
   }, [onCountChange]);
 
@@ -218,6 +221,13 @@ export function SchedulePanel({
     setFormTime(toHM(minute ?? freeStart(day, slots)));
     setFormError("");
   };
+
+  useEffect(() => {
+    if (!slotsLoaded || intentGenre == null || autoOpenedIntent.current) return;
+    autoOpenedIntent.current = true;
+    openAdd(null, appToday(), intentGenre);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slotsLoaded, intentGenre]);
 
   const openEdit = (id: number) => {
     const slot = slots.find((s) => s.id === id);
@@ -330,6 +340,49 @@ export function SchedulePanel({
     formGenre != null
       ? (genres.find((g) => g.id === formGenre)?.name ?? "")
       : "";
+
+  const formPreview = (() => {
+    if (formGenre == null || !formTime || formDays.length === 0) return null;
+    const start = minutesOf(formTime);
+    const perDay = [...formDays]
+      .sort((a, b) => a - b)
+      .map((day) => {
+        const next =
+          slotsForDay(slots, day)
+            .filter((slot) => slot.id !== editId)
+            .map((slot) => ({
+              ...slot,
+              mins: minutesOf(slot.start_time),
+            }))
+            .filter((slot) => slot.mins > start)
+            .sort((a, b) => a.mins - b.mins)[0] ?? null;
+        return { day, next, end: next ? next.mins : 1440 };
+      });
+    const first = perDay[0];
+    return {
+      start,
+      end: first.end,
+      next: first.next,
+      sameEnd: perDay.every((entry) => entry.end === first.end),
+    };
+  })();
+
+  const sameStartConflicts =
+    formTime && formDays.length > 0
+      ? slots.filter(
+          (slot) =>
+            slot.id !== editId &&
+            slot.start_time === formTime &&
+            slot.days_of_week.some((day) => formDays.includes(day)),
+        )
+      : [];
+  const conflictDays = Array.from(
+    new Set(
+      sameStartConflicts.flatMap((slot) =>
+        slot.days_of_week.filter((day) => formDays.includes(day)),
+      ),
+    ),
+  ).sort((a, b) => a - b);
 
   const dimmedGenres = new Set(
     genres.filter((g) => !passes(g.id)).map((g) => g.id),
@@ -594,6 +647,9 @@ export function SchedulePanel({
                           }
                           style={style}
                           title={`${s.genre_name} · ${twelveHour(seg.from)} to ${twelveHour(seg.to)}`}
+                          aria-label={`${s.genre_name}, ${twelveHour(
+                            seg.from,
+                          )} to ${twelveHour(seg.to)}. Edit slot.`}
                           onClick={(e) => {
                             e.stopPropagation();
                             openEdit(s.id);
@@ -630,7 +686,8 @@ export function SchedulePanel({
       </div>
       <p className="hint">
         Click a block to edit it, empty space to add a slot, or a day name to
-        open that day. The number beside a day is how many slots start on it.
+        open that day. Hover a block for its full name and time. The number
+        beside a day is how many slots start on it.
       </p>
     </div>
   );
@@ -899,122 +956,217 @@ export function SchedulePanel({
         </p>
       )}
 
-      {formOpen && (
-        <form
-          className="card sform"
-          data-testid="slot-form"
-          autoComplete="off"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void submit();
-          }}
-        >
-          <h3 className="ttl">{editId === null ? "Add a slot" : "Edit slot"}</h3>
-          <div className="lab">Genre</div>
-          <GenreChipRadio
-            label="Genre"
-            genres={genres}
-            value={formGenre}
-            onChange={(id) => {
-              setFormGenre(id);
-              setFormError("");
-            }}
+      <div className={formOpen ? "sched-layout editing" : "sched-layout"}>
+        {formOpen && (
+          <div
+            className="sform-backdrop"
+            onClick={closeForm}
+            aria-hidden="true"
           />
-          <div className="lab">Repeat on</div>
-          <div className="dayrow" role="group" aria-label="Repeat on">
-            <div className="presets">
+        )}
+
+        <div className="sched-main">
+          {toolbar}
+          {body}
+        </div>
+
+        {formOpen && (
+          <form
+            className="card sform"
+            data-testid="slot-form"
+            autoComplete="off"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void submit();
+            }}
+          >
+            <div className="sform-head">
+              <h3 className="ttl">
+                {editId === null ? "Add a slot" : "Edit slot"}
+              </h3>
               <button
                 type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => {
-                  setFormDays([0, 1, 2, 3, 4]);
-                  setFormError("");
-                }}
+                className="sform-close"
+                aria-label="Close slot editor"
+                onClick={closeForm}
               >
-                Weekdays
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => {
-                  setFormDays([5, 6]);
-                  setFormError("");
-                }}
-              >
-                Weekends
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => {
-                  setFormDays([0, 1, 2, 3, 4, 5, 6]);
-                  setFormError("");
-                }}
-              >
-                Every day
+                &times;
               </button>
             </div>
-            <div className="dayrow">
-              {WEEK_ORDER.map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  className="pill"
-                  aria-pressed={formDays.includes(d)}
-                  onClick={() => toggleFormDay(d)}
-                >
-                  {DAY_LABELS[d]}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="two">
-            <label className="lab">
-              Start time
-              <input
-                type="time"
-                value={formTime}
+            <label className="field">
+              Genre
+              <select
+                aria-label="Genre"
+                value={formGenre ?? ""}
                 onChange={(e) => {
-                  setFormTime(e.target.value);
+                  setFormGenre(e.target.value ? Number(e.target.value) : null);
                   setFormError("");
                 }}
-              />
+              >
+                <option value="">Choose a genre…</option>
+                {genres.map((genre) => (
+                  <option key={genre.id} value={genre.id}>
+                    {genre.name}
+                  </option>
+                ))}
+              </select>
             </label>
-          </div>
-          <div className="sentence" data-testid="sentence" aria-live="polite">
-            {formGenre != null && formTime && formDays.length > 0 ? (
-              <>
-                <b>{formGenreName}</b> will start at{" "}
-                <b>{twelveHour(minutesOf(formTime))}</b> {dayPhrase(formDays)}{" "}
-                and play until the next slot begins.
-              </>
-            ) : (
-              "Pick a genre and a start time."
+            <div className="lab">Repeat on</div>
+            <div className="dayrow" role="group" aria-label="Repeat on">
+              <div className="presets">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => {
+                    setFormDays([0, 1, 2, 3, 4]);
+                    setFormError("");
+                  }}
+                >
+                  Weekdays
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => {
+                    setFormDays([5, 6]);
+                    setFormError("");
+                  }}
+                >
+                  Weekends
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => {
+                    setFormDays([0, 1, 2, 3, 4, 5, 6]);
+                    setFormError("");
+                  }}
+                >
+                  Every day
+                </button>
+              </div>
+              <div className="dayrow">
+                {WEEK_ORDER.map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    className="pill"
+                    aria-pressed={formDays.includes(d)}
+                    onClick={() => toggleFormDay(d)}
+                  >
+                    {DAY_LABELS[d]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="two">
+              <label className="lab">
+                Start time
+                <input
+                  type="time"
+                  value={formTime}
+                  onChange={(e) => {
+                    setFormTime(e.target.value);
+                    setFormError("");
+                  }}
+                />
+              </label>
+            </div>
+            <div className="sentence" data-testid="sentence" aria-live="polite">
+              {formGenre != null && formTime && formDays.length > 0 ? (
+                <>
+                  <b>{formGenreName}</b> will start at{" "}
+                  <b>{twelveHour(minutesOf(formTime))}</b>{" "}
+                  {dayPhrase(formDays)} and play until the next slot begins.
+                </>
+              ) : (
+                "Pick a genre and a start time."
+              )}
+            </div>
+
+            {sameStartConflicts.length > 0 && (
+              <div className="sform-warn" role="status">
+                <b>Heads up:</b>{" "}
+                {sameStartConflicts.length === 1
+                  ? "another slot already starts"
+                  : `${sameStartConflicts.length} slots already start`}{" "}
+                at {twelveHour(minutesOf(formTime))} on{" "}
+                {formatDays(conflictDays)}. Both will be saved; when start
+                times tie, the newer slot takes precedence.
+              </div>
             )}
-          </div>
-          {formError && <div className="hint err">{formError}</div>}
-          <div className="fa">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={closeForm}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={!formGenre || formDays.length === 0 || !formTime}
-            >
-              {editId === null ? "Add slot" : "Save slot"}
-            </button>
-          </div>
-        </form>
-      )}
 
-      {toolbar}
+            {formPreview && (
+              <div className="sform-preview" aria-live="polite">
+                <div className="sform-preview-head">
+                  <span className="mono">Preview</span>
+                  <span className="mono">{formatDays(formDays)}</span>
+                </div>
+                <div className="sform-preview-times">
+                  <b>{twelveHour(formPreview.start)}</b>
+                  <span className="sform-arrow" aria-hidden="true">
+                    →
+                  </span>
+                  <b>
+                    {formPreview.end === 1440
+                      ? "Midnight"
+                      : twelveHour(formPreview.end)}
+                  </b>
+                  <span className="chip">
+                    {fmtMin(formPreview.end - formPreview.start)}
+                  </span>
+                </div>
+                <div className="hint sform-preview-next">
+                  {formPreview.next ? (
+                    <>
+                      Next: <b>{formPreview.next.genre_name}</b> at{" "}
+                      {twelveHour(minutesOf(formPreview.next.start_time))}.
+                    </>
+                  ) : (
+                    "No next slot — it runs until midnight."
+                  )}
+                </div>
+                {!formPreview.sameEnd && (
+                  <div className="hint">
+                    Other selected days end at a different time.
+                  </div>
+                )}
+              </div>
+            )}
 
-      {body}
+            {formError && <div className="hint err">{formError}</div>}
+            <div className="fa sform-actions">
+              {editId !== null && (
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => {
+                    const slot = slots.find((item) => item.id === editId);
+                    if (slot) setPendingDelete(slot);
+                  }}
+                >
+                  Delete slot
+                </button>
+              )}
+              <span className="sp" />
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={closeForm}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={!formGenre || formDays.length === 0 || !formTime}
+              >
+                {editId === null ? "Add slot" : "Save slot"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
 
       {pendingDelete && (
         <ConfirmDialog
@@ -1027,7 +1179,10 @@ export function SchedulePanel({
           onConfirm={() => {
             const id = pendingDelete.id;
             setPendingDelete(null);
-            void removeSlot(id);
+            void (async () => {
+              await removeSlot(id);
+              if (editId === id) closeForm();
+            })();
           }}
           onCancel={() => setPendingDelete(null)}
         />

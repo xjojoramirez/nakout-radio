@@ -1,4 +1,4 @@
-import {
+﻿import {
   fireEvent,
   render,
   screen,
@@ -404,10 +404,10 @@ describe("NowPlayingPanel", () => {
         onError={vi.fn()}
       />,
     );
-    fireEvent.click(await screen.findByText("Sync all playlists"));
+    fireEvent.click(await screen.findByText("Sync Nakout playlists"));
     await waitFor(() =>
       expect(onNotice).toHaveBeenCalledWith(
-        "Synced 1 of 2 playlist(s); 1 failed.",
+        "Synced 1 of 2 Nakout playlist(s); 1 failed.",
       ),
     );
   });
@@ -424,7 +424,7 @@ describe("NowPlayingPanel", () => {
     renderPanel();
     await screen.findAllByText("Play");
     const before = mocked.genreQueue.mock.calls.length;
-    fireEvent.click(screen.getByText("Sync all playlists"));
+    fireEvent.click(screen.getByText("Sync Nakout playlists"));
     await waitFor(() =>
       expect(mocked.genreQueue.mock.calls.length).toBeGreaterThan(before),
     );
@@ -448,7 +448,7 @@ describe("NowPlayingPanel", () => {
     );
     const { container } = renderPanel();
     const button = (await screen.findByText(
-      "Sync all playlists",
+      "Sync Nakout playlists",
     )) as HTMLButtonElement;
     fireEvent.click(button);
     expect(button).toBeDisabled();
@@ -457,7 +457,7 @@ describe("NowPlayingPanel", () => {
     expect(screen.getByText("Syncing")).toBeInTheDocument();
     resolve({ results: [{ id: 1, synced: 2 }] });
     await waitFor(() => {
-      const next = screen.getByText("Sync all playlists");
+      const next = screen.getByText("Sync Nakout playlists");
       expect(next as HTMLButtonElement).not.toBeDisabled();
     });
     expect(container.querySelector(".chip .spin")).toBeNull();
@@ -672,3 +672,4 @@ describe("NowPlayingPanel", () => {
     );
   });
 });
+

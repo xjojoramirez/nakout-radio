@@ -3,6 +3,624 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - update the E2E flow for the new Studio
+
+- The end-to-end test now opens the collapsed `+ New genre` form before filling
+  the genre fields, and selects the schedule genre with the new `Genre` select
+  instead of the removed radio chips.
+- Files touched:
+  - `frontend/e2e/app.spec.ts`
+  - `docs/changelog.md`
+- **Container restart required?** No (test-only change).
+- **Verification:**
+  - `npm run typecheck:e2e` — pass
+  - `npm run lint` — pass
+  - Playwright E2E against a fresh compose stack on ports 8031/8032 —
+    1 test passed (2.5s)
+
+## 2026-11-25 - raise the frontend CSS bundle budget
+
+The Listening Room theme adds a large listener/Studio stylesheet. The gzipped
+CSS bundle is 17.9 kB, so the CSS budget moves from 13 kB to 19 kB; the JS
+budget stays at 95 kB (current 89.2 kB). This is a CI guard only.
+
+- Files touched:
+  - `frontend/scripts/check-bundle-size.mjs`
+  - `docs/changelog.md`
+- **Container restart required?** No.
+- **Verification:**
+  - `npm run build` — pass
+  - `npm run check:bundle` — pass (JS 89.2/95 kB, CSS 17.9/19 kB)
+
+## 2026-11-25 - dark theme is the default; switcher removed
+
+- Removed the sun/moon theme switch from the listener header, Studio header
+  and Studio login.
+- Removed the `theme.ts` store, `ThemeSwitch` component and its test, the
+  `theme-init.js` boot file and its nginx no-cache rule.
+- The app now always renders the original dark Listening Room theme. The
+  document keeps `color-scheme: dark` and the dark browser theme colour; no
+  script reads or writes a theme preference.
+- The Evening Moss light tokens and glass rules remain in
+  `listening-room.css` behind `[data-theme="light"]` for a future option, but
+  no UI sets that attribute.
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/main.tsx`
+  - `frontend/src/styles/listening-room.css`
+  - `frontend/index.html`
+  - `frontend/nginx.conf`
+  - deleted `frontend/src/components/ThemeSwitch.tsx`
+  - deleted `frontend/src/components/ThemeSwitch.dom.test.tsx`
+  - deleted `frontend/src/theme.ts`
+  - deleted `frontend/public/theme-init.js`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 36 files, 375 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend at 1440×1000 and 390×844: dark theme
+    renders by default, there is no theme switch in the listener, Studio or
+    login, `data-theme` is unset, and there is no horizontal overflow.
+
+## 2026-11-25 - Evening Moss light palette
+
+- The light theme moves to the darkest approved Sea Glass step: page
+  `#aec2a9`, frosted panel `#e7f1e4`, ink `#0b1710`, muted `#384e3f`, accent
+  `#19462e`. It is still a light theme; the glass cards stay pale and text
+  contrast remains strong.
+- The glass tint, green shadow, botanical glows and input borders were
+  adjusted to match the deeper sage.
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 37 files, 378 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend at 1440×1000: listener and Studio
+    Genres. No horizontal overflow. Contrast: ink 9.7:1, muted 4.8:1, accent
+    5.7:1 on the Evening Moss page.
+
+## 2026-11-25 - unframed Sea Glass wash and deeper sage
+
+- Removed the rounded ambient frame and its border. The blurred artwork is now
+  full-bleed (`100vw + 24px`, clipped at the body) and starts 60px above the
+  page, so it dissolves from the browser edge into the listener page with no
+  panel edge or seam.
+- Deepened the light palette a step without making it a dark theme: page
+  `#d5e1cf`, frosted panel `#f4faf1`, ink `#122019`, muted `#4f6355`, accent
+  `#245c3e`, with the glass tint and shadows adjusted to match.
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 37 files, 378 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend at 1440×1000 and 390×844: the ambient
+    fills the full viewport, there is no border or side seam, there is no
+    horizontal overflow, and the darker green remains light (12.4:1 ink,
+    4.7:1 muted, 5.8:1 accent on the page background).
+
+## 2026-11-25 - Sea Glass light theme, framed ambient and balanced page
+
+The approved light direction is now live:
+
+- Light mode is **Sea Glass**: sage mist background, soft green and warm
+  botanical glows, frosted liner notes, dock, Studio cards, rows, login,
+  schedule editor and dialogs with a white glass rim and green shadow. The
+  accent is a deep sea green; the deck and vinyl stay graphite.
+- The `.lr-ambient` div now gets a crisp 1px rounded rim. The artwork moved
+  into a blurred pseudo-element (`--lr-art`) so the border is not blurred, and
+  a bottom mask fades frame and artwork together without cutting through the
+  hero on phones.
+- Vertical spacing is balanced: the listener page uses 24px top/bottom padding
+  (18px on phones) and centres itself when the content is shorter than the
+  viewport, so the gap above the header matches the gap above the dock.
+  Mobile width now uses `100%` plus auto margins instead of `100vw`, giving
+  even side gutters with a scrollbar.
+- Dark mode keeps its existing palette and flat surfaces; the ambient frame
+  and balanced page spacing apply to both themes.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `frontend/src/pages/RadioPage.tsx`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 37 files, 378 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend at 1440×1000 and 390×844: Sea Glass
+    listener, dark listener, Studio genres, schedule and editor, login and the
+    add-playlist dialog. The ambient rim is visible, the frame fades cleanly,
+    the page gaps measure 52px above and 48px above the dock, and there is no
+    horizontal overflow.
+  - Text contrast on the Sea Glass palette: ink 13.2:1, muted 4.8:1, accent
+    5.4:1 on the page background.
+
+## 2026-11-25 - light theme and a theme switcher
+
+The Listening Room palette is now a dark/light pair, switchable at runtime:
+
+- Dark keeps the current ink-and-teal look and remains the default when no
+  preference is stored. Light uses a warm paper background, ink text and a
+  deeper teal that keeps text contrast at AA size.
+- A sun/moon switch sits in the listener header, the Studio header and the
+  Studio login. First visit follows the OS; an explicit choice is stored in
+  `localStorage` and restored before first paint by `public/theme-init.js`
+  (same-origin, so it satisfies the Caddy CSP).
+- Every listener and Studio surface switches: page glows, cards, fields,
+  dialogs, timeline, schedule sheet, toast, library and dock. The turntable
+  plinth and vinyl stay graphite in both themes.
+- The browser `theme-color` meta and `color-scheme` follow the active theme.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `frontend/src/theme.ts`
+  - `frontend/src/components/ThemeSwitch.tsx`
+  - `frontend/src/components/ThemeSwitch.dom.test.tsx`
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/main.tsx`
+  - `frontend/public/theme-init.js`
+  - `frontend/index.html`
+  - `frontend/nginx.conf`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 37 files, 378 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend in dark and light at 1440×1100 and
+    390×844: listener, Studio Genres / Now Playing / Library / Schedule, the
+    schedule editor, add-playlist dialog, login, both themes. The switch
+    updates live, the stored choice survives reload, a fresh visit follows the
+    OS scheme, and there is no horizontal overflow.
+  - Checked through Caddy at `https://localhost/` with the CSP active:
+    `theme-init.js` loads with `Cache-Control: no-cache`, the light theme is
+    applied, and there are no console or CSP errors.
+
+## 2026-11-25 - studio copy polish
+
+The Auto transport now explains itself with “Follow the schedule at the next
+slot”. Library’s unassigned filter and row badge say “No Nakout playlist” /
+“no Nakout playlist” so the playlist terminology is consistent across the
+Studio.
+
+- Files touched:
+  - `frontend/src/components/admin/NowPlayingPanel.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.tsx`
+  - `frontend/src/components/admin/TrackLibraryPanel.dom.test.tsx`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 36 files, 375 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend at 390px: no horizontal overflow.
+
+## 2026-11-25 - studio schedule editor and readable week blocks
+
+The schedule is easier to read and edit without losing any existing controls:
+
+- Add/Edit now opens a sticky side editor on desktop and a bottom sheet on
+  phones. The calendar stays visible beside it.
+- The editor shows the computed start → end time, duration and next slot, warns
+  before saving when another slot starts at the same time, and can delete the
+  slot in place. The genre picker is a compact select instead of a tall chip
+  grid.
+- Week blocks wrap their genre names over two lines instead of truncating to a
+  single letter; every block keeps the full “genre · time” tooltip and an
+  accessible name. The week grid fits the reduced width beside the editor.
+- Opening Schedule from a genre card now opens the editor with that genre
+  already selected.
+
+- Files touched:
+  - `frontend/src/components/admin/SchedulePanel.tsx`
+  - `frontend/src/components/admin/SchedulePanel.dom.test.tsx`
+  - `frontend/src/pages/AdminPage.dom.test.tsx`
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 36 files, 375 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1440×1000 and 390×844: side editor and
+    mobile sheet open with the genre prefilled, the computed preview and
+    same-start warning render, the week grid fits without horizontal scroll at
+    desktop, and there is no page overflow. Screenshots captured of the normal,
+    conflict and mobile states.
+
+## 2026-11-25 - studio playlist flow: Nakout playlists and genre shortcuts
+
+Renamed the Studio playlist concept to **Nakout playlist** throughout the
+Nakout playlists tab, the add dialog, genre cards, sync actions and popup flow.
+Genres now act as the starting point for the station setup:
+
+- Every genre card has the same actions: Add Nakout playlist, Schedule, Play
+  now, Edit and a quiet Delete link.
+- The New genre form is collapsed behind a `+ New genre` button.
+- Add Nakout playlist opens a dialog with the genre already locked, so no
+  second genre selection is needed. It supports pasted links and the Nakout
+  channel browser, shows link/duplicate validation, and offers "Schedule this
+  genre" after a successful add.
+- The Nakout playlists tab gained a header add button, per-genre `+ Add`
+  buttons, a searchable list, `Sync` / `Sync all` wording and friendly
+  “Nakout playlist” row labels instead of raw YouTube IDs (IDs remain in the
+  link tooltip).
+- Now Playing’s global sync is labelled “Sync Nakout playlists”.
+
+- Files touched:
+  - `frontend/src/components/admin/AddPlaylistDialog.tsx` (new)
+  - `frontend/src/components/admin/AddPlaylistDialog.dom.test.tsx` (new)
+  - `frontend/src/utils/playlist.ts` (new)
+  - `frontend/src/components/admin/GenresPanel.tsx`
+  - `frontend/src/components/admin/PlaylistsPanel.tsx`
+  - `frontend/src/components/admin/NowPlayingPanel.tsx`
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/styles/listening-room.css`
+  - the matching DOM tests
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 36 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1440×1000 and 390×844: the genre cards
+    wrap cleanly, the locked-genre dialog fits with 10px mobile side margins,
+    the Nakout playlists tab shows the new labels and per-group add buttons,
+    and there is no horizontal overflow. Screenshots captured.
+
+## 2026-11-25 - make the current schedule row stand out
+
+The active row in Today’s schedule now has a teal wash across the full row, a
+3px teal inset bar, a glowing teal dot before the playlist name, semibold name
+text and a teal time. The bottom hairline also picks up a teal tint. This makes
+the on-air genre easier to spot in the two-column desktop list and the
+single-column mobile list.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1280×900 and 390×844: active row shows
+    the tint, 3px bar, dot, 600 name and teal time; no clipping or horizontal
+    overflow. Screenshots captured at both widths.
+
+## 2026-11-25 - remove Instrument Serif and run on two families
+
+Instrument Serif is gone from the app, including the Studio. The Google Fonts
+request now loads only Inter (400/500/600) and JetBrains Mono (400/500).
+`--font-display` points at Inter, the `--lr-serif` tokens are removed, and the
+Studio headings use Inter 600. No serif references remain in the app source.
+
+- Files touched:
+  - `frontend/index.html` (font request)
+  - `frontend/src/styles/vintage.css` (`--font-display`)
+  - `frontend/src/styles/listening-room.css` (`--lr-serif`, Studio heading weight)
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend: the listener loads only Inter and
+    JetBrains Mono, and the only Google Fonts request contains those two
+    families. Logged into the Studio at 1440×1000: computed families there are
+    only Inter and JetBrains Mono, with Inter 600 headings and no horizontal
+    overflow. Screenshots captured of the listener and Studio.
+
+## 2026-11-25 - set section and popup titles in Inter
+
+The “Liner notes” section heading and every `.modal-title` (playlist about,
+confirm, changelog, track editor) now use Inter 600 instead of Instrument
+Serif. The liner heading is 1rem with −0.01em tracking; modal titles stay at
+1.5rem (1.3rem on phones) with −0.025em tracking. No new font was added.
+Instrument Serif remains for the Studio’s display headings.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1280×900 and 390×844: “Liner notes”
+    renders in Inter 600 at 16px, popup titles in Inter 600 at 24px (20.8px on
+    phones), one line, no overflow. Screenshots captured of the page and the
+    playlist popup at both widths.
+
+## 2026-11-25 - set track titles in Inter
+
+The now-playing track title now uses Inter at weight 600 (down slightly to
+`clamp(2.45rem, 4.7vw, 3.7rem)`, tracking −0.038em) instead of Instrument
+Serif. No new font was added: the change uses the project's existing Inter
+family and matches the wordmark and Studio deck. Instrument Serif still sets
+the section headings ("Liner notes", "Today's schedule").
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1280×900, 390×844, 360 and 320: the
+    title renders in Inter 600, one line, no clipping and no horizontal
+    overflow. Screenshots captured at desktop and 390px.
+
+## 2026-11-25 - remove the tagline and enlarge the now-playing kicker
+
+Dropped the editorial “A quiet room, a loud song.” line above the liner notes,
+along with its CSS and DOM test. The now-playing kicker (“Alt R&B /
+Neo-soulfunk · live now”) is now 0.68rem (10.88px, up from 9.6px) with slightly
+tighter tracking, so it reads more clearly without wrapping or clipping.
+
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/styles/listening-room.css`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass (the tagline test was removed)
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1280×900 and 390×844: the tagline is
+    gone, the kicker renders at 10.88px (294px wide, not clipped) and there is
+    no horizontal overflow. Screenshots captured at both widths.
+
+## 2026-11-24 - limit the project to three font families
+
+Removed Bricolage Grotesque and DM Mono from the Google Fonts request and from
+the root tokens. The project now uses three families: Inter (body, controls,
+wordmark), Instrument Serif (track titles and headings) and JetBrains Mono
+(labels, times, metadata). The listener and Studio wordmarks are now Inter with
+wide tracking instead of the serif, per the preview annotation. Un-themed
+vintage elements also resolve to the same three families, so no dead font
+requests remain.
+
+- Files touched:
+  - `frontend/index.html` (font request)
+  - `frontend/src/styles/vintage.css` (root font tokens)
+  - `frontend/src/styles/listening-room.css` (sans wordmarks)
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Desktop (1280×900) and mobile (390×844) screenshots checked against the
+    rebuilt Docker frontend: Inter wordmark, Instrument Serif title, JetBrains
+    Mono labels, no other families requested.
+
+## 2026-11-24 - return the vinyl face to black with the art as the centre label
+
+The record now looks like the original deck again: a black vinyl disc with
+concentric grooves, and the current track's artwork as a round centre label
+(42% of the disc, inset 29%) with a spindle hole and a thin cream ring. The
+artwork no longer fills the whole record. The same change applies to the Studio
+Now Playing deck. The square plinth, tonearm, and blurred room tint remain.
+
+- Files touched:
+  - `frontend/src/components/deck/TurntableDeck.tsx` (art stays on the label)
+  - `frontend/src/styles/listening-room.css` (black vinyl + label sizing)
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked in the rebuilt Docker frontend at 390px: black grooved disc,
+    129px round label (42% of the 308px record), artwork inside the label,
+    square plinth and tonearm unchanged, no horizontal overflow. A Playwright
+    screenshot was captured at 390×844.
+
+## 2026-11-24 - set the record player on a square plinth
+
+The Listening Room deck is now a square graphite plinth (18px radius,
+hairline edge, soft shadow). The artwork disc sits on a circular platter inset
+8%, with the dashed rotation ring around the platter and the tonearm pivot on
+the plinth's top-right corner. The arm idles at −2° and swings to 24° while
+playing. The Studio Now Playing deck uses the same plinth.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run build` — pass (CSS-only change; typecheck and the 373 tests were
+    unchanged from the previous commit)
+  - Checked in the rebuilt Docker frontend at desktop and 390px: square plinth
+    with 18px radius, platter inset 8%, pivot on the top-right corner, no
+    horizontal overflow. Screenshot captured at 390px.
+
+## 2026-11-24 - restore the tonearm on the artwork disc
+
+The Listening Room disc reads as a turntable again. It now has a slim cream
+tonearm on a graphite pivot mounted just outside the disc, a teal centre dot,
+and a dark headshell with a teal stylus line. The arm rests at 4° and swings to
+24° while the station is playing; the Studio Now Playing deck uses the same
+treatment. The RPM badges remain hidden.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run build` — pass (CSS-only change; typecheck and the 373 tests were
+    unchanged from the previous commit)
+  - Checked in the rebuilt Docker frontend at desktop and 390px: pivot and arm
+    are visible, the arm swings to 24°, the pivot stays inside the viewport and
+    there is no horizontal overflow.
+  - Screenshot captured at 390px: pivot outside the disc, arm over the artwork,
+    headshell near the centre label.
+
+## 2026-11-24 - rename the muted-state action to Stop listening
+
+The dock still starts with "Tune in", but the audible/muted-in state now reads
+"Stop listening" instead of "Tune out" — clearer for first-time listeners and
+screen readers, and less likely to be read as "tune out / ignore". The
+underlying action is unchanged: it mutes and unmutes the player.
+
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+
+## 2026-11-24 - bring the volume controls into the Listening Room
+
+The player dock's volume knob is now a graphite dial with a glowing teal
+indicator, and the horizontal fader is a hairline track with a teal fill and a
+round dot thumb. The fader's `--v` custom property moved from the thumb to the
+fader root so the fill can track the value. On phones the dock now swaps the
+decorative VU meter for the volume controls, keeping them reachable; the dock
+tokens also moved onto `body:has(.radio-page.listening-room)` because the dock
+is a sibling of `.radio-page`.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `frontend/src/components/deck/VolumeFader.tsx`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked in the rebuilt Docker frontend: at desktop the dock resolves the
+    teal tokens, a graphite 36px knob, a 12px teal thumb and a 2px fader
+    track; at 390px the volume controls are visible, the VU meter is hidden
+    and there is no horizontal overflow.
+
+## 2026-11-24 - apply the Listening Room to the Studio and popups
+
+Extended design option 3 beyond the listener page. The Studio now remaps the
+vintage tokens inside `.admin-page`: ink background, teal accent, cream text,
+Inter body, JetBrains Mono labels and Instrument Serif headings. The shell uses
+a serif wordmark, hairline header, quiet underline tabs, hairline cards/rows,
+teal primary buttons and focus rings. The Now Playing deck becomes the same
+artwork disc with teal VU bars. All popups (playlist about, confirm, changelog,
+track editor) and toasts use a blurred dark overlay with an ink panel and serif
+title. Mobile keeps the existing responsive layouts: scrolling tabs, a centred
+280px studio deck, a full-height track editor and `dvh`-capped popups.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css` (Studio + popup layer)
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Visual: Studio login and the listener playlist-about popup checked against
+    the running Docker frontend; the computed popup shell is #0f1518 with a
+    hairline border, Instrument Serif title and Inter body. Studio panels behind
+    the login require the admin password, so they were not screenshot-checked.
+
+## 2026-11-24 - add the Listening Room listener theme (design option 3)
+
+Reworked the public radio page into the "Listening Room" direction: the
+turntable becomes an artwork disc (the current track's thumbnail fills the
+record, with grooves overlaid and a blurred copy tinting the room), the hero
+uses Instrument Serif + Inter + JetBrains Mono, and the schedule, liner notes
+and floating player dock switch to the ink/cream/teal system. Scoped to
+`.radio-page.listening-room`, so the Studio keeps its existing vintage skin.
+The Studio reskin is a follow-up, not part of this change. The mockup's
+editorial line ("A quiet room, a loud song.") now renders above the liner
+notes; the mobile stack stretches the progress bar and schedule to full width,
+and the ambient artwork layer no longer causes horizontal scrolling.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css` (new theme layer)
+  - `frontend/src/main.tsx` (import the new stylesheet after `vintage.css`)
+  - `frontend/src/pages/RadioPage.tsx` (theme class, ambient layer, tagline)
+  - `frontend/src/pages/RadioPage.dom.test.tsx` (tagline test)
+  - `frontend/src/components/deck/TurntableDeck.tsx` (artwork on the record face)
+  - `frontend/index.html` (Instrument Serif, Inter, JetBrains Mono fonts)
+  - `docs/superpowers/mockups/2026-11-24-design-directions.html` (reference)
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md` (new spec)
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 373 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+
 ## 2026-11-20 - review the six prose-less tracks and push Sikat Na Si Pedro
 
 Reviewed the six records that had no summary or story. Five are cover,

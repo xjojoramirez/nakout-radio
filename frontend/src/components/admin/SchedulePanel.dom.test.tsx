@@ -113,6 +113,13 @@ async function openMonDay() {
   return group;
 }
 
+function chooseGenre(name: "Emo Night" | "NU Metal") {
+  const genre = genres.find((item) => item.name === name);
+  fireEvent.change(screen.getByLabelText("Genre"), {
+    target: { value: String(genre?.id) },
+  });
+}
+
 describe("SchedulePanel", () => {
   beforeEach(() => {
     mocked.listSlots.mockResolvedValue(slotsFixture());
@@ -266,8 +273,7 @@ describe("SchedulePanel", () => {
     fireEvent.click(screen.getByRole("button", { name: /Emo Night/ }));
     expect(await screen.findByText("Edit slot")).toBeInTheDocument();
     const form = screen.getByTestId("slot-form");
-    const chip = within(form).getByRole("radio", { name: "Emo Night" });
-    expect(chip).toHaveAttribute("aria-checked", "true");
+    expect(within(form).getByLabelText("Genre")).toHaveValue("1");
     expect(within(form).getByLabelText("Start time")).toHaveValue("06:00");
     for (const day of ["Mon", "Tue", "Wed", "Thu", "Fri"]) {
       expect(within(form).getByRole("button", { name: day })).toHaveAttribute(
@@ -303,11 +309,7 @@ describe("SchedulePanel", () => {
     fireEvent.click(
       within(form).getByRole("button", { name: "Weekdays" }),
     );
-    fireEvent.click(
-      within(
-        screen.getByRole("radiogroup", { name: "Genre" }),
-      ).getByRole("radio", { name: "Emo Night" }),
-    );
+    chooseGenre("Emo Night");
     expect(save).toBeEnabled();
     expect(screen.getByTestId("sentence")).toHaveTextContent(
       /Emo Night will start at 6:00 AM on weekdays and play until the next slot begins\./,
@@ -332,12 +334,7 @@ describe("SchedulePanel", () => {
       "false",
     );
     fireEvent.click(within(form).getByRole("button", { name: "Mon" }));
-    fireEvent.click(
-      within(screen.getByRole("radiogroup", { name: "Genre" })).getByRole(
-        "radio",
-        { name: "NU Metal" },
-      ),
-    );
+    chooseGenre("NU Metal");
     fireEvent.click(within(form).getByRole("button", { name: "Add slot" }));
     await waitFor(() =>
       expect(mocked.createSlot).toHaveBeenCalledWith({
@@ -361,11 +358,7 @@ describe("SchedulePanel", () => {
     const { onNotice, onError } = renderPanel();
     await screen.findByText(/On air:/);
     fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
-    fireEvent.click(
-      within(
-        screen.getByRole("radiogroup", { name: "Genre" }),
-      ).getByRole("radio", { name: "Emo Night" }),
-    );
+    chooseGenre("Emo Night");
     fireEvent.click(
       within(screen.getByTestId("slot-form")).getByRole("button", {
         name: "Add slot",
@@ -386,21 +379,13 @@ describe("SchedulePanel", () => {
     const { onNotice } = renderPanel();
     await screen.findByText(/On air:/);
     fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
-    fireEvent.click(
-      within(
-        screen.getByRole("radiogroup", { name: "Genre" }),
-      ).getByRole("radio", { name: "Emo Night" }),
-    );
+    chooseGenre("Emo Night");
     const form = await screen.findByTestId("slot-form");
     fireEvent.click(within(form).getByRole("button", { name: "Add slot" }));
     expect(
       await screen.findByText(/already starts at 06:00/),
     ).toBeInTheDocument();
-    fireEvent.click(
-      within(
-        screen.getByRole("radiogroup", { name: "Genre" }),
-      ).getByRole("radio", { name: "NU Metal" }),
-    );
+    chooseGenre("NU Metal");
     expect(
       screen.queryByText(/already starts at 06:00/),
     ).not.toBeInTheDocument();
@@ -435,11 +420,7 @@ describe("SchedulePanel", () => {
     await screen.findByText(/On air:/);
     fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
     await screen.findByTestId("slot-form");
-    fireEvent.click(
-      within(
-        screen.getByRole("radiogroup", { name: "Genre" }),
-      ).getByRole("radio", { name: "Emo Night" }),
-    );
+    chooseGenre("Emo Night");
     expect(screen.getByTestId("sentence")).toHaveTextContent(/will start at/);
     fireEvent.click(
       within(
@@ -562,24 +543,15 @@ describe("SchedulePanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Add the first slot" }));
     expect(await screen.findByTestId("slot-form")).toBeInTheDocument();
     expect(screen.getByLabelText("Start time")).toHaveValue("06:00");
-    fireEvent.click(
-      within(
-        screen.getByRole("radiogroup", { name: "Genre" }),
-      ).getByRole("radio", { name: "Emo Night" }),
-    );
+    chooseGenre("Emo Night");
     expect(screen.getByTestId("sentence")).toHaveTextContent(
       /will start at 6:00 AM/,
     );
   });
 
-  it("prefills the genre from the initialGenre intent and consumes it once", async () => {
+  it("opens with the genre prefilled from the initialGenre intent and consumes it once", async () => {
     const { onIntentConsumed } = renderPanel({ initialGenre: 2 });
-    await screen.findByText(/On air:/);
-    fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
-    const chip = within(
-      screen.getByRole("radiogroup", { name: "Genre" }),
-    ).getByRole("radio", { name: "NU Metal" });
-    expect(chip).toHaveAttribute("aria-checked", "true");
+    expect(await screen.findByLabelText("Genre")).toHaveValue("2");
     expect(onIntentConsumed).toHaveBeenCalledTimes(1);
   });
 
@@ -644,5 +616,62 @@ describe("SchedulePanel", () => {
     fireEvent.click(tl, { clientX: 361, clientY: 20 });
     expect(await screen.findByTestId("slot-form")).toBeInTheDocument();
     expect(screen.getByLabelText("Start time")).toHaveValue("06:00");
+  });
+
+  it("shows the computed end time and next slot in the editor preview", async () => {
+    renderPanel();
+    fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
+    const form = await screen.findByTestId("slot-form");
+    chooseGenre("Emo Night");
+    fireEvent.click(within(form).getByRole("button", { name: "Weekdays" }));
+    fireEvent.change(within(form).getByLabelText("Start time"), {
+      target: { value: "07:00" },
+    });
+
+    const preview = within(form)
+      .getByText("Preview")
+      .closest(".sform-preview") as HTMLElement;
+    expect(preview).toHaveTextContent("7:00 AM");
+    expect(preview).toHaveTextContent("9:30 AM");
+    expect(preview).toHaveTextContent("2h 30m");
+    expect(preview).toHaveTextContent("Next: NU Metal at 9:30 AM.");
+    expect(preview).toHaveTextContent(
+      "Other selected days end at a different time.",
+    );
+  });
+
+  it("warns when another slot starts at the same time", async () => {
+    renderPanel();
+    fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
+    const form = await screen.findByTestId("slot-form");
+    chooseGenre("Emo Night");
+    fireEvent.click(within(form).getByRole("button", { name: "Weekdays" }));
+    fireEvent.change(within(form).getByLabelText("Start time"), {
+      target: { value: "09:30" },
+    });
+
+    expect(await within(form).findByRole("status")).toHaveTextContent(
+      /another slot already starts at 9:30 AM on Mon\./,
+    );
+  });
+
+  it("deletes the slot from inside the editor and closes it", async () => {
+    mocked.deleteSlot.mockResolvedValue({ status: "deleted" });
+    renderPanel();
+    await screen.findByText(/On air:/);
+    fireEvent.click(
+      screen.getAllByRole("button", { name: /Emo Night, 6:00 AM/ })[0],
+    );
+    const form = await screen.findByTestId("slot-form");
+    fireEvent.click(within(form).getByRole("button", { name: "Delete slot" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
+
+    await waitFor(() =>
+      expect(mocked.deleteSlot).toHaveBeenCalledWith(1),
+    );
+    await waitFor(() =>
+      expect(screen.queryByTestId("slot-form")).not.toBeInTheDocument(),
+    );
   });
 });

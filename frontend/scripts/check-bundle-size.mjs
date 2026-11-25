@@ -15,7 +15,7 @@ const DIST = fileURLToPath(new URL("../dist/", import.meta.url));
 
 const BUDGET_KB = {
   ".js": Number(process.env.BUNDLE_JS_BUDGET_KB ?? 95),
-  ".css": Number(process.env.BUNDLE_CSS_BUDGET_KB ?? 13),
+  ".css": Number(process.env.BUNDLE_CSS_BUDGET_KB ?? 19),
 };
 
 function walk(dir) {

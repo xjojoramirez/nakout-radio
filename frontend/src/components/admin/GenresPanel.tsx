@@ -4,6 +4,7 @@ import { api } from "../../api/client";
 import { messageFor } from "../../utils/errors";
 import { GENRE_PALETTE } from "../../palette";
 import { ConfirmDialog } from "../ConfirmDialog";
+import { AddPlaylistDialog } from "./AddPlaylistDialog";
 import { PaletteSwatches } from "./PaletteSwatches";
 import type { Genre } from "../../types";
 
@@ -60,6 +61,8 @@ export function GenresPanel({
   });
   const [pendingDelete, setPendingDelete] = useState<Genre | null>(null);
   const [flashId, setFlashId] = useState<number | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [addGenreId, setAddGenreId] = useState<number | null>(null);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -93,9 +96,8 @@ export function GenresPanel({
       setDescription("");
       setSlugTouched(false);
       setColor(nextColor([...genres.map((g) => g.color), color]));
-      onNotice(
-        `${created.name} added. Add a playlist and a schedule slot to put it on air.`,
-      );
+      onNotice(`${created.name} added. Next: add a Nakout playlist.`);
+      setFormOpen(false);
       await onGenresChanged();
       flash(created.id);
     } catch (err) {
@@ -147,7 +149,7 @@ export function GenresPanel({
     try {
       const tracks = await api.genreTracks(genre.id);
       if (!tracks.length) {
-        onError(`"${genre.name}" has no tracks yet. Add a playlist.`);
+        onError(`"${genre.name}" has no tracks yet. Add a Nakout playlist.`);
         return;
       }
       await api.play(genre.id, tracks[0].youtube_video_id);
@@ -160,80 +162,105 @@ export function GenresPanel({
 
   return (
     <section className="admin-panel" aria-label="Genres">
-      <div>
-        <h2 className="sec">Genres</h2>
-        <p className="sub">
-          A genre is a mood. Playlists feed it, and the schedule decides when it
-          plays.
-        </p>
+      <div className="head">
+        <div>
+          <h2 className="sec">Genres</h2>
+          <p className="sub">
+            A genre is a mood. Nakout playlists feed it, and the schedule decides
+            when it plays.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="btn btn-primary"
+          aria-expanded={formOpen}
+          onClick={() => setFormOpen((open) => !open)}
+        >
+          {formOpen ? "Close" : "+ New genre"}
+        </button>
       </div>
 
-      <form
-        className="card gform"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void addGenre();
-        }}
-      >
-        <h3 className="ttl">New genre</h3>
-        <div className="gf-grid">
-          <label className="field">
-            Name
-            <input
-              aria-label="Genre name"
-              placeholder="e.g. Sunday Acoustic"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (!slugTouched) setSlug(slugify(e.target.value));
-              }}
-            />
-          </label>
-          <label className="field">
-            Short code
-            <span className="pre">
-              <span>/</span>
+      {formOpen && (
+        <form
+          className="card gform"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void addGenre();
+          }}
+        >
+          <h3 className="ttl">New genre</h3>
+          <div className="gf-grid">
+            <label className="field">
+              Name
               <input
-                aria-label="Genre slug"
-                placeholder="sundayacoustic"
-                value={slug}
+                aria-label="Genre name"
+                placeholder="e.g. Sunday Acoustic"
+                value={name}
                 onChange={(e) => {
-                  setSlug(e.target.value);
-                  setSlugTouched(e.target.value.trim() !== "");
+                  setName(e.target.value);
+                  if (!slugTouched) setSlug(slugify(e.target.value));
                 }}
               />
-            </span>
+            </label>
+            <label className="field">
+              Short code
+              <span className="pre">
+                <span>/</span>
+                <input
+                  aria-label="Genre slug"
+                  placeholder="sundayacoustic"
+                  value={slug}
+                  onChange={(e) => {
+                    setSlug(e.target.value);
+                    setSlugTouched(e.target.value.trim() !== "");
+                  }}
+                />
+              </span>
+            </label>
+          </div>
+          <label className="field">
+            Description
+            <textarea
+              aria-label="Genre description"
+              placeholder="What listeners will hear, in one or two sentences."
+              rows={3}
+              maxLength={500}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </label>
-        </div>
-        <label className="field">
-          Description
-          <textarea
-            aria-label="Genre description"
-            placeholder="What listeners will hear, in one or two sentences."
-            rows={3}
-            maxLength={500}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+          <div className="hint">
+            Shown to listeners when they open this genre.
+          </div>
+          <div className="lab">Colour</div>
+          <PaletteSwatches
+            label="Genre colour"
+            value={color}
+            onChange={setColor}
           />
-        </label>
-        <div className="hint">
-          Shown to listeners when they open this playlist.
-        </div>
-        <div className="lab">Colour</div>
-        <PaletteSwatches label="Genre colour" value={color} onChange={setColor} />
-        <div>
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={!name.trim() || !slug.trim()}
-          >
-            Add genre
-          </button>
-        </div>
-      </form>
+          <div>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={!name.trim() || !slug.trim()}
+            >
+              Add genre
+            </button>
+          </div>
+        </form>
+      )}
 
       {genres.length === 0 ? (
-        <div className="empty">No genres yet. Create your first one above.</div>
+        <div className="empty">
+          No genres yet. Create your first one.
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => setFormOpen(true)}
+          >
+            New genre
+          </button>
+        </div>
       ) : (
         <div className="ggrid">
           {genres.map((g) =>
@@ -290,7 +317,7 @@ export function GenresPanel({
                     />
                   </label>
                   <div className="hint">
-                    Shown to listeners when they open this playlist.
+                    Shown to listeners when they open this genre.
                   </div>
                   <label className="field field-inline">
                     <input
@@ -356,31 +383,29 @@ export function GenresPanel({
                   {g.is_default && <span className="chip">default</span>}
                 </div>
                 {g.track_count === 0 && (
-                  <div className="gwarn">
-                    <span className="chip warn">No playlists</span>
-                    <button
-                      type="button"
-                      className="btn-link"
-                      aria-label={`Add playlist to ${g.name}`}
-                      onClick={() =>
-                        onJump?.("playlists", { playlistsGenre: g.id })
-                      }
-                    >
-                      Add one
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-link"
-                      aria-label={`Schedule ${g.name}`}
-                      onClick={() =>
-                        onJump?.("schedule", { scheduleGenre: g.id })
-                      }
-                    >
-                      Schedule it
-                    </button>
+                  <div className="gnext">
+                    No Nakout playlists yet. Add one to get this genre on air.
                   </div>
                 )}
                 <div className="gact">
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    aria-label={`Add playlist to ${g.name}`}
+                    onClick={() => setAddGenreId(g.id)}
+                  >
+                    Add Nakout playlist
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    aria-label={`Schedule ${g.name}`}
+                    onClick={() =>
+                      onJump?.("schedule", { scheduleGenre: g.id })
+                    }
+                  >
+                    Schedule
+                  </button>
                   <button
                     type="button"
                     className="btn btn-secondary btn-sm"
@@ -389,9 +414,10 @@ export function GenresPanel({
                   >
                     Play now
                   </button>
+                  <span className="sp" />
                   <button
                     type="button"
-                    className="btn btn-secondary btn-sm"
+                    className="btn-link"
                     aria-label={`Edit ${g.name}`}
                     onClick={() => startEdit(g)}
                   >
@@ -399,7 +425,7 @@ export function GenresPanel({
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger btn-sm"
+                    className="btn-link danger"
                     aria-label={`Delete ${g.name}`}
                     onClick={() => setPendingDelete(g)}
                   >
@@ -415,7 +441,7 @@ export function GenresPanel({
       {pendingDelete && (
         <ConfirmDialog
           title="Delete genre"
-          message={`Delete “${pendingDelete.name}” and its playlists and schedule slots? Tracks stay in the library.`}
+          message={`Delete “${pendingDelete.name}” and its Nakout playlists and schedule slots? Tracks stay in the library.`}
           confirmLabel="Delete"
           danger
           onConfirm={() => {
@@ -424,6 +450,22 @@ export function GenresPanel({
             void removeGenre(genre);
           }}
           onCancel={() => setPendingDelete(null)}
+        />
+      )}
+
+      {addGenreId != null && (
+        <AddPlaylistDialog
+          key={addGenreId}
+          genres={genres}
+          lockedGenreId={addGenreId}
+          onClose={() => setAddGenreId(null)}
+          onAdded={async () => {
+            await onGenresChanged();
+          }}
+          onSchedule={(genreId) => {
+            setAddGenreId(null);
+            onJump?.("schedule", { scheduleGenre: genreId });
+          }}
         />
       )}
     </section>

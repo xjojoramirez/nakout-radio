@@ -36,6 +36,7 @@ vi.mock("../api/client", async () => {
       listPlaylists: vi.fn(),
       refreshPlaylist: vi.fn(),
       deletePlaylist: vi.fn(),
+      updatePlaylist: vi.fn(),
       genreTracks: vi.fn(),
       genreQueue: vi.fn(),
       play: vi.fn(),
@@ -111,7 +112,9 @@ describe("AdminPage", () => {
     expect(
       screen.getByRole("tab", { name: /^Now Playing/ }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /^Playlists/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /^Nakout playlists/ }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /^Schedule/ })).toBeInTheDocument();
   });
 
@@ -195,6 +198,7 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Genres/ }));
+    fireEvent.click(screen.getByRole("button", { name: "+ New genre" }));
     fireEvent.change(screen.getByPlaceholderText("e.g. Sunday Acoustic"), {
       target: { value: "Chill" },
     });
@@ -271,7 +275,7 @@ describe("AdminPage", () => {
     await waitFor(() => expect(mocked.deleteGenre).toHaveBeenCalledWith(1));
   });
 
-  it("jumps from a genre card to the playlists tab via the quick link", async () => {
+  it("opens the add playlist dialog from a genre card", async () => {
     mocked.login.mockResolvedValue({ status: "ok" });
     mocked.listGenres.mockResolvedValue([
       {
@@ -286,11 +290,15 @@ describe("AdminPage", () => {
     render(<AdminPage />);
     await login();
     fireEvent.click(screen.getByRole("tab", { name: /^Genres/ }));
-    fireEvent.click(await screen.findByText("Add one"));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Add playlist to Chill" }),
+    );
     expect(
-      await screen.findByRole("tabpanel"),
-    ).toHaveAttribute("id", "panel-playlists");
-    expect(await screen.findByText("Your playlists")).toBeInTheDocument();
+      await screen.findByRole("heading", { name: "Add to Chill" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tabpanel"),
+    ).toHaveAttribute("id", "panel-genres");
   });
 
   it("logs out and returns to the login screen", async () => {
@@ -317,14 +325,17 @@ describe("AdminPage", () => {
     });
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Nakout playlists/ }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "+ Add Nakout playlist" }),
+    );
     await screen.findByLabelText("YouTube playlist link");
     fireEvent.change(screen.getByLabelText("YouTube playlist link"), {
       target: { value: "https://www.youtube.com/playlist?list=PL1" },
     });
     const radioGroup = screen.getByRole("radiogroup", { name: "Genre" });
     fireEvent.click(within(radioGroup).getByRole("radio", { name: "Chill" }));
-    fireEvent.click(screen.getByRole("button", { name: "Add playlist" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add to Chill" }));
     await waitFor(() =>
       expect(mocked.createPlaylist).toHaveBeenCalledWith(
         1,
@@ -333,8 +344,8 @@ describe("AdminPage", () => {
       ),
     );
     expect(
-      await screen.findByRole("status"),
-    ).toHaveTextContent(/Playlist synced \(3 tracks\)/);
+      await screen.findByText("Nakout playlist added to Chill."),
+    ).toBeInTheDocument();
   });
 
   it("lists added playlists with genre and track count", async () => {
@@ -355,11 +366,13 @@ describe("AdminPage", () => {
     ]);
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
-    expect(await screen.findByText("PL1")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: /^Nakout playlists/ }));
+    expect(
+      await screen.findByRole("link", { name: "Nakout playlist" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("4 tracks")).toBeInTheDocument();
     expect(
-      screen.getByRole("tab", { name: /^Playlists/ }),
+      screen.getByRole("tab", { name: /^Nakout playlists/ }),
     ).toHaveTextContent("1");
   });
 
@@ -383,9 +396,9 @@ describe("AdminPage", () => {
     mocked.deletePlaylist.mockResolvedValue({ status: "deleted" });
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
-    await screen.findByText("PL1");
-    fireEvent.click(screen.getByText("Refresh"));
+    fireEvent.click(screen.getByRole("tab", { name: /^Nakout playlists/ }));
+    await screen.findByRole("link", { name: "Nakout playlist" });
+    fireEvent.click(screen.getByText("Sync"));
     await waitFor(() =>
       expect(mocked.refreshPlaylist).toHaveBeenCalledWith(9),
     );
@@ -416,13 +429,18 @@ describe("AdminPage", () => {
     ]);
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
-    fireEvent.click(screen.getByRole("button", { name: "From your channel" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Nakout playlists/ }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "+ Add Nakout playlist" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "From the Nakout channel" }),
+    );
     await screen.findByPlaceholderText("@handle or channel URL");
     fireEvent.change(screen.getByPlaceholderText("@handle or channel URL"), {
       target: { value: "@me" },
     });
-    fireEvent.click(screen.getByText("Save channel"));
+    fireEvent.click(screen.getByText("Connect channel"));
     await waitFor(() =>
       expect(mocked.setChannelSource).toHaveBeenCalledWith("@me"),
     );
@@ -456,13 +474,23 @@ describe("AdminPage", () => {
     });
     render(<AdminPage />);
     await login();
-    fireEvent.click(screen.getByRole("tab", { name: /^Playlists/ }));
-    fireEvent.click(screen.getByRole("button", { name: "From your channel" }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Nakout playlists/ }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "+ Add Nakout playlist" }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "From the Nakout channel" }),
+    );
     await screen.findByText("New One");
     fireEvent.change(screen.getByLabelText("Genre for New One"), {
       target: { value: "1" },
     });
-    fireEvent.click(screen.getByText("Add"));
+    fireEvent.click(
+      within(screen.getByText("New One").closest(".pcard") as HTMLElement).getByRole(
+        "button",
+        { name: "Add" },
+      ),
+    );
     await waitFor(() =>
       expect(mocked.createPlaylist).toHaveBeenCalledWith(
         1,
@@ -470,9 +498,7 @@ describe("AdminPage", () => {
         "",
       ),
     );
-    expect(
-      await screen.findByRole("status"),
-    ).toHaveTextContent(/Playlist synced \(5 tracks\)/);
+    expect(await screen.findByText("Added to Chill.")).toBeInTheDocument();
   });
 
   it("adds a schedule slot and refreshes the list", async () => {
@@ -486,10 +512,9 @@ describe("AdminPage", () => {
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
     await screen.findByText(/Each slot starts a genre/);
     fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
-    const radioGroup = await screen.findByRole("radiogroup", {
-      name: "Genre",
+    fireEvent.change(await screen.findByLabelText("Genre"), {
+      target: { value: "1" },
     });
-    fireEvent.click(within(radioGroup).getByRole("radio", { name: "Chill" }));
     fireEvent.click(
       within(await screen.findByTestId("slot-form")).getByRole("button", {
         name: "Add slot",
@@ -518,10 +543,9 @@ describe("AdminPage", () => {
     fireEvent.click(screen.getByRole("tab", { name: /^Schedule/ }));
     await screen.findByText(/Each slot starts a genre/);
     fireEvent.click(screen.getByRole("button", { name: "+ Add slot" }));
-    const radioGroup = await screen.findByRole("radiogroup", {
-      name: "Genre",
+    fireEvent.change(await screen.findByLabelText("Genre"), {
+      target: { value: "1" },
     });
-    fireEvent.click(within(radioGroup).getByRole("radio", { name: "Chill" }));
     fireEvent.click(
       within(await screen.findByTestId("slot-form")).getByRole("button", {
         name: "Add slot",

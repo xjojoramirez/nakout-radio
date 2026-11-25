@@ -141,8 +141,8 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
       const failedSync = result.results.filter((r) => r.error).length;
       onNotice(
         failedSync === 0
-          ? `Synced ${result.results.length} playlist(s).`
-          : `Synced ${result.results.length - failedSync} of ${result.results.length} playlist(s); ${failedSync} failed.`,
+          ? `Synced ${result.results.length} Nakout playlist(s).`
+          : `Synced ${result.results.length - failedSync} of ${result.results.length} Nakout playlist(s); ${failedSync} failed.`,
       );
     } catch (err) {
       onError(messageFor(err));
@@ -249,7 +249,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
           Syncing
         </span>
       )}
-      Sync all playlists
+      Sync Nakout playlists
     </button>
   );
 
@@ -372,6 +372,7 @@ export function NowPlayingPanel({ genres, onNotice, onError }: Props) {
             <button
               type="button"
               className="btn btn-secondary"
+              title="Follow the schedule at the next slot"
               onClick={goAuto}
               disabled={
                 state == null ||

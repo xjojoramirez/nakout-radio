@@ -1,0 +1,2376 @@
+/* ============================================================
+   Listening Room — theme tokens
+
+   Dark is the default. [data-theme="light"] re-colours the whole
+   app (listener + Studio) with the Sea Glass palette. The deck
+   and vinyl stay graphite in both themes: they are the object.
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+
+  --lr-bg: #090b0e;
+  --lr-bg-soft: #0d1316;
+  --lr-surface: #0f1518;
+  --lr-surface-2: #121a1d;
+  --lr-surface-3: #0a0f11;
+  --lr-well: #0b1013;
+  --lr-field: #0b1114;
+  --lr-ink: #e9e4d8;
+  --lr-soft: #c9cfd4;
+  --lr-muted: #8f979e;
+  --lr-dim: #6f7981;
+  --lr-teal: #79c7b8;
+  --lr-teal-strong: #9ddbd0;
+  --lr-teal-soft: rgba(121, 199, 184, 0.14);
+  --lr-teal-faint: rgba(121, 199, 184, 0.06);
+  --lr-teal-line: rgba(121, 199, 184, 0.35);
+  --lr-line: rgba(233, 228, 216, 0.09);
+  --lr-line-strong: rgba(233, 228, 216, 0.18);
+  --lr-raise: #ffffff;
+  --lr-led-off: #33403f;
+  --lr-on-teal: #08110f;
+  --lr-danger: #ff9d8a;
+  --lr-danger-soft: rgba(255, 157, 138, 0.12);
+  --lr-danger-line: rgba(255, 157, 138, 0.35);
+  --lr-danger-text: #ffc1b5;
+  --lr-danger-text-strong: #ffd8d0;
+  --lr-ok: #9fd9a8;
+  --lr-ok-soft: rgba(159, 217, 168, 0.12);
+  --lr-input-line: #233137;
+  --lr-input-line-strong: #31454d;
+  --lr-dock: rgba(16, 21, 24, 0.84);
+  --lr-overlay: rgba(4, 7, 8, 0.72);
+  --lr-scrim: rgba(4, 7, 8, 0.66);
+  --lr-glow-teal: rgba(121, 199, 184, 0.1);
+  --lr-glow-warm: rgba(111, 74, 58, 0.16);
+  --lr-placeholder: #5f6c73;
+  --lr-sans: "Inter", system-ui, "Segoe UI", sans-serif;
+  --lr-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --lr-bg: #aec2a9;
+  --lr-bg-soft: #a4b9a0;
+  --lr-surface: #e7f1e4;
+  --lr-surface-2: #dbe8d7;
+  --lr-surface-3: #abc0a5;
+  --lr-well: #dbe8d7;
+  --lr-field: #f1f9ee;
+  --lr-ink: #0b1710;
+  --lr-soft: #2a3f31;
+  --lr-muted: #384e3f;
+  --lr-dim: #3b5142;
+  --lr-teal: #19462e;
+  --lr-teal-strong: #123a23;
+  --lr-teal-soft: rgba(25, 70, 46, 0.15);
+  --lr-teal-faint: rgba(25, 70, 46, 0.065);
+  --lr-teal-line: rgba(25, 70, 46, 0.42);
+  --lr-line: rgba(11, 23, 16, 0.17);
+  --lr-line-strong: rgba(11, 23, 16, 0.32);
+  --lr-raise: #0b1710;
+  --lr-led-off: #b3c5b0;
+  --lr-on-teal: #ffffff;
+  --lr-danger: #a33826;
+  --lr-danger-soft: rgba(163, 56, 38, 0.08);
+  --lr-danger-line: rgba(163, 56, 38, 0.32);
+  --lr-danger-text: #892e1f;
+  --lr-danger-text-strong: #6a2317;
+  --lr-ok: #2f7d46;
+  --lr-ok-soft: rgba(47, 125, 70, 0.1);
+  --lr-input-line: #aec4a8;
+  --lr-input-line-strong: #8ca686;
+  --lr-dock: rgba(232, 242, 229, 0.66);
+  --lr-overlay: rgba(22, 35, 26, 0.4);
+  --lr-scrim: rgba(22, 35, 26, 0.34);
+  --lr-glow-teal: rgba(42, 90, 54, 0.34);
+  --lr-glow-warm: rgba(130, 150, 106, 0.26);
+  --lr-placeholder: #526759;
+  --lr-glass-bg: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.62) 0%,
+    rgba(255, 255, 255, 0.24) 42%,
+    rgba(168, 194, 162, 0.34) 100%
+  );
+  --lr-glass-rim: rgba(255, 255, 255, 0.68);
+  --lr-glass-shadow:
+    0 26px 60px rgba(18, 42, 26, 0.17),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(166, 198, 164, 0.3);
+}
+
+.radio-page.listening-room {
+  position: relative;
+  isolation: isolate;
+  width: min(1160px, 94vw);
+  margin-inline: auto;
+  gap: 0;
+  padding: 24px 0;
+  color: var(--lr-ink);
+  font-family: var(--lr-sans);
+}
+
+html:has(.radio-page.listening-room) {
+  overflow-x: clip;
+}
+
+body:has(.radio-page.listening-room) {
+  place-items: center center;
+  overflow-x: clip;
+  padding-block: 34px calc(112px + env(safe-area-inset-bottom, 0px));
+  background:
+    radial-gradient(1100px 620px at 64% -12%, var(--lr-glow-teal), transparent 62%),
+    radial-gradient(900px 520px at 4% 6%, var(--lr-glow-warm), transparent 58%),
+    var(--lr-bg);
+}
+
+/* The blurred artwork behind the fold. It is full-bleed and unframed so it
+   dissolves into the browser background; the artwork sits in a blurred
+   pseudo-element. */
+.radio-page.listening-room .lr-ambient {
+  position: absolute;
+  z-index: -1;
+  top: -60px;
+  left: 50%;
+  width: calc(100vw + 24px);
+  height: 620px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, #000 0 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0 55%, transparent 100%);
+}
+
+.radio-page.listening-room .lr-ambient::before {
+  content: "";
+  position: absolute;
+  inset: -60px;
+  background-image: var(--lr-art);
+  background-position: center;
+  background-size: cover;
+  filter: blur(90px) saturate(0.75) brightness(0.7);
+  opacity: 0.24;
+}
+
+/* ---------- Header ---------- */
+
+.radio-page.listening-room .radio-top {
+  align-items: center;
+  padding: 0 2px 24px;
+  margin-bottom: 34px;
+  border-bottom: 1px solid var(--lr-line);
+}
+
+.radio-page.listening-room .brand {
+  font-family: var(--lr-sans);
+  font-weight: 500;
+  font-size: 0.86rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--lr-ink);
+}
+
+.radio-page.listening-room .onair {
+  font-family: var(--lr-mono);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  color: var(--lr-muted);
+}
+
+.radio-page.listening-room .led {
+  width: 7px;
+  height: 7px;
+  background: var(--lr-led-off);
+}
+
+.radio-page.listening-room .led.on {
+  background: var(--lr-teal);
+  box-shadow: 0 0 12px 2px color-mix(in srgb, var(--lr-teal) 55%, transparent);
+}
+
+/* ---------- Hero: artwork disc + now playing ---------- */
+
+.radio-page.listening-room .deck-grid {
+  grid-template-columns: minmax(0, 344px) minmax(0, 1fr);
+  gap: 58px;
+  align-items: start;
+}
+
+.radio-page.listening-room .deck-side {
+  padding-top: 10px;
+}
+
+.radio-page.listening-room .deck {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 18px;
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.055), transparent 42%),
+    linear-gradient(155deg, #121a1d, #0a0f11 72%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(233, 228, 216, 0.08),
+    0 30px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* Rotation ring on the plinth, around the platter. */
+.radio-page.listening-room .deck::after {
+  content: "";
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  border: 1px dashed rgba(121, 199, 184, 0.22);
+  pointer-events: none;
+}
+
+.radio-page.listening-room .platter {
+  inset: 8%;
+  left: 8%;
+  top: 8%;
+  width: auto;
+  height: auto;
+  border-radius: 50%;
+  background: #0b1013;
+  box-shadow:
+    inset 0 0 0 1px rgba(233, 228, 216, 0.12),
+    0 14px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.radio-page.listening-room .record {
+  inset: 0;
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.032) 0 1px,
+      transparent 1px 3px
+    ),
+    radial-gradient(circle at center, #1b1411 0 40%, #0c0807 41% 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(233, 228, 216, 0.1),
+    0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* Slightly stronger grooves over the vinyl. */
+.radio-page.listening-room .record::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.04) 0 1px,
+    transparent 1px 4px
+  );
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.radio-page.listening-room .record::after {
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 0 28%,
+      rgba(255, 255, 255, 0.06) 28.5% 29%,
+      transparent 29.5%
+    ),
+    radial-gradient(
+      circle at 32% 24%,
+      rgba(255, 255, 255, 0.1),
+      transparent 42%
+    );
+}
+
+/* The album art is the round centre label; the vinyl around it stays black. */
+.radio-page.listening-room .record .label {
+  inset: 29%;
+  background-color: #12100e;
+  background-position: center;
+  background-size: 177.78% auto;
+  box-shadow:
+    0 0 0 1px rgba(233, 228, 216, 0.24),
+    0 0 0 10px rgba(0, 0, 0, 0.28);
+}
+
+.radio-page.listening-room .record .label::after {
+  width: 10%;
+  background: #0b0e10;
+  box-shadow: 0 0 0 2px rgba(233, 228, 216, 0.3);
+}
+
+.radio-page.listening-room .sheen {
+  inset: 0;
+  background: conic-gradient(
+    from 210deg,
+    transparent 0 18%,
+    rgba(121, 199, 184, 0.14) 27%,
+    transparent 40% 100%
+  );
+}
+
+.radio-page.listening-room .deck-rpm {
+  display: none;
+}
+
+/* A quiet tonearm keeps the record reading as a turntable: pivot just
+   outside the disc, thin cream arm, graphite headshell with a teal stylus. */
+
+.radio-page.listening-room .pivot {
+  z-index: 3;
+  left: 94%;
+  top: 8%;
+  width: 8.5%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle at 35% 30%, #31474d, #0a0f11 72%);
+  box-shadow:
+    inset 0 0 0 1px rgba(233, 228, 216, 0.2),
+    0 8px 18px rgba(0, 0, 0, 0.5);
+}
+
+.radio-page.listening-room .pivot::after {
+  content: "";
+  position: absolute;
+  inset: 38%;
+  border-radius: 50%;
+  background: var(--lr-teal);
+  opacity: 0.7;
+  box-shadow: 0 0 8px rgba(121, 199, 184, 0.6);
+}
+
+.radio-page.listening-room .arm {
+  display: block;
+  z-index: 2;
+  left: 94%;
+  top: 8%;
+  width: 3px;
+  height: 56%;
+  margin-left: -1.5px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #8f979e,
+    #e9e4d8 45%,
+    #aab3b8
+  );
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  transform: rotate(-2deg);
+  pointer-events: none;
+}
+
+.radio-page.listening-room .deck.playing .arm {
+  transform: rotate(24deg);
+}
+
+.radio-page.listening-room .arm::before {
+  inset: 0;
+  border-radius: 999px;
+  background: inherit;
+  box-shadow: none;
+}
+
+.radio-page.listening-room .arm::after {
+  left: 50%;
+  bottom: -12px;
+  width: 16px;
+  height: 26px;
+  transform: translateX(-50%);
+  border-radius: 4px;
+  background: linear-gradient(180deg, #1c2a2e, #0a0f11);
+  box-shadow:
+    inset 0 0 0 1px rgba(121, 199, 184, 0.35),
+    inset 0 -3px 0 rgba(121, 199, 184, 0.5);
+}
+
+/* ---------- Now playing ---------- */
+
+.radio-page.listening-room .np-col {
+  gap: 24px;
+  padding-top: 24px;
+}
+
+.radio-page.listening-room .sleeve {
+  display: block;
+}
+
+.radio-page.listening-room .np-cover {
+  display: none;
+}
+
+.radio-page.listening-room .kicker {
+  font-family: var(--lr-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: var(--lr-teal);
+}
+
+.radio-page.listening-room .kicker-btn:hover,
+.radio-page.listening-room .kicker-btn:focus-visible {
+  color: var(--lr-ink);
+}
+
+.radio-page.listening-room .np-title {
+  margin: 14px 0 8px;
+  font-family: var(--lr-sans);
+  font-weight: 600;
+  font-size: clamp(2.45rem, 4.7vw, 3.7rem);
+  line-height: 1;
+  letter-spacing: -0.038em;
+  color: var(--lr-ink);
+}
+
+.radio-page.listening-room .np-artist {
+  color: var(--lr-soft);
+  font-size: 0.86rem;
+  letter-spacing: 0.03em;
+}
+
+.radio-page.listening-room .np-facts {
+  margin-top: 10px;
+  font-family: var(--lr-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lr-dim);
+}
+
+.radio-page.listening-room .np-progress {
+  margin-top: 4px;
+}
+
+.radio-page.listening-room .np-bar {
+  height: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--lr-ink) 14%, transparent);
+}
+
+.radio-page.listening-room .np-bar-fill {
+  background: var(--lr-teal);
+  border-radius: 2px;
+}
+
+.radio-page.listening-room .np-times {
+  margin-top: 8px;
+  font-family: var(--lr-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--lr-muted);
+}
+
+/* ---------- Liner notes ---------- */
+
+.radio-page.listening-room .liner {
+  gap: 12px;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--lr-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--lr-raise) 3.2%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.radio-page.listening-room .liner-head h2 {
+  font-family: var(--lr-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--lr-ink);
+}
+
+.radio-page.listening-room .liner-kicker {
+  font-family: var(--lr-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.18em;
+  color: var(--lr-teal);
+  opacity: 0.85;
+}
+
+.radio-page.listening-room .liner-tabs {
+  border-bottom-color: var(--lr-line);
+}
+
+.radio-page.listening-room .liner-tabs button {
+  font-family: var(--lr-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: var(--lr-muted);
+}
+
+.radio-page.listening-room .liner-tabs button:hover {
+  color: var(--lr-ink);
+}
+
+.radio-page.listening-room .liner-tabs button[aria-selected="true"] {
+  color: var(--lr-ink);
+  border-bottom-color: var(--lr-teal);
+}
+
+.radio-page.listening-room .liner-tabs button:focus-visible {
+  outline-color: var(--lr-teal);
+}
+
+.radio-page.listening-room .liner-panel {
+  font-size: 0.84rem;
+  line-height: 1.62;
+  color: var(--lr-soft);
+}
+
+.radio-page.listening-room .liner-panel:focus-visible {
+  outline-color: var(--lr-line-strong);
+}
+
+.radio-page.listening-room .liner-label {
+  color: var(--lr-teal);
+}
+
+.radio-page.listening-room .liner-dj {
+  border-left-color: var(--lr-teal);
+  background: var(--lr-teal-soft);
+}
+
+.radio-page.listening-room .liner-lyric {
+  border-left-color: color-mix(in srgb, var(--lr-teal) 32%, transparent);
+  color: var(--lr-muted);
+}
+
+.radio-page.listening-room .liner-facts dt {
+  color: var(--lr-dim);
+}
+
+.radio-page.listening-room .liner-facts dd {
+  color: var(--lr-ink);
+}
+
+.radio-page.listening-room .liner-attribution,
+.radio-page.listening-room .liner-links a,
+.radio-page.listening-room .liner-charts a,
+.radio-page.listening-room .liner-retry {
+  color: var(--lr-teal);
+}
+
+.radio-page.listening-room .liner-retry {
+  border-color: color-mix(in srgb, var(--lr-teal) 40%, transparent);
+}
+
+.radio-page.listening-room .liner-empty,
+.radio-page.listening-room .liner-hint {
+  color: var(--lr-muted);
+}
+
+.radio-page.listening-room .liner-skeleton {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--lr-ink) 6%, transparent),
+    color-mix(in srgb, var(--lr-ink) 12%, transparent),
+    color-mix(in srgb, var(--lr-ink) 6%, transparent)
+  );
+}
+
+/* ---------- Schedule ---------- */
+
+.radio-page.listening-room .sched {
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.radio-page.listening-room .sched h2 {
+  font-family: var(--lr-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: var(--lr-muted);
+}
+
+.radio-page.listening-room .sched ul {
+  display: block;
+  columns: 2;
+  column-gap: 30px;
+}
+
+.radio-page.listening-room .sched li {
+  display: block;
+  break-inside: avoid;
+  border-radius: 0;
+  border-bottom: 1px solid var(--lr-line);
+  background: none;
+  color: var(--lr-soft);
+  font-size: 0.8rem;
+}
+
+.radio-page.listening-room .sched li span:first-child {
+  white-space: nowrap;
+}
+
+.radio-page.listening-room .sched li span:last-child {
+  font-family: var(--lr-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  color: var(--lr-muted);
+}
+
+.radio-page.listening-room .sched li.now {
+  border-bottom-color: color-mix(in srgb, var(--lr-teal) 30%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--lr-teal) 16%, transparent),
+    color-mix(in srgb, var(--lr-teal) 4%, transparent) 72%,
+    transparent
+  );
+  color: var(--lr-ink);
+}
+
+.radio-page.listening-room .sched li.now span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+}
+
+.radio-page.listening-room .sched li.now span:first-child::before {
+  content: "";
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--lr-teal);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--lr-teal) 14%, transparent),
+    0 0 10px color-mix(in srgb, var(--lr-teal) 65%, transparent);
+}
+
+.radio-page.listening-room .sched li.now span:last-child {
+  color: var(--lr-teal);
+  font-weight: 500;
+}
+
+.radio-page.listening-room .sched-btn {
+  padding: 9px 2px;
+  border-radius: 0;
+}
+
+.radio-page.listening-room .sched li.now .sched-btn {
+  padding-left: 12px;
+  box-shadow: inset 3px 0 0 var(--lr-teal);
+}
+
+.radio-page.listening-room .sched-btn:hover,
+.radio-page.listening-room .sched-btn:focus-visible {
+  background: none;
+  color: var(--lr-ink);
+}
+
+.radio-page.listening-room .sched li.now .sched-btn:hover,
+.radio-page.listening-room .sched li.now .sched-btn:focus-visible {
+  box-shadow: inset 3px 0 0 var(--lr-teal);
+}
+
+.radio-page.listening-room .sched-btn:focus-visible {
+  outline-color: var(--lr-teal);
+}
+
+/* ---------- Player dock ---------- */
+
+body:has(.radio-page.listening-room) .player-dock {
+  left: 50%;
+  right: auto;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(1160px, 94vw);
+  grid-template-columns: 42px minmax(150px, 230px) minmax(0, 1fr) auto auto auto;
+  gap: 18px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--lr-dock);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px color-mix(in srgb, var(--lr-ink) 8%, transparent);
+}
+
+body:has(.radio-page.listening-room) .player-dock::after {
+  top: auto;
+  bottom: 0;
+  height: 1px;
+  border-radius: 0 0 14px 14px;
+  background: color-mix(in srgb, var(--lr-ink) 8%, transparent);
+}
+
+body:has(.radio-page.listening-room) .player-dock::before {
+  top: auto;
+  bottom: 0;
+  height: 2px;
+  border-radius: 0 0 0 14px;
+  background: var(--lr-teal);
+}
+
+body:has(.radio-page.listening-room) .player-dock .dcover {
+  width: 42px;
+  border-radius: 50%;
+  background-color: var(--lr-surface-2);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--lr-ink) 20%, transparent),
+    0 8px 18px rgba(0, 0, 0, 0.45);
+}
+
+body:has(.radio-page.listening-room) .player-dock .dj small {
+  font-family: var(--lr-mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.18em;
+  color: var(--lr-muted);
+}
+
+body:has(.radio-page.listening-room) .player-dock .dj strong {
+  font-family: var(--lr-sans);
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  color: var(--lr-ink);
+}
+
+body:has(.radio-page.listening-room) .player-dock .dj-btn:hover strong,
+body:has(.radio-page.listening-room) .player-dock .dj-btn:focus-visible strong {
+  color: var(--lr-teal);
+}
+
+body:has(.radio-page.listening-room) .player-dock .vu-meter {
+  height: 24px;
+  gap: 3px;
+  opacity: 0.75;
+}
+
+body:has(.radio-page.listening-room) .player-dock .vu-bar {
+  flex-basis: 3px;
+  background: linear-gradient(
+    var(--lr-teal),
+    color-mix(in srgb, var(--lr-teal) 25%, transparent)
+  );
+}
+
+body:has(.radio-page.listening-room) .player-dock .time {
+  font-family: var(--lr-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--lr-ink);
+}
+
+body:has(.radio-page.listening-room) .player-dock .tune-btn {
+  min-width: 132px;
+  padding: 12px 22px;
+  border: 1px solid color-mix(in srgb, var(--lr-teal) 55%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--lr-teal);
+  font-family: var(--lr-sans);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: none;
+}
+
+body:has(.radio-page.listening-room) .player-dock .tune-btn:hover:not(:disabled) {
+  background: var(--lr-teal-soft);
+  filter: none;
+}
+
+body:has(.radio-page.listening-room) .player-dock .tune-btn:disabled {
+  border-color: var(--lr-line);
+  color: var(--lr-dim);
+}
+
+/* Volume: graphite knob with a teal indicator, and a hairline fader. */
+
+body:has(.radio-page.listening-room) .player-dock .deck-knob {
+  width: 36px;
+  height: 36px;
+  background: radial-gradient(
+    circle at 34% 28%,
+    #2a3b40,
+    #0b1013 68%
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(233, 228, 216, 0.14),
+    inset 0 6px 12px rgba(255, 255, 255, 0.04),
+    0 6px 14px rgba(0, 0, 0, 0.55);
+}
+
+body:has(.radio-page.listening-room) .player-dock .deck-knob::after {
+  top: 4px;
+  width: 2px;
+  height: 10px;
+  background: var(--lr-teal);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--lr-teal) 70%, transparent);
+}
+
+body:has(.radio-page.listening-room) .player-dock .deck-knob.interactive:focus-visible {
+  outline-color: var(--lr-teal);
+}
+
+body:has(.radio-page.listening-room) .player-dock .fader.horizontal {
+  width: 144px;
+}
+
+body:has(.radio-page.listening-room) .player-dock .fader.horizontal::before {
+  left: 3px;
+  right: 3px;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--lr-ink) 16%, transparent);
+  box-shadow: none;
+}
+
+body:has(.radio-page.listening-room) .player-dock .fader.horizontal::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 3px;
+  top: 50%;
+  height: 2px;
+  width: calc((100% - 18px) * var(--v, 0) + 6px);
+  margin-top: -1px;
+  border-radius: 2px;
+  background: var(--lr-teal);
+  opacity: 0.9;
+}
+
+body:has(.radio-page.listening-room) .player-dock .fader.horizontal .fader-thumb {
+  left: calc(3px + (100% - 18px) * var(--v, 0));
+  top: 50%;
+  bottom: auto;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--lr-teal);
+  box-shadow:
+    0 0 0 3px var(--lr-surface),
+    0 0 0 4px color-mix(in srgb, var(--lr-ink) 20%, transparent),
+    0 0 12px color-mix(in srgb, var(--lr-teal) 35%, transparent);
+}
+
+body:has(.radio-page.listening-room) .player-dock .fader.horizontal .fader-thumb::after {
+  display: none;
+}
+
+body:has(.radio-page.listening-room) .player-dock .fader:focus-visible {
+  outline-color: var(--lr-teal);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (min-width: 821px) {
+  .radio-page.listening-room .deck-side {
+    position: sticky;
+    top: 28px;
+  }
+}
+
+@media (max-width: 980px) {
+  .radio-page.listening-room .deck-grid {
+    grid-template-columns: minmax(0, 288px) minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .radio-page.listening-room .np-title {
+    font-size: clamp(2.3rem, 5.6vw, 3.2rem);
+  }
+}
+
+@media (max-width: 820px) {
+  body:has(.radio-page.listening-room) {
+    padding-block: 18px calc(132px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .radio-page.listening-room {
+    padding: 18px 0;
+  }
+
+  .radio-page.listening-room .radio-top {
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+  }
+
+  .radio-page.listening-room .deck-grid {
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .radio-page.listening-room .deck {
+    width: min(74vw, 330px);
+    margin-inline: auto;
+  }
+
+  .radio-page.listening-room .np-col {
+    padding-top: 4px;
+    gap: 18px;
+  }
+
+  /* display: contents on .np-col makes these flex items; keep the liner
+     notes above the schedule. */
+  .radio-page.listening-room .liner {
+    order: 5;
+  }
+
+  .radio-page.listening-room .sched {
+    order: 6;
+  }
+
+  .radio-page.listening-room .np-title {
+    font-size: clamp(2.2rem, 9vw, 3rem);
+  }
+
+  .radio-page.listening-room .sched ul {
+    columns: 1;
+  }
+
+  body:has(.radio-page.listening-room) .player-dock {
+    width: calc(100vw - 24px);
+    bottom: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "dj tune"
+      "vol tune";
+    gap: 4px 16px;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Volume beats the decorative VU on phones: keep the controls reachable. */
+  body:has(.radio-page.listening-room) .player-dock .dcover,
+  body:has(.radio-page.listening-room) .player-dock .time,
+  body:has(.radio-page.listening-room) .player-dock .vu-meter {
+    display: none;
+  }
+
+  body:has(.radio-page.listening-room) .player-dock .vol {
+    display: flex;
+    gap: 12px;
+  }
+
+  body:has(.radio-page.listening-room) .player-dock .fader.horizontal {
+    width: 120px;
+  }
+
+  body:has(.radio-page.listening-room) .player-dock::before,
+  body:has(.radio-page.listening-room) .player-dock::after {
+    display: none;
+  }
+
+  body:has(.radio-page.listening-room) .player-dock .tune-btn {
+    justify-self: stretch;
+    align-self: center;
+    min-width: 142px;
+    padding: 16px 20px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .radio-page.listening-room {
+    width: calc(100% - 16px);
+  }
+
+  .radio-page.listening-room .brand {
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+  }
+
+  .radio-page.listening-room .onair {
+    font-size: 0.54rem;
+    letter-spacing: 0.12em;
+    gap: 8px;
+  }
+
+  .radio-page.listening-room .sched li {
+    font-size: 0.78rem;
+  }
+
+  .radio-page.listening-room .sched li span:first-child {
+    white-space: normal;
+  }
+
+  .radio-page.listening-room .liner {
+    padding: 14px;
+  }
+
+  .radio-page.listening-room .np-title {
+    font-size: clamp(2rem, 11vw, 2.7rem);
+  }
+}
+
+@media (max-width: 380px) {
+  body:has(.radio-page.listening-room) .player-dock .tune-btn {
+    min-width: 122px;
+    padding-inline: 14px;
+    font-size: 0.72rem;
+  }
+
+  body:has(.radio-page.listening-room) .player-dock .vol {
+    gap: 8px;
+  }
+
+  body:has(.radio-page.listening-room) .player-dock .deck-knob {
+    width: 32px;
+    height: 32px;
+  }
+
+  body:has(.radio-page.listening-room) .player-dock .fader.horizontal {
+    width: 96px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radio-page.listening-room .record {
+    will-change: auto;
+  }
+}
+:root[data-theme="light"] .admin-page .tl,
+:root[data-theme="light"] .admin-page .wkbar {
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 calc(12.5% - 1px),
+    color-mix(in srgb, var(--lr-raise) 7%, transparent) calc(12.5% - 1px)
+      12.5%
+  );
+}
+
+:root[data-theme="light"] .admin-page .blk.carry,
+:root[data-theme="light"] .admin-page .blk.none {
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--lr-raise) 7%, transparent) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+/* Genre colours stay pastel in both themes, so their labels stay ink. */
+.admin-page .blk,
+.admin-page .gchip[aria-checked="true"] {
+  color: #10130f;
+}
+
+.admin-page .gchip[aria-checked="true"] .dot {
+  background: #10130f;
+}
+
+.admin-page .pill[aria-pressed="true"] {
+  color: var(--lr-on-teal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radio-page.listening-room .record {
+    will-change: auto;
+  }
+}
+
+/* ============================================================
+   Listening Room — Studio + popups
+
+   The vintage skin is driven almost entirely by its custom
+   properties, so remapping them here re-colours most of the
+   admin UI in one place. The rules below then tighten type,
+   surfaces and the studio deck to match option 3.
+   ============================================================ */
+
+.admin-page,
+.modal-overlay {
+  --bg: var(--lr-bg);
+  --bg-1: var(--lr-bg-soft);
+  --bg-2: var(--lr-bg);
+  --wood: var(--lr-surface);
+  --wood-light: var(--lr-surface-2);
+  --wood-dark: var(--lr-surface-3);
+  --wood-edge: var(--lr-surface-3);
+  --cream: var(--lr-ink);
+  --cream-soft: var(--lr-surface-2);
+  --ink: var(--lr-ink);
+  --muted: var(--lr-muted);
+  --amber: var(--lr-teal);
+  --amber-strong: var(--lr-teal-strong);
+  --amber-soft: var(--lr-teal-soft);
+  --vinyl: var(--lr-well);
+  --led: var(--lr-teal);
+  --danger: var(--lr-danger);
+  --danger-soft: var(--lr-danger-soft);
+  --ok: var(--lr-ok);
+  --ok-soft: var(--lr-ok-soft);
+  --border: var(--lr-line);
+  --border-strong: var(--lr-line-strong);
+  --field: var(--lr-field);
+  --line: var(--lr-input-line);
+  --line-strong: var(--lr-input-line-strong);
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-body: "Inter", system-ui, "Segoe UI", sans-serif;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+html:has(.admin-page) {
+  background: var(--lr-bg);
+}
+
+body:has(.admin-page) {
+  align-items: start;
+  padding: 30px 0 90px;
+  background:
+    radial-gradient(1000px 520px at 76% -10%, var(--lr-glow-teal), transparent 62%),
+    radial-gradient(800px 460px at 0% 24%, var(--lr-glow-warm), transparent 58%),
+    var(--lr-bg);
+}
+
+/* ---------- Studio type + shell ---------- */
+
+.admin-page h1,
+.admin-page h2:not(.sec),
+.admin-page h3:not(.sec),
+.modal-overlay h1,
+.modal-overlay h2:not(.sec),
+.modal-overlay h3:not(.sec) {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.admin-page .admin-top {
+  align-items: center;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-page .admin-top .brand {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.admin-page .admin .brand small {
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+}
+
+.admin-page a.back,
+.admin-page .changelog-btn {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-page a.back:hover,
+.admin-page .changelog-btn:hover {
+  color: var(--cream);
+}
+
+.admin-page .admin-tabs {
+  gap: 24px;
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.admin-page .admin-tabs button {
+  padding: 11px 2px;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-page .admin-tabs button:hover {
+  color: var(--cream);
+}
+
+.admin-page .admin-tabs button.active {
+  background: none;
+  color: var(--cream);
+  border-bottom-color: var(--amber);
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.admin-page .admin-tabs .count {
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-size: 0.56rem;
+}
+
+.admin-page .admin-tabs .active .count {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+/* ---------- Studio surfaces ---------- */
+
+.admin-page .card,
+.admin-page .gcard,
+.admin-page .group,
+.admin-page .pcard,
+.admin-page .srow,
+.modal-overlay .card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--lr-raise) 3%, transparent);
+  box-shadow: none;
+}
+
+.admin-page .gcard {
+  box-shadow: inset 0 3px 0 var(--gc, var(--amber));
+}
+
+.admin-page .srow {
+  box-shadow: inset 3px 0 0 var(--gc, var(--line));
+}
+
+.admin-page .srow.dim {
+  background: transparent;
+  border: 1px dashed var(--border);
+  box-shadow: none;
+}
+
+.admin-page .pcard {
+  padding: 10px;
+}
+
+.admin-page .card,
+.modal-overlay .card {
+  padding: 18px;
+}
+
+.admin-page .admin-login {
+  width: min(380px, 100%);
+  margin-top: 8vh;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--lr-raise) 3%, transparent);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+}
+
+.admin-page .admin-login h1 {
+  font-size: 2.1rem;
+}
+
+.admin-page .admin-login .hint {
+  margin-bottom: 14px;
+}
+
+.admin-page .empty {
+  border-color: var(--border);
+  border-radius: 12px;
+}
+
+/* ---------- Studio controls ---------- */
+
+.admin-page .btn,
+.modal-overlay .btn {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.admin-page .btn-primary,
+.admin-page .btn-danger-solid,
+.modal-overlay .btn-primary,
+.modal-overlay .btn-danger-solid {
+  color: var(--lr-on-teal);
+}
+
+.admin-page .btn-primary:hover:not(:disabled),
+.modal-overlay .btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.admin-page .field,
+.modal-overlay .field {
+  letter-spacing: 0.12em;
+}
+
+.admin-page .field input::placeholder,
+.admin-page .field textarea::placeholder,
+.admin-page .admin input::placeholder,
+.admin-page .admin textarea::placeholder,
+.admin-page .track-editor input::placeholder,
+.admin-page .track-editor textarea::placeholder,
+.modal-overlay input::placeholder,
+.modal-overlay textarea::placeholder {
+  color: var(--lr-placeholder);
+}
+
+.admin-page .seg {
+  border: 1px solid var(--border);
+}
+
+.admin-page .seg button[aria-pressed="true"] {
+  font-weight: 500;
+}
+
+.admin-page .btn-link {
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--lr-teal) 40%, transparent);
+}
+
+.admin-page .toast {
+  background: var(--lr-dock);
+  color: var(--cream);
+  border: 1px solid color-mix(in srgb, var(--lr-teal) 35%, transparent);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  font-weight: 500;
+}
+
+/* ---------- Studio deck (Now playing) ---------- */
+
+.admin-page #panel-now .admin-deck {
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.admin-page #panel-now .admin-deck-side {
+  padding-top: 6px;
+}
+
+.admin-page #panel-now .deck {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin-inline: auto;
+  aspect-ratio: 1;
+  border-radius: 18px;
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.055), transparent 42%),
+    linear-gradient(155deg, #121a1d, #0a0f11 72%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(233, 228, 216, 0.08),
+    0 24px 50px rgba(0, 0, 0, 0.45);
+}
+
+.admin-page #panel-now .deck::after {
+  content: "";
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  border: 1px dashed rgba(121, 199, 184, 0.22);
+  pointer-events: none;
+}
+
+.admin-page #panel-now .platter {
+  inset: 8%;
+  left: 8%;
+  top: 8%;
+  width: auto;
+  height: auto;
+  border-radius: 50%;
+  background: #0b1013;
+  box-shadow:
+    inset 0 0 0 1px rgba(233, 228, 216, 0.12),
+    0 12px 26px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.admin-page #panel-now .record {
+  inset: 0;
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.032) 0 1px,
+      transparent 1px 3px
+    ),
+    radial-gradient(circle at center, #1b1411 0 40%, #0c0807 41% 100%);
+  box-shadow: inset 0 0 0 1px rgba(233, 228, 216, 0.1);
+}
+
+.admin-page #panel-now .record::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.04) 0 1px,
+    transparent 1px 4px
+  );
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.admin-page #panel-now .record::after {
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 0 28%,
+      rgba(255, 255, 255, 0.06) 28.5% 29%,
+      transparent 29.5%
+    ),
+    radial-gradient(
+      circle at 32% 24%,
+      rgba(255, 255, 255, 0.1),
+      transparent 42%
+    );
+}
+
+.admin-page #panel-now .record .label {
+  inset: 29%;
+  background-color: #12100e;
+  background-position: center;
+  background-size: 177.78% auto;
+  box-shadow:
+    0 0 0 1px rgba(233, 228, 216, 0.24),
+    0 0 0 10px rgba(0, 0, 0, 0.28);
+}
+
+.admin-page #panel-now .record .label::after {
+  width: 10%;
+  background: #0b0e10;
+  box-shadow: 0 0 0 2px rgba(233, 228, 216, 0.3);
+}
+
+.admin-page #panel-now .sheen {
+  inset: 0;
+  background: conic-gradient(
+    from 210deg,
+    transparent 0 18%,
+    rgba(121, 199, 184, 0.12) 27%,
+    transparent 40% 100%
+  );
+}
+
+.admin-page #panel-now .deck-rpm {
+  display: none;
+}
+
+.admin-page #panel-now .pivot {
+  z-index: 3;
+  left: 94%;
+  top: 8%;
+  width: 8.5%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle at 35% 30%, #31474d, #0a0f11 72%);
+  box-shadow:
+    inset 0 0 0 1px rgba(233, 228, 216, 0.2),
+    0 8px 18px rgba(0, 0, 0, 0.5);
+}
+
+.admin-page #panel-now .pivot::after {
+  content: "";
+  position: absolute;
+  inset: 38%;
+  border-radius: 50%;
+  background: var(--amber);
+  opacity: 0.7;
+  box-shadow: 0 0 8px rgba(121, 199, 184, 0.6);
+}
+
+.admin-page #panel-now .arm {
+  display: block;
+  z-index: 2;
+  left: 94%;
+  top: 8%;
+  width: 3px;
+  height: 56%;
+  margin-left: -1.5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8f979e, #e9e4d8 45%, #aab3b8);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  transform: rotate(-2deg);
+  pointer-events: none;
+}
+
+.admin-page #panel-now .deck.playing .arm {
+  transform: rotate(24deg);
+}
+
+.admin-page #panel-now .arm::before {
+  inset: 0;
+  border-radius: 999px;
+  background: inherit;
+  box-shadow: none;
+}
+
+.admin-page #panel-now .arm::after {
+  left: 50%;
+  bottom: -12px;
+  width: 16px;
+  height: 26px;
+  transform: translateX(-50%);
+  border-radius: 4px;
+  background: linear-gradient(180deg, #1c2a2e, #0a0f11);
+  box-shadow:
+    inset 0 0 0 1px rgba(121, 199, 184, 0.35),
+    inset 0 -3px 0 rgba(121, 199, 184, 0.5);
+}
+
+.admin-page #panel-now .mixer {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--lr-raise) 3%, transparent);
+}
+
+.admin-page .vu-bar {
+  background: linear-gradient(
+    var(--amber),
+    color-mix(in srgb, var(--lr-teal) 24%, transparent)
+  );
+}
+
+.admin-page #panel-now .nowcard {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--lr-raise) 3%, transparent);
+}
+
+/* ---------- Studio lists, chips, timeline ---------- */
+
+.admin-page .chip {
+  padding: 3px 9px;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+}
+
+.admin-page .lib-row {
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-page .lib-row:hover {
+  background: color-mix(in srgb, var(--lr-teal) 6%, transparent);
+}
+
+.admin-page .lib-thumb,
+.admin-page .lib-row img {
+  border-radius: 8px;
+}
+
+.admin-page .tl {
+  border-radius: 8px;
+}
+
+.admin-page .wk .blk {
+  border-radius: 6px;
+}
+
+.admin-page .wkbar {
+  border-radius: 8px;
+}
+
+.admin-page .queue-row.current {
+  background: color-mix(in srgb, var(--lr-teal) 8%, transparent);
+}
+
+.admin-page .on-air-dot {
+  background: var(--amber);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--lr-teal) 60%, transparent);
+}
+
+/* ---------- Popups ---------- */
+
+.modal-overlay {
+  background: var(--lr-overlay);
+  backdrop-filter: blur(10px);
+}
+
+.modal-card {
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  background: var(--lr-surface);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+}
+
+.modal-title {
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+}
+
+.modal-overlay h2.modal-title {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.modal-message {
+  color: var(--muted);
+}
+
+.modal-overlay .modal-actions .btn {
+  padding: 9px 18px;
+}
+
+.changelog-card {
+  background: var(--lr-surface);
+}
+
+.changelog-sub,
+.changelog-entry p {
+  color: var(--muted);
+}
+
+.changelog-entry h3 {
+  font-weight: 400;
+}
+
+.changelog-date {
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+}
+
+.playlist-about .pa-desc {
+  color: var(--cream);
+}
+
+.playlist-about .pa-artists h3 {
+  letter-spacing: 0.16em;
+}
+
+.track-editor-section {
+  background: color-mix(in srgb, var(--lr-raise) 2%, transparent);
+}
+
+.track-editor-section legend {
+  font-size: 0.56rem;
+  letter-spacing: 0.16em;
+}
+
+.modal-card.track-editor {
+  max-height: min(92dvh, 900px);
+}
+
+/* ---------- Studio + popup responsive ---------- */
+
+@media (max-width: 820px) {
+  .admin-page #panel-now .admin-deck {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .admin-page #panel-now .deck {
+    max-width: 280px;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  body:has(.admin-page) {
+    padding: 18px 0 72px;
+  }
+
+  .admin-page {
+    width: calc(100% - 24px);
+    gap: 18px;
+  }
+
+  .admin-page .admin-tabs {
+    gap: 18px;
+  }
+
+  .admin-page .admin-tabs button {
+    padding: 10px 0;
+    font-size: 0.58rem;
+  }
+
+  .admin-page .admin-top .brand {
+    font-size: 0.92rem;
+    letter-spacing: 0.14em;
+  }
+
+  .admin-page a.back,
+  .admin-page .changelog-btn {
+    font-size: 0.56rem;
+  }
+
+  .admin-page .admin-login {
+    margin-top: 4vh;
+    padding: 22px;
+  }
+
+  .admin-page .admin-login h1 {
+    font-size: 1.8rem;
+  }
+
+  .modal-overlay {
+    padding: 10px;
+  }
+
+  .modal-card {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .modal-title {
+    font-size: 1.3rem;
+  }
+
+  .changelog-head {
+    padding: 16px 16px 10px;
+  }
+
+  .changelog-body {
+    padding: 2px 16px 16px;
+  }
+
+  .modal-card.track-editor {
+    padding: 14px;
+  }
+
+  .admin-page .toast {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .admin-page .admin-tabs {
+    gap: 14px;
+  }
+
+  .admin-page .admin-tabs button {
+    letter-spacing: 0.1em;
+  }
+}
+
+/* ---------- Nakout playlist dialog + genre actions ---------- */
+
+.admin-page .gnext {
+  padding: 8px 10px;
+  border: 1px dashed color-mix(in srgb, var(--lr-teal) 28%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--lr-teal) 6%, transparent);
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.admin-page .gact {
+  gap: 8px 10px;
+}
+
+.admin-page .gact .sp {
+  flex: 1 1 12px;
+}
+
+.admin-page .btn-link.danger {
+  color: var(--danger);
+}
+
+.admin-page .btn-link.danger:hover,
+.admin-page .btn-link.danger:focus-visible {
+  color: var(--lr-danger-text);
+  text-decoration: underline;
+}
+
+.admin-page .pl-head {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.admin-page .pl-head .sub {
+  max-width: 62ch;
+}
+
+.admin-page .pl-list-head {
+  margin-top: 4px;
+}
+
+.admin-page .pl-list-head .ttl {
+  margin: 0;
+}
+
+.admin-page .pl-list-head .filter-input {
+  margin-left: auto;
+}
+
+.modal-card.addpl-dialog {
+  width: min(680px, calc(100vw - 32px));
+  max-height: min(88dvh, 860px);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.addpl-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.addpl-head .modal-title {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.addpl-sub {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.addpl-close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.addpl-close:hover,
+.addpl-close:focus-visible {
+  color: var(--cream);
+  border-color: var(--border-strong);
+}
+
+.addpl-dialog .seg {
+  margin: 16px 22px 0;
+  align-self: flex-start;
+}
+
+.addpl-form,
+.addpl-channel {
+  display: grid;
+  gap: 12px;
+  padding: 14px 22px 20px;
+  overflow-y: auto;
+}
+
+.addpl-dest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.addpl-dest-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.addpl-dest-chip {
+  pointer-events: none;
+  cursor: default;
+}
+
+.addpl-why {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.addpl-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.addpl-success {
+  display: grid;
+  gap: 14px;
+  padding: 24px 22px;
+}
+
+.addpl-success-mark {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--amber-soft);
+  color: var(--amber);
+  font-size: 1.1rem;
+}
+
+.addpl-success b {
+  font-size: 1rem;
+}
+
+.addpl-success p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.addpl-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.addpl-channel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--lr-raise) 3%, transparent);
+}
+
+.addpl-channel-head b {
+  display: block;
+}
+
+.addpl-channel-head .mono {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.addpl-channel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.addpl-channel-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--amber-soft);
+  color: var(--cream);
+  font-size: 0.82rem;
+}
+
+.addpl-search {
+  max-width: 320px;
+}
+
+.addpl-browse {
+  margin-top: 2px;
+}
+
+.addpl-channel-setup form {
+  display: grid;
+  gap: 12px;
+}
+
+@media (max-width: 820px) {
+  .modal-card.addpl-dialog {
+    width: calc(100vw - 20px);
+    max-height: 92dvh;
+  }
+
+  .addpl-head {
+    padding: 16px 16px 12px;
+  }
+
+  .addpl-head .modal-title {
+    font-size: 1.2rem;
+  }
+
+  .addpl-dialog .seg {
+    margin: 12px 16px 0;
+  }
+
+  .addpl-form,
+  .addpl-channel {
+    padding: 12px 16px 16px;
+  }
+
+  .addpl-success {
+    padding: 18px 16px;
+  }
+
+  .addpl-success-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .addpl-footer {
+    flex-wrap: wrap;
+  }
+
+  .addpl-footer .btn {
+    flex: 1 1 140px;
+  }
+
+  .addpl-channel-actions {
+    width: 100%;
+  }
+
+  .addpl-channel-actions .btn {
+    flex: 1;
+  }
+
+  .addpl-search {
+    max-width: none;
+  }
+
+  .admin-page .pl-list-head {
+    align-items: stretch;
+  }
+
+  .admin-page .pl-list-head .filter-input {
+    margin-left: 0;
+    max-width: none;
+  }
+}
+
+/* ---------- Schedule editor layout + week labels ---------- */
+
+.admin-page .sched-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.admin-page .sched-layout.editing {
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 360px);
+}
+
+.admin-page .sched-main {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.admin-page .sform {
+  position: sticky;
+  top: 20px;
+  display: grid;
+  gap: 12px;
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  padding: 16px;
+  border-color: color-mix(in srgb, var(--lr-teal) 35%, transparent);
+  z-index: 5;
+}
+
+.sform-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sform-head .ttl {
+  margin: 0;
+}
+
+.sform-close {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sform-close:hover,
+.sform-close:focus-visible {
+  color: var(--cream);
+  border-color: var(--border-strong);
+}
+
+.sform-preview {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--field);
+}
+
+.sform-preview-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sform-preview-times {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sform-preview-times b {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.sform-preview-times .chip {
+  margin-left: auto;
+}
+
+.sform-arrow {
+  color: var(--muted);
+}
+
+.sform-preview-next {
+  margin: 0;
+  font-size: 0.76rem;
+}
+
+.sform-warn {
+  padding: 10px 12px;
+  border: 1px solid var(--lr-danger-line);
+  border-radius: 8px;
+  background: var(--lr-danger-soft);
+  color: var(--lr-danger-text);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.sform-warn b {
+  color: var(--lr-danger-text-strong);
+}
+
+.sform-actions {
+  align-items: center;
+  margin-top: 2px;
+}
+
+.sform-actions .sp {
+  flex: 1;
+}
+
+.sform-backdrop {
+  display: none;
+}
+
+/* Keep genre names readable in the week overview. */
+.wk .blk {
+  padding: 0 4px;
+  text-align: center;
+}
+
+.wk .blk .bn {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.6rem;
+  line-height: 1.06;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+}
+
+.wk {
+  min-width: 700px;
+}
+
+@media (max-width: 900px) {
+  .admin-page .sched-layout.editing {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-page .sform {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    top: auto;
+    z-index: 70;
+    max-height: calc(100dvh - 20px);
+    margin: 0;
+    border-radius: 16px;
+  }
+
+  .sform-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 69;
+    background: var(--lr-scrim);
+    backdrop-filter: blur(3px);
+  }
+
+  .sform-actions {
+    position: sticky;
+    bottom: -16px;
+    padding-top: 10px;
+    padding-bottom: 2px;
+    background: var(--bg-1);
+  }
+}
+
+/* ============================================================
+   Sea Glass — light-theme frosted surfaces
+   ============================================================ */
+
+:root[data-theme="light"] body:has(.radio-page.listening-room),
+:root[data-theme="light"] body:has(.admin-page) {
+  background:
+    radial-gradient(
+      980px 640px at 84% -8%,
+      rgba(42, 90, 54, 0.34),
+      transparent 64%
+    ),
+    radial-gradient(
+      820px 580px at -4% 14%,
+      rgba(130, 150, 106, 0.26),
+      transparent 62%
+    ),
+    radial-gradient(
+      760px 520px at 58% 42%,
+      rgba(64, 116, 76, 0.19),
+      transparent 70%
+    ),
+    var(--lr-bg);
+}
+
+:root[data-theme="light"] .radio-page.listening-room .liner {
+  position: relative;
+  overflow: hidden;
+  background: var(--lr-glass-bg);
+  border-color: var(--lr-glass-rim);
+  box-shadow: var(--lr-glass-shadow);
+  backdrop-filter: blur(26px) saturate(1.28);
+}
+
+:root[data-theme="light"] .radio-page.listening-room .liner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    118deg,
+    rgba(255, 255, 255, 0.38),
+    transparent 38%
+  );
+  pointer-events: none;
+}
+
+:root[data-theme="light"] .radio-page.listening-room .liner > * {
+  position: relative;
+  z-index: 1;
+}
+
+:root[data-theme="light"] .radio-page.listening-room .deck {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(233, 228, 216, 0.08),
+    0 34px 70px rgba(31, 61, 42, 0.26);
+}
+
+:root[data-theme="light"] body:has(.radio-page.listening-room) .player-dock {
+  box-shadow:
+    0 28px 60px rgba(31, 61, 42, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(28px) saturate(1.3);
+}
+
+:root[data-theme="light"] .radio-page.listening-room .lr-ambient::before {
+  opacity: 0.1;
+  filter: blur(100px) saturate(0.65) brightness(1.1);
+}
+
+:root[data-theme="light"] .admin-page .card,
+:root[data-theme="light"] .admin-page .group,
+:root[data-theme="light"] .admin-page .pcard,
+:root[data-theme="light"] .modal-overlay .card,
+:root[data-theme="light"] .admin-page .admin-login,
+:root[data-theme="light"] .admin-page .addpl-channel-head {
+  background: var(--lr-glass-bg);
+  border-color: var(--lr-glass-rim);
+  box-shadow: var(--lr-glass-shadow);
+  backdrop-filter: blur(22px) saturate(1.24);
+}
+
+:root[data-theme="light"] .admin-page .gcard {
+  background: var(--lr-glass-bg);
+  border-color: var(--lr-glass-rim);
+  box-shadow:
+    inset 0 3px 0 var(--gc, var(--amber)),
+    0 20px 46px rgba(31, 61, 42, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(22px) saturate(1.24);
+}
+
+:root[data-theme="light"] .admin-page .srow {
+  background: var(--lr-glass-bg);
+  border-color: var(--lr-glass-rim);
+  box-shadow:
+    inset 3px 0 0 var(--gc, var(--line)),
+    0 14px 30px rgba(31, 61, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(22px) saturate(1.24);
+}
+
+:root[data-theme="light"] .admin-page #panel-now .mixer,
+:root[data-theme="light"] .admin-page #panel-now .nowcard {
+  border-color: var(--lr-glass-rim);
+  background: var(--lr-glass-bg);
+  backdrop-filter: blur(22px) saturate(1.24);
+}
+
+:root[data-theme="light"] .admin-page #panel-now .deck {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(233, 228, 216, 0.08),
+    0 30px 60px rgba(31, 61, 42, 0.24);
+}
+
+:root[data-theme="light"] .modal-card {
+  background: rgba(248, 252, 246, 0.9);
+  border-color: var(--lr-glass-rim);
+  box-shadow:
+    0 30px 70px rgba(31, 61, 42, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(24px) saturate(1.2);
+}
+
+:root[data-theme="light"] .admin-page .sform {
+  background: rgba(248, 252, 246, 0.86);
+  border-color: var(--lr-glass-rim);
+  box-shadow:
+    0 30px 70px rgba(31, 61, 42, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(26px) saturate(1.26);
+}
+
+:root[data-theme="light"] .track-editor-section {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+:root[data-theme="light"] .modal-overlay {
+  backdrop-filter: blur(14px) saturate(1.1);
+}
