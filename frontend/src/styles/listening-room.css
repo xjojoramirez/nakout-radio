@@ -52,53 +52,53 @@
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --lr-bg: #e1eadd;
-  --lr-bg-soft: #d8e4d4;
-  --lr-surface: #f6fbf3;
-  --lr-surface-2: #edf5e9;
-  --lr-surface-3: #d5e3cf;
-  --lr-well: #dfe9da;
-  --lr-field: #fbfdf9;
-  --lr-ink: #14231a;
-  --lr-soft: #384b3e;
-  --lr-muted: #56695b;
-  --lr-dim: #627568;
-  --lr-teal: #2c6848;
-  --lr-teal-strong: #225138;
-  --lr-teal-soft: rgba(44, 104, 72, 0.13);
-  --lr-teal-faint: rgba(44, 104, 72, 0.055);
-  --lr-teal-line: rgba(44, 104, 72, 0.4);
-  --lr-line: rgba(20, 35, 26, 0.13);
-  --lr-line-strong: rgba(20, 35, 26, 0.26);
-  --lr-raise: #14231a;
-  --lr-led-off: #b9c9b6;
+  --lr-bg: #d5e1cf;
+  --lr-bg-soft: #cbd9c6;
+  --lr-surface: #f4faf1;
+  --lr-surface-2: #eaf3e6;
+  --lr-surface-3: #cfdec9;
+  --lr-well: #d9e5d4;
+  --lr-field: #f9fdf7;
+  --lr-ink: #122019;
+  --lr-soft: #35483b;
+  --lr-muted: #4f6355;
+  --lr-dim: #506457;
+  --lr-teal: #245c3e;
+  --lr-teal-strong: #1c4a30;
+  --lr-teal-soft: rgba(36, 92, 62, 0.13);
+  --lr-teal-faint: rgba(36, 92, 62, 0.055);
+  --lr-teal-line: rgba(36, 92, 62, 0.4);
+  --lr-line: rgba(18, 32, 25, 0.14);
+  --lr-line-strong: rgba(18, 32, 25, 0.27);
+  --lr-raise: #122019;
+  --lr-led-off: #b3c5b0;
   --lr-on-teal: #ffffff;
-  --lr-danger: #a83a28;
-  --lr-danger-soft: rgba(168, 58, 40, 0.08);
-  --lr-danger-line: rgba(168, 58, 40, 0.32);
-  --lr-danger-text: #8c2f20;
-  --lr-danger-text-strong: #6d2418;
+  --lr-danger: #a33826;
+  --lr-danger-soft: rgba(163, 56, 38, 0.08);
+  --lr-danger-line: rgba(163, 56, 38, 0.32);
+  --lr-danger-text: #892e1f;
+  --lr-danger-text-strong: #6a2317;
   --lr-ok: #2f7d46;
   --lr-ok-soft: rgba(47, 125, 70, 0.1);
-  --lr-input-line: #d2dfcc;
-  --lr-input-line-strong: #b3c6ad;
-  --lr-dock: rgba(246, 251, 243, 0.56);
-  --lr-overlay: rgba(24, 38, 28, 0.38);
-  --lr-scrim: rgba(24, 38, 28, 0.32);
-  --lr-glow-teal: rgba(70, 128, 86, 0.24);
-  --lr-glow-warm: rgba(174, 190, 148, 0.2);
-  --lr-placeholder: #647769;
+  --lr-input-line: #c9d8c3;
+  --lr-input-line-strong: #aabfa4;
+  --lr-dock: rgba(244, 250, 241, 0.62);
+  --lr-overlay: rgba(22, 35, 26, 0.4);
+  --lr-scrim: rgba(22, 35, 26, 0.34);
+  --lr-glow-teal: rgba(62, 118, 76, 0.27);
+  --lr-glow-warm: rgba(160, 178, 136, 0.2);
+  --lr-placeholder: #5f7365;
   --lr-glass-bg: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.62) 0%,
     rgba(255, 255, 255, 0.24) 42%,
-    rgba(206, 228, 203, 0.28) 100%
+    rgba(194, 215, 189, 0.3) 100%
   );
   --lr-glass-rim: rgba(255, 255, 255, 0.68);
   --lr-glass-shadow:
-    0 26px 60px rgba(31, 61, 42, 0.13),
+    0 26px 60px rgba(28, 56, 38, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    inset 0 -1px 0 rgba(174, 205, 172, 0.28);
+    inset 0 -1px 0 rgba(166, 198, 164, 0.3);
 }
 
 .radio-page.listening-room {
@@ -126,16 +126,17 @@ body:has(.radio-page.listening-room) {
     var(--lr-bg);
 }
 
-/* The blurred artwork behind the fold. The frame gets the border; the
-   artwork sits in a blurred pseudo-element so the border stays crisp. */
+/* The blurred artwork behind the fold. It is full-bleed and unframed so it
+   dissolves into the browser background; the artwork sits in a blurred
+   pseudo-element. */
 .radio-page.listening-room .lr-ambient {
   position: absolute;
   z-index: -1;
-  inset: 0 0 auto;
-  height: 560px;
-  border: 1px solid var(--lr-line-strong);
-  border-radius: 28px;
-  overflow: hidden;
+  top: -60px;
+  left: 50%;
+  width: calc(100vw + 24px);
+  height: 620px;
+  transform: translateX(-50%);
   pointer-events: none;
   mask-image: linear-gradient(to bottom, #000 0 55%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, #000 0 55%, transparent 100%);
@@ -1088,11 +1089,6 @@ body:has(.radio-page.listening-room) .player-dock .fader:focus-visible {
   position: absolute;
   top: 14px;
   right: 14px;
-}
-
-:root[data-theme="light"] .radio-page.listening-room .lr-ambient {
-  border-color: var(--lr-glass-rim);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 :root[data-theme="light"] .radio-page.listening-room .lr-ambient::before {
@@ -2338,17 +2334,17 @@ body:has(.admin-page) {
   background:
     radial-gradient(
       980px 640px at 84% -8%,
-      rgba(70, 128, 86, 0.25),
+      rgba(58, 112, 72, 0.28),
       transparent 64%
     ),
     radial-gradient(
       820px 580px at -4% 14%,
-      rgba(174, 190, 148, 0.24),
+      rgba(160, 178, 136, 0.22),
       transparent 62%
     ),
     radial-gradient(
       760px 520px at 58% 42%,
-      rgba(104, 158, 116, 0.16),
+      rgba(86, 142, 98, 0.16),
       transparent 70%
     ),
     var(--lr-bg);

@@ -3,6 +3,31 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - unframed Sea Glass wash and deeper sage
+
+- Removed the rounded ambient frame and its border. The blurred artwork is now
+  full-bleed (`100vw + 24px`, clipped at the body) and starts 60px above the
+  page, so it dissolves from the browser edge into the listener page with no
+  panel edge or seam.
+- Deepened the light palette a step without making it a dark theme: page
+  `#d5e1cf`, frosted panel `#f4faf1`, ink `#122019`, muted `#4f6355`, accent
+  `#245c3e`, with the glass tint and shadows adjusted to match.
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 37 files, 378 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend at 1440×1000 and 390×844: the ambient
+    fills the full viewport, there is no border or side seam, there is no
+    horizontal overflow, and the darker green remains light (12.4:1 ink,
+    4.7:1 muted, 5.8:1 accent on the page background).
+
 ## 2026-11-25 - Sea Glass light theme, framed ambient and balanced page
 
 The approved light direction is now live:

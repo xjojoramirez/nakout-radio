@@ -19,9 +19,9 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 - **Palette (dark, default):** ink `#090b0e`, cream `#e9e4d8`, muted
   `#8f979e`, teal `#79c7b8`, hairlines at ~9% cream.
-- **Palette (light, Sea Glass):** sage mist `#e1eadd`, frosted panel
-  `#f6fbf3` at ~55%, ink `#14231a`, muted `#56695b`, sea-green `#2c6848`,
-  hairlines at ~13% ink. Soft green and warm botanical glows sit behind the
+- **Palette (light, Sea Glass):** sage mist `#d5e1cf`, frosted panel
+  `#f4faf1` at ~55%, ink `#122019`, muted `#4f6355`, sea-green `#245c3e`,
+  hairlines at ~14% ink. Soft green and warm botanical glows sit behind the
   glass. The turntable plinth and vinyl stay graphite in both themes.
 - **Theme choice:** first visit follows the OS, an explicit choice is remembered
   in `localStorage`, and a sun/moon switch sits in the listener header, the
@@ -31,8 +31,7 @@ Listening Room). It applies to the listener page, the Studio and every popup
   metadata. Instrument Serif, Bricolage Grotesque and DM Mono were removed.
 - **Shape:** circular artwork disc, 1px hairlines, one frosted panel
   (liner notes), one frosted dock and, in light mode, translucent glass cards
-  in the Studio. A rounded ambient frame sits behind the listener hero. No
-  wood, plinth, tonearm or RPM badges on the listener page.
+  in the Studio. No wood, plinth, tonearm or RPM badges on the listener page.
 - **Motion:** the record keeps the existing spin-up / spin-down inertia. CSS
   adds a dashed rotation ring and a slow teal sheen; both respect
   `prefers-reduced-motion`.
@@ -44,9 +43,10 @@ Listening Room). It applies to the listener page, the Studio and every popup
 - **Hero:** two columns — a 344px circular disc and the now-playing column
   (kicker, title, artist, album facts, progress on mobile, liner notes). The
   kicker is set a step larger (0.68rem) for legibility.
-- **Ambient frame:** a full-width 560px rounded frame behind the hero holds a
-  blurred copy of the current artwork. The artwork lives in a pseudo-element so
-  the 1px glass rim stays crisp; a bottom mask fades frame and artwork together.
+- **Ambient bleed:** a full-viewport blurred copy of the current artwork sits
+  behind the hero with no frame. It is 60px taller than the page top so the top
+  edge starts off-screen, and a bottom mask dissolves it into the page and
+  browser background.
 - **Vertical balance:** the page uses 24px top and bottom padding (18px on
   phones) and centres itself in the viewport when the content is shorter than
   the screen, keeping the gap above the header close to the gap above the dock.
