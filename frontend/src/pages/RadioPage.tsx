@@ -8,6 +8,7 @@ import { VUMeter } from "../components/VUMeter";
 import { TurntableDeck } from "../components/deck/TurntableDeck";
 import { VolumeFader } from "../components/deck/VolumeFader";
 import { VolumeKnob } from "../components/deck/VolumeKnob";
+import { ThemeSwitch } from "../components/ThemeSwitch";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { useListenerCount } from "../hooks/useListenerCount";
 import { useTodaySchedule } from "../hooks/useTodaySchedule";
@@ -55,13 +56,16 @@ export function RadioPage() {
         />
         <header className="radio-top">
           <div className="brand">Nakout Radio</div>
-          <div className="onair">
-            <span
-              className={player.playing || gap ? "led on" : "led"}
-              aria-hidden="true"
-            />
-            <span>{player.playing || gap ? "On air" : "Standing by"}</span>
-            <span>{listeners} listening</span>
+          <div className="top-r">
+            <div className="onair">
+              <span
+                className={player.playing || gap ? "led on" : "led"}
+                aria-hidden="true"
+              />
+              <span>{player.playing || gap ? "On air" : "Standing by"}</span>
+              <span>{listeners} listening</span>
+            </div>
+            <ThemeSwitch />
           </div>
         </header>
 

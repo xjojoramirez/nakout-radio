@@ -17,8 +17,14 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 ## Visual system
 
-- **Palette:** ink `#090b0e`, cream `#e9e4d8`, muted `#8f979e`, teal
-  `#79c7b8`, hairlines at ~9% cream.
+- **Palette (dark, default):** ink `#090b0e`, cream `#e9e4d8`, muted
+  `#8f979e`, teal `#79c7b8`, hairlines at ~9% cream.
+- **Palette (light):** paper `#f3efe6`, panel `#fbf8f2`, ink `#172025`,
+  muted `#5f6b72`, teal `#176f63`, hairlines at ~12% ink. The turntable plinth
+  and vinyl stay graphite in both themes.
+- **Theme choice:** first visit follows the OS, an explicit choice is remembered
+  in `localStorage`, and a sun/moon switch sits in the listener header, the
+  Studio header and the Studio login.
 - **Type:** two families only - Inter for body, controls, the wordmark, track
   titles, headings and popup titles; JetBrains Mono for labels, times and
   metadata. Instrument Serif, Bricolage Grotesque and DM Mono were removed.
@@ -91,9 +97,9 @@ Listening Room). It applies to the listener page, the Studio and every popup
   and rows, outlined secondary buttons, teal primary buttons and focus rings.
 - Now playing keeps the deck but renders it as the same artwork disc, with the
   mixer on a hairline panel and teal VU bars.
-- Popups: blurred dark overlay, ink panel with hairline border, Inter 600 title,
-  Inter body, teal primary action. The playlist-about dialog on the listener
-  page uses the same shell.
+- Popups: blurred scrim, panel with hairline border, Inter 600 title, Inter
+  body, teal primary action. The scrim and panel follow the active theme. The
+  playlist-about dialog on the listener page uses the same shell.
 - **Setup path:** genre → Nakout playlist → schedule slot. Genre cards expose
   Add Nakout playlist and Schedule, and the add dialog opens with the genre
   already locked. No second genre picker.

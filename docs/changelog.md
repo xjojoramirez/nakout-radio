@@ -3,6 +3,51 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - light theme and a theme switcher
+
+The Listening Room palette is now a dark/light pair, switchable at runtime:
+
+- Dark keeps the current ink-and-teal look and remains the default when no
+  preference is stored. Light uses a warm paper background, ink text and a
+  deeper teal that keeps text contrast at AA size.
+- A sun/moon switch sits in the listener header, the Studio header and the
+  Studio login. First visit follows the OS; an explicit choice is stored in
+  `localStorage` and restored before first paint by `public/theme-init.js`
+  (same-origin, so it satisfies the Caddy CSP).
+- Every listener and Studio surface switches: page glows, cards, fields,
+  dialogs, timeline, schedule sheet, toast, library and dock. The turntable
+  plinth and vinyl stay graphite in both themes.
+- The browser `theme-color` meta and `color-scheme` follow the active theme.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `frontend/src/theme.ts`
+  - `frontend/src/components/ThemeSwitch.tsx`
+  - `frontend/src/components/ThemeSwitch.dom.test.tsx`
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/main.tsx`
+  - `frontend/public/theme-init.js`
+  - `frontend/index.html`
+  - `frontend/nginx.conf`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 37 files, 378 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend in dark and light at 1440×1100 and
+    390×844: listener, Studio Genres / Now Playing / Library / Schedule, the
+    schedule editor, add-playlist dialog, login, both themes. The switch
+    updates live, the stored choice survives reload, a fresh visit follows the
+    OS scheme, and there is no horizontal overflow.
+  - Checked through Caddy at `https://localhost/` with the CSP active:
+    `theme-init.js` loads with `Cache-Control: no-cache`, the light theme is
+    applied, and there are no console or CSP errors.
+
 ## 2026-11-25 - studio copy polish
 
 The Auto transport now explains itself with “Follow the schedule at the next

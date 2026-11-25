@@ -8,6 +8,7 @@ import { GenresPanel } from "../components/admin/GenresPanel";
 import { TrackLibraryPanel } from "../components/admin/TrackLibraryPanel";
 import { Toast } from "../components/admin/Toast";
 import { Tabs, type TabDef } from "../components/admin/Tabs";
+import { ThemeSwitch } from "../components/ThemeSwitch";
 import {
   PanelSkeleton,
   Skeleton,
@@ -151,6 +152,7 @@ export function AdminPage() {
             login();
           }}
         >
+          <ThemeSwitch />
           <h1>Studio</h1>
           <p className="hint">
             Sign in to manage genres and Nakout playlists.
@@ -188,6 +190,7 @@ export function AdminPage() {
           Nakout Radio <small>Studio</small>
         </div>
         <div className="top-r">
+          <ThemeSwitch />
           <button
             type="button"
             className="changelog-btn"
