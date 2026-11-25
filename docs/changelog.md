@@ -3,6 +3,29 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - Evening Moss light palette
+
+- The light theme moves to the darkest approved Sea Glass step: page
+  `#aec2a9`, frosted panel `#e7f1e4`, ink `#0b1710`, muted `#384e3f`, accent
+  `#19462e`. It is still a light theme; the glass cards stay pale and text
+  contrast remains strong.
+- The glass tint, green shadow, botanical glows and input borders were
+  adjusted to match the deeper sage.
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 37 files, 378 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend at 1440×1000: listener and Studio
+    Genres. No horizontal overflow. Contrast: ink 9.7:1, muted 4.8:1, accent
+    5.7:1 on the Evening Moss page.
+
 ## 2026-11-25 - unframed Sea Glass wash and deeper sage
 
 - Removed the rounded ambient frame and its border. The blurred artwork is now

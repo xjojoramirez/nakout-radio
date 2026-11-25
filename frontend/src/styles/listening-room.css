@@ -52,25 +52,25 @@
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --lr-bg: #d5e1cf;
-  --lr-bg-soft: #cbd9c6;
-  --lr-surface: #f4faf1;
-  --lr-surface-2: #eaf3e6;
-  --lr-surface-3: #cfdec9;
-  --lr-well: #d9e5d4;
-  --lr-field: #f9fdf7;
-  --lr-ink: #122019;
-  --lr-soft: #35483b;
-  --lr-muted: #4f6355;
-  --lr-dim: #506457;
-  --lr-teal: #245c3e;
-  --lr-teal-strong: #1c4a30;
-  --lr-teal-soft: rgba(36, 92, 62, 0.13);
-  --lr-teal-faint: rgba(36, 92, 62, 0.055);
-  --lr-teal-line: rgba(36, 92, 62, 0.4);
-  --lr-line: rgba(18, 32, 25, 0.14);
-  --lr-line-strong: rgba(18, 32, 25, 0.27);
-  --lr-raise: #122019;
+  --lr-bg: #aec2a9;
+  --lr-bg-soft: #a4b9a0;
+  --lr-surface: #e7f1e4;
+  --lr-surface-2: #dbe8d7;
+  --lr-surface-3: #abc0a5;
+  --lr-well: #dbe8d7;
+  --lr-field: #f1f9ee;
+  --lr-ink: #0b1710;
+  --lr-soft: #2a3f31;
+  --lr-muted: #384e3f;
+  --lr-dim: #3b5142;
+  --lr-teal: #19462e;
+  --lr-teal-strong: #123a23;
+  --lr-teal-soft: rgba(25, 70, 46, 0.15);
+  --lr-teal-faint: rgba(25, 70, 46, 0.065);
+  --lr-teal-line: rgba(25, 70, 46, 0.42);
+  --lr-line: rgba(11, 23, 16, 0.17);
+  --lr-line-strong: rgba(11, 23, 16, 0.32);
+  --lr-raise: #0b1710;
   --lr-led-off: #b3c5b0;
   --lr-on-teal: #ffffff;
   --lr-danger: #a33826;
@@ -80,23 +80,23 @@
   --lr-danger-text-strong: #6a2317;
   --lr-ok: #2f7d46;
   --lr-ok-soft: rgba(47, 125, 70, 0.1);
-  --lr-input-line: #c9d8c3;
-  --lr-input-line-strong: #aabfa4;
-  --lr-dock: rgba(244, 250, 241, 0.62);
+  --lr-input-line: #aec4a8;
+  --lr-input-line-strong: #8ca686;
+  --lr-dock: rgba(232, 242, 229, 0.66);
   --lr-overlay: rgba(22, 35, 26, 0.4);
   --lr-scrim: rgba(22, 35, 26, 0.34);
-  --lr-glow-teal: rgba(62, 118, 76, 0.27);
-  --lr-glow-warm: rgba(160, 178, 136, 0.2);
-  --lr-placeholder: #5f7365;
+  --lr-glow-teal: rgba(42, 90, 54, 0.34);
+  --lr-glow-warm: rgba(130, 150, 106, 0.26);
+  --lr-placeholder: #526759;
   --lr-glass-bg: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.62) 0%,
     rgba(255, 255, 255, 0.24) 42%,
-    rgba(194, 215, 189, 0.3) 100%
+    rgba(168, 194, 162, 0.34) 100%
   );
   --lr-glass-rim: rgba(255, 255, 255, 0.68);
   --lr-glass-shadow:
-    0 26px 60px rgba(28, 56, 38, 0.14),
+    0 26px 60px rgba(18, 42, 26, 0.17),
     inset 0 1px 0 rgba(255, 255, 255, 0.92),
     inset 0 -1px 0 rgba(166, 198, 164, 0.3);
 }
@@ -2334,17 +2334,17 @@ body:has(.admin-page) {
   background:
     radial-gradient(
       980px 640px at 84% -8%,
-      rgba(58, 112, 72, 0.28),
+      rgba(42, 90, 54, 0.34),
       transparent 64%
     ),
     radial-gradient(
       820px 580px at -4% 14%,
-      rgba(160, 178, 136, 0.22),
+      rgba(130, 150, 106, 0.26),
       transparent 62%
     ),
     radial-gradient(
       760px 520px at 58% 42%,
-      rgba(86, 142, 98, 0.16),
+      rgba(64, 116, 76, 0.19),
       transparent 70%
     ),
     var(--lr-bg);

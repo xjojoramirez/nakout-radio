@@ -19,10 +19,11 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 - **Palette (dark, default):** ink `#090b0e`, cream `#e9e4d8`, muted
   `#8f979e`, teal `#79c7b8`, hairlines at ~9% cream.
-- **Palette (light, Sea Glass):** sage mist `#d5e1cf`, frosted panel
-  `#f4faf1` at ~55%, ink `#122019`, muted `#4f6355`, sea-green `#245c3e`,
-  hairlines at ~14% ink. Soft green and warm botanical glows sit behind the
-  glass. The turntable plinth and vinyl stay graphite in both themes.
+- **Palette (light, Sea Glass / Evening Moss):** sage `#aec2a9`, frosted
+  panel `#e7f1e4` at ~55%, ink `#0b1710`, muted `#384e3f`, deep forest
+  `#19462e`, hairlines at ~17% ink. Soft green and warm botanical glows sit
+  behind the glass. The turntable plinth and vinyl stay graphite in both
+  themes.
 - **Theme choice:** first visit follows the OS, an explicit choice is remembered
   in `localStorage`, and a sun/moon switch sits in the listener header, the
   Studio header and the Studio login.
