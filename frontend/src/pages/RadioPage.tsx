@@ -145,7 +145,6 @@ export function RadioPage() {
                     </div>
                   </div>
                 )}
-                <p className="lr-note">A quiet room, a loud song.</p>
                 <LinerNotes
                   status={details.status}
                   detail={details.detail}

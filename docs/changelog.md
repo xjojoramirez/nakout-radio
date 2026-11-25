@@ -3,6 +3,30 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - remove the tagline and enlarge the now-playing kicker
+
+Dropped the editorial “A quiet room, a loud song.” line above the liner notes,
+along with its CSS and DOM test. The now-playing kicker (“Alt R&B /
+Neo-soulfunk · live now”) is now 0.68rem (10.88px, up from 9.6px) with slightly
+tighter tracking, so it reads more clearly without wrapping or clipping.
+
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/styles/listening-room.css`
+  - `frontend/src/pages/RadioPage.dom.test.tsx`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 35 files, 372 tests pass (the tagline test was removed)
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Rebuilt Docker frontend checked at 1280×900 and 390×844: the tagline is
+    gone, the kicker renders at 10.88px (294px wide, not clipped) and there is
+    no horizontal overflow. Screenshots captured at both widths.
+
 ## 2026-11-24 - limit the project to three font families
 
 Removed Bricolage Grotesque and DM Mono from the Google Fonts request and from
