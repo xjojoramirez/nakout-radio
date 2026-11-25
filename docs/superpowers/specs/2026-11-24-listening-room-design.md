@@ -19,20 +19,19 @@ Listening Room). It applies to the listener page, the Studio and every popup
 
 - **Palette (dark, default):** ink `#090b0e`, cream `#e9e4d8`, muted
   `#8f979e`, teal `#79c7b8`, hairlines at ~9% cream.
-- **Palette (light, Sea Glass / Evening Moss):** sage `#aec2a9`, frosted
-  panel `#e7f1e4` at ~55%, ink `#0b1710`, muted `#384e3f`, deep forest
-  `#19462e`, hairlines at ~17% ink. Soft green and warm botanical glows sit
-  behind the glass. The turntable plinth and vinyl stay graphite in both
-  themes.
-- **Theme choice:** first visit follows the OS, an explicit choice is remembered
-  in `localStorage`, and a sun/moon switch sits in the listener header, the
-  Studio header and the Studio login.
+- **Palette (light, dormant):** the Evening Moss / Sea Glass tokens
+  (sage `#aec2a9`, frosted panel `#e7f1e4`, ink `#0b1710`, forest `#19462e`)
+  remain in the stylesheet behind `[data-theme="light"]`, but no UI sets that
+  attribute. The turntable plinth and vinyl stay graphite in both palettes.
+- **Theme:** dark is the only theme exposed in the UI. There is no light/dark
+  switcher; `color-scheme` and the browser theme colour stay dark.
 - **Type:** two families only - Inter for body, controls, the wordmark, track
   titles, headings and popup titles; JetBrains Mono for labels, times and
   metadata. Instrument Serif, Bricolage Grotesque and DM Mono were removed.
-- **Shape:** circular artwork disc, 1px hairlines, one frosted panel
-  (liner notes), one frosted dock and, in light mode, translucent glass cards
-  in the Studio. No wood, plinth, tonearm or RPM badges on the listener page.
+- **Shape:** circular artwork disc, 1px hairlines, one translucent panel
+  (liner notes) and one floating dock. In the dormant light palette the Studio
+  surfaces can become frosted glass. No wood, plinth, tonearm or RPM badges on
+  the listener page.
 - **Motion:** the record keeps the existing spin-up / spin-down inertia. CSS
   adds a dashed rotation ring and a slow teal sheen; both respect
   `prefers-reduced-motion`.
@@ -104,8 +103,9 @@ Listening Room). It applies to the listener page, the Studio and every popup
   teal accent, cream text, Inter body and headings, JetBrains Mono labels.
 - Shell: sans wordmark, hairline header, quiet underline tabs, hairline cards
   and rows, outlined secondary buttons, teal primary buttons and focus rings.
-  In Sea Glass light mode the cards, rows, login panel, schedule editor and
-  dialogs become frosted surfaces with a white rim and soft green shadow.
+  In the dormant Sea Glass light palette the cards, rows, login panel, schedule
+  editor and dialogs become frosted surfaces with a white rim and soft green
+  shadow.
 - Now playing keeps the deck but renders it as the same artwork disc, with the
   mixer on a hairline panel and teal VU bars.
 - Popups: blurred scrim, panel with hairline border, Inter 600 title, Inter

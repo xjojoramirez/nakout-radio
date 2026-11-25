@@ -3,6 +3,42 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-25 - dark theme is the default; switcher removed
+
+- Removed the sun/moon theme switch from the listener header, Studio header
+  and Studio login.
+- Removed the `theme.ts` store, `ThemeSwitch` component and its test, the
+  `theme-init.js` boot file and its nginx no-cache rule.
+- The app now always renders the original dark Listening Room theme. The
+  document keeps `color-scheme: dark` and the dark browser theme colour; no
+  script reads or writes a theme preference.
+- The Evening Moss light tokens and glass rules remain in
+  `listening-room.css` behind `[data-theme="light"]` for a future option, but
+  no UI sets that attribute.
+- Files touched:
+  - `frontend/src/pages/RadioPage.tsx`
+  - `frontend/src/pages/AdminPage.tsx`
+  - `frontend/src/main.tsx`
+  - `frontend/src/styles/listening-room.css`
+  - `frontend/index.html`
+  - `frontend/nginx.conf`
+  - deleted `frontend/src/components/ThemeSwitch.tsx`
+  - deleted `frontend/src/components/ThemeSwitch.dom.test.tsx`
+  - deleted `frontend/src/theme.ts`
+  - deleted `frontend/public/theme-init.js`
+  - `docs/superpowers/specs/2026-11-24-listening-room-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run typecheck` — pass
+  - `npm test` — 36 files, 375 tests pass
+  - `npm run lint` — pass
+  - `npm run build` — pass
+  - Checked the rebuilt Docker frontend at 1440×1000 and 390×844: dark theme
+    renders by default, there is no theme switch in the listener, Studio or
+    login, `data-theme` is unset, and there is no horizontal overflow.
+
 ## 2026-11-25 - Evening Moss light palette
 
 - The light theme moves to the darkest approved Sea Glass step: page
