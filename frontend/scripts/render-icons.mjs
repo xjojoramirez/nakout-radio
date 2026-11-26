@@ -8,10 +8,45 @@ const pub = resolve(here, "..", "public");
 
 const BACKGROUND = "#090b0e";
 
-function render(svg, width, outPath) {
+function pngBuffer(svg, width) {
   const png = new Resvg(svg, { fitTo: { mode: "width", value: width } }).render();
-  writeFileSync(outPath, png.asPng());
+  return { width: png.width, height: png.height, data: png.asPng() };
+}
+
+function render(svg, width, outPath) {
+  const png = pngBuffer(svg, width);
+  writeFileSync(outPath, png.data);
   console.log(`${outPath}  ${png.width}x${png.height}`);
+}
+
+// Packs PNGs into a Vista-style ICO. Browsers and Google still request
+// /favicon.ico directly, and the SPA fallback used to answer that with HTML.
+function buildIco(images) {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(images.length, 4);
+
+  let offset = 6 + images.length * 16;
+  const entries = images.map((image) => {
+    const entry = Buffer.alloc(16);
+    entry.writeUInt8(image.width >= 256 ? 0 : image.width, 0);
+    entry.writeUInt8(image.height >= 256 ? 0 : image.height, 1);
+    entry.writeUInt8(0, 2);
+    entry.writeUInt8(0, 3);
+    entry.writeUInt16LE(1, 4);
+    entry.writeUInt16LE(32, 6);
+    entry.writeUInt32LE(image.data.length, 8);
+    entry.writeUInt32LE(offset, 12);
+    offset += image.data.length;
+    return entry;
+  });
+
+  return Buffer.concat([
+    header,
+    ...entries,
+    ...images.map((image) => image.data),
+  ]);
 }
 
 function inner(svg) {
@@ -46,8 +81,14 @@ function wrapSocialLogo(logoSvg) {
 const favicon = readFileSync(join(pub, "favicon.svg"), "utf8");
 const logo = readFileSync(join(pub, "logo.svg"), "utf8");
 
-for (const size of [16, 32, 48]) {
-  render(favicon, size, join(pub, `favicon-${size}.png`));
-}
+const faviconPngs = [16, 32, 48].map((size) => {
+  const png = pngBuffer(favicon, size);
+  const outPath = join(pub, `favicon-${size}.png`);
+  writeFileSync(outPath, png.data);
+  console.log(`${outPath}  ${png.width}x${png.height}`);
+  return png;
+});
+writeFileSync(join(pub, "favicon.ico"), buildIco(faviconPngs));
+console.log(`${join(pub, "favicon.ico")}  ${faviconPngs.length} sizes`);
 render(wrapAppleTouch(favicon), 180, join(pub, "apple-touch-icon.png"));
 render(wrapSocialLogo(logo), 512, join(pub, "logo-512.png"));

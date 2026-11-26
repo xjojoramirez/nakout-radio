@@ -8,7 +8,7 @@ const DESCRIPTION =
 
 function seo(siteUrl: string): Plugin {
   const canonical = `${siteUrl}/`;
-  const ogImage = `${siteUrl}/logo-512.png`;
+  const ogImage = `${siteUrl}/logo-512.png?v=2`;
 
   const robots = [
     "User-agent: *",
