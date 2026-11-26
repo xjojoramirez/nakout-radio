@@ -57,6 +57,8 @@ The old wood, cream and amber values are gone.
 - `frontend/public/favicon.svg` is the 64 mark: cabinet, cream speaker face,
   dark record with a teal label, teal dial, one knob. It drops the grooves,
   dial lines and second knob so the shape survives 16px.
+- `frontend/public/favicon.ico` packs the 16, 32 and 48 PNGs into a real ICO.
+  Without it, `/favicon.ico` fell through the SPA rewrite and returned HTML.
 - `frontend/public/favicon-16.png`, `favicon-32.png`, `favicon-48.png` are
   rasterized from the favicon SVG.
 - `frontend/public/apple-touch-icon.png` is 180px, full-bleed `#090b0e`, with
@@ -69,12 +71,13 @@ full-bleed wrappers.
 
 ## Wiring
 
-`frontend/index.html` links the SVG favicon, the 16, 32 and 48 PNGs and the
-180px Apple touch icon. It carries the new title, meta description, OG and
-Twitter tags.
+`frontend/index.html` links the ICO, the SVG favicon with `?v=2`, the 16, 32
+and 48 PNGs with `?v=2`, and the 180px Apple touch icon with `?v=2`. It carries
+the new title, meta description, OG and Twitter tags.
 
 `frontend/vite.config.ts` keeps the `seo` plugin and updates the shared
-`DESCRIPTION` used by the `RadioStation` JSON-LD.
+`DESCRIPTION` used by the `RadioStation` JSON-LD. The OG and JSON-LD logo URL
+carries `?v=2` so crawlers and social cards refetch it.
 
 `README.md` updates the opening description and adds the brand line.
 
@@ -87,8 +90,10 @@ Twitter tags.
 
 ## Verification
 
-- `npm run render:icons` writes all five PNGs at the expected sizes.
-- Inspect the 16, 32, 48, 180 and 512 renders on the dark and cream grounds.
+- `npm run render:icons` writes the ICO and the five PNGs at the expected
+  sizes.
+- Inspect the 16, 32, 48, 180 and 512 renders on the dark and cream grounds,
+  and check the ICO directory entries.
 - `npm run typecheck`, `npm test`, `npm run lint`, `npm run build` and
   `npm run check:bundle` pass.
 - After merge, rebuild the frontend container and hard refresh the browser.

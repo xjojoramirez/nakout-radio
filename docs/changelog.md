@@ -3,6 +3,32 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-26 - make the favicon crawlable and refresh the search cache
+
+- `/favicon.ico` was falling through the SPA rewrite and returning
+  `index.html`, so Google could keep the old mark. The icon build now packs
+  the 16, 32 and 48 PNGs into a real ICO and the head links it with
+  `sizes="any"`.
+- The SVG, PNG and Apple touch icon links carry `?v=2`, and the OG and
+  JSON-LD logo URL carries `?v=2`, so crawlers and social cards refetch the
+  new files instead of reusing cached ones.
+- Files touched:
+  - `frontend/index.html`
+  - `frontend/vite.config.ts`
+  - `frontend/public/favicon.ico`
+  - `frontend/scripts/render-icons.mjs`
+  - `docs/superpowers/specs/2026-11-26-rebrand-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes, frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run render:icons` pass, ICO has 16, 32 and 48 entries
+  - `npm run typecheck` pass
+  - `npm test` 36 files, 375 tests pass
+  - `npm run lint` pass
+  - `npm run build` pass
+  - `npm run check:bundle` pass, JS 89.2 kB / 95.0 kB and CSS 17.9 kB / 19.0 kB
+
 ## 2026-11-26 - rebrand the public description and icon set
 
 - The public copy now leads with "Always on. Know the music." and describes the
