@@ -1,13 +1,15 @@
 # Story worklist
 
-Date: 2026-11-11 (updated 2026-11-20)
+Date: 2026-11-11 (updated 2026-11-26)
 
 Status of the local track-story composition work.
 
-Current status (2026-11-20): 993 tracks, 988 summaries, 592 stories, 5 with no
-prose and 472 with locked prose, matching local and live. The 2026-11-20 pass
-pushed 12 tracks of facts, 17 prose records and 3 chart sets; the Sikat Na Si
-Pedro record was corrected, composed and pushed later the same day.
+Current status (2026-11-26): local and live both have 1,115 tracks, 1,102
+summaries, 659 stories, 13 with no prose, 493 locked summaries and 314 locked
+stories. The 2026-11-26 review of the 34 tracks added by the live mirror
+composed 21 summaries and 13 stories and corrected 16 detail records plus
+three library artist/title fields. The snapshot was pushed to live the same
+day; see the changelog.
 
 ## Completed
 
@@ -803,11 +805,64 @@ pushed to live on 2026-11-20; live now matches local.
   before the push; the correction script is
   `C:\Users\SD\nakout-backups\review-fixes-20261120-batch38.py`.
 
+## 2026-11-26 review of the 34 tracks added since 2026-11-20
+
+The 2026-11-26 live mirror brought 122 tracks, 34 of them with empty detail
+prose. Seven read-only reviewer agents audited them in batches; the composer
+then wrote 21 summaries and 13 stories and filled the empty facts the sources
+supported. Every composed field is locked with a source URL. The snapshot was
+pushed to live later the same day; see the changelog.
+
+- New prose (21): Peacepipe — Drop Your Gun; 311 — New Heights; Seven Mary
+  Three — Roderigo, Devil Boy, My My, Lame, Anything, Margaret and Favorite
+  Dog; Tribal Seeds — Dawn of Time; The Expendables — Bowl For Two; Fortunate
+  Youth — Sweet Sensi; Junior Tucker — Some Guys Have All the Luck; Junior
+  Kilat — Buwad Suka Sili and Party Pipol Ur On TV (Live); Isla Era — Barkada
+  Ko; Holy Jam (HOJA) — Greaseman (summary only); Hemp Republic — Fireflies
+  (summary only); I.P.O.T.S. — Kabobohan (summary only); Gamiti'g Kalma — Not
+  Now Bolinao; O-Shen — Carry On Rootsman.
+- Stories (13): Peacepipe; the four Seven Mary Three tracks with stories
+  (Lame, Anything, Margaret, Favorite Dog); Tribal Seeds; The Expendables;
+  Fortunate Youth; Junior Tucker; Junior Kilat's two tracks; Isla Era;
+  Gamiti'g Kalma.
+- Detail fixes after review: the seven Seven Mary Three labels moved from
+  Rhino Atlantic to Mammoth Records and My My gained Billboard Mainstream
+  Rock #19 (1996); The Expendables moved to Right Time Records and
+  2004-09-28; Fortunate Youth gained Reggae / Reggae rock genres; Junior
+  Kilat's Buwad Suka Sili is track 1; Party Pipol Ur On TV moved to Party
+  Pipol Ur On Dub TV on Galaxy Records; Isla Era moved to 2006 with a Reggae
+  genre; Hemp Republic's Fireflies is the vocal take, track 4, ISRC
+  TCAGD2245921; Peacepipe's label is Galaxy Records; Smashing Pumpkins' Luna
+  summary and link were replaced (the old summary was about the La Luna
+  nightclub); Bob Marley's Is This Love moved from the 2024 Legend (DUB Reggae
+  Roots) match to Kaya, 1978, Tuff Gong / Island.
+- Library metadata: the channel names OBEreggae, V Neck TV and Hatsu Kaishi
+  became Junior Tucker, O-Shen and Enchi, with titles Some Guys Have All the
+  Luck, Carry On Rootsman and Budlot Mata. O-Shen's record then gained a
+  summary, album Rascal in Paradise, 2002 and the Hobo House on the Hill
+  label.
+- Remaining fact follow-ups: Buwad Suka Sili's ISRC is still the radio edit's
+  code (the album cut's ISRC is unknown); Peacepipe and the Seven Mary Three
+  records still carry only a Main credit; Fortunate Youth's label is the
+  ambiguous Fortunate Youth / Sugarshack / Fortunate Entertainment; the
+  SANDWICH and Teeth duplicates still need removal or redirect. The 13
+  prose-less records are excluded or blocked: SANDWICH — Masilungan and
+  Teeth — Sorry are duplicates; Equinox Stars — Let's Groove, Party Tyme —
+  Funkytown and Little Stranger's Clint Eastwood are covers; For Reverse —
+  Envisioned, Sunken Roots — MRWGA and Enchi — Budlot Mata have no reputable
+  source; Tempest Films, peach mills and the three OPM channel uploads still
+  have unclear artist/title identity.
+- Backups: `local-radio-pre-review-20261126.db` (pre-review mirror),
+  `local-radio-post-compose-pre-fix-20261126.db` (before the fact fixes) and
+  `local-radio-post-review-20261126.db` (final); the correction script is
+  `C:\Users\SD\nakout-backups\review-fixes-20261126.py`.
+
 ## Remaining
 
-- 6 tracks still have neither summary nor story.
-- 402 tracks still have no story at all.
-- 471 tracks have locked prose locally and on live.
+- 13 tracks still have neither summary nor story.
+- 456 tracks still have no story at all.
+- 493 tracks have locked summaries and 314 have locked stories locally and on
+  live.
 
 ### Remaining by genre (no prose at all)
 
@@ -818,23 +873,25 @@ Bato.
 |---|---|
 | OPM Tunog Kalye | 0 |
 | NU Metal | 1 |
-| Pinoy Bato | 1 |
+| Pinoy Bato | 0 |
 | Classic Love Songs | 0 |
 | New Wave | 1 |
 | Emo Night | 0 |
 | Classic Rock | 0 |
 | Traffic Jam | 0 |
+| Reggae | 8 |
 | No playlist | 3 |
 
 ## Next batch (0)
 
-The 18-track batch is complete. The six remaining empty records are excluded or
-blocked: Famous or Forgotten Music and Party Tyme are cover/karaoke uploads;
-`JUz9TxUsXJM` (SANDWICH — Masilungan), `xddfFA5JGJs` (Teeth — Sorry) and
-`nnqzQpsDlGk` (Equinox Stars — Let's Groove) are duplicate uploads with no
-playlist; For Reverse's Envisioned has no reputable source beyond DSP metadata.
-A further batch needs new tracks in the library or a decision on the covers and
-duplicates; For Reverse can be revisited if press coverage appears.
+The 34-track review is complete. The 13 remaining empty records are excluded or
+blocked: SANDWICH — Masilungan and Teeth — Sorry are duplicate uploads;
+Equinox Stars — Let's Groove, Party Tyme — Funkytown and Little Stranger's
+Clint Eastwood are covers; For Reverse's Envisioned, Sunken Roots' MRWGA and
+Enchi's Budlot Mata have no reputable source beyond DSP or channel metadata;
+the three OPM channel uploads, Tempest Films and peach mills still need their
+artist/title identity resolved. A further batch needs new tracks in the library
+or a decision on the covers and duplicates.
 
 ## Resume workflow
 

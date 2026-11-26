@@ -3,6 +3,180 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-26 - apply the reviewed local data to live
+
+Replaced the live radio database with the local snapshot after the 34-track
+review, the Peacepipe video swap and the genre descriptions. Live and local
+static tables match at the snapshot.
+
+- Live backup: `/home/jojo/nakout-backups/live-radio-pre-live-apply-20261126.db`
+  (copy at `C:\Users\SD\nakout-backups\live-radio-pre-live-apply-20261126.db`).
+- Local snapshot applied:
+  `C:\Users\SD\nakout-backups\local-radio-live-apply-20261126.db`.
+- Live state: 1,115 tracks, 1,115 details, 1,102 summaries, 659 stories,
+  13 with no summary, 0 needs_review; 11 playlists, 11 genres and 14 schedule
+  slots. Reggae and Grunge descriptions are present.
+- Peacepipe now points at `zj9geIPYREw`; `ArqULV1JFlw` returns 404 and the
+  `video_overrides` setting is present.
+- The live backend image at the time of the data push did not include the
+  `video_overrides` sync hook. The data is correct now; deploying this change
+  makes the override durable. Until then, a live playlist sync would restore
+  the Topic video.
+- Files touched:
+  - `docs/changelog.md`
+  - `docs/story-worklist.md`
+  - live SQLite database in the live backend volume (not tracked)
+- **Container restart required?** The live backend was stopped briefly for
+  the database swap and restarted healthy; no image rebuild.
+- **Verification:**
+  - `/api/library/meta`: 1,115 tracks, 1,115 details, 11 playlists,
+    11 genres and 9 standalone tracks.
+  - `/api/genres/reggae` and `/api/genres/grunge` return the new
+    descriptions.
+  - `/api/tracks/zj9geIPYREw` returns the Peacepipe summary and story;
+    `/api/tracks/ArqULV1JFlw` is 404.
+  - `/api/schedule/today`: 10 slots; `/api/now` is playing.
+  - Static table hashes match for `alembic_version`, `genre`, `playlist`,
+    `trackcache`, `trackchartentry`, `trackdetail` and `scheduleslot`.
+  - `pragma quick_check` is `ok`.
+
+## 2026-11-26 - add Reggae and Grunge genre descriptions
+
+The two playlists added by the live schedule had no About copy. Added
+three-line descriptions in the same voice as the other genres: Reggae covers
+roots, dub, ska and the Pinoy bands; Grunge covers the '90s alt-rock canon
+and the bands that kept the distortion alive.
+
+- Files touched:
+  - `docs/changelog.md`
+  - local SQLite database in Docker volume `nakout-radio_radio_data` (not
+    tracked)
+- Backup: `local-radio-post-genre-descriptions-20261126.db`.
+- **Container restart required?** No. Data-only change.
+- **Verification:**
+  - `GET /api/genres/reggae` returns the new 319-character description and
+    37 tracks.
+  - `GET /api/genres/grunge` returns the new 388-character description and
+    89 tracks.
+  - `pragma quick_check` is `ok`.
+
+## 2026-11-26 - swap the unembeddable Peacepipe video for the official lyric video
+
+The listener page could not play Peacepipe's Drop Your Gun while the Studio
+kept showing the broadcast as live. The YouTube Topic video `ArqULV1JFlw`
+returns embed error 150 ("Video unavailable") even though the Data API still
+reports `embeddable: true`; the official lyric video `zj9geIPYREw` plays
+normally.
+
+- Replaced the track's library video with `zj9geIPYREw` (same recording,
+  5:22), moved the existing detail record and prose to the new id, and
+  restarted the track in the Reggae run.
+- Added a `video_overrides` setting (`{"ArqULV1JFlw": "zj9geIPYREw"}`) and a
+  hook in the playlist sync so the dead id is mapped to the playable official
+  upload on future syncs. The YouTube playlist itself still contains the
+  Topic video; updating it remains the clean long-term fix.
+- The listener page now loads the lyric video and reports On air; verified in
+  a headless Chromium with the iframe at readyState 4 and advancing.
+- Backup: `local-radio-post-peacepipe-fix-20261126.db` (final local state).
+- Files touched:
+  - `backend/app/library.py`
+  - `backend/app/sync.py`
+  - `backend/tests/test_sync.py`
+  - `docs/changelog.md`
+  - local SQLite database in Docker volume `nakout-radio_radio_data` (not
+    tracked)
+- **Container restart required?** Yes — backend only:
+  `docker compose up -d --build backend`
+- **Verification:**
+  - `backend\.venv\Scripts\python.exe -m pytest -q backend/tests/test_sync.py
+    backend/tests/test_library.py backend/tests/test_youtube.py` — 54 passed.
+  - `video_overrides` maps `ArqULV1JFlw` to `zj9geIPYREw`; an `IncomingTrack`
+    through `apply_video_overrides` returns the lyric id and thumbnail.
+  - `GET /api/now` reports Peacepipe — Drop Your Gun with
+    `youtube_video_id: zj9geIPYREw`.
+  - Headless listener check: iframe `zj9geIPYREw`, `readyState: 4`,
+    `paused: false`, current time advancing; the page shows On air.
+  - `pragma quick_check` is `ok`.
+
+## 2026-11-26 - review and compose the 34 prose-less live-mirror tracks
+
+Reviewed the 34 records that the live mirror left without a summary. Seven
+read-only reviewer agents audited identity, facts, charts and sources; the
+composer wrote 21 summaries and 13 stories and filled the empty facts the
+sources supported. The review also corrected 16 detail records and three
+library artist/title fields locally.
+
+- Prose: 21 summaries and 13 stories, each locked with a source URL. The 13
+  records that stay prose-less are covers, karaoke, channel uploads,
+  duplicates or DSP-only.
+- Detail fixes: Seven Mary Three labels to Mammoth Records and My My
+  Billboard Mainstream Rock #19 (1996); The Expendables to Right Time Records
+  and 2004-09-28; Fortunate Youth genres to Reggae / Reggae rock; Junior
+  Kilat Buwad Suka Sili to track 1 and Party Pipol Ur On TV to Party Pipol Ur
+  On Dub TV / Galaxy Records; Isla Era to 2006 / Reggae; Hemp Republic's
+  Fireflies to the vocal track 4 and ISRC TCAGD2245921; Peacepipe to Galaxy
+  Records; Smashing Pumpkins' Luna summary and link (the old summary was about
+  the La Luna nightclub); Bob Marley's Is This Love to Kaya, 1978,
+  Tuff Gong / Island.
+- Library metadata: OBEreggae to Junior Tucker, V Neck TV to O-Shen and Hatsu
+  Kaishi to Enchi, with corrected titles. The O-Shen record also gained a
+  summary, album Rascal in Paradise, 2002 and the Hobo House on the Hill
+  label.
+- Backups: `local-radio-pre-review-20261126.db` (pre-review mirror),
+  `local-radio-post-compose-pre-fix-20261126.db` (before the fact fixes) and
+  `local-radio-post-review-20261126.db` (final); the correction script is
+  `C:\Users\SD\nakout-backups\review-fixes-20261126.py`.
+- Files touched:
+  - `docs/story-worklist.md`
+  - `docs/changelog.md`
+  - local SQLite database in Docker volume `nakout-radio_radio_data` (not
+    tracked)
+- **Container restart required?** No. Data-only changes; the backend stayed up
+  and healthy.
+- **Verification:**
+  - Local counts: 1,115 tracks, 1,102 summaries, 659 stories, 13 with no
+    summary, 456 with no story and 0 needs_review; 493 locked summaries and
+    314 locked stories.
+  - `pragma quick_check` is `ok`; `/api/library/meta` reports 1,115 tracks,
+    1,115 details, 11 playlists and 11 genres; `/api/health` returns HTTP 200.
+  - Spot checks: Luna's summary and Wikipedia link are corrected, Is This Love
+    is Kaya / 1978 / Tuff Gong / Island, Junior Tucker is 1980 / Island,
+    Seven Mary Three labels are Mammoth Records and My My has the Mainstream
+    Rock row.
+  - `backend\.venv\Scripts\python.exe -m pytest -q backend/tests/test_changelog.py`
+    — 13 passed.
+
+## 2026-11-26 - mirror all live data into local
+
+Replaced the local SQLite database with a consistent snapshot of the live
+database so local matches production exactly. The library pull ran first, then
+the full database swap brought over the schedule, settings and runtime state
+the library API does not carry.
+
+- Snapshot: 1,115 tracks (1,151 membership rows), 1,115 details, 9,107 chart
+  rows, 11 playlists, 11 genres, 14 schedule slots and 11 settings.
+- Local-only records were removed by the mirror: five standalone tracks (Linda
+  Ronstadt, Nelly, The Pussycat Dolls, Jennifer Lopez, DJ Kane) and their
+  details.
+- Backups: `C:\Users\SD\nakout-backups\local-radio-pre-live-pull-20261126.db`,
+  `local-radio-pre-mirror-20261126.db`, `live-radio-mirror-20261126.db` and
+  `live-snapshot-20261126.json`; the live copy is
+  `/home/jojo/nakout-backups/live-radio-mirror-20261126.db`.
+- Files touched:
+  - `docs/changelog.md`
+  - local SQLite database in Docker volume `nakout-radio_radio_data` (not
+    tracked)
+- **Container restart required?** No image rebuild. The local backend was
+  stopped briefly for the database swap and restarted healthy.
+- **Verification:**
+  - Live and local table hashes are identical for `alembic_version`, `genre`,
+    `playlist`, `revokedsession`, `scheduleslot`, `setting`, `trackcache`,
+    `trackchartentry`, `trackdetail` and `trackplay`.
+  - Local `/api/library/meta`: 1,115 tracks, 9 standalone, 1,115 details,
+    11 playlists and 11 genres, matching live.
+  - `/api/schedule/today` is identical to live (10 slots today); SQLite
+    `pragma quick_check` is `ok`.
+
 ## 2026-11-26 - make the favicon crawlable and refresh the search cache
 
 - `/favicon.ico` was falling through the SPA rewrite and returning
