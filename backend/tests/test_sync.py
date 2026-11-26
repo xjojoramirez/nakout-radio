@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from sqlmodel import Session, SQLModel, create_engine, select
 
-from app.models import Genre, Playlist, TrackCache
+from app.models import Genre, Playlist, Setting, TrackCache
 from app.sync import sync_playlist
 from app.youtube import TrackData
 
@@ -202,3 +202,46 @@ def test_sync_resets_loudness_when_title_changes():
         row = s.exec(select(TrackCache)).one()
         assert row.gain_db is None
         assert row.gain_checked_at is None
+
+
+def test_sync_applies_video_override():
+    engine = _engine()
+    _genre_and_playlist(engine)
+    with Session(engine) as s:
+        s.add(Setting(key="video_overrides", value='{"v1": "v2"}'))
+        s.commit()
+
+    with Session(engine) as s:
+        pl = s.exec(select(Playlist)).one()
+        sync_playlist(
+            s, pl, lambda _id: [TrackData("v1", "One", "Art", "u1", 0, 100)]
+        )
+
+    with Session(engine) as s:
+        rows = s.exec(select(TrackCache)).all()
+        assert [r.youtube_video_id for r in rows] == ["v2"]
+        assert rows[0].thumbnail_url == "https://i.ytimg.com/vi/v2/hqdefault.jpg"
+        assert rows[0].duration_seconds == 100
+
+
+def test_sync_video_override_keeps_row_id_on_resync():
+    engine = _engine()
+    _genre_and_playlist(engine)
+    with Session(engine) as s:
+        s.add(Setting(key="video_overrides", value='{"v1": "v2"}'))
+        s.commit()
+    fetched = lambda _id: [TrackData("v1", "One", "Art", "u1", 0, 100)]  # noqa: E731
+
+    with Session(engine) as s:
+        pl = s.exec(select(Playlist)).one()
+        sync_playlist(s, pl, fetched)
+    with Session(engine) as s:
+        original = s.exec(select(TrackCache)).one().id
+
+    with Session(engine) as s:
+        pl = s.exec(select(Playlist)).one()
+        sync_playlist(s, pl, fetched)
+
+    with Session(engine) as s:
+        rows = s.exec(select(TrackCache)).all()
+        assert [(r.id, r.youtube_video_id) for r in rows] == [(original, "v2")]

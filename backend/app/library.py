@@ -7,6 +7,7 @@ a standalone library track. Removing a membership never deletes the track.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Iterable
@@ -29,6 +30,7 @@ from app.library_schemas import (
 from app.models import (
     Genre,
     Playlist,
+    Setting,
     TrackCache,
     TrackChartEntry,
     TrackDetail,
@@ -75,6 +77,49 @@ class IncomingTrack:
     duration_seconds: int = 0
     position: int = 0
     gain_db: float | None = None
+
+
+VIDEO_OVERRIDES_KEY = "video_overrides"
+
+
+def video_overrides(session: Session) -> dict[str, str]:
+    """Read the id-to-id playback override map from settings.
+
+    YouTube can report a video as embeddable while the embed player still
+    rejects it (for example with error 150). The override maps that id to a
+    playable upload of the same recording, so a playlist sync does not put the
+    dead video back.
+    """
+    row = session.get(Setting, VIDEO_OVERRIDES_KEY)
+    if row is None or not row.value:
+        return {}
+    try:
+        data = json.loads(row.value)
+    except (TypeError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {
+        key: value
+        for key, value in data.items()
+        if isinstance(key, str) and isinstance(value, str) and key and value
+    }
+
+
+def apply_video_overrides(
+    session: Session, incoming: list[IncomingTrack]
+) -> None:
+    overrides = video_overrides(session)
+    if not overrides:
+        return
+    for item in incoming:
+        replacement = overrides.get(item.youtube_video_id)
+        if replacement is None or replacement == item.youtube_video_id:
+            continue
+        item.youtube_video_id = replacement
+        item.thumbnail_url = (
+            f"https://i.ytimg.com/vi/{replacement}/hqdefault.jpg"
+        )
 
 
 @dataclass
