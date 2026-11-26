@@ -3,6 +3,44 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-26 - rebrand the public description and icon set
+
+- The public copy now leads with "Always on. Know the music." and describes the
+  shared broadcast, the day-long genre turns, and the details behind each song.
+  The title, meta description, OG tags, Twitter tags, JSON-LD and README intro
+  all use the new voice. No long dashes in the new copy.
+- The logo and favicons move from wood and amber to the Listening Room palette:
+  graphite `#121a1d`, cream `#e9e4d8` and teal `#79c7b8` on `#090b0e`. The mark
+  keeps the tabletop radio shape, with a record for a speaker and liner-note
+  lines in the dial.
+- `favicon.svg` is a 64px simplification that drops the record grooves, dial
+  lines and second knob so the mark survives 16px. The Apple touch and social
+  logos get a full-bleed `#090b0e` background.
+- Files touched:
+  - `frontend/index.html`
+  - `frontend/vite.config.ts`
+  - `frontend/public/logo.svg`
+  - `frontend/public/favicon.svg`
+  - `frontend/public/favicon-16.png`
+  - `frontend/public/favicon-32.png`
+  - `frontend/public/favicon-48.png`
+  - `frontend/public/apple-touch-icon.png`
+  - `frontend/public/logo-512.png`
+  - `frontend/scripts/render-icons.mjs`
+  - `README.md`
+  - `docs/superpowers/specs/2026-11-26-rebrand-design.md`
+  - `docs/changelog.md`
+- **Container restart required?** Yes, frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - `npm run render:icons` pass, five PNGs at 16, 32, 48, 180 and 512
+  - 16, 32, 48, 180 and 512 renders inspected against the dark and cream grounds
+  - `npm run typecheck` pass
+  - `npm test` 36 files, 375 tests pass
+  - `npm run lint` pass
+  - `npm run build` pass
+  - `npm run check:bundle` pass, JS 89.2 kB / 95.0 kB and CSS 17.9 kB / 19.0 kB
+
 ## 2026-11-25 - keep the liner notes width stable across mobile tabs
 
 - The listener body now stretches `#root` horizontally while keeping its

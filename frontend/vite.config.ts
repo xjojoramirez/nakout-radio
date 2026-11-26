@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import { configDefaults } from "vitest/config";
 
 const DESCRIPTION =
-  "Nakout Radio is a personal, always-on internet radio station playing a curated mix of genres on a time-of-day schedule.";
+  "Nakout Radio is a personal, always-on internet radio station. One shared broadcast, a different genre as the day turns, and something worth knowing about every song. Tune in. Know your music.";
 
 function seo(siteUrl: string): Plugin {
   const canonical = `${siteUrl}/`;

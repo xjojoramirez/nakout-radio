@@ -1,8 +1,9 @@
 # Nakout Radio
 
 A personal internet-radio website streaming the owner's YouTube playlists as a
-single always-on broadcast, with a time-of-day scheduled genre, a live
-listener count, and an admin panel.
+single always-on broadcast, with a different genre as the day turns, liner
+notes and chart history for the track on air, a live listener count, and an
+admin panel. Tune in. Know your music.
 
 Nakout 2.0 adds an authenticated **music library API** and makes every track a
 permanent library record: removing a track from a playlist detaches it instead
