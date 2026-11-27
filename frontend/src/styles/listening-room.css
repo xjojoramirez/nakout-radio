@@ -1003,7 +1003,7 @@ body:has(.radio-page.listening-room) .player-dock .fader:focus-visible {
   }
 
   .radio-page.listening-room .np-title {
-    font-size: clamp(2rem, 11vw, 2.7rem);
+    font-size: clamp(1.7rem, 8.2vw, 2.2rem);
   }
 }
 
