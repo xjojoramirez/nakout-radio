@@ -3,6 +3,24 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-27 - shrink the mobile track title
+
+The listening-room title rendered at 42.9px on a 390px phone, so mid-length
+titles hit the two-line clamp and showed an ellipsis. Reduced the phone font
+size from `clamp(2rem, 11vw, 2.7rem)` to `clamp(1.7rem, 8.2vw, 2.2rem)`
+(about 32px at 390px); long titles now fit in two lines.
+
+- Files touched:
+  - `frontend/src/styles/listening-room.css`
+  - `docs/changelog.md`
+- **Container restart required?** Yes — frontend only:
+  `docker compose up -d --build frontend`
+- **Verification:**
+  - Playwright at 390x844: computed title size 31.98px (was 42.9px);
+    "Instant Crush (feat. Julian Casablancas)" renders in two lines with no
+    ellipsis.
+  - `npm run lint`, `npm run typecheck` and `npm run build` pass.
+
 ## 2026-11-26 - apply the reviewed local data to live
 
 Replaced the live radio database with the local snapshot after the 34-track
