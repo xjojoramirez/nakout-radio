@@ -3,6 +3,39 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-27 - swap the unembeddable Sweat video for the official Topic album upload
+
+The listener page showed Sweat by Inner Circle but the embed reported "Video
+unavailable" while the Studio kept the broadcast live. The Topic video
+`IevYS8wPrk8` from the 2016 compilation is blocked in embeds even though the
+Data API reports `embeddable: true`. The official Topic album upload
+`P-i4oRmNbb0` plays normally and runs 3:47.
+
+- Replaced the library video for track 6831 with `P-i4oRmNbb0` and moved the
+  existing detail record to the new id.
+- Added `IevYS8wPrk8 -> P-i4oRmNbb0` to `video_overrides`.
+- Applied the same swap to the live database, restarted Sweat at index 31 of
+  the live Reggae run, then copied a consistent live snapshot back to local so
+  both databases have the same library, play history and broadcast state.
+- Backups: `local-radio-pre-sweat-fix-20261127.db`,
+  `/data/live-radio-pre-sweat-fix-20261127.db`,
+  `local-radio-pre-live-sync-20261127.db` and
+  `/data/live-radio-snapshot-20261127.db`.
+- Files touched:
+  - `docs/changelog.md`
+  - local and live SQLite databases in their Docker volumes (not tracked)
+- **Container restart required?** No. Data-only change.
+- **Verification:**
+  - Local and live `/api/now` report Sweat with `youtube_video_id:
+    P-i4oRmNbb0`, `duration_seconds: 227`.
+  - Local and live table counts match: 1,151 tracks, 1,115 details, 1,063
+    play-history rows, 9,108 chart rows, 11 genres, 11 playlists and 14
+    schedule slots. The `broadcast_state` checksum matches.
+  - Headless local and live listener checks: iframe `P-i4oRmNbb0`,
+    `readyState: 4`, `paused: false`, current time advancing; the page shows
+    On air.
+  - `pragma quick_check` is `ok` on both databases.
+
 ## 2026-11-27 - swap the unembeddable Dawn of Time video for the newer Topic upload
 
 The listener page showed Dawn of Time but never played it while the Studio kept
