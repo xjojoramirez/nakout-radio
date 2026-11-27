@@ -3,6 +3,37 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-27 - swap the unembeddable Redbone video for a playable album upload
+
+The listener page showed Redbone by Childish Gambino but the embed reported
+"Video unavailable" while the Studio kept the broadcast live. The Topic video
+`4a4zu5t83yY` is blocked in embeds even though the Data API reports
+`embeddable: true`. The album upload `C_U8N8MTeLI` plays normally and matches
+the 5:27 runtime.
+
+- Replaced the library video for track 6525 with `C_U8N8MTeLI` and moved the
+  existing detail record to the new id.
+- Added `4a4zu5t83yY -> C_U8N8MTeLI` to `video_overrides`.
+- Kept the live broadcast state at index 3 with the 327-second duration.
+- Copied a consistent live snapshot back to local so both databases have the
+  same library, play history and broadcast state.
+- Backups: `/data/live-radio-pre-redbone-fix-20261127.db`,
+  `local-radio-pre-live-sync-redbone-20261127.db` and
+  `/data/live-radio-snapshot-redbone-20261127.db`.
+- Files touched:
+  - `docs/changelog.md`
+  - local and live SQLite databases in their Docker volumes (not tracked)
+- **Container restart required?** No. Data-only change.
+- **Verification:**
+  - Local and live `/api/now` returned Redbone with `youtube_video_id:
+    C_U8N8MTeLI`, `duration_seconds: 327`.
+  - Live listener check while Redbone was on air: iframe `C_U8N8MTeLI`,
+    `readyState: 4`, `paused: false`, current time advanced from 5:21 to 5:24.
+  - Local and live table counts match: 1,151 tracks, 1,115 details, 1,069
+    play-history rows, 9,108 chart rows, 11 genres, 11 playlists and 14
+    schedule slots. The `broadcast_state` checksum matches.
+  - `pragma quick_check` is `ok` on both databases.
+
 ## 2026-11-27 - swap the unembeddable Sweat video for the official Topic album upload
 
 The listener page showed Sweat by Inner Circle but the embed reported "Video
