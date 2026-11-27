@@ -3,6 +3,32 @@
 Most recent entries first. Each entry notes whether a Docker container
 restart is required (see `AGENTS.md` for the restart commands).
 
+## 2026-11-27 - swap the unembeddable Dawn of Time video for the newer Topic upload
+
+The listener page showed Dawn of Time but never played it while the Studio kept
+the broadcast live. The YouTube Topic video `JWd2D9YP4po` returns "Video
+unavailable" in the embed even though the Data API still reports
+`embeddable: true`. The newer Topic upload `K8nshkSkVcw` plays normally and is
+the same 4:19 recording.
+
+- Replaced the library video for track 6834 with `K8nshkSkVcw`, moved the
+  existing detail record to the new id, and kept the track at index 9 of the
+  current Reggae run.
+- Added `JWd2D9YP4po -> K8nshkSkVcw` to the `video_overrides` setting so future
+  playlist syncs keep the playable upload.
+- Backup: `local-radio-post-dawn-fix-20261127.db`.
+- Files touched:
+  - `docs/changelog.md`
+  - local SQLite database in Docker volume `nakout-radio_radio_data` (not
+    tracked)
+- **Container restart required?** No. Data-only change.
+- **Verification:**
+  - `GET /api/now` reports Dawn of Time with `youtube_video_id:
+    K8nshkSkVcw`, `duration_seconds: 259`.
+  - Headless listener check: iframe `K8nshkSkVcw`, `readyState: 4`,
+    `paused: false`, current time advancing; the page shows On air.
+  - `pragma quick_check` is `ok`.
+
 ## 2026-11-27 - shrink the mobile track title
 
 The listening-room title rendered at 42.9px on a 390px phone, so mid-length
